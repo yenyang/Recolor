@@ -20,6 +20,7 @@ namespace Recolor.Systems
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Jobs;
 
     /// <summary>
     /// A system for overriding mesh color at right time.
@@ -46,8 +47,7 @@ namespace Recolor.Systems
                    .Build();
 
             m_UpdatedEventQuery = SystemAPI.QueryBuilder()
-                .WithAll<Game.Common.Event>()
-                .WithAny<RentersUpdated, ColorUpdated>()
+                .WithAll<Game.Common.Event, RentersUpdated>()
                 .Build();
 
             RequireAnyForUpdate(m_CustomMeshColorQuery, m_UpdatedEventQuery);
@@ -65,13 +65,13 @@ namespace Recolor.Systems
                         ComponentType.ReadOnly<Deleted>(),
                     },
                     None = new ComponentType[] { ComponentType.ReadOnly<CustomMeshColor>() },
-                },
-                new EntityQueryDesc
+                }, new EntityQueryDesc
                 {
-                    All = new ComponentType[2]
+                    All = new ComponentType[1] { ComponentType.ReadOnly<Game.Common.Event>() },
+                    Any = new ComponentType[2]
                     {
-                        ComponentType.ReadOnly<Game.Common.Event>(),
                         ComponentType.ReadOnly<RentersUpdated>(),
+                        ComponentType.ReadOnly<ColorUpdated>(),
                     },
                 });
 
@@ -116,19 +116,33 @@ namespace Recolor.Systems
                     continue;
                 }
 
-                MeshColor meshColor = new ()
+                for (int i = 0; i < meshColorBuffer.Length; i++)
                 {
-                    m_ColorSet = customMeshColorBuffer[0].m_ColorSet,
-                };
+                    MeshColor meshColor = new ()
+                    {
+                        m_ColorSet = customMeshColorBuffer[i].m_ColorSet,
+                    };
 
-                meshColorBuffer[0] = meshColor;
+                    meshColorBuffer[i] = meshColor;
+                }
             }
+
+            GatherEntitiesFromRentersUpdatedEventsJob gatherEntitiesFromRentersUpdatedEventsJob = new GatherEntitiesFromRentersUpdatedEventsJob()
+            {
+                m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
+                m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
+                m_RentersUpdatedType = SystemAPI.GetComponentTypeHandle<RentersUpdated>(isReadOnly: true),
+                buffer = m_Barrier.CreateCommandBuffer(),
+            };
+            JobHandle jobHandle = gatherEntitiesFromRentersUpdatedEventsJob.Schedule(m_UpdatedEventQuery, Dependency);
+            m_Barrier.AddJobHandleForProducer(jobHandle);
+            Dependency = jobHandle;
         }
 
 #if BURST
         [BurstCompile]
 #endif
-        private struct GatherEntitiesFromEventsJob : IJobChunk
+        private struct GatherEntitiesFromRentersUpdatedEventsJob : IJobChunk
         {
             [ReadOnly]
             public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;

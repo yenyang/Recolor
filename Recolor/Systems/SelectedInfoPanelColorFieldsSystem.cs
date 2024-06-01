@@ -345,21 +345,24 @@ namespace Recolor.Systems
                     return;
                 }
 
-                CustomMeshColor customMeshColor = customMeshColorBuffer[0];
-                if (channel == 0)
+                for (int i = 0; i < Math.Min(4, meshColorBuffer.Length); i++)
                 {
-                    customMeshColor.m_ColorSet.m_Channel0 = color;
-                }
-                else if (channel == 1)
-                {
-                    customMeshColor.m_ColorSet.m_Channel1 = color;
-                }
-                else if (channel == 2)
-                {
-                    customMeshColor.m_ColorSet.m_Channel2 = color;
-                }
+                    CustomMeshColor customMeshColor = customMeshColorBuffer[i];
+                    if (channel == 0)
+                    {
+                        customMeshColor.m_ColorSet.m_Channel0 = color;
+                    }
+                    else if (channel == 1)
+                    {
+                        customMeshColor.m_ColorSet.m_Channel1 = color;
+                    }
+                    else if (channel == 2)
+                    {
+                        customMeshColor.m_ColorSet.m_Channel2 = color;
+                    }
 
-                customMeshColorBuffer[0] = customMeshColor;
+                    customMeshColorBuffer[i] = customMeshColor;
+                }
             }
             else
             {
@@ -416,14 +419,12 @@ namespace Recolor.Systems
                 return;
             }
 
-            Season currentSeason = GetSeasonFromSeasonID(m_ClimatePrefab.FindSeasonByTime(m_ClimateSystem.currentDate).Item1.m_NameID);
-
-            if (!EntityManager.TryGetBuffer(subMeshBuffer[0].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < 4)
+            if (!EntityManager.TryGetBuffer(subMeshBuffer[0].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
             {
                 return;
             }
 
-            ColorSet colorSet = colorVariationBuffer[(int)currentSeason].m_ColorSet;
+            ColorSet colorSet = colorVariationBuffer[m_CurrentAssetSeasonIdentifier.m_Index].m_ColorSet;
 
             TrySaveCustomColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
             m_PreviouslySelectedEntity = Entity.Null;
