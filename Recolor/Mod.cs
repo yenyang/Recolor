@@ -63,10 +63,13 @@ namespace Recolor
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Settings));
             Log.Info($"{nameof(OnLoad)} Initalizing systems");
             updateSystem.UpdateAt<SelectedInfoPanelColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
-            updateSystem.UpdateAfter<OverrideMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateAt<TempCustomMeshColorSystem>(SystemUpdatePhase.Modification1);
+            updateSystem.UpdateAfter<CustomMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateBefore<TempCustomMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             Log.Info($"{nameof(OnLoad)} complete.");
         }
 
+        /// <inheritdoc/>
         public void OnDispose()
         {
             Log.Info(nameof(OnDispose));
