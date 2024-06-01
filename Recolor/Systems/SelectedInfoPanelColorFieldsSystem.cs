@@ -120,9 +120,18 @@ namespace Recolor.Systems
             CreateTrigger<int, UnityEngine.Color>("ChangeColor", ChangeColor);
             CreateTrigger("SaveColorSet", SaveColorSet);
             CreateTrigger("ResetColorSet", ResetColorSet);
-            CreateTrigger("SingleInstance", () => m_SingleInstance.Value = true);
-            CreateTrigger("Matching", () => m_SingleInstance.Value = false);
-            m_VanillaColorSets = new();
+            CreateTrigger("SingleInstance", () =>
+            {
+                m_SingleInstance.Value = true;
+                m_PreviouslySelectedEntity = Entity.Null;
+            });
+            CreateTrigger("Matching", () =>
+            {
+                m_SingleInstance.Value = false;
+                m_PreviouslySelectedEntity = Entity.Null;
+            });
+
+            m_VanillaColorSets = new ();
             m_ContentFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, "SavedColorSet", "Custom");
             System.IO.Directory.CreateDirectory(m_ContentFolder);
             m_EndFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();

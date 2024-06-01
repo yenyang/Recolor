@@ -62,12 +62,7 @@ namespace Recolor.Systems
                     continue;
                 }
 
-                DynamicBuffer<CustomMeshColor> newBuffer = EntityManager.AddBuffer<CustomMeshColor>(entity);
-                foreach (CustomMeshColor customMeshColor in customMeshColorBuffer)
-                {
-                    newBuffer.Add(customMeshColor);
-                }
-
+                EntityManager.AddComponent<BatchesUpdated>(entity);
                 for (int i = 0; i < meshColorBuffer.Length; i++)
                 {
                     if (customMeshColorBuffer.Length > i)
@@ -76,7 +71,11 @@ namespace Recolor.Systems
                     }
                 }
 
-                EntityManager.AddComponent<BatchesUpdated>(entity);
+                DynamicBuffer<CustomMeshColor> newBuffer = EntityManager.AddBuffer<CustomMeshColor>(entity);
+                foreach (CustomMeshColor customMeshColor in customMeshColorBuffer)
+                {
+                    newBuffer.Add(customMeshColor);
+                }
             }
         }
     }
