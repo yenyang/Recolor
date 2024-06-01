@@ -29,16 +29,18 @@ namespace Recolor.Settings
             {
                 { m_Setting.GetSettingsLocaleID(), Mod.Id },
                 { SectionLabel("InfoRowTitle"), Mod.Id },
-                { SectionLabel("InfoRowSubTitle"), "Custom Color Variations" },
-                { TooltipDescriptionKey("InfoRowTooltip"), "For choosing custom seasonal colors." },
+                { TooltipDescriptionKey("InfoRowTooltip"), "For choosing custom colors." },
                 { SectionLabel("Channel0"), "Channel0" },
                 { SectionLabel("Channel1"), "Channel1" },
                 { SectionLabel("Channel2"), "Channel2" },
-                { SectionLabel("ResetAndSave"), "Reset / Save" },
-                { TooltipTitleKey("Reset"), "Reset Seasonal Colors" },
-                { TooltipDescriptionKey("Reset"), "Resets and saves the colors back to the original colors for this season and asset." },
-                { TooltipTitleKey("Save"), "Save Seasonal Colors" },
-                { TooltipDescriptionKey("Save"), "Saves the colors for this season and asset to an XML file located in a folder at %AppData%\\LocalLow\\Colossal Order\\Cities Skylines II \\ModsData\\Recolor \\ColorData\\ Triggers a color refresh on all assets of the same type." },
+                { SectionLabel("Reset"), "Reset Colors" },
+                { TooltipDescriptionKey("Reset"), "Resets and saves the colors back to the original colors for this asset (and season, if applicable)." },
+                { SectionLabel("Save"), "Save Color Variation" },
+                { TooltipDescriptionKey("Save"), "Saves a color variation for this asset (and season, if applicable) to an XML file located in a folder at %AppData%\\LocalLow\\Colossal Order\\Cities Skylines II \\ModsData\\Recolor \\ColorData\\ Triggers a color refresh on all assets of the same type." },
+                { TooltipTitleKey("SingleInstance"), "Single Instance" },
+                { TooltipDescriptionKey("SingleInstance"), "Change the colors of the current selection only." },
+                { TooltipTitleKey("Matching"), "Matching" },
+                { TooltipDescriptionKey("Matching"), "Change the colors of all matching assets with same color variation (and season, if applicable). Single Instance will override this for that instance." },
             };
         }
 

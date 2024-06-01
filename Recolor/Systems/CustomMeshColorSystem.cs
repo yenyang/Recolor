@@ -79,6 +79,7 @@ namespace Recolor.Systems
             m_MeshColorSystem.RequireForUpdate(revisedUpdateQuery);
         }
 
+        /// <inheritdoc/>
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
             base.OnGameLoadingComplete(purpose, mode);
