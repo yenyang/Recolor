@@ -3,8 +3,13 @@
 // </copyright>
 namespace Recolor.Systems
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Xml.Serialization;
     using Colossal.Entities;
     using Colossal.Logging;
+    using Colossal.PSI.Environment;
     using Colossal.Serialization.Entities;
     using Colossal.UI.Binding;
     using Game;
@@ -14,18 +19,11 @@ namespace Recolor.Systems
     using Game.Rendering;
     using Game.Simulation;
     using Game.Tools;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Xml.Serialization;
+    using Recolor.Domain;
     using Recolor.Extensions;
     using Unity.Collections;
     using Unity.Entities;
-    using Colossal.PSI.Environment;
-    using Recolor.Domain;
     using Unity.Jobs;
-    using static Game.Prefabs.TriggerPrefabData;
-    using static Recolor.Systems.SelectedInfoPanelColorFieldsSystem;
 
     /// <summary>
     /// Addes toggles to selected info panel for entites that can receive Anarchy mod components.
@@ -52,8 +50,10 @@ namespace Recolor.Systems
         private Dictionary<AssetSeasonIdentifier, Game.Rendering.ColorSet> m_VanillaColorSets;
         private EntityQuery m_SubMeshQuery;
         private ClimatePrefab m_ClimatePrefab;
+        private bool m_HasSeasonalColors;
         private AssetSeasonIdentifier m_CurrentAssetSeasonIdentifier;
         private string m_ContentFolder;
+        private EndFrameBarrier m_Barrier;
 
         /// <summary>
         /// An enum to handle seasons.
@@ -122,7 +122,7 @@ namespace Recolor.Systems
             m_VanillaColorSets = new();
             m_ContentFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, "SavedColorSet", "Custom");
             System.IO.Directory.CreateDirectory(m_ContentFolder);
-
+            m_EndFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
             m_SubMeshQuery = SystemAPI.QueryBuilder()
                 .WithAll<SubMesh>()
                 .WithNone<PlaceholderObjectElement>()
@@ -239,35 +239,25 @@ namespace Recolor.Systems
                 visible = false;
             }
 
+            bool foundClimatePrefab = true;
             if (m_ClimatePrefab is null)
             {
-                if (GetClimatePrefab() == false)
-                {
-                    visible = false;
-                    return;
-                }
+                foundClimatePrefab = GetClimatePrefab();
             }
 
-            if (m_PreviouslySelectedEntity != selectedEntity && selectedEntity != Entity.Null)
+            // Seasonal Colors
+            if (m_PreviouslySelectedEntity != selectedEntity
+                && selectedEntity != Entity.Null
+                && selectedPrefab != Entity.Null
+                && foundClimatePrefab
+                && m_PrefabSystem.TryGetPrefab(selectedPrefab, out PrefabBase prefabBase)
+                && EntityManager.TryGetBuffer(selectedPrefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer)
+                && EntityManager.TryGetBuffer(subMeshBuffer[0].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer)
+                && colorVariationBuffer.Length > 0)
             {
-                if (!EntityManager.TryGetComponent(selectedEntity, out PrefabRef prefabRef))
-                {
-                    return;
-                }
-
-                if (!EntityManager.TryGetBuffer(prefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
-                {
-                    return;
-                }
-
                 Season currentSeason = GetSeasonFromSeasonID(m_ClimatePrefab.FindSeasonByTime(m_ClimateSystem.currentDate).Item1.m_NameID);
 
-                if (!EntityManager.TryGetBuffer(subMeshBuffer[0].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer))
-                {
-                    return;
-                }
-
-                bool hasSeasonalColors = false;
+                m_HasSeasonalColors = false;
                 ColorSet colorSet = colorVariationBuffer[0].m_ColorSet;
                 int index = 0;
                 for (int i = 0; i < colorVariationBuffer.Length; i++)
@@ -276,37 +266,44 @@ namespace Recolor.Systems
                     {
                         colorSet = colorVariationBuffer[i].m_ColorSet;
                         index = i;
-                        hasSeasonalColors = true;
+                        m_HasSeasonalColors = true;
                         break;
                     }
                 }
 
-                if (!hasSeasonalColors)
+                if (m_HasSeasonalColors)
                 {
-                    visible = false;
-                    return;
+                    visible = true;
+
+                    m_CurrentAssetSeasonIdentifier = new AssetSeasonIdentifier()
+                    {
+                        m_Index = index,
+                        m_PrefabID = prefabBase.GetPrefabID(),
+                        m_Season = currentSeason,
+                    };
+
+                    m_CurrentColorSet.Value = new RecolorSet(colorSet);
+
+                    m_PreviouslySelectedEntity = selectedEntity;
+
+                    m_MatchesSavedColorSet.Value = MatchesSavedColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
                 }
+            }
+            else
+            {
+                m_HasSeasonalColors = false;
+            }
 
-                if (!m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefabBase))
-                {
-                    return;
-                }
-
-
-                visible = true;
-
-                m_CurrentAssetSeasonIdentifier = new AssetSeasonIdentifier()
-                {
-                    m_Index = index,
-                    m_PrefabID = prefabBase.GetPrefabID(),
-                    m_Season = currentSeason,
-                };
-
-                m_CurrentColorSet.Value = new RecolorSet(colorSet);
+            if (!m_HasSeasonalColors
+                && m_PreviouslySelectedEntity != selectedEntity
+                && EntityManager.TryGetBuffer(selectedEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer)
+                && meshColorBuffer.Length > 0)
+            {
+                m_CurrentColorSet.Value = new RecolorSet(meshColorBuffer[0].m_ColorSet);
 
                 m_PreviouslySelectedEntity = selectedEntity;
 
-                m_MatchesSavedColorSet.Value = MatchesSavedColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
+                visible = true;
             }
         }
 
@@ -330,46 +327,80 @@ namespace Recolor.Systems
 
         private void ChangeColor(int channel, UnityEngine.Color color)
         {
-            if (!EntityManager.TryGetComponent(selectedEntity, out PrefabRef prefabRef))
+            EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
+            if (!m_HasSeasonalColors && EntityManager.TryGetBuffer(selectedEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
-                return;
-            }
-
-            if (!EntityManager.TryGetBuffer(prefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
-            {
-                return;
-            }
-
-            Season currentSeason = GetSeasonFromSeasonID(m_ClimatePrefab.FindSeasonByTime(m_ClimateSystem.currentDate).Item1.m_NameID);
-
-            for (int i = 0; i < Math.Min(4, subMeshBuffer.Length); i++)
-            {
-                if (!EntityManager.TryGetBuffer(subMeshBuffer[i].m_SubMesh, isReadOnly: false, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < 4)
+                if (!EntityManager.HasBuffer<CustomMeshColor>(selectedEntity))
                 {
-                    continue;
+                    DynamicBuffer<CustomMeshColor> newBuffer = EntityManager.AddBuffer<CustomMeshColor>(selectedEntity);
+                    foreach (MeshColor meshColor in meshColorBuffer)
+                    {
+                        newBuffer.Add(new CustomMeshColor(meshColor));
+                    }
                 }
 
-                ColorVariation colorVariation = colorVariationBuffer[(int)currentSeason];
+                if (!EntityManager.TryGetBuffer(selectedEntity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer))
+                {
+                    return;
+                }
 
+                CustomMeshColor customMeshColor = customMeshColorBuffer[0];
                 if (channel == 0)
                 {
-                    colorVariation.m_ColorSet.m_Channel0 = color;
+                    customMeshColor.m_ColorSet.m_Channel0 = color;
                 }
                 else if (channel == 1)
                 {
-                    colorVariation.m_ColorSet.m_Channel1 = color;
+                    customMeshColor.m_ColorSet.m_Channel1 = color;
                 }
                 else if (channel == 2)
                 {
-                    colorVariation.m_ColorSet.m_Channel2 = color;
+                    customMeshColor.m_ColorSet.m_Channel2 = color;
                 }
 
-                colorVariationBuffer[(int)currentSeason] = colorVariation;
+                customMeshColorBuffer[0] = customMeshColor;
+            }
+            else
+            {
+                if (selectedPrefab != Entity.Null || EntityManager.TryGetBuffer(selectedPrefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
+                {
+                    return;
+                }
+
+                for (int i = 0; i < Math.Min(4, subMeshBuffer.Length); i++)
+                {
+                    if (!EntityManager.TryGetBuffer(subMeshBuffer[i].m_SubMesh, isReadOnly: false, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
+                    {
+                        continue;
+                    }
+
+                    if (colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
+                    {
+                        continue;
+                    }
+
+                    ColorVariation colorVariation = colorVariationBuffer[m_CurrentAssetSeasonIdentifier.m_Index];
+
+                    if (channel == 0)
+                    {
+                        colorVariation.m_ColorSet.m_Channel0 = color;
+                    }
+                    else if (channel == 1)
+                    {
+                        colorVariation.m_ColorSet.m_Channel1 = color;
+                    }
+                    else if (channel == 2)
+                    {
+                        colorVariation.m_ColorSet.m_Channel2 = color;
+                    }
+
+                    colorVariationBuffer[m_CurrentAssetSeasonIdentifier.m_Index] = colorVariation;
+                }
             }
 
             m_Log.Debug($"Changed Color {channel} {color}");
             m_PreviouslySelectedEntity = Entity.Null;
-            EntityManager.AddComponent<BatchesUpdated>(selectedEntity);
+            buffer.AddComponent<BatchesUpdated>(selectedEntity);
         }
 
         private void SaveColorSet()
@@ -403,6 +434,7 @@ namespace Recolor.Systems
 
             if (EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity))
             {
+                EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
                 EntityQuery plantQuery = SystemAPI.QueryBuilder()
                    .WithAll<Game.Objects.Plant>()
                    .WithNone<Deleted, Game.Common.Overridden, Game.Tools.Temp>()
@@ -413,7 +445,7 @@ namespace Recolor.Systems
                 {
                     if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && currentPrefabRef.m_Prefab == prefabRef.m_Prefab)
                     {
-                        EntityManager.AddComponent<BatchesUpdated>(e);
+                        buffer.AddComponent<BatchesUpdated>(e);
                     }
                 }
             }
@@ -453,6 +485,7 @@ namespace Recolor.Systems
 
             if (EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity))
             {
+                EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
                 EntityQuery plantQuery = SystemAPI.QueryBuilder()
                 .WithAll<Game.Objects.Plant>()
                    .WithNone<Deleted, Game.Common.Overridden, Game.Tools.Temp>()
@@ -463,7 +496,7 @@ namespace Recolor.Systems
                 {
                     if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && currentPrefabRef.m_Prefab == prefabRef.m_Prefab)
                     {
-                        EntityManager.AddComponent<BatchesUpdated>(e);
+                        buffer.AddComponent<BatchesUpdated>(e);
                     }
                 }
             }
