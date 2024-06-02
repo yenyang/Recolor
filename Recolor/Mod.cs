@@ -50,9 +50,9 @@ namespace Recolor
 #if DEBUG
             Log.effectivenessLevel = Level.Debug;
 #elif VERBOSE
-            Logger.effectivenessLevel = Level.Verbose;
+            Log.effectivenessLevel = Level.Verbose;
 #else
-            Logger.effectivenessLevel = Level.Info;
+            Log.effectivenessLevel = Level.Info;
 #endif
             Log.Info($"{nameof(OnLoad)} Initalizing Settings");
 
