@@ -273,7 +273,7 @@ namespace Recolor.Systems
             {
                 m_DisableSingleInstance.Value = true;
             }
-            else if (m_DisableSingleInstance.Value)
+            else if (!EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity) && m_DisableSingleInstance)
             {
                 m_DisableSingleInstance.Value = false;
             }
@@ -282,13 +282,14 @@ namespace Recolor.Systems
             {
                 m_DisableMatching.Value = true;
             }
-            else if (m_DisableMatching.Value)
+            else if (!EntityManager.HasBuffer<CustomMeshColor>(selectedEntity) && m_DisableMatching)
             {
                 m_DisableMatching.Value = false;
             }
 
             if (!EntityManager.TryGetBuffer(selectedEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
+                visible = false;
                 return;
             }
 
