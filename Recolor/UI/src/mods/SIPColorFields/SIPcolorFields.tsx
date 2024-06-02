@@ -24,6 +24,7 @@ const MatchesSavedData$ = bindValue<boolean>(mod.id, "MatchesSavedColorSet");
 const SingleInstance$ = bindValue<boolean>(mod.id, 'SingleInstance');
 const DisableSingleInstance$ = bindValue<boolean>(mod.id, 'DisableSingleInstance');
 const DisableMatching$ = bindValue<boolean>(mod.id, 'DisableMatching');
+const MatchesVanillaColorSet$ = bindValue<boolean>(mod.id, 'MatchesVanillaColorSet');
 
 const InfoSectionTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-section/info-section.module.scss",
@@ -77,6 +78,7 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
         const SingleInstance = useValue(SingleInstance$);
         const DisableSingleInstance = useValue(DisableSingleInstance$);
         const DisableMatching = useValue(DisableMatching$);
+        const MatchesVanillaColorSet = useValue(MatchesVanillaColorSet$);
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string from en-US.json.
         const { translate } = useLocalization();
@@ -148,6 +150,7 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                             subRow={true}
                             className={InfoRowTheme.infoRow}
                         ></InfoRow>
+                        { !MatchesVanillaColorSet && (
                         <InfoRow 
                             left={translate("Recolor.SECTION_TITLE[Reset]" ,locale["Recolor.SECTION_TITLE[Reset]"])}
                             right=
@@ -167,7 +170,8 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                             subRow={true}
                             className={InfoRowTheme.infoRow}
                         ></InfoRow>
-                         { !SingleInstance && (
+                        )}
+                         { (!SingleInstance || DisableSingleInstance) && (
                          <InfoRow 
                             left={translate("Recolor.SECTION_TITLE[Save]" ,locale["Recolor.SECTION_TITLE[Save]"])}
                             right=

@@ -7,7 +7,6 @@ namespace Recolor.Domain
     using Game.Prefabs;
     using Game.Rendering;
     using Recolor.Systems;
-    using Unity.Entities;
 
     /// <summary>
     /// A class to use for XML Serialization and deserialization of custom foliage color sets.
@@ -17,7 +16,6 @@ namespace Recolor.Domain
         private ColorSet m_ColorSet;
         private string m_PrefabType;
         private string m_PrefabName;
-        private SelectedInfoPanelColorFieldsSystem.Season m_Season;
         private int m_Index;
         private int m_Version;
 
@@ -37,7 +35,7 @@ namespace Recolor.Domain
         /// <param name="prefabID">The prefab this applies to.</param>
         /// <param name="season">season this applies to.</param>
         /// <param name="index">index for color variation.</param>
-        public SavedColorSet(UnityEngine.Color channel0, UnityEngine.Color channel1, UnityEngine.Color channel2, PrefabID prefabID, SelectedInfoPanelColorFieldsSystem.Season season, int index)
+        public SavedColorSet(UnityEngine.Color channel0, UnityEngine.Color channel1, UnityEngine.Color channel2, PrefabID prefabID, int index)
         {
             m_ColorSet = default;
             m_ColorSet.m_Channel0 = channel0;
@@ -45,7 +43,6 @@ namespace Recolor.Domain
             m_ColorSet.m_Channel2 = channel2;
             m_PrefabName = prefabID.GetName();
             m_PrefabType = prefabID.ToString().Remove(prefabID.ToString().IndexOf(':'));
-            m_Season = season;
             m_Version = 1;
             m_Index = index;
         }
@@ -55,14 +52,12 @@ namespace Recolor.Domain
         /// </summary>
         /// <param name="colorSet">set of colors</param>
         /// <param name="prefabID">The prefab this applies to.</param>
-        /// <param name="season">season this applies to.</param>
         /// <param name="index">index for color variation.</param>
-        public SavedColorSet(ColorSet colorSet, PrefabID prefabID, SelectedInfoPanelColorFieldsSystem.Season season, int index)
+        public SavedColorSet(ColorSet colorSet, PrefabID prefabID, int index)
         {
             m_ColorSet = colorSet;
             m_PrefabName = prefabID.GetName();
             m_PrefabType = prefabID.ToString().Remove(prefabID.ToString().IndexOf(':'));
-            m_Season = season;
             m_Version = 1;
             m_Index = index;
         }
@@ -77,7 +72,6 @@ namespace Recolor.Domain
             m_ColorSet = colorSet;
             m_PrefabName = assetSeasonIdentifier.m_PrefabID.GetName();
             m_PrefabType = assetSeasonIdentifier.m_PrefabID.ToString().Remove(assetSeasonIdentifier.m_PrefabID.ToString().IndexOf(':'));
-            m_Season = assetSeasonIdentifier.m_Season;
             m_Version = 1;
             m_Index = assetSeasonIdentifier.m_Index;
         }
@@ -107,15 +101,6 @@ namespace Recolor.Domain
         {
             get { return m_PrefabName; }
             set { m_PrefabName = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets a value for the season.
-        /// </summary>
-        public SelectedInfoPanelColorFieldsSystem.Season Season
-        {
-            get { return m_Season; }
-            set { m_Season = value; }
         }
 
         /// <summary>
