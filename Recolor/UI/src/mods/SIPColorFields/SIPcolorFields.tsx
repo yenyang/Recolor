@@ -22,6 +22,8 @@ const matchingSrc =                     uilStandard + "SameRhombus.svg";
 const CurrentColorSet$ = bindValue<ColorSet>(mod.id, "CurrentColorSet");
 const MatchesSavedData$ = bindValue<boolean>(mod.id, "MatchesSavedColorSet");
 const SingleInstance$ = bindValue<boolean>(mod.id, 'SingleInstance');
+const DisableSingleInstance$ = bindValue<boolean>(mod.id, 'DisableSingleInstance');
+const DisableMatching$ = bindValue<boolean>(mod.id, 'DisableMatching');
 
 const InfoSectionTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-section/info-section.module.scss",
@@ -73,6 +75,8 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
         const CurrentColorSet = useValue(CurrentColorSet$);
         const MatchesSavedColorSet  = useValue(MatchesSavedData$);
         const SingleInstance = useValue(SingleInstance$);
+        const DisableSingleInstance = useValue(DisableSingleInstance$);
+        const DisableMatching = useValue(DisableMatching$);
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string from en-US.json.
         const { translate } = useLocalization();
@@ -86,9 +90,9 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                     <VanillaComponentResolver.instance.ToolButton
                                         src={singleSrc}
                                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                        selected = {SingleInstance}
+                                        selected = {SingleInstance || DisableMatching}
                                         multiSelect = {false}   // I haven't tested any other value here
-                                        disabled = {false}      
+                                        disabled = {DisableSingleInstance}      
                                         tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[SingleInstance]",locale["Recolor.TOOLTIP_TITLE[SingleInstance]"]), translate("Recolor.TOOLTIP_DESCRIPTION[SingleInstance]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SingleInstance]"]))}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                         onSelect={() => handleClick("SingleInstance")}
@@ -96,9 +100,9 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                     <VanillaComponentResolver.instance.ToolButton
                                         src={matchingSrc}
                                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                        selected = {!SingleInstance}
+                                        selected = {!SingleInstance || DisableSingleInstance}
                                         multiSelect = {false}   // I haven't tested any other value here
-                                        disabled = {false}     
+                                        disabled = {DisableMatching}     
                                         tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[Matching]",locale["Recolor.TOOLTIP_TITLE[Matching]"]), translate("Recolor.TOOLTIP_DESCRIPTION[Matching]" ,locale["Recolor.TOOLTIP_DESCRIPTION[Matching]"]))}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                         onSelect={() => handleClick("Matching")}

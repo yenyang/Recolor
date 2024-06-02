@@ -38,7 +38,7 @@ namespace Recolor.Settings
                 { SectionLabel("Save"), "Save Color Variation" },
                 { TooltipDescriptionKey("Save"), "Saves a color variation for this asset (and season, if applicable) to an XML file located in a folder at %AppData%\\LocalLow\\Colossal Order\\Cities Skylines II \\ModsData\\Recolor \\ColorData\\ Triggers a color refresh on all assets of the same type." },
                 { TooltipTitleKey("SingleInstance"), "Single Instance" },
-                { TooltipDescriptionKey("SingleInstance"), "Change the colors of the current selection only." },
+                { TooltipDescriptionKey("SingleInstance"), "Change the colors of the current selection only. Does not work on plants and trees." },
                 { TooltipTitleKey("Matching"), "Matching" },
                 { TooltipDescriptionKey("Matching"), "Change the colors of all matching assets with same color variation (and season, if applicable). Single Instance will override this for that instance." },
             };

@@ -10,9 +10,12 @@ namespace Recolor.Systems
     using Game;
     using Game.Buildings;
     using Game.Common;
+    using Game.Objects;
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Routes;
+    using Game.Simulation;
+    using Game.Tools;
     using Recolor.Domain;
     using Recolor.Extensions;
     using Unity.Burst.Intrinsics;
@@ -41,7 +44,7 @@ namespace Recolor.Systems
             m_CustomMeshColorQuery = SystemAPI.QueryBuilder()
                    .WithAllRW<MeshColor>()
                    .WithAll<BatchesUpdated, CustomMeshColor>()
-                   .WithNone<Deleted, Game.Common.Overridden>()
+                   .WithNone<Deleted, Game.Common.Overridden, Plant>()
                    .Build();
 
             m_UpdatedEventQuery = SystemAPI.QueryBuilder()
@@ -51,7 +54,7 @@ namespace Recolor.Systems
             RequireAnyForUpdate(m_CustomMeshColorQuery, m_UpdatedEventQuery);
             m_Barrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
 
-            // This overrides the query and requires the new query for updates with vanilla Mesh Color System. The goal being to remove CustomMeshColor entities from MeshColorSystem.
+            // This overrides a query in vanilla Mesh Color System. The goal being to remove CustomMeshColor entities from MeshColorSystem.
             EntityQuery revisedUpdateQuery = GetEntityQuery(
                 new EntityQueryDesc
                 {
@@ -62,7 +65,10 @@ namespace Recolor.Systems
                         ComponentType.ReadOnly<BatchesUpdated>(),
                         ComponentType.ReadOnly<Deleted>(),
                     },
-                    None = new ComponentType[] { ComponentType.ReadOnly<CustomMeshColor>() },
+                    None = new ComponentType[] 
+                    {
+                        ComponentType.ReadOnly<CustomMeshColor>(),
+                    },
                 }, new EntityQueryDesc
                 {
                     All = new ComponentType[1] { ComponentType.ReadOnly<Game.Common.Event>() },
@@ -74,7 +80,6 @@ namespace Recolor.Systems
                 });
 
             m_MeshColorSystem.SetMemberValue("m_UpdateQuery", revisedUpdateQuery);
-            m_MeshColorSystem.RequireForUpdate(revisedUpdateQuery);
         }
 
         /// <inheritdoc/>
@@ -104,7 +109,7 @@ namespace Recolor.Systems
             NativeArray<Entity> entities = m_CustomMeshColorQuery.ToEntityArray(Allocator.Temp);
             foreach (Entity entity in entities)
             {
-                if (!EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer) || meshColorBuffer.Length == 0)
+                if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<MeshColor> meshColorBuffer) || meshColorBuffer.Length == 0)
                 {
                     continue;
                 }
