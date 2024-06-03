@@ -7,6 +7,7 @@ namespace Recolor
     using Colossal.Logging;
     using Game;
     using Game.Modding;
+    using Game.Rendering;
     using Game.SceneFlow;
     using Recolor.Settings;
     using Recolor.Systems;
@@ -49,9 +50,9 @@ namespace Recolor
 #if DEBUG
             Log.effectivenessLevel = Level.Debug;
 #elif VERBOSE
-            Logger.effectivenessLevel = Level.Verbose;
+            Log.effectivenessLevel = Level.Verbose;
 #else
-            Logger.effectivenessLevel = Level.Info;
+            Log.effectivenessLevel = Level.Info;
 #endif
             Log.Info($"{nameof(OnLoad)} Initalizing Settings");
 
@@ -62,9 +63,15 @@ namespace Recolor
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Settings));
             Log.Info($"{nameof(OnLoad)} Initalizing systems");
             updateSystem.UpdateAt<SelectedInfoPanelColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<TempCustomMeshColorSystem>(SystemUpdatePhase.Modification1);
+            updateSystem.UpdateAfter<CustomMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateBefore<TempCustomMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
+
+            updateSystem.UpdateBefore<HandleBatchesUpdatedNextFrameSystem>(SystemUpdatePhase.Modification1);
             Log.Info($"{nameof(OnLoad)} complete.");
         }
 
+        /// <inheritdoc/>
         public void OnDispose()
         {
             Log.Info(nameof(OnDispose));
