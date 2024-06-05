@@ -26,6 +26,7 @@ namespace Recolor.Systems
     using Unity.Entities;
     using Unity.Jobs;
     using UnityEngine;
+    using static Recolor.Systems.SelectedInfoPanelColorFieldsSystem;
 
     /// <summary>
     /// Addes toggles to selected info panel for entites that can receive Anarchy mod components.
@@ -718,12 +719,38 @@ namespace Recolor.Systems
 
         private void ReloadSavedColorSets()
         {
-            NativeList<Entity> colorVariationPrefabEntities = m_SubMeshQuery.ToEntityListAsync(Allocator.Temp, out JobHandle colorVariationPrefabJobHandle);
+            string[] filePaths = Directory.GetFiles(m_ContentFolder);
             NativeList<Entity> prefabsNeedingUpdates = new NativeList<Entity>(Allocator.Temp);
-            colorVariationPrefabJobHandle.Complete();
-
-            foreach (Entity e in colorVariationPrefabEntities)
+            foreach (string filePath in filePaths)
             {
+                SavedColorSet colorSet = default;
+                if (File.Exists(filePath))
+                {
+                    try
+                    {
+                        XmlSerializer serTool = new XmlSerializer(typeof(SavedColorSet)); // Create serializer
+                        using System.IO.FileStream readStream = new System.IO.FileStream(filePath, System.IO.FileMode.Open); // Open file
+                        colorSet = (SavedColorSet)serTool.Deserialize(readStream);
+                    }
+                    catch (Exception ex)
+                    {
+                        m_Log.Warn($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(ReloadSavedColorSets)} Could not deserialize file at {filePath}.");
+                        continue;
+                    }
+                }
+
+                PrefabID prefabID = new PrefabID(colorSet.PrefabType, colorSet.PrefabName);
+
+                if (!m_PrefabSystem.TryGetPrefab(prefabID, out PrefabBase prefabBase))
+                {
+                    continue;
+                }
+
+                if (!m_PrefabSystem.TryGetEntity(prefabBase, out Entity e))
+                {
+                    continue;
+                }
+
                 if (!EntityManager.TryGetBuffer(e, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
                 {
                     continue;
@@ -735,9 +762,6 @@ namespace Recolor.Systems
                     {
                         continue;
                     }
-
-                    PrefabBase prefabBase = m_PrefabSystem.GetPrefab<PrefabBase>(e);
-                    PrefabID prefabID = prefabBase.GetPrefabID();
 
                     for (int j = 0; j < colorVariationBuffer.Length; j++)
                     {
