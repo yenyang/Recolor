@@ -216,8 +216,12 @@ namespace Recolor.Systems
                         {
                             currentColorVariation.m_ColorSet = customColorSet.ColorSet;
                             colorVariationBuffer[j] = currentColorVariation;
-                            prefabsNeedingUpdates.Add(e);
-                            m_Log.Debug($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(OnGameLoadingComplete)} Imported Colorset for {prefabID} in {assetSeasonIdentifier.m_Season}");
+                            if (!prefabsNeedingUpdates.Contains(e))
+                            {
+                                prefabsNeedingUpdates.Add(e);
+                            }
+
+                            m_Log.Info($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(OnGameLoadingComplete)} Imported Colorset for {prefabID} in {assetSeasonIdentifier.m_Season}");
                         }
                     }
                 }

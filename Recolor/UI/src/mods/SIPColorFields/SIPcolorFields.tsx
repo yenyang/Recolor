@@ -88,27 +88,29 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                             left={translate("Recolor.SECTION_TITLE[InfoRowTitle]",locale["Recolor.SECTION_TITLE[InfoRowTitle]"])}
                             right=
                             {
-                                <>                                
+                                <>  
+                                    {!DisableSingleInstance && (                             
                                     <VanillaComponentResolver.instance.ToolButton
                                         src={singleSrc}
                                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                        selected = {SingleInstance || DisableMatching}
+                                        selected = {(SingleInstance || DisableMatching) && !DisableSingleInstance}
                                         multiSelect = {false}   // I haven't tested any other value here
                                         disabled = {DisableSingleInstance}      
                                         tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[SingleInstance]",locale["Recolor.TOOLTIP_TITLE[SingleInstance]"]), translate("Recolor.TOOLTIP_DESCRIPTION[SingleInstance]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SingleInstance]"]))}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                         onSelect={() => handleClick("SingleInstance")}
-                                    />
+                                    />)} 
+                                    {!DisableMatching && (   
                                     <VanillaComponentResolver.instance.ToolButton
                                         src={matchingSrc}
                                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                        selected = {!SingleInstance || DisableSingleInstance}
+                                        selected = {(!SingleInstance || DisableSingleInstance) && !DisableMatching}
                                         multiSelect = {false}   // I haven't tested any other value here
                                         disabled = {DisableMatching}     
                                         tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[Matching]",locale["Recolor.TOOLTIP_TITLE[Matching]"]), translate("Recolor.TOOLTIP_DESCRIPTION[Matching]" ,locale["Recolor.TOOLTIP_DESCRIPTION[Matching]"]))}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                         onSelect={() => handleClick("Matching")}
-                                    />
+                                    />)}
                                 </>
                             }
                             tooltip={translate("Recolor.TOOLTIP_DESCRIPTION[InfoRowTooltip]" ,locale["Recolor.TOOLTIP_DESCRIPTION[InfoRowTooltip]"])}
@@ -118,32 +120,14 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                             className={InfoRowTheme.infoRow}
                         ></InfoRow>
                         <InfoRow 
-                            left={translate("Recolor.SECTION_TITLE[Channel0]" , locale["Recolor.SECTION_TITLE[Channel0]"])}
-                            right=
-                            {
-                                <VanillaComponentResolver.instance.ColorField value={CurrentColorSet.Channel0} onChange={(e) => {changeColor(0, e);}}/>
-                            }
-                            uppercase={false}
-                            disableFocus={true}
-                            subRow={true}
-                            className={InfoRowTheme.infoRow}
-                        ></InfoRow>
-                        <InfoRow 
                             left={translate("Recolor.SECTION_TITLE[Channel1]" ,locale["Recolor.SECTION_TITLE[Channel1]"])}
                             right=
                             {
-                                <VanillaComponentResolver.instance.ColorField value={CurrentColorSet.Channel1} onChange={(e) => {changeColor(1, e);}}/>
-                            }
-                            uppercase={false}
-                            disableFocus={true}
-                            subRow={true}
-                            className={InfoRowTheme.infoRow}
-                        ></InfoRow>
-                        <InfoRow 
-                            left={translate("Recolor.SECTION_TITLE[Channel2]",locale["Recolor.SECTION_TITLE[Channel2]"])}
-                            right=
-                            {
-                                <VanillaComponentResolver.instance.ColorField value={CurrentColorSet.Channel2} onChange={(e) => {changeColor(2, e);}}/>
+                                <>
+                                    <VanillaComponentResolver.instance.ColorField value={CurrentColorSet.Channel0} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(0, e);}}/>
+                                    <VanillaComponentResolver.instance.ColorField value={CurrentColorSet.Channel1} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(1, e);}}/>
+                                    <VanillaComponentResolver.instance.ColorField value={CurrentColorSet.Channel2} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(2, e);}}/>
+                                </>
                             }
                             uppercase={false}
                             disableFocus={true}
