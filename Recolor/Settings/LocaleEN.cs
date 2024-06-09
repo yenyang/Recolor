@@ -1,5 +1,5 @@
-﻿// <copyright file="LocaleEN.cs" company="Yenyangs Mods. MIT License">
-// Copyright (c) Yenyangs Mods. MIT License. All rights reserved.
+﻿// <copyright file="LocaleEN.cs" company="Yenyang's Mods. MIT License">
+// Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
 namespace Recolor.Settings

@@ -26,7 +26,6 @@ namespace Recolor.Systems
     using Unity.Entities;
     using Unity.Jobs;
     using UnityEngine;
-    using static Recolor.Systems.SelectedInfoPanelColorFieldsSystem;
 
     /// <summary>
     /// Addes toggles to selected info panel for entites that can receive Anarchy mod components.
@@ -49,7 +48,6 @@ namespace Recolor.Systems
         private Entity m_PreviouslySelectedEntity = Entity.Null;
         private ClimateSystem m_ClimateSystem;
         private ValueBindingHelper<RecolorSet> m_CurrentColorSet;
-        private ValueBindingHelper<bool> m_MatchesSavedColorSet;
         private ValueBindingHelper<bool> m_MatchesVanillaColorSet;
         private ValueBindingHelper<bool> m_SingleInstance;
         private ValueBindingHelper<bool> m_DisableSingleInstance;
@@ -60,6 +58,7 @@ namespace Recolor.Systems
         private AssetSeasonIdentifier m_CurrentAssetSeasonIdentifier;
         private string m_ContentFolder;
         private int m_ReloadInXFrames = 0;
+        private float m_TimeColorLastChanged = 0f;
 
         /// <summary>
         /// An enum to handle seasons.
@@ -100,7 +99,6 @@ namespace Recolor.Systems
         {
         }
 
-
         /// <inheritdoc/>
         protected override void OnProcess()
         {
@@ -121,13 +119,11 @@ namespace Recolor.Systems
             m_Log.Info($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(OnCreate)}");
             m_ClimateSystem = World.GetOrCreateSystemManaged<ClimateSystem>();
             m_CurrentColorSet = CreateBinding("CurrentColorSet", new RecolorSet(default, default, default));
-            m_MatchesSavedColorSet = CreateBinding("MatchesSavedColorSet", true);
             m_MatchesVanillaColorSet = CreateBinding("MatchesVanillaColorSet", true);
             m_SingleInstance = CreateBinding("SingleInstance", true);
             m_DisableSingleInstance = CreateBinding("DisableSingleInstance", false);
             m_DisableMatching = CreateBinding("DisableMatching", false);
             CreateTrigger<int, UnityEngine.Color>("ChangeColor", ChangeColor);
-            CreateTrigger("SaveColorSet", SaveColorSet);
             CreateTrigger("ResetColorSet", ResetColorSet);
             CreateTrigger("SingleInstance", () =>
             {
@@ -187,7 +183,7 @@ namespace Recolor.Systems
 
                 for (int i = 0; i < Math.Min(4, subMeshBuffer.Length); i++)
                 {
-                    if (!EntityManager.TryGetBuffer(subMeshBuffer[i].m_SubMesh, isReadOnly: false, out DynamicBuffer<ColorVariation> colorVariationBuffer))
+                    if (!EntityManager.TryGetBuffer(subMeshBuffer[i].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer))
                     {
                         continue;
                     }
@@ -338,8 +334,6 @@ namespace Recolor.Systems
 
                 m_PreviouslySelectedEntity = selectedEntity;
 
-                m_MatchesSavedColorSet.Value = MatchesSavedColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
-
                 m_MatchesVanillaColorSet.Value = MatchesVanillaColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
             }
 
@@ -352,6 +346,15 @@ namespace Recolor.Systems
                 m_MatchesVanillaColorSet.Value = !EntityManager.HasComponent<CustomMeshColor>(selectedEntity);
 
                 visible = true;
+            }
+
+            if (m_PreviouslySelectedEntity == selectedEntity &&
+                !MatchesSavedColorSet(m_CurrentColorSet.Value.GetColorSet(), m_CurrentAssetSeasonIdentifier)
+                && UnityEngine.Time.time > m_TimeColorLastChanged + 0.5f &&
+                (!m_SingleInstance.Value || EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity))
+                && !EntityManager.HasBuffer<CustomMeshColor>(selectedEntity))
+            {
+                SaveColorSet();
             }
         }
 
@@ -445,6 +448,7 @@ namespace Recolor.Systems
                 }
             }
 
+            m_TimeColorLastChanged = UnityEngine.Time.time;
             m_PreviouslySelectedEntity = Entity.Null;
             buffer.AddComponent<BatchesUpdated>(selectedEntity);
         }
@@ -771,7 +775,7 @@ namespace Recolor.Systems
                         ColorVariation currentColorVariation = colorVariationBuffer[j];
                         TryGetSeasonFromColorGroupID(currentColorVariation.m_GroupID, out Season season);
 
-                        AssetSeasonIdentifier assetSeasonIdentifier = new()
+                        AssetSeasonIdentifier assetSeasonIdentifier = new ()
                         {
                             m_PrefabID = prefabID,
                             m_Season = season,
@@ -815,11 +819,24 @@ namespace Recolor.Systems
             }
         }
 
-
+        /// <summary>
+        /// Identifies an asset and color variation including seasonal color variations..
+        /// </summary>
         public struct AssetSeasonIdentifier
         {
+            /// <summary>
+            /// The id for the prefab.
+            /// </summary>
             public PrefabID m_PrefabID;
+
+            /// <summary>
+            /// The season or none.
+            /// </summary>
             public Season m_Season;
+
+            /// <summary>
+            /// The index of the color variation.
+            /// </summary>
             public int m_Index;
         }
     }

@@ -14,13 +14,11 @@ interface InfoSectionComponent {
 }
 
 const uilStandard =                          "coui://uil/Standard/";
-const saveSrc =                     uilStandard +  "DiskSave.svg";
 const resetSrc =                     uilStandard + "Reset.svg";
 const singleSrc =                        uilStandard + "SingleRhombus.svg";
 const matchingSrc =                     uilStandard + "SameRhombus.svg";
 
 const CurrentColorSet$ = bindValue<ColorSet>(mod.id, "CurrentColorSet");
-const MatchesSavedData$ = bindValue<boolean>(mod.id, "MatchesSavedColorSet");
 const SingleInstance$ = bindValue<boolean>(mod.id, 'SingleInstance');
 const DisableSingleInstance$ = bindValue<boolean>(mod.id, 'DisableSingleInstance');
 const DisableMatching$ = bindValue<boolean>(mod.id, 'DisableMatching');
@@ -74,7 +72,6 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
 	componentList["Recolor.Systems.SelectedInfoPanelColorFieldsSystem"] = (e: InfoSectionComponent) => {
         // These get the value of the bindings.
         const CurrentColorSet = useValue(CurrentColorSet$);
-        const MatchesSavedColorSet  = useValue(MatchesSavedData$);
         const SingleInstance = useValue(SingleInstance$);
         const DisableSingleInstance = useValue(DisableSingleInstance$);
         const DisableMatching = useValue(DisableMatching$);
@@ -153,29 +150,6 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                             disableFocus={true}
                             subRow={true}
                             className={InfoRowTheme.infoRow}
-                        ></InfoRow>
-                        )}
-                         { (!SingleInstance || DisableSingleInstance) && (
-                         <InfoRow 
-                            left={translate("Recolor.SECTION_TITLE[Save]" ,locale["Recolor.SECTION_TITLE[Save]"])}
-                            right=
-                            {
-                                <VanillaComponentResolver.instance.ToolButton
-                                    src={saveSrc}
-                                    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                    selected = {MatchesSavedColorSet}
-                                    multiSelect = {false}   // I haven't tested any other value here
-                                    disabled = {false}     
-                                    tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[Save]" ,locale["Recolor.TOOLTIP_DESCRIPTION[Save]"])}
-                                    className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                    onSelect={() => handleClick("SaveColorSet")}
-                                />
-                            }
-                            uppercase={false}
-                            disableFocus={true}
-                            subRow={true}
-                            className={InfoRowTheme.infoRow}
-                        
                         ></InfoRow>
                         )}
                 </InfoSection>
