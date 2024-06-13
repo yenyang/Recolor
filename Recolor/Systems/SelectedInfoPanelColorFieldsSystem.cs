@@ -469,7 +469,7 @@ namespace Recolor.Systems
                     return default;
                 }
 
-
+                ColorVariation colorVariation = default;
                 for (int i = 0; i < Math.Min(4, subMeshBuffer.Length); i++)
                 {
                     if (!EntityManager.TryGetBuffer(subMeshBuffer[i].m_SubMesh, isReadOnly: false, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
@@ -477,7 +477,7 @@ namespace Recolor.Systems
                         continue;
                     }
 
-                    ColorVariation colorVariation = colorVariationBuffer[m_CurrentAssetSeasonIdentifier.m_Index];
+                    colorVariation = colorVariationBuffer[m_CurrentAssetSeasonIdentifier.m_Index];
 
                     if (channel == 0)
                     {
@@ -496,8 +496,9 @@ namespace Recolor.Systems
                     m_TimeColorLastChanged = UnityEngine.Time.time;
                     m_PreviouslySelectedEntity = Entity.Null;
                     buffer.AddComponent<BatchesUpdated>(selectedEntity);
-                    return colorVariation.m_ColorSet;
                 }
+
+                return colorVariation.m_ColorSet;
             }
 
             return default;
