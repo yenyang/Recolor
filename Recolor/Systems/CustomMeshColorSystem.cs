@@ -1,4 +1,4 @@
-﻿// <copyright file="OverrideMeshColorSystem.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="CustomMeshColorSystem.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
@@ -11,11 +11,8 @@ namespace Recolor.Systems
     using Game.Buildings;
     using Game.Common;
     using Game.Objects;
-    using Game.Prefabs;
     using Game.Rendering;
     using Game.Routes;
-    using Game.Simulation;
-    using Game.Tools;
     using Recolor.Domain;
     using Recolor.Extensions;
     using Unity.Burst.Intrinsics;
@@ -65,7 +62,7 @@ namespace Recolor.Systems
                         ComponentType.ReadOnly<BatchesUpdated>(),
                         ComponentType.ReadOnly<Deleted>(),
                     },
-                    None = new ComponentType[] 
+                    None = new ComponentType[]
                     {
                         ComponentType.ReadOnly<CustomMeshColor>(),
                     },

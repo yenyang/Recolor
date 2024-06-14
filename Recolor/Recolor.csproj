@@ -7,9 +7,9 @@
 		<LangVersion>9</LangVersion>
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
-		<AssemblyVersion>0.1.0</AssemblyVersion>
-		<FileVersion>0.1.0</FileVersion>
-		<Version>0.1.0</Version>
+		<AssemblyVersion>0.5.0</AssemblyVersion>
+		<FileVersion>0.5.0</FileVersion>
+		<Version>0.5.0</Version>
 	</PropertyGroup>
 	
 	<!--Imports must be after PropertyGroup block-->
@@ -122,7 +122,7 @@
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
 	</ItemGroup>
-	
+
 	<Target Name="InstallUI" AfterTargets="AfterBuild">
 		<Exec Command="npm run build" WorkingDirectory="$(ProjectDir)/UI" />
 	</Target>
