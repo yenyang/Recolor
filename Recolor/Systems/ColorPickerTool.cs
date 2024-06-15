@@ -1,4 +1,4 @@
-﻿// <copyright file="ColorPickerAndPaintingTool.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="ColorPickerTool.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
@@ -6,7 +6,6 @@ namespace Recolor.Systems
 {
     using Colossal.Entities;
     using Colossal.Logging;
-    using Game.Buildings;
     using Game.Common;
     using Game.Input;
     using Game.Prefabs;
@@ -18,7 +17,7 @@ namespace Recolor.Systems
     /// <summary>
     /// A tool for picking colors and painting them onto meshes.
     /// </summary>
-    public partial class ColorPickerAndPaintingTool : ToolBaseSystem
+    public partial class ColorPickerTool : ToolBaseSystem
     {
         private ProxyAction m_ApplyAction;
         private ILog m_Log;
@@ -27,9 +26,10 @@ namespace Recolor.Systems
         private EntityQuery m_HighlightedQuery;
         private SelectedInfoPanelColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
         private ToolOutputBarrier m_Barrier;
+        private GenericTooltipSystem m_GenericTooltipSystem;
 
         /// <inheritdoc/>
-        public override string toolID => "ColorPickerAndPaintingTool";
+        public override string toolID => "ColorPickerTool";
 
         /// <inheritdoc/>
         public override PrefabBase GetPrefab()
@@ -66,13 +66,14 @@ namespace Recolor.Systems
             Enabled = false;
             m_Log = Mod.Instance.Log;
             m_ApplyAction = InputManager.instance.FindAction("Tool", "Apply");
-            m_Log.Info($"{nameof(ColorPickerAndPaintingTool)}.{nameof(OnCreate)}");
+            m_Log.Info($"{nameof(ColorPickerTool)}.{nameof(OnCreate)}");
             m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_HighlightedQuery = SystemAPI.QueryBuilder()
                 .WithAll<Highlighted>()
                 .WithNone<Deleted, Temp, Game.Common.Overridden>()
                 .Build();
+            m_GenericTooltipSystem = World.GetOrCreateSystemManaged<GenericTooltipSystem>();
         }
 
         /// <inheritdoc/>
@@ -80,7 +81,8 @@ namespace Recolor.Systems
         {
             base.OnStartRunning();
             m_ApplyAction.shouldBeEnabled = true;
-            m_Log.Debug($"{nameof(ColorPickerAndPaintingTool)}.{nameof(OnStartRunning)}");
+            m_Log.Debug($"{nameof(ColorPickerTool)}.{nameof(OnStartRunning)}");
+            m_GenericTooltipSystem.ClearTooltips();
         }
 
         /// <inheritdoc/>
@@ -91,7 +93,8 @@ namespace Recolor.Systems
             EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
             EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
             m_PreviousRaycastedEntity = Entity.Null;
-            m_Log.Debug($"{nameof(ColorPickerAndPaintingTool)}.{nameof(OnStopRunning)}");
+            m_Log.Debug($"{nameof(ColorPickerTool)}.{nameof(OnStopRunning)}");
+            m_GenericTooltipSystem.ClearTooltips();
         }
 
 
@@ -101,6 +104,8 @@ namespace Recolor.Systems
             inputDeps = Dependency;
             EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
 
+            m_GenericTooltipSystem.RegisterIconTooltip("ColorPickerToolIcon", "coui://uil/Standard/PickerPipette.svg");
+
             if (!GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit) || !EntityManager.TryGetBuffer(currentRaycastEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
                 buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
@@ -109,7 +114,14 @@ namespace Recolor.Systems
                 return inputDeps;
             }
 
-            if (m_HighlightedQuery.IsEmptyIgnoreFilter && currentRaycastEntity != m_PreviousRaycastedEntity)
+            if (currentRaycastEntity != m_PreviousRaycastedEntity)
+            {
+                m_PreviousRaycastedEntity = currentRaycastEntity;
+                buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtRecord);
+                buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtRecord);
+            }
+
+            if (m_HighlightedQuery.IsEmptyIgnoreFilter)
             {
                 buffer.AddComponent<BatchesUpdated>(currentRaycastEntity);
                 buffer.AddComponent<Highlighted>(currentRaycastEntity);
@@ -122,8 +134,7 @@ namespace Recolor.Systems
             }
 
             m_SelectedInfoPanelColorFieldsSystem.ChangeColorSet(meshColorBuffer[0].m_ColorSet, buffer);
-            m_Log.Debug($"{m_ToolSystem.selected.Index} {m_ToolSystem.selected.Version}");
-
+            m_ToolSystem.activeTool = m_DefaultToolSystem;
             return inputDeps;
         }
     }

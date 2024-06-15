@@ -33,7 +33,7 @@ namespace Recolor.Settings
                 { SectionLabel("ColorSet"), "Color Set" },
                 { TooltipDescriptionKey("Minimize"), "Minimize the Recolor panel to save space." },
                 { TooltipDescriptionKey("Expand"), "Expands the Recolor panel for use." },
-                { TooltipDescriptionKey("ColorPicker"), "Activates the color picker / painter tool." },
+                { TooltipDescriptionKey("ColorPicker"), "Activates the color picker tool." },
                 { TooltipDescriptionKey("CopyColor"), "Copy a single color to paste later." },
                 { TooltipDescriptionKey("PasteColor"), "Paste a single color as part of a color set." },
                 { TooltipDescriptionKey("ResetColor"), "Reset a single color and saves the color back to the original color for this asset (and season, if applicable)." },
@@ -41,10 +41,20 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("PasteColorSet"), "Paste the copied color set." },
                 { TooltipDescriptionKey("ResetColorSet"), "Reset the whole color set and saves the colors back to the original colors for this asset (and season, if applicable)." },
                 { TooltipTitleKey("SingleInstance"), "Single Instance" },
-                { TooltipDescriptionKey("SingleInstance"), "Change the colors of the current selection only. Does not work on plants and trees." },
+                { TooltipDescriptionKey("SingleInstance"), "Change the colors of the current selection only." },
                 { TooltipTitleKey("Matching"), "Matching" },
                 { TooltipDescriptionKey("Matching"), "Change the colors of all matching assets with same color variation (and season, if applicable). Single Instance will override this for that instance." },
             };
+        }
+
+        /// <summary>
+        /// Returns the locale key for a warning tooltip.
+        /// </summary>
+        /// <param name="key">The bracketed portion of locale key.</param>
+        /// <returns>Localization key for translations.</returns>
+        public static string MouseTooltipKey(string key)
+        {
+            return $"{Mod.Id}.MOUSE_TOOLTIP[{key}]";
         }
 
         /// <inheritdoc/>
@@ -67,7 +77,6 @@ namespace Recolor.Settings
         {
             return $"{Mod.Id}.SECTION_TITLE[{key}]";
         }
-
 
         private string TooltipTitleKey(string key)
         {

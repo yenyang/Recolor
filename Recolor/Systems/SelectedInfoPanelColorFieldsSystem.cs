@@ -57,7 +57,7 @@ namespace Recolor.Systems
         private ValueBindingHelper<bool> m_CanPasteColorSet;
         private ValueBindingHelper<bool> m_Minimized;
         private Dictionary<AssetSeasonIdentifier, Game.Rendering.ColorSet> m_VanillaColorSets;
-        private ColorPickerAndPaintingTool m_ColorPickerAndPaintingTool;
+        private ColorPickerTool m_ColorPickerTool;
         private EntityQuery m_SubMeshQuery;
         private ClimatePrefab m_ClimatePrefab;
         private AssetSeasonIdentifier m_CurrentAssetSeasonIdentifier;
@@ -138,7 +138,7 @@ namespace Recolor.Systems
             m_ClimateSystem = World.GetOrCreateSystemManaged<ClimateSystem>();
             m_CurrentColorSet = CreateBinding("CurrentColorSet", new RecolorSet(default, default, default));
             m_MatchesVanillaColorSet = CreateBinding("MatchesVanillaColorSet", new bool[] { true, true, true });
-            m_ColorPickerAndPaintingTool = World.GetOrCreateSystemManaged<ColorPickerAndPaintingTool>();
+            m_ColorPickerTool = World.GetOrCreateSystemManaged<ColorPickerTool>();
             m_CanPasteColor = CreateBinding("CanPasteColor", false);
             m_CanPasteColorSet = CreateBinding("CanPasteColorSet", false);
             m_SingleInstance = CreateBinding("SingleInstance", true);
@@ -152,7 +152,7 @@ namespace Recolor.Systems
             CreateTrigger("CopyColorSet", CopyColorSet);
             CreateTrigger("PasteColorSet", PasteColorSet);
             CreateTrigger("ResetColorSet", ResetColorSet);
-            CreateTrigger("ActivateColorPicker", () => m_ToolSystem.activeTool = m_ToolSystem.activeTool = m_ColorPickerAndPaintingTool);
+            CreateTrigger("ActivateColorPicker", () => m_ToolSystem.activeTool = m_ToolSystem.activeTool = m_ColorPickerTool);
             CreateTrigger("Minimize", () => m_Minimized.Value = !m_Minimized.Value);
             CreateTrigger("SingleInstance", () =>
             {
