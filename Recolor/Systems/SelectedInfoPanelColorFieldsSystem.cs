@@ -7,7 +7,6 @@ namespace Recolor.Systems
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Runtime.InteropServices.WindowsRuntime;
     using System.Xml.Serialization;
     using Colossal.Entities;
     using Colossal.Logging;
@@ -16,6 +15,7 @@ namespace Recolor.Systems
     using Colossal.UI.Binding;
     using Game;
     using Game.Common;
+    using Game.Objects;
     using Game.Prefabs;
     using Game.Prefabs.Climate;
     using Game.Rendering;
@@ -64,7 +64,7 @@ namespace Recolor.Systems
         private string m_ContentFolder;
         private int m_ReloadInXFrames = 0;
         private float m_TimeColorLastChanged = 0f;
-        private Color m_CopiedColor;
+        private UnityEngine.Color m_CopiedColor;
         private ColorSet m_CopiedColorSet;
 
         /// <summary>
@@ -300,6 +300,7 @@ namespace Recolor.Systems
                 }
             }
 
+            /*
             if (EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity) && !m_DisableSingleInstance)
             {
                 m_DisableSingleInstance.Value = true;
@@ -307,7 +308,7 @@ namespace Recolor.Systems
             else if (!EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity) && m_DisableSingleInstance)
             {
                 m_DisableSingleInstance.Value = false;
-            }
+            }*/
 
             if (EntityManager.HasBuffer<CustomMeshColor>(selectedEntity) && !m_DisableMatching)
             {
@@ -322,7 +323,7 @@ namespace Recolor.Systems
             if (m_PreviouslySelectedEntity != selectedEntity
                 && selectedEntity != Entity.Null
                 && selectedPrefab != Entity.Null
-                && (!m_SingleInstance.Value || EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity))
+                && (!m_SingleInstance.Value)
                 && !EntityManager.HasBuffer<CustomMeshColor>(selectedEntity)
                 && foundClimatePrefab
                 && m_PrefabSystem.TryGetPrefab(selectedPrefab, out PrefabBase prefabBase)
@@ -378,7 +379,7 @@ namespace Recolor.Systems
             }
 
             if (m_PreviouslySelectedEntity == selectedEntity &&
-                (!m_SingleInstance.Value || EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity)) &&
+                !m_SingleInstance.Value &&
                 !EntityManager.HasBuffer<CustomMeshColor>(selectedEntity) &&
                 !MatchesSavedColorSet(m_CurrentColorSet.Value.GetColorSet(), m_CurrentAssetSeasonIdentifier) &&
                 UnityEngine.Time.time > m_TimeColorLastChanged + 0.5f)
@@ -429,14 +430,14 @@ namespace Recolor.Systems
             ChangeColor(2, m_CopiedColorSet.m_Channel2, m_EndFrameBarrier.CreateCommandBuffer());
         }
 
-        private void ChangeColorAction(int channel, Color color)
+        private void ChangeColorAction(int channel, UnityEngine.Color color)
         {
             ChangeColor(channel, color, m_EndFrameBarrier.CreateCommandBuffer());
         }
 
         private ColorSet ChangeColor(int channel, UnityEngine.Color color, EntityCommandBuffer buffer)
         {
-            if ((m_SingleInstance.Value || m_DisableMatching.Value) && !m_DisableSingleInstance && !EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity) && EntityManager.TryGetBuffer(selectedEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            if ((m_SingleInstance.Value || m_DisableMatching.Value) && !m_DisableSingleInstance && EntityManager.TryGetBuffer(selectedEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
                 if (!EntityManager.HasBuffer<CustomMeshColor>(selectedEntity))
                 {
@@ -452,7 +453,19 @@ namespace Recolor.Systems
                     return default;
                 }
 
-                for (int i = 0; i < Math.Min(4, meshColorBuffer.Length); i++)
+                ColorSet colorSet = default;
+                int length = meshColorBuffer.Length;
+                if (EntityManager.HasComponent<Tree>(selectedEntity))
+                {
+                    length = Math.Min(4, meshColorBuffer.Length);
+                }
+
+                if (EntityManager.HasComponent<Plant>(selectedEntity))
+                {
+                    buffer.RemoveComponent<Plant>(selectedEntity);
+                }
+
+                for (int i = 0; i < length; i++)
                 {
                     CustomMeshColor customMeshColor = customMeshColorBuffer[i];
                     if (channel == 0)
@@ -472,8 +485,10 @@ namespace Recolor.Systems
                     m_TimeColorLastChanged = UnityEngine.Time.time;
                     m_PreviouslySelectedEntity = Entity.Null;
                     buffer.AddComponent<BatchesUpdated>(selectedEntity);
-                    return customMeshColor.m_ColorSet;
+                    colorSet = customMeshColor.m_ColorSet;
                 }
+
+                return colorSet;
             }
             else if (!m_DisableMatching && !EntityManager.HasBuffer<CustomMeshColor>(selectedEntity))
             {
@@ -483,7 +498,13 @@ namespace Recolor.Systems
                 }
 
                 ColorVariation colorVariation = default;
-                for (int i = 0; i < Math.Min(4, subMeshBuffer.Length); i++)
+                int length = subMeshBuffer.Length;
+                if (EntityManager.HasComponent<Tree>(selectedEntity))
+                {
+                    length = Math.Min(4, subMeshBuffer.Length);
+                }
+
+                for (int i = 0; i < length; i++)
                 {
                     if (!EntityManager.TryGetBuffer(subMeshBuffer[i].m_SubMesh, isReadOnly: false, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
                     {

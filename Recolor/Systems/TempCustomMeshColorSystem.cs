@@ -9,6 +9,7 @@ namespace Recolor.Systems
     using Game;
     using Game.Buildings;
     using Game.Common;
+    using Game.Objects;
     using Game.Rendering;
     using Game.Routes;
     using Game.Tools;
@@ -75,6 +76,11 @@ namespace Recolor.Systems
                 foreach (CustomMeshColor customMeshColor in customMeshColorBuffer)
                 {
                     newBuffer.Add(customMeshColor);
+                }
+
+                if (EntityManager.HasComponent<Plant>(entity))
+                {
+                    EntityManager.RemoveComponent<Plant>(entity);
                 }
             }
         }
