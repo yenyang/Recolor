@@ -25,6 +25,7 @@ namespace Recolor.Systems
     using Recolor.Extensions;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Entities.UniversalDelegates;
     using Unity.Jobs;
     using UnityEngine;
 
@@ -210,7 +211,13 @@ namespace Recolor.Systems
                     continue;
                 }
 
-                for (int i = 0; i < Math.Min(4, subMeshBuffer.Length); i++)
+                int length = subMeshBuffer.Length;
+                if (EntityManager.HasComponent<Tree>(e))
+                {
+                    length = Math.Min(4, subMeshBuffer.Length);
+                }
+
+                for (int i = 0; i < length; i++)
                 {
                     if (!EntityManager.TryGetBuffer(subMeshBuffer[i].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer))
                     {
@@ -219,6 +226,8 @@ namespace Recolor.Systems
 
                     PrefabBase prefabBase = m_PrefabSystem.GetPrefab<PrefabBase>(e);
                     PrefabID prefabID = prefabBase.GetPrefabID();
+                    PrefabBase renderPrefabBase = m_PrefabSystem.GetPrefab<PrefabBase>(subMeshBuffer[i].m_SubMesh);
+                    PrefabID renderPrefabID = renderPrefabBase.GetPrefabID();
 
                     for (int j = 0; j < colorVariationBuffer.Length; j++)
                     {
@@ -230,7 +239,7 @@ namespace Recolor.Systems
 
                         AssetSeasonIdentifier assetSeasonIdentifier = new ()
                         {
-                            m_PrefabID = prefabID,
+                            m_PrefabID = renderPrefabID,
                             m_Season = season,
                             m_Index = j,
                         };
@@ -352,11 +361,14 @@ namespace Recolor.Systems
                     }
                 }
 
+                PrefabBase renderPrefabBase = m_PrefabSystem.GetPrefab<PrefabBase>(subMeshBuffer[0].m_SubMesh);
+                PrefabID renderPrefabID = renderPrefabBase.GetPrefabID();
+
                 visible = true;
                 m_CurrentAssetSeasonIdentifier = new AssetSeasonIdentifier()
                 {
                     m_Index = index,
-                    m_PrefabID = prefabBase.GetPrefabID(),
+                    m_PrefabID = renderPrefabID,
                     m_Season = season,
                 };
 
@@ -889,7 +901,13 @@ namespace Recolor.Systems
                     continue;
                 }
 
-                for (int i = 0; i < Math.Min(4, subMeshBuffer.Length); i++)
+                int length = subMeshBuffer.Length;
+                if (EntityManager.HasComponent<Tree>(e))
+                {
+                    length = Math.Min(4, subMeshBuffer.Length);
+                }
+
+                for (int i = 0; i < length; i++)
                 {
                     if (!EntityManager.TryGetBuffer(subMeshBuffer[i].m_SubMesh, isReadOnly: false, out DynamicBuffer<ColorVariation> colorVariationBuffer))
                     {
@@ -904,9 +922,13 @@ namespace Recolor.Systems
                         ColorVariation currentColorVariation = colorVariationBuffer[j];
                         TryGetSeasonFromColorGroupID(currentColorVariation.m_GroupID, out Season season);
 
+
+                        PrefabBase renderPrefabBase = m_PrefabSystem.GetPrefab<PrefabBase>(subMeshBuffer[0].m_SubMesh);
+                        PrefabID renderPrefabID = renderPrefabBase.GetPrefabID();
+
                         AssetSeasonIdentifier assetSeasonIdentifier = new ()
                         {
-                            m_PrefabID = prefabID,
+                            m_PrefabID = renderPrefabID,
                             m_Season = season,
                             m_Index = j,
                         };
@@ -920,7 +942,7 @@ namespace Recolor.Systems
                                 prefabsNeedingUpdates.Add(e);
                             }
 
-                            m_Log.Info($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(OnGameLoadingComplete)} Imported Colorset for {prefabID} in {assetSeasonIdentifier.m_Season}");
+                            m_Log.Info($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(OnGameLoadingComplete)} Imported Colorset for {renderPrefabID} in {assetSeasonIdentifier.m_Season}");
                         }
                     }
                 }
