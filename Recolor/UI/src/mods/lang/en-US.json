@@ -6,6 +6,7 @@
   "Recolor.TOOLTIP_DESCRIPTION[Minimize]": "Minimize the Recolor panel to save space.",
   "Recolor.TOOLTIP_DESCRIPTION[Expand]": "Expands the Recolor panel for use.",
   "Recolor.TOOLTIP_DESCRIPTION[ColorPicker]": "Activates the color picker tool.",
+  "Recolor.TOOLTIP_DESCRIPTION[ColorPainter]": "Activates the color painter tool.",
   "Recolor.TOOLTIP_DESCRIPTION[CopyColor]": "Copy a single color to paste later.",
   "Recolor.TOOLTIP_DESCRIPTION[PasteColor]": "Paste a single color as part of a color set.",
   "Recolor.TOOLTIP_DESCRIPTION[ResetColor]": "Reset a single color and saves the color back to the original color for this asset (and season, if applicable).",

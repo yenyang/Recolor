@@ -178,6 +178,15 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                             onSelect={() => handleClick("ActivateColorPicker")}
                                         />
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={colorPaleteSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            multiSelect = {false}   // I haven't tested any other value here
+                                            disabled = {false}      
+                                            tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ColorPainter]", locale["Recolor.TOOLTIP_DESCRIPTION[ColorPainter]"])}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => handleClick("ActivateColorPainter")}
+                                        />
                                     </>
                                     )}
                                     <VanillaComponentResolver.instance.ToolButton

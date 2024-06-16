@@ -25,7 +25,6 @@ namespace Recolor.Systems
     using Recolor.Extensions;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Entities.UniversalDelegates;
     using Unity.Jobs;
     using UnityEngine;
 
@@ -59,6 +58,7 @@ namespace Recolor.Systems
         private ValueBindingHelper<bool> m_Minimized;
         private Dictionary<AssetSeasonIdentifier, Game.Rendering.ColorSet> m_VanillaColorSets;
         private ColorPickerTool m_ColorPickerTool;
+        private ColorPainterTool m_ColorPainterTool;
         private EntityQuery m_SubMeshQuery;
         private ClimatePrefab m_ClimatePrefab;
         private AssetSeasonIdentifier m_CurrentAssetSeasonIdentifier;
@@ -103,14 +103,28 @@ namespace Recolor.Systems
         protected override string group => Mod.Id;
 
         /// <summary>
-        /// Will change all 3 colors of the color set.
+        /// will change all three colors of a color set.
         /// </summary>
-        /// <param name="colorSet">A set of colors.</param>
-        public void ChangeColorSet(ColorSet colorSet, EntityCommandBuffer buffer)
+        /// <param name="colorSet">set of 3 colors.</param>
+        /// <param name="buffer">ECB from appropriate phase.</param>
+        /// <param name="entity">Entity to chnage.</param>
+        public void ChangeColorSet(ColorSet colorSet, EntityCommandBuffer buffer, Entity entity)
         {
-            ChangeColor(0, colorSet.m_Channel0, buffer);
-            ChangeColor(1, colorSet.m_Channel1, buffer);
-            ChangeColor(2, colorSet.m_Channel2, buffer);
+            ChangeColor(0, colorSet.m_Channel0, buffer, entity);
+            ChangeColor(1, colorSet.m_Channel1, buffer, entity);
+            ChangeColor(2, colorSet.m_Channel2, buffer, entity);
+        }
+
+        /// <summary>
+        /// will change all three colors of a color set.
+        /// </summary>
+        /// <param name="colorSet">set of 3 colors.</param>
+        /// <param name="buffer">ECB from appropriate phase.</param>
+        public void ChangeSelectedEntityColorSet(ColorSet colorSet, EntityCommandBuffer buffer)
+        {
+            ChangeColor(0, colorSet.m_Channel0, buffer, selectedEntity);
+            ChangeColor(1, colorSet.m_Channel1, buffer, selectedEntity);
+            ChangeColor(2, colorSet.m_Channel2, buffer, selectedEntity);
         }
 
         /// <inheritdoc/>
@@ -137,6 +151,7 @@ namespace Recolor.Systems
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_Log.Info($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(OnCreate)}");
             m_ClimateSystem = World.GetOrCreateSystemManaged<ClimateSystem>();
+            m_ColorPainterTool = World.GetOrCreateSystemManaged<ColorPainterTool>();
             m_CurrentColorSet = CreateBinding("CurrentColorSet", new RecolorSet(default, default, default));
             m_MatchesVanillaColorSet = CreateBinding("MatchesVanillaColorSet", new bool[] { true, true, true });
             m_ColorPickerTool = World.GetOrCreateSystemManaged<ColorPickerTool>();
@@ -154,6 +169,7 @@ namespace Recolor.Systems
             CreateTrigger("PasteColorSet", PasteColorSet);
             CreateTrigger("ResetColorSet", ResetColorSet);
             CreateTrigger("ActivateColorPicker", () => m_ToolSystem.activeTool = m_ToolSystem.activeTool = m_ColorPickerTool);
+            CreateTrigger("ActivateColorPainter", () => m_ToolSystem.activeTool = m_ToolSystem.activeTool = m_ColorPainterTool);
             CreateTrigger("Minimize", () => m_Minimized.Value = !m_Minimized.Value);
             CreateTrigger("SingleInstance", () =>
             {
@@ -432,49 +448,60 @@ namespace Recolor.Systems
 
         private void PasteColor(int channel)
         {
-            ChangeColor(channel, m_CopiedColor, m_EndFrameBarrier.CreateCommandBuffer());
+            ChangeColor(channel, m_CopiedColor);
         }
 
         private void PasteColorSet()
         {
-            ChangeColor(0, m_CopiedColorSet.m_Channel0, m_EndFrameBarrier.CreateCommandBuffer());
-            ChangeColor(1, m_CopiedColorSet.m_Channel1, m_EndFrameBarrier.CreateCommandBuffer());
-            ChangeColor(2, m_CopiedColorSet.m_Channel2, m_EndFrameBarrier.CreateCommandBuffer());
+            ChangeColor(0, m_CopiedColorSet.m_Channel0);
+            ChangeColor(1, m_CopiedColorSet.m_Channel1);
+            ChangeColor(2, m_CopiedColorSet.m_Channel2);
         }
 
         private void ChangeColorAction(int channel, UnityEngine.Color color)
         {
-            ChangeColor(channel, color, m_EndFrameBarrier.CreateCommandBuffer());
+            ChangeColor(channel, color);
         }
 
-        private ColorSet ChangeColor(int channel, UnityEngine.Color color, EntityCommandBuffer buffer)
+        /// <summary>
+        /// Used within SIP CFS to handle color changes on selected entity with appropriate buffer.
+        /// </summary>
+        /// <param name="channel">Channel to change.</param>
+        /// <param name="color">Color to change to.</param>
+        /// <returns>Final color set.</returns>
+        private ColorSet ChangeColor(int channel, UnityEngine.Color color)
         {
-            if ((m_SingleInstance.Value || m_DisableMatching.Value) && !m_DisableSingleInstance && EntityManager.TryGetBuffer(selectedEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            return ChangeColor(channel, color, m_EndFrameBarrier.CreateCommandBuffer(), selectedEntity);
+        }
+
+        private ColorSet ChangeColor(int channel, UnityEngine.Color color, EntityCommandBuffer buffer, Entity entity)
+        {
+            if ((m_SingleInstance.Value || m_DisableMatching.Value) && !m_DisableSingleInstance && EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
-                if (!EntityManager.HasBuffer<CustomMeshColor>(selectedEntity))
+                if (!EntityManager.HasBuffer<CustomMeshColor>(entity))
                 {
-                    DynamicBuffer<CustomMeshColor> newBuffer = EntityManager.AddBuffer<CustomMeshColor>(selectedEntity);
+                    DynamicBuffer<CustomMeshColor> newBuffer = EntityManager.AddBuffer<CustomMeshColor>(entity);
                     foreach (MeshColor meshColor in meshColorBuffer)
                     {
                         newBuffer.Add(new CustomMeshColor(meshColor));
                     }
                 }
 
-                if (!EntityManager.TryGetBuffer(selectedEntity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer))
+                if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer))
                 {
                     return default;
                 }
 
                 ColorSet colorSet = default;
                 int length = meshColorBuffer.Length;
-                if (EntityManager.HasComponent<Tree>(selectedEntity))
+                if (EntityManager.HasComponent<Tree>(entity))
                 {
                     length = Math.Min(4, meshColorBuffer.Length);
                 }
 
-                if (EntityManager.HasComponent<Plant>(selectedEntity))
+                if (EntityManager.HasComponent<Plant>(entity))
                 {
-                    buffer.RemoveComponent<Plant>(selectedEntity);
+                    buffer.RemoveComponent<Plant>(entity);
                 }
 
                 for (int i = 0; i < length; i++)
@@ -496,13 +523,13 @@ namespace Recolor.Systems
                     customMeshColorBuffer[i] = customMeshColor;
                     m_TimeColorLastChanged = UnityEngine.Time.time;
                     m_PreviouslySelectedEntity = Entity.Null;
-                    buffer.AddComponent<BatchesUpdated>(selectedEntity);
+                    buffer.AddComponent<BatchesUpdated>(entity);
                     colorSet = customMeshColor.m_ColorSet;
                 }
 
                 return colorSet;
             }
-            else if (!m_DisableMatching && !EntityManager.HasBuffer<CustomMeshColor>(selectedEntity))
+            else if (!m_DisableMatching && !EntityManager.HasBuffer<CustomMeshColor>(entity))
             {
                 if (selectedPrefab == Entity.Null || !EntityManager.TryGetBuffer(selectedPrefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
                 {
@@ -511,7 +538,7 @@ namespace Recolor.Systems
 
                 ColorVariation colorVariation = default;
                 int length = subMeshBuffer.Length;
-                if (EntityManager.HasComponent<Tree>(selectedEntity))
+                if (EntityManager.HasComponent<Tree>(entity))
                 {
                     length = Math.Min(4, subMeshBuffer.Length);
                 }
@@ -541,7 +568,7 @@ namespace Recolor.Systems
                     colorVariationBuffer[m_CurrentAssetSeasonIdentifier.m_Index] = colorVariation;
                     m_TimeColorLastChanged = UnityEngine.Time.time;
                     m_PreviouslySelectedEntity = Entity.Null;
-                    buffer.AddComponent<BatchesUpdated>(selectedEntity);
+                    buffer.AddComponent<BatchesUpdated>(entity);
                 }
 
                 return colorVariation.m_ColorSet;
@@ -624,6 +651,12 @@ namespace Recolor.Systems
             {
                 buffer.RemoveComponent<CustomMeshColor>(selectedEntity);
                 buffer.AddComponent<BatchesUpdated>(selectedEntity);
+
+                if (EntityManager.HasComponent<PlantData>(selectedPrefab) && EntityManager.HasComponent<Plant>(selectedEntity))
+                {
+                    buffer.AddComponent(selectedEntity, default(Plant));
+                }
+
                 m_PreviouslySelectedEntity = Entity.Null;
                 return;
             }
@@ -637,15 +670,15 @@ namespace Recolor.Systems
             ColorSet colorSet = default;
             if (channel == 0)
             {
-                colorSet = ChangeColor(0, vanillaColorSet.m_Channel0, m_EndFrameBarrier.CreateCommandBuffer());
+                colorSet = ChangeColor(0, vanillaColorSet.m_Channel0);
             }
             else if (channel == 1)
             {
-                colorSet = ChangeColor(1, vanillaColorSet.m_Channel1, m_EndFrameBarrier.CreateCommandBuffer());
+                colorSet = ChangeColor(1, vanillaColorSet.m_Channel1);
             }
             else if (channel == 2)
             {
-                colorSet = ChangeColor(2, vanillaColorSet.m_Channel2, m_EndFrameBarrier.CreateCommandBuffer());
+                colorSet = ChangeColor(2, vanillaColorSet.m_Channel2);
             }
 
             bool[] matches = MatchesVanillaColorSet(colorSet, m_CurrentAssetSeasonIdentifier);

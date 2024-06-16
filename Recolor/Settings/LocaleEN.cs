@@ -34,6 +34,7 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("Minimize"), "Minimize the Recolor panel to save space." },
                 { TooltipDescriptionKey("Expand"), "Expands the Recolor panel for use." },
                 { TooltipDescriptionKey("ColorPicker"), "Activates the color picker tool." },
+                { TooltipDescriptionKey("ColorPainter"), "Activates the color painter tool." },
                 { TooltipDescriptionKey("CopyColor"), "Copy a single color to paste later." },
                 { TooltipDescriptionKey("PasteColor"), "Paste a single color as part of a color set." },
                 { TooltipDescriptionKey("ResetColor"), "Reset a single color and saves the color back to the original color for this asset (and season, if applicable)." },

@@ -67,6 +67,7 @@ namespace Recolor
             updateSystem.UpdateAfter<CustomMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateBefore<TempCustomMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<ColorPickerTool>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAt<ColorPainterTool>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<GenericTooltipSystem>(SystemUpdatePhase.UITooltip);
             updateSystem.UpdateBefore<HandleBatchesUpdatedNextFrameSystem>(SystemUpdatePhase.Modification1);
             Log.Info($"{nameof(OnLoad)} complete.");

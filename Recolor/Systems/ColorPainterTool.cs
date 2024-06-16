@@ -1,4 +1,4 @@
-﻿// <copyright file="ColorPickerTool.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="ColorPainterTool.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
@@ -17,7 +17,7 @@ namespace Recolor.Systems
     /// <summary>
     /// A tool for picking colors and painting them onto meshes.
     /// </summary>
-    public partial class ColorPickerTool : ToolBaseSystem
+    public partial class ColorPainterTool : ToolBaseSystem
     {
         private ProxyAction m_ApplyAction;
         private ILog m_Log;
@@ -29,7 +29,7 @@ namespace Recolor.Systems
         private GenericTooltipSystem m_GenericTooltipSystem;
 
         /// <inheritdoc/>
-        public override string toolID => "ColorPickerTool";
+        public override string toolID => "ColorPainterTool";
 
         /// <inheritdoc/>
         public override PrefabBase GetPrefab()
@@ -66,7 +66,7 @@ namespace Recolor.Systems
             Enabled = false;
             m_Log = Mod.Instance.Log;
             m_ApplyAction = InputManager.instance.FindAction("Tool", "Apply");
-            m_Log.Info($"{nameof(ColorPickerTool)}.{nameof(OnCreate)}");
+            m_Log.Info($"{nameof(ColorPainterTool)}.{nameof(OnCreate)}");
             m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_HighlightedQuery = SystemAPI.QueryBuilder()
@@ -81,7 +81,8 @@ namespace Recolor.Systems
         {
             base.OnStartRunning();
             m_ApplyAction.shouldBeEnabled = true;
-            m_Log.Debug($"{nameof(ColorPickerTool)}.{nameof(OnStartRunning)}");
+            m_Log.Debug($"{nameof(ColorPainterTool)}.{nameof(OnStartRunning)}");
+            m_ToolSystem.selected = Entity.Null;
             m_GenericTooltipSystem.ClearTooltips();
         }
 
@@ -93,7 +94,7 @@ namespace Recolor.Systems
             EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
             EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
             m_PreviousRaycastedEntity = Entity.Null;
-            m_Log.Debug($"{nameof(ColorPickerTool)}.{nameof(OnStopRunning)}");
+            m_Log.Debug($"{nameof(ColorPainterTool)}.{nameof(OnStopRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
         }
 
@@ -104,9 +105,9 @@ namespace Recolor.Systems
             inputDeps = Dependency;
             EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
 
-            m_GenericTooltipSystem.RegisterIconTooltip("ColorPickerToolIcon", "coui://uil/Standard/PickerPipette.svg");
+            m_GenericTooltipSystem.RegisterIconTooltip("ColorPainterToolIcon", "coui://uil/Standard/ColorPalette.svg");
 
-            if (!GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit) || !EntityManager.TryGetBuffer(currentRaycastEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            if (!GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit) || !EntityManager.HasBuffer<MeshColor>(currentRaycastEntity))
             {
                 buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
                 buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
@@ -133,8 +134,14 @@ namespace Recolor.Systems
                 return inputDeps;
             }
 
-            m_SelectedInfoPanelColorFieldsSystem.ChangeSelectedEntityColorSet(meshColorBuffer[0].m_ColorSet, buffer);
-            m_ToolSystem.activeTool = m_DefaultToolSystem;
+            ColorSet colorSet = new ColorSet()
+            {
+                m_Channel0 = UnityEngine.Color.blue,
+                m_Channel1 = UnityEngine.Color.black,
+                m_Channel2 = UnityEngine.Color.red,
+            };
+
+            m_SelectedInfoPanelColorFieldsSystem.ChangeColorSet(colorSet, buffer, currentRaycastEntity);
             return inputDeps;
         }
     }
