@@ -106,7 +106,7 @@ namespace Recolor.Systems
             inputDeps = Dependency;
             EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
 
-            m_GenericTooltipSystem.RegisterIconTooltip("ColorPainterToolIcon", "coui://uil/Standard/ColorPalette.svg");
+            m_GenericTooltipSystem.RegisterIconTooltip("ColorPainterToolIcon", "coui://uil/Colored/ColorPalette.svg");
 
             if (!GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit) || !EntityManager.HasBuffer<MeshColor>(currentRaycastEntity))
             {

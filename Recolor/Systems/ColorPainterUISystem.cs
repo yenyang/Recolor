@@ -39,7 +39,7 @@ namespace Recolor.Systems
             m_ColorPainterToolSystem = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_PainterColorSet = CreateBinding("PainterColorSet", new RecolorSet(UnityEngine.Color.white, UnityEngine.Color.white, UnityEngine.Color.white));
-            CreateTrigger<int, UnityEngine.Color>("ChangeColor", ChangePainterColor);
+            CreateTrigger<int, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
             Enabled = false;
         }
 

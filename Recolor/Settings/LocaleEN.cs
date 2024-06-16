@@ -45,6 +45,22 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("SingleInstance"), "Change the colors of the current selection only." },
                 { TooltipTitleKey("Matching"), "Matching" },
                 { TooltipDescriptionKey("Matching"), "Change the colors of all matching assets with same color variation (and season, if applicable). Single Instance will override this for that instance." },
+                { SectionLabel("Selection"), "Selection" },
+                { TooltipTitleKey("SingleSelection"), "Single" },
+                { TooltipDescriptionKey("SingleSelection"), "Changes the single instance colors of one buildings, prop, or vehicle." },
+                { TooltipTitleKey("RadiusSelection"), "Radius Selection" },
+                { TooltipDescriptionKey("RadiusSelection"), "Changes the single isntance colors of buildings, prop, and/or vehicles within the radius." },
+                { TooltipDescriptionKey("IncreaseRadius"), "Increase the radius." },
+                { TooltipDescriptionKey("DecreaseRadius"), "Decrease the radius." },
+                { SectionLabel("Filter"), "Filter" },
+                { TooltipTitleKey("AllFilters"), "Toggle all Filters on/off" },
+                { TooltipDescriptionKey("AllFilters"), "Either selects all or none of the Filters depending on your current selection. Having none selected will prevent the Bulldoze Tool from working." },
+                { TooltipTitleKey("BuildingFilter"), "Building Filter" },
+                { TooltipDescriptionKey("BuildingFilter"), "Toggling this off will prevent the Color Painter tool from chaning single instance colors of buildings." },
+                { TooltipTitleKey("PropFilter"), "Prop Filter" },
+                { TooltipDescriptionKey("PropFilter"), "Toggling this off will prevent the Color Painter tool from chaning single instance colors of props." },
+                { TooltipTitleKey("VehicleFilter"), "Vehicle Filter" },
+                { TooltipDescriptionKey("PropFilter"), "Toggling this off will prevent the Color Painter tool from chaning single instance colors of vehicles." },
             };
         }
 

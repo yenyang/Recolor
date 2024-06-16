@@ -655,7 +655,7 @@ namespace Recolor.Systems
                 buffer.RemoveComponent<CustomMeshColor>(selectedEntity);
                 buffer.AddComponent<BatchesUpdated>(selectedEntity);
 
-                if (EntityManager.HasComponent<PlantData>(selectedPrefab) && EntityManager.HasComponent<Plant>(selectedEntity))
+                if (EntityManager.HasComponent<PlantData>(selectedPrefab) && !EntityManager.HasComponent<Plant>(selectedEntity))
                 {
                     buffer.AddComponent(selectedEntity, default(Plant));
                 }

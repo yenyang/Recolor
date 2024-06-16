@@ -7,7 +7,6 @@ import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaC
 import mod from "../../../mod.json";
 import locale from "../lang/en-US.json";
 import styles from "../Domain/ColorFields.module.scss";
-
 interface InfoSectionComponent {
 	group: string;
 	tooltipKeys: Array<string>;

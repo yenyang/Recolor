@@ -7,6 +7,7 @@ import mod from "../../../mod.json";
 import locale from "../lang/en-US.json";
 import { ColorSet } from "mods/Domain/ColorSet";
 import styles from "../Domain/ColorFields.module.scss";
+import { useState } from "react";
 
 // These contain the coui paths to Unified Icon Library svg assets
 const uilStandard =                          "coui://uil/Standard/";
@@ -22,6 +23,10 @@ const ColorFieldTheme: Theme | any = getModule(
 function changeColor(channel : number, newColor : Color) {
     // This triggers an event on C# side and C# designates the method to implement.
     trigger(mod.id, "ChangePainterColor", channel, newColor);
+    console.log(channel);
+    console.log(newColor.r);
+    console.log(newColor.b);
+    console.log(newColor.g);
 }
 
 export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : any) => {
@@ -34,7 +39,12 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
         const { translate } = useLocalization();
-       
+
+
+        let [channel0, changeChannel0] = useState<Color>({r: PainterColorSet.Channel0.r, g: PainterColorSet.Channel0.g, b: PainterColorSet.Channel0.b, a: PainterColorSet.Channel0.a});
+        let [channel1, changeChannel1] = useState<Color>({r: PainterColorSet.Channel1.r, g: PainterColorSet.Channel1.g, b: PainterColorSet.Channel1.b, a: PainterColorSet.Channel1.a});
+        let [channel2, changeChannel2] = useState<Color>({r: PainterColorSet.Channel2.r, g: PainterColorSet.Channel2.g, b: PainterColorSet.Channel2.b, a: PainterColorSet.Channel2.a});
+
         // This defines aspects of the components.
         const {children, ...otherProps} = props || {};
 
@@ -42,19 +52,27 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
         var result : JSX.Element = Component();
         // It is important that we coordinate how to handle the tool options panel because it is possibile to create a mod that works for your mod but prevents others from doing the same thing.
         // If show icon add new section with title, and one button. 
-        result.props.children?.unshift(
-            /* 
-            Add a new section before other tool options sections with translated title based of this localization key. Localization key defined in C#.
-            Add a new Tool button into that section. Selected is based on Anarchy Enabled binding. 
-            Tooltip is translated based on localization key. OnSelect run callback fucntion here to trigger event. 
-            Anarchy specific image source changes bases on Anarchy Enabled binding. 
-            */
-            <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[ColorSet]", locale["Recolor.SECTION_TITLE[ColorSet]"])}>
-                <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={PainterColorSet.Channel0} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(0, e);}}/>
-                <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={PainterColorSet.Channel1} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(1, e);}}/>
-                <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={PainterColorSet.Channel2} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(2, e);}}/>                                            
-            </VanillaComponentResolver.instance.Section> 
-        );
+        if (toolActive) {
+            result.props.children?.unshift(
+                /* 
+                Add a new section before other tool options sections with translated title based of this localization key. Localization key defined in C#.
+                Add a new Tool button into that section. Selected is based on Anarchy Enabled binding. 
+                Tooltip is translated based on localization key. OnSelect run callback fucntion here to trigger event. 
+                Anarchy specific image source changes bases on Anarchy Enabled binding. 
+                */
+                <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[ColorSet]", locale["Recolor.SECTION_TITLE[ColorSet]"])}>
+                    <div className={styles.columnGroup}>
+                        <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={channel0} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(0, e); changeChannel0(e);}}/>
+                    </div>
+                    <div className={styles.columnGroup}>
+                        <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={channel1} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(1, e); changeChannel1(e);}}/>
+                    </div>
+                    <div className={styles.columnGroup}>
+                        <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={channel2} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(2, e); changeChannel2(e);}}/>                                            
+                    </div>
+                </VanillaComponentResolver.instance.Section> 
+            );
+        }
 
         return result;
     };
