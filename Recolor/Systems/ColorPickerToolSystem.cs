@@ -17,7 +17,7 @@ namespace Recolor.Systems
     /// <summary>
     /// A tool for picking colors and painting them onto meshes.
     /// </summary>
-    public partial class ColorPickerTool : ToolBaseSystem
+    public partial class ColorPickerToolSystem : ToolBaseSystem
     {
         private ProxyAction m_ApplyAction;
         private ILog m_Log;
@@ -66,7 +66,7 @@ namespace Recolor.Systems
             Enabled = false;
             m_Log = Mod.Instance.Log;
             m_ApplyAction = InputManager.instance.FindAction("Tool", "Apply");
-            m_Log.Info($"{nameof(ColorPickerTool)}.{nameof(OnCreate)}");
+            m_Log.Info($"{nameof(ColorPickerToolSystem)}.{nameof(OnCreate)}");
             m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_HighlightedQuery = SystemAPI.QueryBuilder()
@@ -81,7 +81,7 @@ namespace Recolor.Systems
         {
             base.OnStartRunning();
             m_ApplyAction.shouldBeEnabled = true;
-            m_Log.Debug($"{nameof(ColorPickerTool)}.{nameof(OnStartRunning)}");
+            m_Log.Debug($"{nameof(ColorPickerToolSystem)}.{nameof(OnStartRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
         }
 
@@ -93,7 +93,7 @@ namespace Recolor.Systems
             EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
             EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
             m_PreviousRaycastedEntity = Entity.Null;
-            m_Log.Debug($"{nameof(ColorPickerTool)}.{nameof(OnStopRunning)}");
+            m_Log.Debug($"{nameof(ColorPickerToolSystem)}.{nameof(OnStopRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
         }
 

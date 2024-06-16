@@ -57,8 +57,9 @@ namespace Recolor.Systems
         private ValueBindingHelper<bool> m_CanPasteColorSet;
         private ValueBindingHelper<bool> m_Minimized;
         private Dictionary<AssetSeasonIdentifier, Game.Rendering.ColorSet> m_VanillaColorSets;
-        private ColorPickerTool m_ColorPickerTool;
-        private ColorPainterTool m_ColorPainterTool;
+        private ColorPickerToolSystem m_ColorPickerTool;
+        private ColorPainterToolSystem m_ColorPainterTool;
+        private ColorPainterUISystem m_ColorPainterUISystem;
         private EntityQuery m_SubMeshQuery;
         private ClimatePrefab m_ClimatePrefab;
         private AssetSeasonIdentifier m_CurrentAssetSeasonIdentifier;
@@ -67,6 +68,7 @@ namespace Recolor.Systems
         private float m_TimeColorLastChanged = 0f;
         private UnityEngine.Color m_CopiedColor;
         private ColorSet m_CopiedColorSet;
+        private bool m_ActivateColorPainter;
 
         /// <summary>
         /// An enum to handle seasons.
@@ -107,7 +109,7 @@ namespace Recolor.Systems
         /// </summary>
         /// <param name="colorSet">set of 3 colors.</param>
         /// <param name="buffer">ECB from appropriate phase.</param>
-        /// <param name="entity">Entity to chnage.</param>
+        /// <param name="entity">Entity to change.</param>
         public void ChangeColorSet(ColorSet colorSet, EntityCommandBuffer buffer, Entity entity)
         {
             ChangeColor(0, colorSet.m_Channel0, buffer, entity);
@@ -151,10 +153,11 @@ namespace Recolor.Systems
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_Log.Info($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(OnCreate)}");
             m_ClimateSystem = World.GetOrCreateSystemManaged<ClimateSystem>();
-            m_ColorPainterTool = World.GetOrCreateSystemManaged<ColorPainterTool>();
+            m_ColorPainterTool = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
             m_CurrentColorSet = CreateBinding("CurrentColorSet", new RecolorSet(default, default, default));
+            m_ColorPainterUISystem = World.GetOrCreateSystemManaged<ColorPainterUISystem>();
             m_MatchesVanillaColorSet = CreateBinding("MatchesVanillaColorSet", new bool[] { true, true, true });
-            m_ColorPickerTool = World.GetOrCreateSystemManaged<ColorPickerTool>();
+            m_ColorPickerTool = World.GetOrCreateSystemManaged<ColorPickerToolSystem>();
             m_CanPasteColor = CreateBinding("CanPasteColor", false);
             m_CanPasteColorSet = CreateBinding("CanPasteColorSet", false);
             m_SingleInstance = CreateBinding("SingleInstance", true);
@@ -169,7 +172,11 @@ namespace Recolor.Systems
             CreateTrigger("PasteColorSet", PasteColorSet);
             CreateTrigger("ResetColorSet", ResetColorSet);
             CreateTrigger("ActivateColorPicker", () => m_ToolSystem.activeTool = m_ToolSystem.activeTool = m_ColorPickerTool);
-            CreateTrigger("ActivateColorPainter", () => m_ToolSystem.activeTool = m_ToolSystem.activeTool = m_ColorPainterTool);
+            CreateTrigger("ActivateColorPainter", () =>
+            {
+                m_ToolSystem.selected = Entity.Null;
+                m_ActivateColorPainter = true;
+            });
             CreateTrigger("Minimize", () => m_Minimized.Value = !m_Minimized.Value);
             CreateTrigger("SingleInstance", () =>
             {
@@ -282,6 +289,12 @@ namespace Recolor.Systems
                 }
             }
 
+            if (selectedEntity == Entity.Null && m_ActivateColorPainter)
+            {
+                m_ActivateColorPainter = false;
+                m_ToolSystem.activeTool = m_ColorPainterTool;
+            }
+
             if (selectedEntity == Entity.Null && m_PreviouslySelectedEntity != Entity.Null)
             {
                 m_PreviouslySelectedEntity = Entity.Null;
@@ -324,16 +337,6 @@ namespace Recolor.Systems
                     originalMeshColor = meshColorBuffer[(int)Math.Log((int)tree.m_State, 2) + 1].m_ColorSet;
                 }
             }
-
-            /*
-            if (EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity) && !m_DisableSingleInstance)
-            {
-                m_DisableSingleInstance.Value = true;
-            }
-            else if (!EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity) && m_DisableSingleInstance)
-            {
-                m_DisableSingleInstance.Value = false;
-            }*/
 
             if (EntityManager.HasBuffer<CustomMeshColor>(selectedEntity) && !m_DisableMatching)
             {

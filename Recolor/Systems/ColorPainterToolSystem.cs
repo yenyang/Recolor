@@ -17,7 +17,7 @@ namespace Recolor.Systems
     /// <summary>
     /// A tool for picking colors and painting them onto meshes.
     /// </summary>
-    public partial class ColorPainterTool : ToolBaseSystem
+    public partial class ColorPainterToolSystem : ToolBaseSystem
     {
         private ProxyAction m_ApplyAction;
         private ILog m_Log;
@@ -27,6 +27,7 @@ namespace Recolor.Systems
         private SelectedInfoPanelColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
         private ToolOutputBarrier m_Barrier;
         private GenericTooltipSystem m_GenericTooltipSystem;
+        private ColorPainterUISystem m_ColorPainterUISystem;
 
         /// <inheritdoc/>
         public override string toolID => "ColorPainterTool";
@@ -66,8 +67,9 @@ namespace Recolor.Systems
             Enabled = false;
             m_Log = Mod.Instance.Log;
             m_ApplyAction = InputManager.instance.FindAction("Tool", "Apply");
-            m_Log.Info($"{nameof(ColorPainterTool)}.{nameof(OnCreate)}");
+            m_Log.Info($"{nameof(ColorPainterToolSystem)}.{nameof(OnCreate)}");
             m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
+            m_ColorPainterUISystem = World.GetOrCreateSystemManaged<ColorPainterUISystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_HighlightedQuery = SystemAPI.QueryBuilder()
                 .WithAll<Highlighted>()
@@ -81,8 +83,7 @@ namespace Recolor.Systems
         {
             base.OnStartRunning();
             m_ApplyAction.shouldBeEnabled = true;
-            m_Log.Debug($"{nameof(ColorPainterTool)}.{nameof(OnStartRunning)}");
-            m_ToolSystem.selected = Entity.Null;
+            m_Log.Debug($"{nameof(ColorPainterToolSystem)}.{nameof(OnStartRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
         }
 
@@ -94,7 +95,7 @@ namespace Recolor.Systems
             EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
             EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
             m_PreviousRaycastedEntity = Entity.Null;
-            m_Log.Debug($"{nameof(ColorPainterTool)}.{nameof(OnStopRunning)}");
+            m_Log.Debug($"{nameof(ColorPainterToolSystem)}.{nameof(OnStopRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
         }
 
@@ -134,14 +135,7 @@ namespace Recolor.Systems
                 return inputDeps;
             }
 
-            ColorSet colorSet = new ColorSet()
-            {
-                m_Channel0 = UnityEngine.Color.blue,
-                m_Channel1 = UnityEngine.Color.black,
-                m_Channel2 = UnityEngine.Color.red,
-            };
-
-            m_SelectedInfoPanelColorFieldsSystem.ChangeColorSet(colorSet, buffer, currentRaycastEntity);
+            m_SelectedInfoPanelColorFieldsSystem.ChangeColorSet(m_ColorPainterUISystem.ColorSet, buffer, currentRaycastEntity);
             return inputDeps;
         }
     }

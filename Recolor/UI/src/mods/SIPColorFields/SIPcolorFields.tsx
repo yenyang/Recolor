@@ -6,7 +6,7 @@ import { useLocalization } from "cs2/l10n";
 import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaComponentResolver";
 import mod from "../../../mod.json";
 import locale from "../lang/en-US.json";
-import styles from "./SIPColorFields.module.scss"
+import styles from "../Domain/ColorFields.module.scss";
 
 interface InfoSectionComponent {
 	group: string;
