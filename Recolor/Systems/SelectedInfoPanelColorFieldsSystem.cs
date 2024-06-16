@@ -347,11 +347,20 @@ namespace Recolor.Systems
                 m_DisableMatching.Value = false;
             }
 
+            if (EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity) && !m_DisableSingleInstance)
+            {
+                m_DisableSingleInstance.Value = true;
+            }
+            else if (!EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity) && m_DisableSingleInstance)
+            {
+                m_DisableSingleInstance.Value = false;
+            }
+
             // Colors Variation
             if (m_PreviouslySelectedEntity != selectedEntity
                 && selectedEntity != Entity.Null
                 && selectedPrefab != Entity.Null
-                && (!m_SingleInstance.Value)
+                && (!m_SingleInstance.Value || EntityManager.HasComponent<Plant>(selectedEntity))
                 && !EntityManager.HasBuffer<CustomMeshColor>(selectedEntity)
                 && foundClimatePrefab
                 && m_PrefabSystem.TryGetPrefab(selectedPrefab, out PrefabBase prefabBase)
@@ -479,7 +488,7 @@ namespace Recolor.Systems
 
         private ColorSet ChangeColor(int channel, UnityEngine.Color color, EntityCommandBuffer buffer, Entity entity)
         {
-            if ((m_SingleInstance.Value || m_DisableMatching.Value) && !m_DisableSingleInstance && EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            if ((m_SingleInstance.Value || m_DisableMatching.Value) && !m_DisableSingleInstance && !EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity) && EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
                 if (!EntityManager.HasBuffer<CustomMeshColor>(entity))
                 {
@@ -500,11 +509,6 @@ namespace Recolor.Systems
                 if (EntityManager.HasComponent<Tree>(entity))
                 {
                     length = Math.Min(4, meshColorBuffer.Length);
-                }
-
-                if (EntityManager.HasComponent<Plant>(entity))
-                {
-                    buffer.RemoveComponent<Plant>(entity);
                 }
 
                 for (int i = 0; i < length; i++)

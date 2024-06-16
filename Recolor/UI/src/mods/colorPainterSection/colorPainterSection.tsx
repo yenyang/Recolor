@@ -11,7 +11,8 @@ import { useState } from "react";
 
 // These contain the coui paths to Unified Icon Library svg assets
 const uilStandard =                          "coui://uil/Standard/";
-
+const singleSrc =                       uilStandard + "Dot.svg";
+const radiusSrc =                        uilStandard + "Circle.svg";
 
 const PainterColorSet$ = bindValue<ColorSet>(mod.id, "PainterColorSet");
 
@@ -23,11 +24,14 @@ const ColorFieldTheme: Theme | any = getModule(
 function changeColor(channel : number, newColor : Color) {
     // This triggers an event on C# side and C# designates the method to implement.
     trigger(mod.id, "ChangePainterColor", channel, newColor);
-    console.log(channel);
-    console.log(newColor.r);
-    console.log(newColor.b);
-    console.log(newColor.g);
 }
+
+
+function handleClick(eventName : string) {
+    // This triggers an event on C# side and C# designates the method to implement.
+    trigger(mod.id, eventName);
+}
+
 
 export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : any) => {
     // I believe you should not put anything here.
@@ -54,23 +58,32 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
         // If show icon add new section with title, and one button. 
         if (toolActive) {
             result.props.children?.unshift(
-                /* 
-                Add a new section before other tool options sections with translated title based of this localization key. Localization key defined in C#.
-                Add a new Tool button into that section. Selected is based on Anarchy Enabled binding. 
-                Tooltip is translated based on localization key. OnSelect run callback fucntion here to trigger event. 
-                Anarchy specific image source changes bases on Anarchy Enabled binding. 
-                */
-                <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[ColorSet]", locale["Recolor.SECTION_TITLE[ColorSet]"])}>
-                    <div className={styles.columnGroup}>
-                        <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={channel0} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(0, e); changeChannel0(e);}}/>
-                    </div>
-                    <div className={styles.columnGroup}>
-                        <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={channel1} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(1, e); changeChannel1(e);}}/>
-                    </div>
-                    <div className={styles.columnGroup}>
-                        <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={channel2} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(2, e); changeChannel2(e);}}/>                                            
-                    </div>
-                </VanillaComponentResolver.instance.Section> 
+                <>
+                    { ( false && 
+                        <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[ColorSet]", locale["Recolor.SECTION_TITLE[ColorSet]"])}>
+                            <VanillaComponentResolver.instance.ToolButton
+                                src={singleSrc}
+                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                multiSelect = {false}   // I haven't tested any other value here
+                                disabled = {false}      
+                                tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[CopyColor]",locale["Recolor.TOOLTIP_DESCRIPTION[CopyColor]"])}
+                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                onSelect={() => handleClick("ColorPainterSingleSelection")}
+                            />
+                        </VanillaComponentResolver.instance.Section>
+                    )}
+                    <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[ColorSet]", locale["Recolor.SECTION_TITLE[ColorSet]"])}>
+                        <div className={styles.columnGroup}>
+                            <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={channel0} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(0, e); changeChannel0(e);}}/>
+                        </div>
+                        <div className={styles.columnGroup}>
+                            <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={channel1} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(1, e); changeChannel1(e);}}/>
+                        </div>
+                        <div className={styles.columnGroup}>
+                            <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={channel2} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(2, e); changeChannel2(e);}}/>                                            
+                        </div>
+                    </VanillaComponentResolver.instance.Section> 
+                </>
             );
         }
 
