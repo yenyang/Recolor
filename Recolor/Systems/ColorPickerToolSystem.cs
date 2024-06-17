@@ -1,4 +1,4 @@
-﻿// <copyright file="ColorPickerTool.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="ColorPickerToolSystem.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
@@ -15,7 +15,7 @@ namespace Recolor.Systems
     using Unity.Jobs;
 
     /// <summary>
-    /// A tool for picking colors and painting them onto meshes.
+    /// A tool for picking colors from meshes.
     /// </summary>
     public partial class ColorPickerToolSystem : ToolBaseSystem
     {
@@ -96,7 +96,6 @@ namespace Recolor.Systems
             m_Log.Debug($"{nameof(ColorPickerToolSystem)}.{nameof(OnStopRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
         }
-
 
         /// <inheritdoc/>
         protected override JobHandle OnUpdate(JobHandle inputDeps)

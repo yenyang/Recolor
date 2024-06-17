@@ -16,5 +16,21 @@
   "Recolor.TOOLTIP_TITLE[SingleInstance]": "Single Instance",
   "Recolor.TOOLTIP_DESCRIPTION[SingleInstance]": "Change the colors of the current selection only.",
   "Recolor.TOOLTIP_TITLE[Matching]": "Matching",
-  "Recolor.TOOLTIP_DESCRIPTION[Matching]": "Change the colors of all matching assets with same color variation (and season, if applicable). Single Instance will override this for that instance."
+  "Recolor.TOOLTIP_DESCRIPTION[Matching]": "Change the colors of all matching assets with same color variation (and season, if applicable). Single Instance will override this for that instance.",
+  "Recolor.SECTION_TITLE[Selection]": "Selection",
+  "Recolor.TOOLTIP_TITLE[SingleSelection]": "Single",
+  "Recolor.TOOLTIP_DESCRIPTION[SingleSelection]": "Changes the single instance colors of one buildings, prop, or vehicle.",
+  "Recolor.TOOLTIP_TITLE[RadiusSelection]": "Radius Selection",
+  "Recolor.TOOLTIP_DESCRIPTION[RadiusSelection]": "Changes the single isntance colors of buildings, prop, and/or vehicles within the radius.",
+  "Recolor.TOOLTIP_DESCRIPTION[IncreaseRadius]": "Increase the radius.",
+  "Recolor.TOOLTIP_DESCRIPTION[DecreaseRadius]": "Decrease the radius.",
+  "Recolor.SECTION_TITLE[Filter]": "Filter",
+  "Recolor.TOOLTIP_TITLE[AllFilters]": "Toggle all Filters on/off",
+  "Recolor.TOOLTIP_DESCRIPTION[AllFilters]": "Either selects all or none of the Filters depending on your current selection. Having none selected will prevent the Bulldoze Tool from working.",
+  "Recolor.TOOLTIP_TITLE[BuildingFilter]": "Building Filter",
+  "Recolor.TOOLTIP_DESCRIPTION[BuildingFilter]": "Toggling this off will prevent the Color Painter tool from chaning single instance colors of buildings.",
+  "Recolor.TOOLTIP_TITLE[PropFilter]": "Prop Filter",
+  "Recolor.TOOLTIP_DESCRIPTION[PropFilter]": "Toggling this off will prevent the Color Painter tool from chaning single instance colors of props.",
+  "Recolor.TOOLTIP_TITLE[VehicleFilter]": "Vehicle Filter",
+  "Recolor.TOOLTIP_DESCRIPTION[VehicleFilter]": "Toggling this off will prevent the Color Painter tool from chaning single instance colors of vehicles."
 }

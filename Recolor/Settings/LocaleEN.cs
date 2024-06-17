@@ -60,7 +60,7 @@ namespace Recolor.Settings
                 { TooltipTitleKey("PropFilter"), "Prop Filter" },
                 { TooltipDescriptionKey("PropFilter"), "Toggling this off will prevent the Color Painter tool from chaning single instance colors of props." },
                 { TooltipTitleKey("VehicleFilter"), "Vehicle Filter" },
-                { TooltipDescriptionKey("PropFilter"), "Toggling this off will prevent the Color Painter tool from chaning single instance colors of vehicles." },
+                { TooltipDescriptionKey("VehicleFilter"), "Toggling this off will prevent the Color Painter tool from chaning single instance colors of vehicles." },
             };
         }
 

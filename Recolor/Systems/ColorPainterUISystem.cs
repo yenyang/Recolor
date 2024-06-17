@@ -20,6 +20,23 @@ namespace Recolor.Systems
         private ValueBindingHelper<RecolorSet> m_PainterColorSet;
         private DefaultToolSystem m_DefaultToolSystem;
         private ToolSystem m_ToolSystem;
+        private ValueBindingHelper<int> m_SelectionType;
+
+        /// <summary>
+        /// Used for different selection modes.
+        /// </summary>
+        public enum SelectionType
+        {
+            /// <summary>
+            /// One Item at a time.
+            /// </summary>
+            Single,
+
+            /// <summary>
+            /// With a radius.
+            /// </summary>
+            Radius,
+        }
 
         /// <summary>
         /// Gets the color set from UI.
@@ -27,6 +44,14 @@ namespace Recolor.Systems
         public ColorSet ColorSet
         {
             get { return m_PainterColorSet.Value.GetColorSet(); }
+        }
+
+        /// <summary>
+        /// Gets the selection type for Color Painter tool.
+        /// </summary>
+        public SelectionType ColorPainterSelectionType
+        {
+            get { return (SelectionType)m_SelectionType.Value; }
         }
 
         /// <inheritdoc/>
@@ -38,8 +63,15 @@ namespace Recolor.Systems
             m_DefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
             m_ColorPainterToolSystem = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
+
+            // These establish bindings between UI and C#.
             m_PainterColorSet = CreateBinding("PainterColorSet", new RecolorSet(UnityEngine.Color.white, UnityEngine.Color.white, UnityEngine.Color.white));
+            m_SelectionType = CreateBinding("ColorPainterSelectionType", (int)SelectionType.Single);
+
+            // These are event triggers from actions in UI.
             CreateTrigger<int, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
+            CreateTrigger("ColorPainterSingleSelection", () => m_SelectionType.Value = (int)SelectionType.Single);
+            CreateTrigger("ColorPainterRadiusSelection", () => m_SelectionType.Value = (int)SelectionType.Radius);
             Enabled = false;
         }
 
