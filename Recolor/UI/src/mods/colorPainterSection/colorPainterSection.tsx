@@ -118,16 +118,16 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                                 multiSelect = {false}   // I haven't tested any other value here
                                 tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[CopyColorSet]" ,locale["Recolor.TOOLTIP_DESCRIPTION[CopyColorSet]"])}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                onSelect={() => handleClick("CopyColorSet")}
+                                onSelect={() => handleClick("ColorPainterCopyColorSet")}
                             />
-                            { CanPasteColorSet$ && (
+                            { CanPasteColorSet && (
                                 <VanillaComponentResolver.instance.ToolButton
                                     src={pasteSrc}
                                     focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                     multiSelect = {false}   // I haven't tested any other value here
                                     tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PasteColorSet]", locale["Recolor.TOOLTIP_DESCRIPTION[PasteColorSet]"])}
                                     className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                    onSelect={() => handleClick("PasteColorSet")}
+                                    onSelect={() => handleClick("ColorPainterPasteColorSet")}
                                 />
                             )}
                         </>
@@ -178,7 +178,7 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                                         disabled = {false}      
                                         tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PasteColor]",locale["Recolor.TOOLTIP_DESCRIPTION[PasteColor]"])}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                        onSelect={() => handleChannelClick("PasteColor", 0)}
+                                        onSelect={() => handleChannelClick("ColorPainterPasteColor", 0)}
                                     />
                                 )}
                             </div>
@@ -205,7 +205,7 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                                         disabled = {false}      
                                         tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PasteColor]",locale["Recolor.TOOLTIP_DESCRIPTION[PasteColor]"])}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                        onSelect={() => handleChannelClick("PasteColor", 1)}
+                                        onSelect={() => handleChannelClick("ColorPainterPasteColor", 1)}
                                     />
                                 )}
                             </div>
@@ -232,7 +232,7 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                                         disabled = {false}      
                                         tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PasteColor]",locale["Recolor.TOOLTIP_DESCRIPTION[PasteColor]"])}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                        onSelect={() => handleChannelClick("PasteColor", 2)}
+                                        onSelect={() => handleChannelClick("ColorPainterPasteColor", 2)}
                                     />
                                 )}
                             </div>

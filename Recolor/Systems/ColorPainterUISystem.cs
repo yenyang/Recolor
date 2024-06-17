@@ -18,6 +18,7 @@ namespace Recolor.Systems
         private ColorPainterToolSystem m_ColorPainterToolSystem;
         private ILog m_Log;
         private ValueBindingHelper<RecolorSet> m_PainterColorSet;
+        private SelectedInfoPanelColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
         private DefaultToolSystem m_DefaultToolSystem;
         private ToolSystem m_ToolSystem;
         private ValueBindingHelper<int> m_SelectionType;
@@ -62,6 +63,7 @@ namespace Recolor.Systems
             m_Log.Info($"{nameof(ColorPainterUISystem)}.{nameof(OnCreate)}");
             m_DefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
             m_ColorPainterToolSystem = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
+            m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
 
             // These establish bindings between UI and C#.
@@ -72,6 +74,9 @@ namespace Recolor.Systems
             CreateTrigger<int, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
             CreateTrigger("ColorPainterSingleSelection", () => m_SelectionType.Value = (int)SelectionType.Single);
             CreateTrigger("ColorPainterRadiusSelection", () => m_SelectionType.Value = (int)SelectionType.Radius);
+            CreateTrigger("ColorPainterPasteColor", (int value) => ChangePainterColor(value, m_SelectedInfoPanelColorFieldsSystem.CopiedColor));
+            CreateTrigger("ColorPainterPasteColorSet", () => m_PainterColorSet.Value = new RecolorSet(m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet));
+            CreateTrigger("ColorPainterCopyColorSet", () => m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet = m_PainterColorSet.Value.GetColorSet());
             Enabled = false;
         }
 
@@ -90,5 +95,6 @@ namespace Recolor.Systems
                 m_PainterColorSet.Value.Channel2 = color;
             }
         }
+
     }
 }
