@@ -65,7 +65,6 @@ namespace Recolor
             updateSystem.UpdateAt<SelectedInfoPanelColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<TempCustomMeshColorSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateAfter<CustomMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
-            updateSystem.UpdateBefore<TempCustomMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<ColorPickerToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<ColorPainterToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<ColorPainterUISystem>(SystemUpdatePhase.UIUpdate);

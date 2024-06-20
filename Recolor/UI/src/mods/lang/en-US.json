@@ -15,7 +15,7 @@
   "Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]": "Reset the whole color set and saves the colors back to the original colors for this asset (and season, if applicable).",
   "Recolor.TOOLTIP_TITLE[SingleInstance]": "Single Instance",
   "Recolor.TOOLTIP_DESCRIPTION[SingleInstance]": "Change the colors of the current selection only.",
-  "Recolor.TOOLTIP_TITLE[Matching]": "Matching",
+  "Recolor.TOOLTIP_TITLE[Matching]": "Matching Color Variation",
   "Recolor.TOOLTIP_DESCRIPTION[Matching]": "Change the colors of all matching assets with same color variation (and season, if applicable). Single Instance will override this for that instance.",
   "Recolor.SECTION_TITLE[Selection]": "Selection",
   "Recolor.TOOLTIP_TITLE[SingleSelection]": "Single",

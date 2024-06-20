@@ -43,7 +43,7 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("ResetColorSet"), "Reset the whole color set and saves the colors back to the original colors for this asset (and season, if applicable)." },
                 { TooltipTitleKey("SingleInstance"), "Single Instance" },
                 { TooltipDescriptionKey("SingleInstance"), "Change the colors of the current selection only." },
-                { TooltipTitleKey("Matching"), "Matching" },
+                { TooltipTitleKey("Matching"), "Matching Color Variation" },
                 { TooltipDescriptionKey("Matching"), "Change the colors of all matching assets with same color variation (and season, if applicable). Single Instance will override this for that instance." },
                 { SectionLabel("Selection"), "Selection" },
                 { TooltipTitleKey("SingleSelection"), "Single" },

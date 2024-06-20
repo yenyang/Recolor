@@ -74,9 +74,27 @@ namespace Recolor.Systems
             CreateTrigger<int, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
             CreateTrigger("ColorPainterSingleSelection", () => m_SelectionType.Value = (int)SelectionType.Single);
             CreateTrigger("ColorPainterRadiusSelection", () => m_SelectionType.Value = (int)SelectionType.Radius);
-            CreateTrigger("ColorPainterPasteColor", (int value) => ChangePainterColor(value, m_SelectedInfoPanelColorFieldsSystem.CopiedColor));
-            CreateTrigger("ColorPainterPasteColorSet", () => m_PainterColorSet.Value = new RecolorSet(m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet));
-            CreateTrigger("ColorPainterCopyColorSet", () => m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet = m_PainterColorSet.Value.GetColorSet());
+            CreateTrigger("ColorPainterPasteColor", (int value) => 
+            {
+                ChangePainterColor(value, m_SelectedInfoPanelColorFieldsSystem.CopiedColor);
+                m_Log.Debug($"Copied Color: {m_SelectedInfoPanelColorFieldsSystem.CopiedColor.r},{m_SelectedInfoPanelColorFieldsSystem.CopiedColor.g},{m_SelectedInfoPanelColorFieldsSystem.CopiedColor.b}");
+            });
+            CreateTrigger("ColorPainterPasteColorSet", () =>
+            {
+                m_PainterColorSet.Value = new RecolorSet(m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet);
+                m_Log.Debug("ColorPainterPasteColorSet");
+                m_Log.Debug($"Channel0: {m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel0.r},{m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel0.g},{m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel0.b}");
+                m_Log.Debug($"Channel1: {m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel1.r},{m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel1.g},{m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel1.b}");
+                m_Log.Debug($"Channel2: {m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel2.r},{m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel2.g},{m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel2.b}");
+            });
+            CreateTrigger("ColorPainterCopyColorSet", () =>
+            {
+                m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet = m_PainterColorSet.Value.GetColorSet();
+                m_Log.Debug("ColorPainterCopyColorSet");
+                m_Log.Debug($"Channel0: {m_PainterColorSet.Value.Channel0.r},{m_PainterColorSet.Value.Channel0.g},{m_PainterColorSet.Value.Channel0.b}");
+                m_Log.Debug($"Channel1: {m_PainterColorSet.Value.Channel1.r},{m_PainterColorSet.Value.Channel1.g},{m_PainterColorSet.Value.Channel1.b}");
+                m_Log.Debug($"Channel2: {m_PainterColorSet.Value.Channel2.r},{m_PainterColorSet.Value.Channel2.g},{m_PainterColorSet.Value.Channel2.b}");
+            });
             Enabled = false;
         }
 

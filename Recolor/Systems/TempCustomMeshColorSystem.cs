@@ -58,7 +58,7 @@ namespace Recolor.Systems
                     continue;
                 }
 
-                EntityManager.AddComponent<BatchesUpdatedNextFrame>(entity);
+                EntityManager.AddComponent<BatchesUpdated>(entity);
                 for (int i = 0; i < meshColorBuffer.Length; i++)
                 {
                     if (customMeshColorBuffer.Length > i)
