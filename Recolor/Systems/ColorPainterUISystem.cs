@@ -22,6 +22,8 @@ namespace Recolor.Systems
         private DefaultToolSystem m_DefaultToolSystem;
         private ToolSystem m_ToolSystem;
         private ValueBindingHelper<int> m_SelectionType;
+        private ValueBindingHelper<RecolorSet> m_CopiedColorSet;
+        private ValueBindingHelper<UnityEngine.Color> m_CopiedColor;
 
         /// <summary>
         /// Used for different selection modes.
@@ -65,15 +67,21 @@ namespace Recolor.Systems
             m_ColorPainterToolSystem = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
             m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
+            m_ToolSystem.EventToolChanged += OnToolChanged;
 
             // These establish bindings between UI and C#.
             m_PainterColorSet = CreateBinding("PainterColorSet", new RecolorSet(UnityEngine.Color.white, UnityEngine.Color.white, UnityEngine.Color.white));
             m_SelectionType = CreateBinding("ColorPainterSelectionType", (int)SelectionType.Single);
+            m_CopiedColorSet = CreateBinding("CopiedColorSet", new RecolorSet(UnityEngine.Color.white, UnityEngine.Color.white, UnityEngine.Color.white));
+            m_CopiedColor = CreateBinding("CopiedColor", UnityEngine.Color.white);
+
 
             // These are event triggers from actions in UI.
             CreateTrigger<int, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
             CreateTrigger("ColorPainterSingleSelection", () => m_SelectionType.Value = (int)SelectionType.Single);
             CreateTrigger("ColorPainterRadiusSelection", () => m_SelectionType.Value = (int)SelectionType.Radius);
+
+            CreateTrigger("CopyColorSet", (UnityEngine.Color color) => m_CopiedColor.Value = color);
             CreateTrigger("ColorPainterPasteColor", (int value) =>
             {
                 m_Log.Debug(value);
@@ -92,6 +100,7 @@ namespace Recolor.Systems
             {
                 m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet = m_PainterColorSet.Value.GetColorSet();
                 m_SelectedInfoPanelColorFieldsSystem.CanPasteColorSet = true;
+                m_CopiedColorSet.Value = new RecolorSet(m_PainterColorSet.Value.GetColorSet());
                 m_Log.Debug("ColorPainterCopyColorSet");
                 m_Log.Debug($"Channel0: {m_PainterColorSet.Value.Channel0.r},{m_PainterColorSet.Value.Channel0.g},{m_PainterColorSet.Value.Channel0.b}");
                 m_Log.Debug($"Channel1: {m_PainterColorSet.Value.Channel1.r},{m_PainterColorSet.Value.Channel1.g},{m_PainterColorSet.Value.Channel1.b}");
@@ -117,5 +126,13 @@ namespace Recolor.Systems
             }
         }
 
+        private void OnToolChanged(ToolBaseSystem tool)
+        {
+            if (tool == m_ColorPainterToolSystem)
+            {
+                m_CopiedColorSet.Value = new RecolorSet(m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet);
+                m_CopiedColor.Value = m_SelectedInfoPanelColorFieldsSystem.CopiedColor;
+            }
+        }
     }
 }

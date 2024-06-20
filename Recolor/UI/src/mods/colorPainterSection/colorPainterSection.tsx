@@ -23,6 +23,8 @@ const ColorPainterSelectionType$ = bindValue<number>(mod.id, "ColorPainterSelect
 const SingleInstance$ = bindValue<boolean>(mod.id, 'SingleInstance');
 const CanPasteColor$ = bindValue<boolean>(mod.id, "CanPasteColor");
 const CanPasteColorSet$ = bindValue<boolean>(mod.id, "CanPasteColorSet");
+const CopiedColorSet$ = bindValue<ColorSet>(mod.id, "CopiedColorSet");
+const CopiedColor$ = bindValue<Color>(mod.id, "CopiedColor");
 
 const ColorFieldTheme: Theme | any = getModule(
     "game-ui/common/input/color-picker/color-field/color-field.module.scss",
@@ -73,9 +75,15 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
         const SingleInstance = useValue(SingleInstance$);     
         const CanPasteColor = useValue(CanPasteColor$);
         const CanPasteColorSet = useValue(CanPasteColorSet$);
+        const CopiedColorSet = useValue(CopiedColorSet$);
+        const CopiedColor = useValue(CopiedColor$);
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
         const { translate } = useLocalization();
+
+        let [channel0, changeChannel0] = useState<Color>({r: PainterColorSet.Channel0.r, g: PainterColorSet.Channel0.g, b: PainterColorSet.Channel0.b, a: PainterColorSet.Channel0.a});
+        let [channel1, changeChannel1] = useState<Color>({r: PainterColorSet.Channel1.r, g: PainterColorSet.Channel1.g, b: PainterColorSet.Channel1.b, a: PainterColorSet.Channel1.a});
+        let [channel2, changeChannel2] = useState<Color>({r: PainterColorSet.Channel2.r, g: PainterColorSet.Channel2.g, b: PainterColorSet.Channel2.b, a: PainterColorSet.Channel2.a});
 
         // This defines aspects of the components.
         const {children, ...otherProps} = props || {};
@@ -122,7 +130,7 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                                     multiSelect = {false}   // I haven't tested any other value here
                                     tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PasteColorSet]", locale["Recolor.TOOLTIP_DESCRIPTION[PasteColorSet]"])}
                                     className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                    onSelect={() => handleClick("ColorPainterPasteColorSet")}
+                                    onSelect={() => { handleClick("ColorPainterPasteColorSet"); changeChannel0(CopiedColorSet.Channel0); changeChannel1(CopiedColorSet.Channel1); changeChannel2(CopiedColorSet.Channel2); }}
                                 />
                             )}
                         </>
@@ -153,7 +161,7 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                     <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[ColorSet]", locale["Recolor.SECTION_TITLE[ColorSet]"])}>
                         <div className={styles.columnGroup}>
                             <div className={styles.rowGroup}>
-                                <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={PainterColorSet.Channel0} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(0, e); }}/>
+                                <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={channel0} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(0, e); changeChannel0(e); }}/>
                             </div>
                             <div className={styles.rowGroup}>
                                 <VanillaComponentResolver.instance.ToolButton
@@ -173,14 +181,14 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                                         disabled = {false}      
                                         tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PasteColor]",locale["Recolor.TOOLTIP_DESCRIPTION[PasteColor]"])}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                        onSelect={() => handleChannelClick("ColorPainterPasteColor", 0)}
+                                        onSelect={() => { handleChannelClick("ColorPainterPasteColor", 0); changeChannel0(CopiedColor);} }
                                     />
                                 )}
                             </div>
                         </div>
                         <div className={styles.columnGroup}>
                             <div className={styles.rowGroup}>
-                                <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={PainterColorSet.Channel1} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(1, e);}}/>
+                                <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={channel1} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(1, e); changeChannel1(e);}}/>
                             </div>
                             <div className={styles.rowGroup}>
                                 <VanillaComponentResolver.instance.ToolButton
@@ -200,14 +208,14 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                                         disabled = {false}      
                                         tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PasteColor]",locale["Recolor.TOOLTIP_DESCRIPTION[PasteColor]"])}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                        onSelect={() => handleChannelClick("ColorPainterPasteColor", 1)}
+                                        onSelect={() => { handleChannelClick("ColorPainterPasteColor", 1); changeChannel1(CopiedColor);}}
                                     />
                                 )}
                             </div>
                         </div>
                         <div className={styles.columnGroup}>
                             <div className={styles.rowGroup}>
-                                <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={PainterColorSet.Channel2} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(2, e); }}/>                                            
+                                <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={channel2} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(2, e); changeChannel2(e); }}/>                                            
                             </div>
                             <div className={styles.rowGroup}>
                                 <VanillaComponentResolver.instance.ToolButton
@@ -227,7 +235,7 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                                         disabled = {false}      
                                         tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PasteColor]",locale["Recolor.TOOLTIP_DESCRIPTION[PasteColor]"])}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                        onSelect={() => handleChannelClick("ColorPainterPasteColor", 2)}
+                                        onSelect={() => { handleChannelClick("ColorPainterPasteColor", 2); changeChannel2(CopiedColor);}}
                                     />
                                 )}
                             </div>
