@@ -4,6 +4,7 @@
 
 namespace Recolor.Systems
 {
+    using System;
     using Colossal.Entities;
     using Colossal.Logging;
     using Game.Common;
@@ -13,8 +14,6 @@ namespace Recolor.Systems
     using Game.Rendering;
     using Game.Tools;
     using Recolor.Domain;
-    using System;
-    using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
     using static Recolor.Systems.SelectedInfoPanelColorFieldsSystem;
