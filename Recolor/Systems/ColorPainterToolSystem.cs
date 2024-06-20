@@ -262,9 +262,31 @@ namespace Recolor.Systems
                 return;
             }
 
-            ColorSet colorSet = colorVariationBuffer[assetSeasonIdentifier.m_Index].m_ColorSet;
 
-            m_SelectedInfoPanelColorFieldsSystem.TrySaveCustomColorSet(colorSet, assetSeasonIdentifier);
+            ColorSet colorSet = colorVariationBuffer[assetSeasonIdentifier.m_Index].m_ColorSet;
+            if (!EntityManager.HasComponent<Game.Objects.Tree>(instanceEntity))
+            {
+                m_SelectedInfoPanelColorFieldsSystem.TrySaveCustomColorSet(colorSet, assetSeasonIdentifier);
+            }
+            else
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[i].m_SubMesh, out PrefabBase prefabBase))
+                    {
+                        continue;
+                    }
+
+                    AssetSeasonIdentifier currentAssetSeasonIdentifier = new AssetSeasonIdentifier()
+                    {
+                        m_Index = assetSeasonIdentifier.m_Index,
+                        m_PrefabID = prefabBase.GetPrefabID(),
+                        m_Season = assetSeasonIdentifier.m_Season,
+                    };
+
+                    m_SelectedInfoPanelColorFieldsSystem.TrySaveCustomColorSet(colorSet, assetSeasonIdentifier);
+                }
+            }
 
             EntityQuery prefabRefQuery = SystemAPI.QueryBuilder()
                 .WithAll<PrefabRef>()

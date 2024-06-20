@@ -164,7 +164,7 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                             multiSelect = {false}   // I haven't tested any other value here
                                             disabled = {false}      
-                                            tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]",locale["Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]"])}
+                                            tooltip = {DisableMatching? translate("Recolor.TOOLTIP_DESCRIPTION[ResetInstanceColor]" ,locale["Recolor.TOOLTIP_DESCRIPTION[ResetInstanceColor]"]) : translate("Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]",locale["Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]"])}
                                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                             onSelect={() => handleClick("ResetColorSet")}
                                         />)}

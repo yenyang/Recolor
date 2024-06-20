@@ -74,8 +74,9 @@ namespace Recolor.Systems
             CreateTrigger<int, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
             CreateTrigger("ColorPainterSingleSelection", () => m_SelectionType.Value = (int)SelectionType.Single);
             CreateTrigger("ColorPainterRadiusSelection", () => m_SelectionType.Value = (int)SelectionType.Radius);
-            CreateTrigger("ColorPainterPasteColor", (int value) => 
+            CreateTrigger("ColorPainterPasteColor", (int value) =>
             {
+                m_Log.Debug(value);
                 ChangePainterColor(value, m_SelectedInfoPanelColorFieldsSystem.CopiedColor);
                 m_Log.Debug($"Copied Color: {m_SelectedInfoPanelColorFieldsSystem.CopiedColor.r},{m_SelectedInfoPanelColorFieldsSystem.CopiedColor.g},{m_SelectedInfoPanelColorFieldsSystem.CopiedColor.b}");
             });
@@ -90,6 +91,7 @@ namespace Recolor.Systems
             CreateTrigger("ColorPainterCopyColorSet", () =>
             {
                 m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet = m_PainterColorSet.Value.GetColorSet();
+                m_SelectedInfoPanelColorFieldsSystem.CanPasteColorSet = true;
                 m_Log.Debug("ColorPainterCopyColorSet");
                 m_Log.Debug($"Channel0: {m_PainterColorSet.Value.Channel0.r},{m_PainterColorSet.Value.Channel0.g},{m_PainterColorSet.Value.Channel0.b}");
                 m_Log.Debug($"Channel1: {m_PainterColorSet.Value.Channel1.r},{m_PainterColorSet.Value.Channel1.g},{m_PainterColorSet.Value.Channel1.b}");
@@ -100,6 +102,7 @@ namespace Recolor.Systems
 
         private void ChangePainterColor(int channel, UnityEngine.Color color)
         {
+            m_Log.Debug(color);
             if (channel == 0)
             {
                 m_PainterColorSet.Value.Channel0 = color;

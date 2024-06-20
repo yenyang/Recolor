@@ -29,7 +29,6 @@ namespace Recolor.Systems
     using Unity.Entities;
     using Unity.Jobs;
     using UnityEngine;
-    using static Game.Rendering.OverlayRenderSystem;
 
     /// <summary>
     /// Addes toggles to selected info panel for entites that can receive Anarchy mod components.
@@ -127,6 +126,15 @@ namespace Recolor.Systems
         {
             get { return m_CopiedColorSet; }
             set { m_CopiedColorSet = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether CanPasteColorSet.
+        /// </summary>
+        public bool CanPasteColorSet
+        {
+            get { return m_CanPasteColorSet.Value; }
+            set { m_CanPasteColorSet.Value = value; }
         }
 
         /// <summary>
