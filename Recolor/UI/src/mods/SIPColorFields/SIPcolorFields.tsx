@@ -6,8 +6,7 @@ import { useLocalization } from "cs2/l10n";
 import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaComponentResolver";
 import mod from "../../../mod.json";
 import locale from "../lang/en-US.json";
-import styles from "./SIPColorFields.module.scss"
-
+import styles from "../Domain/ColorFields.module.scss";
 interface InfoSectionComponent {
 	group: string;
 	tooltipKeys: Array<string>;
@@ -177,6 +176,15 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                             tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ColorPicker]", locale["Recolor.TOOLTIP_DESCRIPTION[ColorPicker]"])}
                                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                             onSelect={() => handleClick("ActivateColorPicker")}
+                                        />
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={colorPaleteSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            multiSelect = {false}   // I haven't tested any other value here
+                                            disabled = {false}      
+                                            tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ColorPainter]", locale["Recolor.TOOLTIP_DESCRIPTION[ColorPainter]"])}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => handleClick("ActivateColorPainter")}
                                         />
                                     </>
                                     )}

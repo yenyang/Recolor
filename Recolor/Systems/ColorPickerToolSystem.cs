@@ -1,4 +1,4 @@
-﻿// <copyright file="ColorPickerTool.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="ColorPickerToolSystem.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
@@ -8,16 +8,21 @@ namespace Recolor.Systems
     using Colossal.Logging;
     using Game.Common;
     using Game.Input;
+    using Game.Objects;
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
+    using Recolor.Domain;
+    using System;
+    using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+    using static Recolor.Systems.SelectedInfoPanelColorFieldsSystem;
 
     /// <summary>
-    /// A tool for picking colors and painting them onto meshes.
+    /// A tool for picking colors from meshes.
     /// </summary>
-    public partial class ColorPickerTool : ToolBaseSystem
+    public partial class ColorPickerToolSystem : ToolBaseSystem
     {
         private ProxyAction m_ApplyAction;
         private ILog m_Log;
@@ -66,7 +71,7 @@ namespace Recolor.Systems
             Enabled = false;
             m_Log = Mod.Instance.Log;
             m_ApplyAction = InputManager.instance.FindAction("Tool", "Apply");
-            m_Log.Info($"{nameof(ColorPickerTool)}.{nameof(OnCreate)}");
+            m_Log.Info($"{nameof(ColorPickerToolSystem)}.{nameof(OnCreate)}");
             m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_HighlightedQuery = SystemAPI.QueryBuilder()
@@ -81,7 +86,7 @@ namespace Recolor.Systems
         {
             base.OnStartRunning();
             m_ApplyAction.shouldBeEnabled = true;
-            m_Log.Debug($"{nameof(ColorPickerTool)}.{nameof(OnStartRunning)}");
+            m_Log.Debug($"{nameof(ColorPickerToolSystem)}.{nameof(OnStartRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
         }
 
@@ -93,10 +98,9 @@ namespace Recolor.Systems
             EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
             EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
             m_PreviousRaycastedEntity = Entity.Null;
-            m_Log.Debug($"{nameof(ColorPickerTool)}.{nameof(OnStopRunning)}");
+            m_Log.Debug($"{nameof(ColorPickerToolSystem)}.{nameof(OnStopRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
         }
-
 
         /// <inheritdoc/>
         protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -128,14 +132,90 @@ namespace Recolor.Systems
                 m_PreviousRaycastedEntity = currentRaycastEntity;
             }
 
-            if (!m_ApplyAction.WasPerformedThisFrame())
+            if (!m_ApplyAction.WasPerformedThisFrame() || m_ToolSystem.selected == Entity.Null)
             {
                 return inputDeps;
             }
 
-            m_SelectedInfoPanelColorFieldsSystem.ChangeColorSet(meshColorBuffer[0].m_ColorSet, buffer);
+            if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
+            {
+                ChangeInstanceColorSet(meshColorBuffer[0].m_ColorSet, ref buffer, m_ToolSystem.selected);
+            }
+            else if (!m_SelectedInfoPanelColorFieldsSystem.SingleInstance && m_SelectedInfoPanelColorFieldsSystem.GetAssetSeasonIdentifier(currentRaycastEntity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet colorSet))
+            {
+                ChangeColorVariation(meshColorBuffer[0].m_ColorSet, ref buffer, m_ToolSystem.selected, assetSeasonIdentifier);
+            }
+
             m_ToolSystem.activeTool = m_DefaultToolSystem;
             return inputDeps;
+        }
+
+        private void ChangeInstanceColorSet(ColorSet colorSet, ref EntityCommandBuffer buffer, Entity entity)
+        {
+            if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance && !EntityManager.HasComponent<Game.Objects.Plant>(entity) && EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            {
+                if (!EntityManager.HasBuffer<CustomMeshColor>(entity))
+                {
+                    DynamicBuffer<CustomMeshColor> newBuffer = EntityManager.AddBuffer<CustomMeshColor>(entity);
+                    foreach (MeshColor meshColor in meshColorBuffer)
+                    {
+                        newBuffer.Add(new CustomMeshColor(meshColor));
+                    }
+                }
+
+                if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer))
+                {
+                    return;
+                }
+
+                int length = meshColorBuffer.Length;
+                if (EntityManager.HasComponent<Tree>(entity))
+                {
+                    length = Math.Min(4, meshColorBuffer.Length);
+                }
+
+                for (int i = 0; i < length; i++)
+                {
+                    CustomMeshColor customMeshColor = customMeshColorBuffer[i];
+                    customMeshColor.m_ColorSet = colorSet;
+                    customMeshColorBuffer[i] = customMeshColor;
+                    buffer.AddComponent<BatchesUpdated>(entity);
+                }
+
+                m_SelectedInfoPanelColorFieldsSystem.ResetPreviouslySelectedEntity();
+            }
+        }
+
+        private void ChangeColorVariation(ColorSet colorSet, ref EntityCommandBuffer buffer, Entity entity, AssetSeasonIdentifier assetSeasonIdentifier)
+        {
+            if (!EntityManager.HasBuffer<CustomMeshColor>(entity))
+            {
+                if (!EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) || !EntityManager.TryGetBuffer(prefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
+                {
+                    return;
+                }
+
+                int length = subMeshBuffer.Length;
+                if (EntityManager.HasComponent<Tree>(entity))
+                {
+                    length = Math.Min(4, subMeshBuffer.Length);
+                }
+
+                for (int i = 0; i < length; i++)
+                {
+                    if (!EntityManager.TryGetBuffer(subMeshBuffer[i].m_SubMesh, isReadOnly: false, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < assetSeasonIdentifier.m_Index)
+                    {
+                        continue;
+                    }
+
+                    ColorVariation colorVariation = colorVariationBuffer[assetSeasonIdentifier.m_Index];
+                    colorVariation.m_ColorSet = colorSet;
+                    colorVariationBuffer[assetSeasonIdentifier.m_Index] = colorVariation;
+                    buffer.AddComponent<BatchesUpdated>(entity);
+                }
+
+                m_SelectedInfoPanelColorFieldsSystem.ResetPreviouslySelectedEntity();
+            }
         }
     }
 }

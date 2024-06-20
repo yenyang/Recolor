@@ -7,14 +7,10 @@ namespace Recolor.Systems
     using Colossal.Entities;
     using Colossal.Logging;
     using Game;
-    using Game.Buildings;
     using Game.Common;
     using Game.Rendering;
-    using Game.Routes;
     using Game.Tools;
     using Recolor.Domain;
-    using Recolor.Extensions;
-    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
 
@@ -62,7 +58,7 @@ namespace Recolor.Systems
                     continue;
                 }
 
-                EntityManager.AddComponent<BatchesUpdatedNextFrame>(entity);
+                EntityManager.AddComponent<BatchesUpdated>(entity);
                 for (int i = 0; i < meshColorBuffer.Length; i++)
                 {
                     if (customMeshColorBuffer.Length > i)
