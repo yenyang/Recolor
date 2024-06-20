@@ -25,6 +25,10 @@ const CanPasteColor$ = bindValue<boolean>(mod.id, "CanPasteColor");
 const CanPasteColorSet$ = bindValue<boolean>(mod.id, "CanPasteColorSet");
 const CopiedColorSet$ = bindValue<ColorSet>(mod.id, "CopiedColorSet");
 const CopiedColor$ = bindValue<Color>(mod.id, "CopiedColor");
+const Radius$ = bindValue<Number>(mod.id, "Radius");
+
+const arrowDownSrc =         uilStandard +  "ArrowDownThickStroke.svg";
+const arrowUpSrc =           uilStandard +  "ArrowUpThickStroke.svg";
 
 const ColorFieldTheme: Theme | any = getModule(
     "game-ui/common/input/color-picker/color-field/color-field.module.scss",
@@ -77,6 +81,7 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
         const CanPasteColorSet = useValue(CanPasteColorSet$);
         const CopiedColorSet = useValue(CopiedColorSet$);
         const CopiedColor = useValue(CopiedColor$);
+        const Radius = useValue(Radius$);
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
         const { translate } = useLocalization();
@@ -134,8 +139,15 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                                 />
                             )}
                         </>
-                    </VanillaComponentResolver.instance.Section>
-
+                        </VanillaComponentResolver.instance.Section>
+                    { ColorPainterSelectionType == 1 && (
+                        <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Radius]",locale["Recolor.SECTION_TITLE[Radius]"])}>
+                            <VanillaComponentResolver.instance.ToolButton tooltip={translate("Recolor.TOOLTIP_DESCRIPTION[DecreaseRadius]" ,locale["Recolor.TOOLTIP_DESCRIPTION[DecreaseRadius]"])} onSelect={() => handleClick("DecreaseRadius")} src={arrowDownSrc} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} className={VanillaComponentResolver.instance.mouseToolOptionsTheme.startButton}></VanillaComponentResolver.instance.ToolButton>
+                            <div className={VanillaComponentResolver.instance.mouseToolOptionsTheme.numberField}>{ Radius + " m"}</div>
+                            <VanillaComponentResolver.instance.ToolButton tooltip={translate("Recolor.TOOLTIP_DESCRIPTION[IncreaseRadius]" ,locale["Recolor.TOOLTIP_DESCRIPTION[IncreaseRadius]"])} onSelect={() => handleClick("IncreaseRadius")} src={arrowUpSrc} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} className={VanillaComponentResolver.instance.mouseToolOptionsTheme.endButton} ></VanillaComponentResolver.instance.ToolButton>
+                        </VanillaComponentResolver.instance.Section>
+                    )}
+                    
                     <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Selection]", locale["Recolor.SECTION_TITLE[Selection]"])}>
                         <VanillaComponentResolver.instance.ToolButton
                             src={singleSelectionSrc}

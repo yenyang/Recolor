@@ -2,7 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-#define ECONOMY
+// #define ECONOMY
 namespace Recolor.Systems
 {
     using System;

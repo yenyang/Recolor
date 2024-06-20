@@ -172,7 +172,7 @@ namespace Recolor.Systems
                 m_PreviousRaycastedEntity = currentRaycastEntity;
             }
 
-            float radius = 100f;
+            float radius = m_ColorPainterUISystem.Radius;
             if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius)
             {
                 ToolRadiusJob toolRadiusJob = new()
@@ -332,7 +332,7 @@ namespace Recolor.Systems
             NativeArray<Entity> entities = prefabRefQuery.ToEntityArray(Allocator.Temp);
             foreach (Entity e in entities)
             {
-                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && currentPrefabRef.m_Prefab == prefabRef.m_Prefab)
+                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) && currentSubMeshBuffer[0].m_SubMesh == subMeshBuffer[0].m_SubMesh)
                 {
                     buffer.AddComponent<BatchesUpdated>(e);
                 }
@@ -408,7 +408,7 @@ namespace Recolor.Systems
             /// <returns>True if tree position is within radius of position. False if not.</returns>
             private bool CheckForWithinRadius(float3 cursorPosition, float3 position, float radius)
             {
-                float minRadius = 10f;
+                float minRadius = 1f;
                 radius = Mathf.Max(radius, minRadius);
                 position.y = cursorPosition.y;
                 if (Unity.Mathematics.math.distance(cursorPosition, position) < radius)

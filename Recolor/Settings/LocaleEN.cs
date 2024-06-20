@@ -53,6 +53,7 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("RadiusSelection"), "Changes the single instance colors of buildings, prop, and/or vehicles within the radius." },
                 { TooltipDescriptionKey("IncreaseRadius"), "Increase the radius." },
                 { TooltipDescriptionKey("DecreaseRadius"), "Decrease the radius." },
+                { SectionLabel("Radius"), "Radius" },
                 { SectionLabel("Filter"), "Filter" },
                 { TooltipTitleKey("AllFilters"), "Toggle all Filters on/off" },
                 { TooltipDescriptionKey("AllFilters"), "Either selects all or none of the Filters depending on your current selection. Having none selected will prevent the Bulldoze Tool from working." },
