@@ -204,17 +204,43 @@ namespace Recolor.Systems
             }
             else if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius && m_ApplyAction.IsPressed())
             {
-                ChangeMeshColorWithinRadiusJob changeBuildingMeshColorWithinRadiusJob = new ()
+                if (m_ColorPainterUISystem.ColorPainterFilterType != ColorPainterUISystem.FilterType.Vehicles)
                 {
-                    m_EntityType = SystemAPI.GetEntityTypeHandle(),
-                    m_Position = hit.m_HitPosition,
-                    m_Radius = radius,
-                    m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
-                    m_ApplyColorSet = m_ColorPainterUISystem.ColorSet,
-                    buffer = m_Barrier.CreateCommandBuffer(),
-                };
-                inputDeps = JobChunkExtensions.Schedule(changeBuildingMeshColorWithinRadiusJob, m_BuildingMeshColorQuery, inputDeps);
-                m_Barrier.AddJobHandleForProducer(inputDeps);
+                    ChangeMeshColorWithinRadiusJob changeBuildingOrPropMeshColorWithinRadiusJob = new()
+                    {
+                        m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                        m_Position = hit.m_HitPosition,
+                        m_Radius = radius,
+                        m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
+                        m_ApplyColorSet = m_ColorPainterUISystem.ColorSet,
+                        buffer = m_Barrier.CreateCommandBuffer(),
+                    };
+
+                    if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
+                    {
+                        inputDeps = JobChunkExtensions.Schedule(changeBuildingOrPropMeshColorWithinRadiusJob, m_BuildingMeshColorQuery, inputDeps);
+                        m_Barrier.AddJobHandleForProducer(inputDeps);
+                    }
+                    else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Props)
+                    {
+                        inputDeps = JobChunkExtensions.Schedule(changeBuildingOrPropMeshColorWithinRadiusJob, m_PropMeshColorQuery, inputDeps);
+                        m_Barrier.AddJobHandleForProducer(inputDeps);
+                    }
+                }
+                else
+                {
+                    ChangeVehicleMeshColorWithinRadiusJob changeVehicleMeshColorWithinRadiusJob = new()
+                    {
+                        m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                        m_Position = hit.m_HitPosition,
+                        m_Radius = radius,
+                        m_InterpolatedTransformType = SystemAPI.GetComponentTypeHandle<InterpolatedTransform>(isReadOnly: true),
+                        m_ApplyColorSet = m_ColorPainterUISystem.ColorSet,
+                        buffer = m_Barrier.CreateCommandBuffer(),
+                    };
+                    inputDeps = JobChunkExtensions.Schedule(changeVehicleMeshColorWithinRadiusJob, m_VehicleMeshColorQuery, inputDeps);
+                    m_Barrier.AddJobHandleForProducer(inputDeps);
+                }
             }
 
             return inputDeps;
@@ -358,7 +384,6 @@ namespace Recolor.Systems
             }
         }
 
-
 #if BURST
         [BurstCompile]
 #endif
@@ -386,6 +411,68 @@ namespace Recolor.Systems
                 for (int i = 0; i < chunk.Count; i++)
                 {
                     if (CheckForWithinRadius(m_Position, transformNativeArray[i].m_Position, m_Radius))
+                    {
+                        Entity currentEntity = entityNativeArray[i];
+
+                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(currentEntity);
+                        meshColorBuffer.Add(new MeshColor() { m_ColorSet = m_ApplyColorSet });
+                        DynamicBuffer<CustomMeshColor> customMeshColors = buffer.AddBuffer<CustomMeshColor>(currentEntity);
+                        customMeshColors.Add(new CustomMeshColor() { m_ColorSet = m_ApplyColorSet });
+
+                        buffer.AddComponent<BatchesUpdated>(currentEntity);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Checks the radius and position and returns true if tree is there.
+            /// </summary>
+            /// <param name="cursorPosition">Float3 from Raycast.</param>
+            /// <param name="position">Float3 position from InterploatedTransform.</param>
+            /// <param name="radius">Radius usually passed from settings.</param>
+            /// <returns>True if tree position is within radius of position. False if not.</returns>
+            private bool CheckForWithinRadius(float3 cursorPosition, float3 position, float radius)
+            {
+                float minRadius = 1f;
+                radius = Mathf.Max(radius, minRadius);
+                position.y = cursorPosition.y;
+                if (Unity.Mathematics.math.distance(cursorPosition, position) < radius)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct ChangeVehicleMeshColorWithinRadiusJob : IJobChunk
+        {
+            public EntityTypeHandle m_EntityType;
+            [ReadOnly]
+            public ComponentTypeHandle<InterpolatedTransform> m_InterpolatedTransformType;
+            public ColorSet m_ApplyColorSet;
+            public EntityCommandBuffer buffer;
+            public float m_Radius;
+            public float3 m_Position;
+
+            /// <summary>
+            /// Executes job which will change state or prefab for trees within a radius.
+            /// </summary>
+            /// <param name="chunk">ArchteypeChunk of IJobChunk.</param>
+            /// <param name="unfilteredChunkIndex">Use for EntityCommandBuffer.ParralelWriter.</param>
+            /// <param name="useEnabledMask">Part of IJobChunk. Unsure what it does.</param>
+            /// <param name="chunkEnabledMask">Part of IJobChunk. Not sure what it does.</param>
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
+                NativeArray<InterpolatedTransform> interpolatedTransformNativeArray = chunk.GetNativeArray(ref m_InterpolatedTransformType);
+                for (int i = 0; i < chunk.Count; i++)
+                {
+                    if (CheckForWithinRadius(m_Position, interpolatedTransformNativeArray[i].m_Position, m_Radius))
                     {
                         Entity currentEntity = entityNativeArray[i];
 

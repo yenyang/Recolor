@@ -25,6 +25,7 @@ namespace Recolor.Systems
         private ValueBindingHelper<RecolorSet> m_CopiedColorSet;
         private ValueBindingHelper<UnityEngine.Color> m_CopiedColor;
         private ValueBindingHelper<int> m_Radius;
+        private ValueBindingHelper<int> m_Filter;
 
         /// <summary>
         /// Used for different selection modes.
@@ -43,6 +44,27 @@ namespace Recolor.Systems
         }
 
         /// <summary>
+        /// Use to filter selection with radius.
+        /// </summary>
+        public enum FilterType
+        {
+            /// <summary>
+            /// Just buildings.
+            /// </summary>
+            Building,
+
+            /// <summary>
+            /// Props but not trees or plants.
+            /// </summary>
+            Props,
+
+            /// <summary>
+            /// Vehicles.
+            /// </summary>
+            Vehicles,
+        }
+
+        /// <summary>
         /// Gets the color set from UI.
         /// </summary>
         public ColorSet ColorSet
@@ -56,6 +78,14 @@ namespace Recolor.Systems
         public SelectionType ColorPainterSelectionType
         {
             get { return (SelectionType)m_SelectionType.Value; }
+        }
+
+        /// <summary>
+        /// Gets the filter type for Color Painter Tool.
+        /// </summary>
+        public FilterType ColorPainterFilterType
+        {
+            get { return (FilterType)m_Filter.Value; }
         }
 
         /// <summary>
@@ -84,12 +114,13 @@ namespace Recolor.Systems
             m_CopiedColorSet = CreateBinding("CopiedColorSet", new RecolorSet(UnityEngine.Color.white, UnityEngine.Color.white, UnityEngine.Color.white));
             m_CopiedColor = CreateBinding("CopiedColor", UnityEngine.Color.white);
             m_Radius = CreateBinding("Radius", 30);
+            m_Filter = CreateBinding("Filter", (int)FilterType.Building);
 
             // These are event triggers from actions in UI.
             CreateTrigger<int, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
             CreateTrigger("ColorPainterSingleSelection", () => m_SelectionType.Value = (int)SelectionType.Single);
             CreateTrigger("ColorPainterRadiusSelection", () => m_SelectionType.Value = (int)SelectionType.Radius);
-            CreateTrigger("CopyColorSet", (UnityEngine.Color color) => m_CopiedColor.Value = color);
+            CreateTrigger("CopyColor", (UnityEngine.Color color) => m_CopiedColor.Value = color);
             CreateTrigger("ColorPainterPasteColor", (int value) => ChangePainterColor(value, m_SelectedInfoPanelColorFieldsSystem.CopiedColor));
             CreateTrigger("ColorPainterPasteColorSet", () => m_PainterColorSet.Value = new RecolorSet(m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet));
             CreateTrigger("ColorPainterCopyColorSet", () =>
@@ -100,6 +131,9 @@ namespace Recolor.Systems
             });
             CreateTrigger("IncreaseRadius", IncreaseRadius);
             CreateTrigger("DecreaseRadius", DecreaseRadius);
+            CreateTrigger("BuildingFilter", () => m_Filter.Value = (int)FilterType.Building);
+            CreateTrigger("PropFilter", () => m_Filter.Value = (int)FilterType.Props);
+            CreateTrigger("VehicleFilter", () => m_Filter.Value = (int)FilterType.Vehicles);
             Enabled = false;
         }
 

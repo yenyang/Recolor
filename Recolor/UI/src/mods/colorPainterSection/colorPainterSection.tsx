@@ -17,6 +17,9 @@ const singleSrc =                        uilStandard + "SingleRhombus.svg";
 const matchingSrc =                     uilStandard + "SameRhombus.svg";
 const copySrc =                         uilStandard + "RectangleCopy.svg";
 const pasteSrc =                        uilStandard + "RectanglePaste.svg";
+const buildingSrc =                     uilStandard + "House.svg";
+const vehiclesSrc =                     uilStandard + "GenericVehicle.svg";
+const propsSrc =                        uilStandard + "BenchAndLampProps.svg";
 
 const PainterColorSet$ = bindValue<ColorSet>(mod.id, "PainterColorSet");
 const ColorPainterSelectionType$ = bindValue<number>(mod.id, "ColorPainterSelectionType");
@@ -26,6 +29,7 @@ const CanPasteColorSet$ = bindValue<boolean>(mod.id, "CanPasteColorSet");
 const CopiedColorSet$ = bindValue<ColorSet>(mod.id, "CopiedColorSet");
 const CopiedColor$ = bindValue<Color>(mod.id, "CopiedColor");
 const Radius$ = bindValue<Number>(mod.id, "Radius");
+const Filter$ = bindValue<Number>(mod.id, "Filter");
 
 const arrowDownSrc =         uilStandard +  "ArrowDownThickStroke.svg";
 const arrowUpSrc =           uilStandard +  "ArrowUpThickStroke.svg";
@@ -82,6 +86,7 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
         const CopiedColorSet = useValue(CopiedColorSet$);
         const CopiedColor = useValue(CopiedColor$);
         const Radius = useValue(Radius$);
+        const Filter = useValue(Filter$);
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
         const { translate } = useLocalization();
@@ -170,6 +175,40 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                             onSelect={() => handleClick("ColorPainterRadiusSelection")}
                         />
                     </VanillaComponentResolver.instance.Section>
+                    {ColorPainterSelectionType == 1 && (
+                        <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Filter]", locale["Recolor.SECTION_TITLE[Filter]"])}>
+                            <VanillaComponentResolver.instance.ToolButton
+                                src={buildingSrc}
+                                selected={Filter == 0}
+                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                multiSelect = {false}   // I haven't tested any other value here
+                                disabled = {false}      
+                                tooltip = {DescriptionTooltip( translate("Recolor.TOOLTIP_TITLE[BuildingFilter]",locale["Recolor.TOOLTIP_TITLE[BuildingFilter]"]), translate("Recolor.TOOLTIP_DESCRIPTION[BuildingFilter]", locale["Recolor.TOOLTIP_DESCRIPTION[BuildingFilter]"]))}
+                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                onSelect={() => handleClick("BuildingFilter")}
+                            />
+                            <VanillaComponentResolver.instance.ToolButton
+                                src={propsSrc}
+                                selected={Filter == 1}
+                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                multiSelect = {false}   // I haven't tested any other value here
+                                disabled = {false}      
+                                tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[PropFilter]",locale["Recolor.TOOLTIP_TITLE[PropFilter]"]), translate("Recolor.TOOLTIP_DESCRIPTION[PropFilter]", locale["Recolor.TOOLTIP_DESCRIPTION[PropFilter]"]))}
+                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                onSelect={() => handleClick("PropFilter")}
+                            />
+                            <VanillaComponentResolver.instance.ToolButton
+                                src={vehiclesSrc}
+                                selected={Filter == 2}
+                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                multiSelect = {false}   // I haven't tested any other value here
+                                disabled = {false}      
+                                tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[VehicleFilter]", locale["Recolor.TOOLTIP_TITLE[VehicleFilter]"]) ,translate("Recolor.TOOLTIP_DESCRIPTION[VehicleFilter]", locale["Recolor.TOOLTIP_DESCRIPTION[VehicleFilter]"]))}
+                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                onSelect={() => handleClick("VehicleFilter")}
+                            />
+                        </VanillaComponentResolver.instance.Section>
+                    )}
                     <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[ColorSet]", locale["Recolor.SECTION_TITLE[ColorSet]"])}>
                         <div className={styles.columnGroup}>
                             <div className={styles.rowGroup}>
