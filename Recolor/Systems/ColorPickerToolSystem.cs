@@ -4,6 +4,7 @@
 
 namespace Recolor.Systems
 {
+    using System;
     using Colossal.Entities;
     using Colossal.Logging;
     using Game.Common;
@@ -13,8 +14,6 @@ namespace Recolor.Systems
     using Game.Rendering;
     using Game.Tools;
     using Recolor.Domain;
-    using System;
-    using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
     using static Recolor.Systems.SelectedInfoPanelColorFieldsSystem;
@@ -141,7 +140,7 @@ namespace Recolor.Systems
             {
                 ChangeInstanceColorSet(meshColorBuffer[0].m_ColorSet, ref buffer, m_ToolSystem.selected);
             }
-            else if (!m_SelectedInfoPanelColorFieldsSystem.SingleInstance && m_SelectedInfoPanelColorFieldsSystem.GetAssetSeasonIdentifier(currentRaycastEntity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet colorSet))
+            else if ((!m_SelectedInfoPanelColorFieldsSystem.SingleInstance || EntityManager.HasComponent<Plant>(m_ToolSystem.selected)) && m_SelectedInfoPanelColorFieldsSystem.GetAssetSeasonIdentifier(m_ToolSystem.selected, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet colorSet))
             {
                 ChangeColorVariation(meshColorBuffer[0].m_ColorSet, ref buffer, m_ToolSystem.selected, assetSeasonIdentifier);
             }

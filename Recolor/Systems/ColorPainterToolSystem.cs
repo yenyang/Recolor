@@ -2,11 +2,13 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
+#define BURST
 namespace Recolor.Systems
 {
     using System;
     using Colossal.Entities;
     using Colossal.Logging;
+    using Game.Audio.Radio;
     using Game.Buildings;
     using Game.Common;
     using Game.Input;
@@ -16,9 +18,13 @@ namespace Recolor.Systems
     using Game.Tools;
     using Game.Vehicles;
     using Recolor.Domain;
+    using Unity.Burst;
+    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+    using Unity.Mathematics;
+    using UnityEngine;
     using static Recolor.Systems.SelectedInfoPanelColorFieldsSystem;
 
     /// <summary>
@@ -32,6 +38,7 @@ namespace Recolor.Systems
         private Entity m_PreviousSelectedEntity;
         private EntityQuery m_HighlightedQuery;
         private SelectedInfoPanelColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
+        private OverlayRenderSystem m_OverlayRenderSystem;
         private ToolOutputBarrier m_Barrier;
         private GenericTooltipSystem m_GenericTooltipSystem;
         private ColorPainterUISystem m_ColorPainterUISystem;
@@ -87,6 +94,7 @@ namespace Recolor.Systems
             m_Log.Info($"{nameof(ColorPainterToolSystem)}.{nameof(OnCreate)}");
             m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
             m_ColorPainterUISystem = World.GetOrCreateSystemManaged<ColorPainterUISystem>();
+            m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_HighlightedQuery = SystemAPI.QueryBuilder()
                 .WithAll<Highlighted>()
@@ -95,17 +103,17 @@ namespace Recolor.Systems
             m_GenericTooltipSystem = World.GetOrCreateSystemManaged<GenericTooltipSystem>();
 
             m_BuildingMeshColorQuery = SystemAPI.QueryBuilder()
-                .WithAll<Building, MeshColor>()
+                .WithAll<Building, MeshColor, Game.Objects.Transform>()
                 .WithNone<Temp, Deleted, Game.Common.Overridden>()
                 .Build();
 
             m_VehicleMeshColorQuery = SystemAPI.QueryBuilder()
-                .WithAll<Vehicle, MeshColor>()
+                .WithAll<Vehicle, MeshColor, InterpolatedTransform>()
                 .WithNone<Temp, Deleted, Game.Common.Overridden>()
                 .Build();
 
             m_PropMeshColorQuery = SystemAPI.QueryBuilder()
-                .WithAll<Game.Objects.Object, Game.Objects.Static, MeshColor>()
+                .WithAll<Game.Objects.Object, Game.Objects.Static, MeshColor, Game.Objects.Transform>()
                 .WithNone<Temp, Deleted, Game.Common.Overridden, Tree, Plant>()
                 .Build();
         }
@@ -141,7 +149,8 @@ namespace Recolor.Systems
 
             if (!GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit)
                 || ((!EntityManager.HasBuffer<MeshColor>(currentRaycastEntity) || (EntityManager.HasComponent<Plant>(currentRaycastEntity) && m_SelectedInfoPanelColorFieldsSystem.SingleInstance)) && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
-                || (EntityManager.HasBuffer<CustomMeshColor>(currentRaycastEntity) && !m_SelectedInfoPanelColorFieldsSystem.SingleInstance && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single))
+                || (EntityManager.HasBuffer<CustomMeshColor>(currentRaycastEntity) && !m_SelectedInfoPanelColorFieldsSystem.SingleInstance && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
+                || (hit.m_HitPosition.x == 0 && hit.m_HitPosition.y == 0 && hit.m_HitPosition.z == 0))
             {
                 buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
                 buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
@@ -163,12 +172,25 @@ namespace Recolor.Systems
                 m_PreviousRaycastedEntity = currentRaycastEntity;
             }
 
-            if (!m_ApplyAction.WasPerformedThisFrame())
+            float radius = m_ColorPainterUISystem.Radius;
+            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius)
+            {
+                ToolRadiusJob toolRadiusJob = new()
+                {
+                    m_OverlayBuffer = m_OverlayRenderSystem.GetBuffer(out JobHandle outJobHandle),
+                    m_Position = new Vector3(hit.m_HitPosition.x, hit.m_Position.y, hit.m_HitPosition.z),
+                    m_Radius = radius,
+                };
+                inputDeps = IJobExtensions.Schedule(toolRadiusJob, JobHandle.CombineDependencies(inputDeps, outJobHandle));
+                m_OverlayRenderSystem.AddBufferWriter(inputDeps);
+            }
+
+            if (!m_ApplyAction.WasPerformedThisFrame() && !m_ApplyAction.IsPressed())
             {
                 return inputDeps;
             }
 
-            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
+            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single && m_ApplyAction.WasPerformedThisFrame())
             {
                 if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
                 {
@@ -178,6 +200,46 @@ namespace Recolor.Systems
                 {
                     ChangeColorVariation(m_ColorPainterUISystem.ColorSet, ref buffer, currentRaycastEntity, assetSeasonIdentifier);
                     SaveColorSet(currentRaycastEntity, ref buffer, assetSeasonIdentifier);
+                }
+            }
+            else if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius && m_ApplyAction.IsPressed())
+            {
+                if (m_ColorPainterUISystem.ColorPainterFilterType != ColorPainterUISystem.FilterType.Vehicles)
+                {
+                    ChangeMeshColorWithinRadiusJob changeBuildingOrPropMeshColorWithinRadiusJob = new()
+                    {
+                        m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                        m_Position = hit.m_HitPosition,
+                        m_Radius = radius,
+                        m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
+                        m_ApplyColorSet = m_ColorPainterUISystem.ColorSet,
+                        buffer = m_Barrier.CreateCommandBuffer(),
+                    };
+
+                    if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
+                    {
+                        inputDeps = JobChunkExtensions.Schedule(changeBuildingOrPropMeshColorWithinRadiusJob, m_BuildingMeshColorQuery, inputDeps);
+                        m_Barrier.AddJobHandleForProducer(inputDeps);
+                    }
+                    else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Props)
+                    {
+                        inputDeps = JobChunkExtensions.Schedule(changeBuildingOrPropMeshColorWithinRadiusJob, m_PropMeshColorQuery, inputDeps);
+                        m_Barrier.AddJobHandleForProducer(inputDeps);
+                    }
+                }
+                else
+                {
+                    ChangeVehicleMeshColorWithinRadiusJob changeVehicleMeshColorWithinRadiusJob = new()
+                    {
+                        m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                        m_Position = hit.m_HitPosition,
+                        m_Radius = radius,
+                        m_InterpolatedTransformType = SystemAPI.GetComponentTypeHandle<InterpolatedTransform>(isReadOnly: true),
+                        m_ApplyColorSet = m_ColorPainterUISystem.ColorSet,
+                        buffer = m_Barrier.CreateCommandBuffer(),
+                    };
+                    inputDeps = JobChunkExtensions.Schedule(changeVehicleMeshColorWithinRadiusJob, m_VehicleMeshColorQuery, inputDeps);
+                    m_Barrier.AddJobHandleForProducer(inputDeps);
                 }
             }
 
@@ -262,9 +324,31 @@ namespace Recolor.Systems
                 return;
             }
 
-            ColorSet colorSet = colorVariationBuffer[assetSeasonIdentifier.m_Index].m_ColorSet;
 
-            m_SelectedInfoPanelColorFieldsSystem.TrySaveCustomColorSet(colorSet, assetSeasonIdentifier);
+            ColorSet colorSet = colorVariationBuffer[assetSeasonIdentifier.m_Index].m_ColorSet;
+            if (!EntityManager.HasComponent<Game.Objects.Tree>(instanceEntity))
+            {
+                m_SelectedInfoPanelColorFieldsSystem.TrySaveCustomColorSet(colorSet, assetSeasonIdentifier);
+            }
+            else
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[i].m_SubMesh, out PrefabBase prefabBase))
+                    {
+                        continue;
+                    }
+
+                    AssetSeasonIdentifier currentAssetSeasonIdentifier = new AssetSeasonIdentifier()
+                    {
+                        m_Index = assetSeasonIdentifier.m_Index,
+                        m_PrefabID = prefabBase.GetPrefabID(),
+                        m_Season = assetSeasonIdentifier.m_Season,
+                    };
+
+                    m_SelectedInfoPanelColorFieldsSystem.TrySaveCustomColorSet(colorSet, currentAssetSeasonIdentifier);
+                }
+            }
 
             EntityQuery prefabRefQuery = SystemAPI.QueryBuilder()
                 .WithAll<PrefabRef>()
@@ -274,10 +358,152 @@ namespace Recolor.Systems
             NativeArray<Entity> entities = prefabRefQuery.ToEntityArray(Allocator.Temp);
             foreach (Entity e in entities)
             {
-                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && currentPrefabRef.m_Prefab == prefabRef.m_Prefab)
+                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) && currentSubMeshBuffer[0].m_SubMesh == subMeshBuffer[0].m_SubMesh)
                 {
                     buffer.AddComponent<BatchesUpdated>(e);
                 }
+            }
+        }
+
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct ToolRadiusJob : IJob
+        {
+            public OverlayRenderSystem.Buffer m_OverlayBuffer;
+            public float3 m_Position;
+            public float m_Radius;
+
+            /// <summary>
+            /// Draws tool radius.
+            /// </summary>
+            public void Execute()
+            {
+                m_OverlayBuffer.DrawCircle(new UnityEngine.Color(.52f, .80f, .86f, 1f), default, m_Radius / 20f, 0, new float2(0, 1), m_Position, m_Radius * 2f);
+            }
+        }
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct ChangeMeshColorWithinRadiusJob : IJobChunk
+        {
+            public EntityTypeHandle m_EntityType;
+            [ReadOnly]
+            public ComponentTypeHandle<Game.Objects.Transform> m_TransformType;
+            public ColorSet m_ApplyColorSet;
+            public EntityCommandBuffer buffer;
+            public float m_Radius;
+            public float3 m_Position;
+
+            /// <summary>
+            /// Executes job which will change state or prefab for trees within a radius.
+            /// </summary>
+            /// <param name="chunk">ArchteypeChunk of IJobChunk.</param>
+            /// <param name="unfilteredChunkIndex">Use for EntityCommandBuffer.ParralelWriter.</param>
+            /// <param name="useEnabledMask">Part of IJobChunk. Unsure what it does.</param>
+            /// <param name="chunkEnabledMask">Part of IJobChunk. Not sure what it does.</param>
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
+                NativeArray<Game.Objects.Transform> transformNativeArray = chunk.GetNativeArray(ref m_TransformType);
+                for (int i = 0; i < chunk.Count; i++)
+                {
+                    if (CheckForWithinRadius(m_Position, transformNativeArray[i].m_Position, m_Radius))
+                    {
+                        Entity currentEntity = entityNativeArray[i];
+
+                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(currentEntity);
+                        meshColorBuffer.Add(new MeshColor() { m_ColorSet = m_ApplyColorSet });
+                        DynamicBuffer<CustomMeshColor> customMeshColors = buffer.AddBuffer<CustomMeshColor>(currentEntity);
+                        customMeshColors.Add(new CustomMeshColor() { m_ColorSet = m_ApplyColorSet });
+
+                        buffer.AddComponent<BatchesUpdated>(currentEntity);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Checks the radius and position and returns true if tree is there.
+            /// </summary>
+            /// <param name="cursorPosition">Float3 from Raycast.</param>
+            /// <param name="position">Float3 position from InterploatedTransform.</param>
+            /// <param name="radius">Radius usually passed from settings.</param>
+            /// <returns>True if tree position is within radius of position. False if not.</returns>
+            private bool CheckForWithinRadius(float3 cursorPosition, float3 position, float radius)
+            {
+                float minRadius = 1f;
+                radius = Mathf.Max(radius, minRadius);
+                position.y = cursorPosition.y;
+                if (Unity.Mathematics.math.distance(cursorPosition, position) < radius)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct ChangeVehicleMeshColorWithinRadiusJob : IJobChunk
+        {
+            public EntityTypeHandle m_EntityType;
+            [ReadOnly]
+            public ComponentTypeHandle<InterpolatedTransform> m_InterpolatedTransformType;
+            public ColorSet m_ApplyColorSet;
+            public EntityCommandBuffer buffer;
+            public float m_Radius;
+            public float3 m_Position;
+
+            /// <summary>
+            /// Executes job which will change state or prefab for trees within a radius.
+            /// </summary>
+            /// <param name="chunk">ArchteypeChunk of IJobChunk.</param>
+            /// <param name="unfilteredChunkIndex">Use for EntityCommandBuffer.ParralelWriter.</param>
+            /// <param name="useEnabledMask">Part of IJobChunk. Unsure what it does.</param>
+            /// <param name="chunkEnabledMask">Part of IJobChunk. Not sure what it does.</param>
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
+                NativeArray<InterpolatedTransform> interpolatedTransformNativeArray = chunk.GetNativeArray(ref m_InterpolatedTransformType);
+                for (int i = 0; i < chunk.Count; i++)
+                {
+                    if (CheckForWithinRadius(m_Position, interpolatedTransformNativeArray[i].m_Position, m_Radius))
+                    {
+                        Entity currentEntity = entityNativeArray[i];
+
+                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(currentEntity);
+                        meshColorBuffer.Add(new MeshColor() { m_ColorSet = m_ApplyColorSet });
+                        DynamicBuffer<CustomMeshColor> customMeshColors = buffer.AddBuffer<CustomMeshColor>(currentEntity);
+                        customMeshColors.Add(new CustomMeshColor() { m_ColorSet = m_ApplyColorSet });
+
+                        buffer.AddComponent<BatchesUpdated>(currentEntity);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Checks the radius and position and returns true if tree is there.
+            /// </summary>
+            /// <param name="cursorPosition">Float3 from Raycast.</param>
+            /// <param name="position">Float3 position from InterploatedTransform.</param>
+            /// <param name="radius">Radius usually passed from settings.</param>
+            /// <returns>True if tree position is within radius of position. False if not.</returns>
+            private bool CheckForWithinRadius(float3 cursorPosition, float3 position, float radius)
+            {
+                float minRadius = 1f;
+                radius = Mathf.Max(radius, minRadius);
+                position.y = cursorPosition.y;
+                if (Unity.Mathematics.math.distance(cursorPosition, position) < radius)
+                {
+                    return true;
+                }
+
+                return false;
             }
         }
     }

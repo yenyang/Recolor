@@ -22,6 +22,10 @@ namespace Recolor.Systems
         private DefaultToolSystem m_DefaultToolSystem;
         private ToolSystem m_ToolSystem;
         private ValueBindingHelper<int> m_SelectionType;
+        private ValueBindingHelper<RecolorSet> m_CopiedColorSet;
+        private ValueBindingHelper<UnityEngine.Color> m_CopiedColor;
+        private ValueBindingHelper<int> m_Radius;
+        private ValueBindingHelper<int> m_Filter;
 
         /// <summary>
         /// Used for different selection modes.
@@ -40,6 +44,27 @@ namespace Recolor.Systems
         }
 
         /// <summary>
+        /// Use to filter selection with radius.
+        /// </summary>
+        public enum FilterType
+        {
+            /// <summary>
+            /// Just buildings.
+            /// </summary>
+            Building,
+
+            /// <summary>
+            /// Props but not trees or plants.
+            /// </summary>
+            Props,
+
+            /// <summary>
+            /// Vehicles.
+            /// </summary>
+            Vehicles,
+        }
+
+        /// <summary>
         /// Gets the color set from UI.
         /// </summary>
         public ColorSet ColorSet
@@ -55,6 +80,22 @@ namespace Recolor.Systems
             get { return (SelectionType)m_SelectionType.Value; }
         }
 
+        /// <summary>
+        /// Gets the filter type for Color Painter Tool.
+        /// </summary>
+        public FilterType ColorPainterFilterType
+        {
+            get { return (FilterType)m_Filter.Value; }
+        }
+
+        /// <summary>
+        /// Gets the value of the Radius binding.
+        /// </summary>
+        public int Radius
+        {
+            get { return m_Radius.Value; }
+        }
+
         /// <inheritdoc/>
         protected override void OnCreate()
         {
@@ -65,41 +106,40 @@ namespace Recolor.Systems
             m_ColorPainterToolSystem = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
             m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
+            m_ToolSystem.EventToolChanged += OnToolChanged;
 
             // These establish bindings between UI and C#.
             m_PainterColorSet = CreateBinding("PainterColorSet", new RecolorSet(UnityEngine.Color.white, UnityEngine.Color.white, UnityEngine.Color.white));
             m_SelectionType = CreateBinding("ColorPainterSelectionType", (int)SelectionType.Single);
+            m_CopiedColorSet = CreateBinding("CopiedColorSet", new RecolorSet(UnityEngine.Color.white, UnityEngine.Color.white, UnityEngine.Color.white));
+            m_CopiedColor = CreateBinding("CopiedColor", UnityEngine.Color.white);
+            m_Radius = CreateBinding("Radius", 30);
+            m_Filter = CreateBinding("Filter", (int)FilterType.Building);
 
             // These are event triggers from actions in UI.
             CreateTrigger<int, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
             CreateTrigger("ColorPainterSingleSelection", () => m_SelectionType.Value = (int)SelectionType.Single);
             CreateTrigger("ColorPainterRadiusSelection", () => m_SelectionType.Value = (int)SelectionType.Radius);
-            CreateTrigger("ColorPainterPasteColor", (int value) => 
-            {
-                ChangePainterColor(value, m_SelectedInfoPanelColorFieldsSystem.CopiedColor);
-                m_Log.Debug($"Copied Color: {m_SelectedInfoPanelColorFieldsSystem.CopiedColor.r},{m_SelectedInfoPanelColorFieldsSystem.CopiedColor.g},{m_SelectedInfoPanelColorFieldsSystem.CopiedColor.b}");
-            });
-            CreateTrigger("ColorPainterPasteColorSet", () =>
-            {
-                m_PainterColorSet.Value = new RecolorSet(m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet);
-                m_Log.Debug("ColorPainterPasteColorSet");
-                m_Log.Debug($"Channel0: {m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel0.r},{m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel0.g},{m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel0.b}");
-                m_Log.Debug($"Channel1: {m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel1.r},{m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel1.g},{m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel1.b}");
-                m_Log.Debug($"Channel2: {m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel2.r},{m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel2.g},{m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet.m_Channel2.b}");
-            });
+            CreateTrigger("CopyColor", (UnityEngine.Color color) => m_CopiedColor.Value = color);
+            CreateTrigger("ColorPainterPasteColor", (int value) => ChangePainterColor(value, m_SelectedInfoPanelColorFieldsSystem.CopiedColor));
+            CreateTrigger("ColorPainterPasteColorSet", () => m_PainterColorSet.Value = new RecolorSet(m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet));
             CreateTrigger("ColorPainterCopyColorSet", () =>
             {
                 m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet = m_PainterColorSet.Value.GetColorSet();
-                m_Log.Debug("ColorPainterCopyColorSet");
-                m_Log.Debug($"Channel0: {m_PainterColorSet.Value.Channel0.r},{m_PainterColorSet.Value.Channel0.g},{m_PainterColorSet.Value.Channel0.b}");
-                m_Log.Debug($"Channel1: {m_PainterColorSet.Value.Channel1.r},{m_PainterColorSet.Value.Channel1.g},{m_PainterColorSet.Value.Channel1.b}");
-                m_Log.Debug($"Channel2: {m_PainterColorSet.Value.Channel2.r},{m_PainterColorSet.Value.Channel2.g},{m_PainterColorSet.Value.Channel2.b}");
+                m_SelectedInfoPanelColorFieldsSystem.CanPasteColorSet = true;
+                m_CopiedColorSet.Value = new RecolorSet(m_PainterColorSet.Value.GetColorSet());
             });
+            CreateTrigger("IncreaseRadius", IncreaseRadius);
+            CreateTrigger("DecreaseRadius", DecreaseRadius);
+            CreateTrigger("BuildingFilter", () => m_Filter.Value = (int)FilterType.Building);
+            CreateTrigger("PropFilter", () => m_Filter.Value = (int)FilterType.Props);
+            CreateTrigger("VehicleFilter", () => m_Filter.Value = (int)FilterType.Vehicles);
             Enabled = false;
         }
 
         private void ChangePainterColor(int channel, UnityEngine.Color color)
         {
+            m_Log.Debug(color);
             if (channel == 0)
             {
                 m_PainterColorSet.Value.Channel0 = color;
@@ -114,5 +154,45 @@ namespace Recolor.Systems
             }
         }
 
+        private void OnToolChanged(ToolBaseSystem tool)
+        {
+            if (tool == m_ColorPainterToolSystem)
+            {
+                m_CopiedColorSet.Value = new RecolorSet(m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet);
+                m_CopiedColor.Value = m_SelectedInfoPanelColorFieldsSystem.CopiedColor;
+            }
+        }
+
+        private void IncreaseRadius()
+        {
+            if (m_Radius.Value < 10)
+            {
+                m_Radius.Value += 1;
+            }
+            else if (m_Radius.Value < 100)
+            {
+                m_Radius.Value += 10;
+            }
+            else if (m_Radius.Value < 1000)
+            {
+                m_Radius.Value += 100;
+            }
+        }
+
+        private void DecreaseRadius()
+        {
+            if (m_Radius.Value > 100)
+            {
+                m_Radius.Value -= 100;
+            }
+            else if (m_Radius.Value > 10)
+            {
+                m_Radius.Value -= 10;
+            }
+            else if (m_Radius.Value > 1)
+            {
+                m_Radius.Value -= 1;
+            }
+        }
     }
 }

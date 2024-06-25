@@ -2,7 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-// #define ECONOMY
+#define ECONOMY
 namespace Recolor.Systems
 {
     using System;
@@ -29,7 +29,6 @@ namespace Recolor.Systems
     using Unity.Entities;
     using Unity.Jobs;
     using UnityEngine;
-    using static Game.Rendering.OverlayRenderSystem;
 
     /// <summary>
     /// Addes toggles to selected info panel for entites that can receive Anarchy mod components.
@@ -127,6 +126,15 @@ namespace Recolor.Systems
         {
             get { return m_CopiedColorSet; }
             set { m_CopiedColorSet = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether CanPasteColorSet.
+        /// </summary>
+        public bool CanPasteColorSet
+        {
+            get { return m_CanPasteColorSet.Value; }
+            set { m_CanPasteColorSet.Value = value; }
         }
 
         /// <summary>
@@ -732,8 +740,30 @@ namespace Recolor.Systems
             }
 
             ColorSet colorSet = colorVariationBuffer[m_CurrentAssetSeasonIdentifier.m_Index].m_ColorSet;
+            if (!EntityManager.HasComponent<Game.Objects.Tree>(selectedEntity))
+            {
+                TrySaveCustomColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
+            }
+            else
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[i].m_SubMesh, out PrefabBase prefabBase))
+                    {
+                        continue;
+                    }
 
-            TrySaveCustomColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
+                    AssetSeasonIdentifier assetSeasonIdentifier = new AssetSeasonIdentifier()
+                    {
+                        m_Index = m_CurrentAssetSeasonIdentifier.m_Index,
+                        m_PrefabID = prefabBase.GetPrefabID(),
+                        m_Season = m_CurrentAssetSeasonIdentifier.m_Season,
+                    };
+
+                    TrySaveCustomColorSet(colorSet, assetSeasonIdentifier);
+                }
+            }
+
             m_PreviouslySelectedEntity = Entity.Null;
 
             EntityQuery prefabRefQuery = SystemAPI.QueryBuilder()
