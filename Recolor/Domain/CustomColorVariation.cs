@@ -14,8 +14,15 @@ namespace Recolor.Domain
     /// </summary>
     public struct CustomColorVariation : IComponentData, ISerializable
     {
-        private ColorSet m_ColorSet;
-        private int m_Index;
+        /// <summary>
+        /// The set of 3 colors.
+        /// </summary>
+        public ColorSet m_ColorSet;
+
+        /// <summary>
+        /// The color variation index.
+        /// </summary>
+        public int m_Index;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomColorVariation"/> struct.

@@ -2,7 +2,6 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-#define ECONOMY
 namespace Recolor.Systems
 {
     using System;
@@ -69,6 +68,7 @@ namespace Recolor.Systems
         private string m_ContentFolder;
         private int m_ReloadInXFrames = 0;
         private float m_TimeColorLastChanged = 0f;
+        private bool m_NeedsColorRefresh = false;
         private UnityEngine.Color m_CopiedColor;
         private ColorSet m_CopiedColorSet;
         private bool m_ActivateColorPainter;
@@ -146,6 +146,12 @@ namespace Recolor.Systems
             get { return m_CopiedColor; }
         }
 
+        /// <inheritdoc/>
+        protected override string group => Mod.Id;
+
+        /// <inheritdoc/>
+        protected override bool displayForUpgrades => true;
+
         /// <summary>
         /// Resets the previously selected entity.
         /// </summary>
@@ -154,13 +160,44 @@ namespace Recolor.Systems
             m_PreviouslySelectedEntity = Entity.Null;
         }
 
-        /// <inheritdoc/>
-        protected override string group => Mod.Id;
+        /// <summary>
+        /// Gets season from color group id using a loop and consistency with color group ids equally season. May need adjustment later.
+        /// </summary>
+        /// <param name="colorGroupID">Color group ID from color variation.</param>
+        /// <param name="season">outputted season or spring if false.</param>
+        /// <returns>true is converted, false if not.</returns>
+        public bool TryGetSeasonFromColorGroupID(ColorGroupID colorGroupID, out Season season)
+        {
+            season = Season.None;
+            for (int i = 0; i <= 3; i++)
+            {
+                if (colorGroupID == new ColorGroupID(i))
+                {
+                    season = (Season)i;
+                    return true;
+                }
+            }
 
-#if ECONOMY
-        /// <inheritdoc/>
-        protected override bool displayForUpgrades => true;
-#endif
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if vanilla color set has been recorded and returns it in out if available.
+        /// </summary>
+        /// <param name="assetSeasonIdentifier">struct with necessary data.</param>
+        /// <param name="colorSet">Color set returned through out parameter.</param>
+        /// <returns>True if found. false if not.</returns>
+        public bool TryGetVanillaColorSet(AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet colorSet)
+        {
+            colorSet = default;
+            if (!m_VanillaColorSets.ContainsKey(assetSeasonIdentifier))
+            {
+                return false;
+            }
+
+            colorSet = m_VanillaColorSets[assetSeasonIdentifier];
+            return true;
+        }
 
         /// <summary>
         /// Tries to save a custom color set.
@@ -427,6 +464,7 @@ namespace Recolor.Systems
                 if (m_ReloadInXFrames == 0)
                 {
                     ReloadSavedColorSetsFromDisk();
+                    m_CustomColorVariationSystem.ReloadCustomColorVariations(m_EndFrameBarrier.CreateCommandBuffer());
                 }
             }
 
@@ -575,10 +613,10 @@ namespace Recolor.Systems
             if (m_PreviouslySelectedEntity == selectedEntity &&
                 (!m_SingleInstance.Value || EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity)) &&
                 !EntityManager.HasBuffer<CustomMeshColor>(selectedEntity) &&
-                !MatchesSavedOnDiskColorSet(m_CurrentColorSet.Value.GetColorSet(), m_CurrentAssetSeasonIdentifier) &&
+                m_NeedsColorRefresh == true &&
                 UnityEngine.Time.time > m_TimeColorLastChanged + 0.5f)
             {
-                SaveColorSetToDisk();
+                ColorRefresh();
             }
         }
 
@@ -723,6 +761,7 @@ namespace Recolor.Systems
                 }
 
                 GenerateOrUpdateCustomColorVariationEntity();
+                m_NeedsColorRefresh = true;
 
                 return colorVariation.m_ColorSet;
             }
@@ -958,24 +997,6 @@ namespace Recolor.Systems
             return matches;
         }
 
-        /// <summary>
-        /// Checks if vanilla color set has been recorded and returns it in out if available.
-        /// </summary>
-        /// <param name="assetSeasonIdentifier">struct with necessary data.</param>
-        /// <param name="colorSet">Color set returned through out parameter.</param>
-        /// <returns>True if found. false if not.</returns>
-        private bool TryGetVanillaColorSet(AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet colorSet)
-        {
-            colorSet = default;
-            if (!m_VanillaColorSets.ContainsKey(assetSeasonIdentifier))
-            {
-                return false;
-            }
-
-            colorSet = m_VanillaColorSets[assetSeasonIdentifier];
-            return true;
-        }
-
         private bool TryLoadCustomColorSetFromDisk(AssetSeasonIdentifier assetSeasonIdentifier, out SavedColorSet result)
         {
             string colorDataFilePath = GetAssetSeasonIdentifierFilePath(assetSeasonIdentifier);
@@ -1015,27 +1036,6 @@ namespace Recolor.Systems
 
             Mod.Instance.Log.Info($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(GetSeasonFromSeasonID)} couldn't find season for {seasonID}.");
             return Season.None;
-        }
-
-        /// <summary>
-        /// Gets season from color group id using a loop and consistency with color group ids equally season. May need adjustment later.
-        /// </summary>
-        /// <param name="colorGroupID">Color group ID from color variation.</param>
-        /// <param name="season">outputted season or spring if false.</param>
-        /// <returns>true is converted, false if not.</returns>
-        private bool TryGetSeasonFromColorGroupID(ColorGroupID colorGroupID, out Season season)
-        {
-            season = Season.None;
-            for (int i = 0; i <= 3; i++)
-            {
-                if (colorGroupID == new ColorGroupID(i))
-                {
-                    season = (Season)i;
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private string GetAssetSeasonIdentifierFilePath(AssetSeasonIdentifier assetSeasonIdentifier)
@@ -1086,6 +1086,8 @@ namespace Recolor.Systems
                     buffer.AddComponent<BatchesUpdated>(e);
                 }
             }
+
+            m_NeedsColorRefresh = false;
         }
 
         private void ReloadSavedColorSetsFromDisk()
