@@ -935,7 +935,7 @@ namespace Recolor.Systems
             }
             else
             {
-                SaveColorSetToDisk();
+                GenerateOrUpdateCustomColorVariationEntity();
                 return;
             }
 

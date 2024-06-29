@@ -8,7 +8,6 @@ namespace Recolor.Extensions
     using System.Collections;
     using System.Collections.Generic;
     using Colossal.UI.Binding;
-    using Game.UI;
     using Unity.Entities;
     using UnityEngine;
 
