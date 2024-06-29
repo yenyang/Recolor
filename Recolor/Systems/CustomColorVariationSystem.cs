@@ -23,8 +23,9 @@ namespace Recolor.Systems
     {
         private ILog m_Log;
         private EntityQuery m_UpdatedCustomColorVariationQuery;
-        private NativeHashMap<Entity, CustomColorVariation> m_CustomColorVariationMap;
+        private NativeHashMap<Entity, Entity> m_CustomColorVariationMap;
         private EntityQuery m_DeletedCustomColorVariationQuery;
+        private EntityArchetype m_CustomColorVariationArchetype;
 
         /// <summary>
         /// Tries to get a custom color variation from the recorded map.
@@ -35,14 +36,36 @@ namespace Recolor.Systems
         public bool TryGetCustomColorVariation(Entity prefabEntity, out CustomColorVariation customColorVariation)
         {
             customColorVariation = default;
-            if (m_CustomColorVariationMap.ContainsKey(prefabEntity))
+            if (m_CustomColorVariationMap.ContainsKey(prefabEntity) && EntityManager.TryGetComponent(m_CustomColorVariationMap[prefabEntity], out customColorVariation))
             {
-                customColorVariation = m_CustomColorVariationMap[prefabEntity];
                 return true;
             }
             else
             {
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Schedules creation of a CustomColorVariationEntity.
+        /// </summary>
+        /// <param name="buffer">ECB for scheduling.</param>
+        /// <param name="prefabEntity">Prefab entity for RenderPrefab.</param>
+        /// <param name="colorSet">Custom color set.</param>
+        /// <param name="index">Index to make change to.</param>
+        public void CreateOrUpdateCustomColorVariationEntity(EntityCommandBuffer buffer, Entity prefabEntity, ColorSet colorSet, int index)
+        {
+            if (!m_CustomColorVariationMap.ContainsKey(prefabEntity))
+            {
+                Entity customColorVariationEntity = buffer.CreateEntity(m_CustomColorVariationArchetype);
+                buffer.SetComponent(customColorVariationEntity, new PrefabRef(prefabEntity));
+                buffer.SetComponent(customColorVariationEntity, new CustomColorVariation(colorSet, index));
+                buffer.AddComponent<Updated>(customColorVariationEntity);
+            }
+            else if (EntityManager.HasComponent<CustomColorVariation>(m_CustomColorVariationMap[prefabEntity]))
+            {
+                buffer.SetComponent(m_CustomColorVariationMap[prefabEntity], new CustomColorVariation(colorSet, index));
+                buffer.AddComponent<Updated>(m_CustomColorVariationMap[prefabEntity]);
             }
         }
 
@@ -52,7 +75,10 @@ namespace Recolor.Systems
             base.OnCreate();
             m_Log = Mod.Instance.Log;
             m_Log.Info($"{nameof(CustomColorVariationSystem)}.{nameof(OnCreate)}");
-            m_CustomColorVariationMap = new NativeHashMap<Entity, CustomColorVariation>(0, Allocator.Persistent);
+            m_CustomColorVariationMap = new NativeHashMap<Entity, Entity>(0, Allocator.Persistent);
+
+            m_CustomColorVariationArchetype = EntityManager.CreateArchetype(ComponentType.ReadWrite<CustomColorVariation>(), ComponentType.ReadWrite<PrefabRef>());
+
             m_UpdatedCustomColorVariationQuery = SystemAPI.QueryBuilder()
                    .WithAll<Updated, CustomColorVariation, PrefabRef>()
                    .WithNone<Deleted>()
@@ -85,11 +111,11 @@ namespace Recolor.Systems
 
                 if (m_CustomColorVariationMap.ContainsKey(prefabRef.m_Prefab))
                 {
-                    m_CustomColorVariationMap[prefabRef.m_Prefab] = customColorVariation;
+                    m_CustomColorVariationMap[prefabRef.m_Prefab] = entity;
                 }
                 else
                 {
-                    m_CustomColorVariationMap.Add(prefabRef.m_Prefab, customColorVariation);
+                    m_CustomColorVariationMap.Add(prefabRef.m_Prefab, entity);
                 }
             }
 
@@ -109,11 +135,11 @@ namespace Recolor.Systems
 
                 if (m_CustomColorVariationMap.ContainsKey(prefabRef.m_Prefab))
                 {
-                    m_CustomColorVariationMap[prefabRef.m_Prefab] = customColorVariation;
+                    m_CustomColorVariationMap[prefabRef.m_Prefab] = entity;
                 }
                 else
                 {
-                    m_CustomColorVariationMap.Add(prefabRef.m_Prefab, customColorVariation);
+                    m_CustomColorVariationMap.Add(prefabRef.m_Prefab, entity);
                 }
             }
         }

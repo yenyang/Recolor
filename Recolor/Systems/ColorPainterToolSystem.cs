@@ -328,7 +328,7 @@ namespace Recolor.Systems
             ColorSet colorSet = colorVariationBuffer[assetSeasonIdentifier.m_Index].m_ColorSet;
             if (!EntityManager.HasComponent<Game.Objects.Tree>(instanceEntity))
             {
-                m_SelectedInfoPanelColorFieldsSystem.TrySaveCustomColorSet(colorSet, assetSeasonIdentifier);
+                m_SelectedInfoPanelColorFieldsSystem.TrySaveCustomColorSetToDisk(colorSet, assetSeasonIdentifier);
             }
             else
             {
@@ -346,7 +346,7 @@ namespace Recolor.Systems
                         m_Season = assetSeasonIdentifier.m_Season,
                     };
 
-                    m_SelectedInfoPanelColorFieldsSystem.TrySaveCustomColorSet(colorSet, currentAssetSeasonIdentifier);
+                    m_SelectedInfoPanelColorFieldsSystem.TrySaveCustomColorSetToDisk(colorSet, currentAssetSeasonIdentifier);
                 }
             }
 
