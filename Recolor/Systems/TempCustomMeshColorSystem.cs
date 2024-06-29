@@ -34,7 +34,7 @@ namespace Recolor.Systems
                    .WithNone<Deleted, Game.Common.Overridden, CustomMeshColor>()
                    .Build();
 
-            RequireAnyForUpdate(m_TempMeshColorQuery);
+            RequireForUpdate(m_TempMeshColorQuery);
         }
 
         /// <inheritdoc/>
