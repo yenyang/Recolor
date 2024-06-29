@@ -789,7 +789,8 @@ namespace Recolor.Systems
             }
             else
             {
-                for (int i = 0; i < 4; i++)
+                int length = Math.Min(4, subMeshBuffer.Length);
+                for (int i = 0; i < length; i++)
                 {
                     if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[i].m_SubMesh, out PrefabBase prefabBase))
                     {

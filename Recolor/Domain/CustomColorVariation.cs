@@ -49,7 +49,7 @@ namespace Recolor.Domain
                 m_Channel1 = color1,
                 m_Channel2 = color2,
             };
-            reader.Read(out int m_index);
+            reader.Read(out m_Index);
         }
 
         /// <inheritdoc/>
