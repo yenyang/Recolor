@@ -2,7 +2,6 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-#define BURST
 namespace Recolor.Systems
 {
     using Colossal.Entities;
@@ -16,11 +15,8 @@ namespace Recolor.Systems
     using Game.Routes;
     using Recolor.Domain;
     using Recolor.Extensions;
-    using Unity.Burst;
-    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Jobs;
 
     /// <summary>
     /// A system for overriding mesh color at right time.
@@ -31,7 +27,6 @@ namespace Recolor.Systems
         private EntityQuery m_CustomMeshColorQuery;
         private EndFrameBarrier m_Barrier;
         private MeshColorSystem m_MeshColorSystem;
-        private EntityQuery m_UpdatedEventQuery;
 
         /// <inheritdoc/>
         protected override void OnCreate()
@@ -46,11 +41,7 @@ namespace Recolor.Systems
                    .WithNone<Deleted, Game.Common.Overridden, Plant>()
                    .Build();
 
-            m_UpdatedEventQuery = SystemAPI.QueryBuilder()
-                .WithAll<Game.Common.Event, RentersUpdated>()
-                .Build();
-
-            RequireAnyForUpdate(m_CustomMeshColorQuery, m_UpdatedEventQuery);
+            RequireAnyForUpdate(m_CustomMeshColorQuery);
             m_Barrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
 
             // This overrides a query in vanilla Mesh Color System. The goal being to remove CustomMeshColor entities from MeshColorSystem.
@@ -126,49 +117,6 @@ namespace Recolor.Systems
                     };
 
                     meshColorBuffer[i] = meshColor;
-                }
-            }
-
-            GatherEntitiesFromRentersUpdatedEventsJob gatherEntitiesFromRentersUpdatedEventsJob = new GatherEntitiesFromRentersUpdatedEventsJob()
-            {
-                m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
-                m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
-                m_RentersUpdatedType = SystemAPI.GetComponentTypeHandle<RentersUpdated>(isReadOnly: true),
-                buffer = m_Barrier.CreateCommandBuffer(),
-            };
-            JobHandle jobHandle = gatherEntitiesFromRentersUpdatedEventsJob.Schedule(m_UpdatedEventQuery, Dependency);
-            m_Barrier.AddJobHandleForProducer(jobHandle);
-            Dependency = jobHandle;
-        }
-
-#if BURST
-        [BurstCompile]
-#endif
-        private struct GatherEntitiesFromRentersUpdatedEventsJob : IJobChunk
-        {
-            [ReadOnly]
-            public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;
-            [ReadOnly]
-            public BufferLookup<MeshColor> m_MeshColorLookup;
-            public EntityCommandBuffer buffer;
-            [ReadOnly]
-            public ComponentTypeHandle<RentersUpdated> m_RentersUpdatedType;
-
-            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
-            {
-                NativeArray<RentersUpdated> rentersUpdatedNativeArray = chunk.GetNativeArray(ref m_RentersUpdatedType);
-                for (int i = 0; i < chunk.Count; i++)
-                {
-                    RentersUpdated rentersUpdated = rentersUpdatedNativeArray[i];
-                    if (!m_CustomMeshColorLookup.TryGetBuffer(rentersUpdated.m_Property, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer))
-                    {
-                        continue;
-                    }
-
-                    DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(rentersUpdated.m_Property);
-
-                    meshColorBuffer.Add(new MeshColor() { m_ColorSet = customMeshColorBuffer[0].m_ColorSet });
-                    buffer.AddComponent<BatchesUpdated>(rentersUpdated.m_Property);
                 }
             }
         }
