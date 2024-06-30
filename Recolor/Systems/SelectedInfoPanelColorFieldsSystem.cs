@@ -277,6 +277,102 @@ namespace Recolor.Systems
             return true;
         }
 
+        /// <summary>
+        /// Deletes all xml data files in ModsData and resets instances.
+        /// </summary>
+        public void DeleteAllModsDataFiles()
+        {
+            string[] filePaths = Directory.GetFiles(m_ContentFolder);
+            NativeList<Entity> prefabsNeedingUpdates = new NativeList<Entity>(Allocator.Temp);
+            foreach (string filePath in filePaths)
+            {
+                SavedColorSet colorSet = default;
+                if (File.Exists(filePath))
+                {
+                    try
+                    {
+                        XmlSerializer serTool = new XmlSerializer(typeof(SavedColorSet)); // Create serializer
+                        using (System.IO.FileStream readStream = new System.IO.FileStream(filePath, System.IO.FileMode.Open)) // Open
+                        {
+                            colorSet = (SavedColorSet)serTool.Deserialize(readStream);
+                        }
+
+                        System.IO.File.Delete(filePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        m_Log.Warn($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(ReloadSavedColorSetsFromDisk)} Could not deserialize file at {filePath}. Encountered exception {ex}");
+                        continue;
+                    }
+                }
+
+                PrefabID prefabID = new PrefabID(colorSet.PrefabType, colorSet.PrefabName);
+
+                if (!m_PrefabSystem.TryGetPrefab(prefabID, out PrefabBase prefabBase))
+                {
+                    continue;
+                }
+
+                if (!m_PrefabSystem.TryGetEntity(prefabBase, out Entity e))
+                {
+                    continue;
+                }
+
+                if (!EntityManager.TryGetBuffer(e, isReadOnly: false, out DynamicBuffer<ColorVariation> colorVariationBuffer))
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < colorVariationBuffer.Length; j++)
+                {
+#if VERBOSE
+                m_Log.Verbose($"{prefabID.GetName()} {(TreeState)(int)Math.Pow(2, i - 1)} {(FoliageUtils.Season)j} {colorVariationBuffer[j].m_ColorSet.m_Channel0} {colorVariationBuffer[j].m_ColorSet.m_Channel2} {colorVariationBuffer[j].m_ColorSet.m_Channel2}");
+#endif
+                    ColorVariation currentColorVariation = colorVariationBuffer[j];
+                    TryGetSeasonFromColorGroupID(currentColorVariation.m_GroupID, out Season season);
+
+                    AssetSeasonIdentifier assetSeasonIdentifier = new ()
+                    {
+                        m_PrefabID = prefabID,
+                        m_Season = season,
+                        m_Index = j,
+                    };
+
+                    if (!m_CustomColorVariationSystem.TryGetCustomColorVariation(e, out CustomColorVariation customColorVariation) && TryGetVanillaColorSet(assetSeasonIdentifier, out currentColorVariation.m_ColorSet))
+                    {
+                        colorVariationBuffer[j] = currentColorVariation;
+                        if (!prefabsNeedingUpdates.Contains(e))
+                        {
+                            prefabsNeedingUpdates.Add(e);
+                        }
+
+                        m_Log.Debug($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(DeleteAllModsDataFiles)} Reset Colorset for {prefabID} in {assetSeasonIdentifier.m_Season}");
+                    }
+                }
+            }
+
+            if (prefabsNeedingUpdates.Length == 0)
+            {
+                return;
+            }
+
+            EntityQuery prefabRefQuery = SystemAPI.QueryBuilder()
+                .WithAll<PrefabRef>()
+                .WithNone<Deleted, Game.Common.Overridden, Game.Tools.Temp>()
+                .Build();
+
+            EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
+
+            NativeArray<Entity> entities = prefabRefQuery.ToEntityArray(Allocator.Temp);
+            foreach (Entity e in entities)
+            {
+                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) && prefabsNeedingUpdates.Contains(currentSubMeshBuffer[0].m_SubMesh))
+                {
+                    buffer.AddComponent<BatchesUpdated>(e);
+                }
+            }
+        }
+
         /// <inheritdoc/>
         public override void OnWriteProperties(IJsonWriter writer)
         {
@@ -1217,7 +1313,7 @@ namespace Recolor.Systems
                             prefabsNeedingUpdates.Add(e);
                         }
 
-                        m_Log.Info($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(OnGameLoadingComplete)} Imported Colorset for {prefabID} in {assetSeasonIdentifier.m_Season}");
+                        m_Log.Debug($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(OnGameLoadingComplete)} Imported Colorset for {prefabID} in {assetSeasonIdentifier.m_Season}");
                     }
                 }
             }

@@ -11,6 +11,7 @@ namespace Recolor
     using Game.SceneFlow;
     using Recolor.Settings;
     using Recolor.Systems;
+    using System.Reflection;
     using UnityEngine;
 
     /// <summary>
@@ -42,6 +43,11 @@ namespace Recolor
         /// </summary>
         internal ILog Log { get; private set; }
 
+        /// <summary>
+        /// Gets the version of the mod.
+        /// </summary>
+        internal string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+
         /// <inheritdoc/>
         public void OnLoad(UpdateSystem updateSystem)
         {
@@ -57,7 +63,7 @@ namespace Recolor
             Log.Info($"{nameof(OnLoad)} Initalizing Settings");
 
             Settings = new Setting(this);
-            // Settings.RegisterInOptionsUI();
+            Settings.RegisterInOptionsUI();
             AssetDatabase.global.LoadSettings(nameof(Recolor), Settings, new Setting(this));
             Log.Info($"{nameof(OnLoad)} Initalizing en-US localization.");
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Settings));
@@ -71,6 +77,7 @@ namespace Recolor
             updateSystem.UpdateAt<GenericTooltipSystem>(SystemUpdatePhase.UITooltip);
             updateSystem.UpdateBefore<HandleBatchesUpdatedNextFrameSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateAt<CustomColorVariationSystem>(SystemUpdatePhase.ModificationEnd);
+            updateSystem.UpdateAt<ResetCustomMeshColorSystem>(SystemUpdatePhase.PreCulling);
             Log.Info($"{nameof(OnLoad)} complete.");
         }
 

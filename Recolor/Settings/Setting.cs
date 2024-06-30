@@ -1,22 +1,139 @@
-﻿using Colossal;
-using Colossal.IO.AssetDatabase;
-using Game.Modding;
-using Game.Settings;
-using Game.UI;
-using Game.UI.Widgets;
-using System.Collections.Generic;
-
-namespace Recolor.Settings
+﻿namespace Recolor.Settings
 {
-    [FileLocation(nameof(Recolor))]
+    using Colossal.IO.AssetDatabase;
+    using Game.Modding;
+    using Game.Settings;
+    using Recolor.Systems;
+    using Unity.Entities;
+
+    /// <summary>
+    /// Settings class for Recolor mod.
+    /// </summary>
+    [FileLocation("ModsSettings/" + nameof(Recolor) + "/" + nameof(Recolor))]
+    [SettingsUIGroupOrder(General, Remove, About)]
     public class Setting : ModSetting
     {
-        public Setting(IMod mod) : base(mod)
+        /// <summary>
+        /// This is for general settings.
+        /// </summary>
+        public const string General = "General";
+
+        /// <summary>
+        /// This is for about section.
+        /// </summary>
+        public const string About = "About";
+
+        /// <summary>
+        /// This is for reseting settings button group.
+        /// </summary>
+        public const string Remove = "Remove";
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Setting"/> class.
+        /// </summary>
+        /// <param name="mod">Mod file.</param>
+        public Setting(IMod mod)
+            : base(mod)
         {
+            SetDefaults();
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to copy color while activating color painter.
+        /// </summary>
+        [SettingsUISection(General, General)]
+        public bool ColorPainterAutomaticCopyColor { get; set; }
+
+        /// <summary>
+        /// Sets a value indicating whether to reset all settings to default.
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        [SettingsUISection(General, General)]
+        public bool ResetSettings
+        {
+            set
+            {
+                SetDefaults();
+                ApplyAndSave();
+            }
+        }
+
+        /// <summary>
+        /// Sets a value indicating whether to Reset All Single Instance Color Changes.
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        [SettingsUISection(General, Remove)]
+        public bool ResetAllSingleInstanceColorChanges
+        {
+            set
+            {
+                ResetCustomMeshColorSystem resetCustomMeshColorSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ResetCustomMeshColorSystem>();
+                resetCustomMeshColorSystem.Enabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Sets a value indicating whether to Reset ColorVariations In This SaveGame.
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        [SettingsUISection(General, Remove)]
+        public bool ResetColorVariationsInThisSaveGame
+        {
+            set
+            {
+                CustomColorVariationSystem customColorVariationSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<CustomColorVariationSystem>();
+                customColorVariationSystem.ResetAllCustomColorVariations();
+            }
+        }
+
+        /// <summary>
+        /// Sets a value indicating whether to Delete ModsData Saved Color Variations.
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        [SettingsUISection(General, Remove)]
+        public bool DeleteModsDataSavedColorVariations
+        {
+            set
+            {
+                SelectedInfoPanelColorFieldsSystem selectedInfoPanelColorFieldsSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
+                selectedInfoPanelColorFieldsSystem.DeleteAllModsDataFiles();
+            }
+        }
+
+        /// <summary>
+        /// Sets a value indicating whether to safely remove the mod.
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        [SettingsUISection(General, Remove)]
+        public bool SafelyRemove
+        {
+            set
+            {
+                ResetCustomMeshColorSystem resetCustomMeshColorSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ResetCustomMeshColorSystem>();
+                resetCustomMeshColorSystem.Enabled = true;
+                CustomColorVariationSystem customColorVariationSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<CustomColorVariationSystem>();
+                customColorVariationSystem.ResetAllCustomColorVariations();
+                SelectedInfoPanelColorFieldsSystem selectedInfoPanelColorFieldsSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
+                selectedInfoPanelColorFieldsSystem.DeleteAllModsDataFiles();
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating the version.
+        /// </summary>
+        [SettingsUISection(General, About)]
+        public string Version => Mod.Instance.Version;
+
+        /// <inheritdoc/>
         public override void SetDefaults()
         {
+            ColorPainterAutomaticCopyColor = true;
         }
     }
 }
