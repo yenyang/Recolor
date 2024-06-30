@@ -73,6 +73,21 @@ namespace Recolor.Systems
         }
 
         /// <summary>
+        /// Schedules creation of a CustomColorVariationEntity.
+        /// </summary>
+        /// <param name="buffer">ECB for scheduling.</param>
+        /// <param name="prefabEntity">Prefab entity for RenderPrefab.</param>
+        public void DeleteCustomColorVariationEntity(EntityCommandBuffer buffer, Entity prefabEntity)
+        {
+            if (m_CustomColorVariationMap.ContainsKey(prefabEntity))
+            {
+                buffer.AddComponent<Deleted>(m_CustomColorVariationMap[prefabEntity]);
+                m_CustomColorVariationMap.Remove(prefabEntity);
+            }
+        }
+
+
+        /// <summary>
         /// Reloads custom color variations that from custom color variation entities.
         /// </summary>
         /// <param name="buffer">ECB for recording commands.</param>

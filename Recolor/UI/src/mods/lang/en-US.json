@@ -14,6 +14,8 @@
   "Recolor.TOOLTIP_DESCRIPTION[PasteColorSet]": "Paste the copied color set.",
   "Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]": "Reset the whole color set and saves the colors back to the original colors for this asset (and season, if applicable).",
   "Recolor.TOOLTIP_DESCRIPTION[ResetInstanceColor]": "Resets the instance colors and this instance will return to utilizing its color variation.",
+  "Recolor.TOOLTIP_DESCRIPTION[SaveToDisk]": "Saves the color variation to ModsData folder so that it can be used as default across multiple saves.",
+  "Recolor.TOOLTIP_DESCRIPTION[RemoveFromDisk]": "Removes the saved color variation from ModsData folder so that it no longer is used across multiple saves.",
   "Recolor.TOOLTIP_TITLE[SingleInstance]": "Single Instance",
   "Recolor.TOOLTIP_DESCRIPTION[SingleInstance]": "Change the colors of the current selection only.",
   "Recolor.TOOLTIP_TITLE[Matching]": "Matching Color Variation",

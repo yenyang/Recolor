@@ -42,6 +42,8 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("PasteColorSet"), "Paste the copied color set." },
                 { TooltipDescriptionKey("ResetColorSet"), "Reset the whole color set and saves the colors back to the original colors for this asset (and season, if applicable)." },
                 { TooltipDescriptionKey("ResetInstanceColor"), "Resets the instance colors and this instance will return to utilizing its color variation." },
+                { TooltipDescriptionKey("SaveToDisk"), "Saves the color variation to ModsData folder so that it can be used as default across multiple saves." },
+                { TooltipDescriptionKey("RemoveFromDisk"), "Removes the saved color variation from ModsData folder so that it no longer is used across multiple saves." },
                 { TooltipTitleKey("SingleInstance"), "Single Instance" },
                 { TooltipDescriptionKey("SingleInstance"), "Change the colors of the current selection only." },
                 { TooltipTitleKey("Matching"), "Matching Color Variation" },

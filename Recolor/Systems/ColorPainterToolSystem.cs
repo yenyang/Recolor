@@ -8,6 +8,7 @@ namespace Recolor.Systems
     using System;
     using Colossal.Entities;
     using Colossal.Logging;
+    using Game;
     using Game.Audio.Radio;
     using Game.Buildings;
     using Game.Common;
@@ -38,6 +39,7 @@ namespace Recolor.Systems
         private Entity m_PreviousSelectedEntity;
         private EntityQuery m_HighlightedQuery;
         private SelectedInfoPanelColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
+        private CustomColorVariationSystem m_CustomColorVariationSystem;
         private OverlayRenderSystem m_OverlayRenderSystem;
         private ToolOutputBarrier m_Barrier;
         private GenericTooltipSystem m_GenericTooltipSystem;
@@ -93,6 +95,7 @@ namespace Recolor.Systems
             m_ApplyAction = InputManager.instance.FindAction("Tool", "Apply");
             m_Log.Info($"{nameof(ColorPainterToolSystem)}.{nameof(OnCreate)}");
             m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
+            m_CustomColorVariationSystem = World.GetOrCreateSystemManaged<CustomColorVariationSystem>();
             m_ColorPainterUISystem = World.GetOrCreateSystemManaged<ColorPainterUISystem>();
             m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
@@ -199,7 +202,7 @@ namespace Recolor.Systems
                 else if (!m_SelectedInfoPanelColorFieldsSystem.SingleInstance && m_SelectedInfoPanelColorFieldsSystem.GetAssetSeasonIdentifier(currentRaycastEntity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet colorSet))
                 {
                     ChangeColorVariation(m_ColorPainterUISystem.ColorSet, ref buffer, currentRaycastEntity, assetSeasonIdentifier);
-                    SaveColorSet(currentRaycastEntity, ref buffer, assetSeasonIdentifier);
+                    GenerateOrUpdateCustomColorVariationEntity(currentRaycastEntity, ref buffer, assetSeasonIdentifier);
                 }
             }
             else if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius && m_ApplyAction.IsPressed())
@@ -312,7 +315,7 @@ namespace Recolor.Systems
             }
         }
 
-        private void SaveColorSet(Entity instanceEntity, ref EntityCommandBuffer buffer, AssetSeasonIdentifier assetSeasonIdentifier)
+        private void GenerateOrUpdateCustomColorVariationEntity(Entity instanceEntity, ref EntityCommandBuffer buffer, AssetSeasonIdentifier assetSeasonIdentifier)
         {
             if (!EntityManager.TryGetComponent(instanceEntity, out PrefabRef prefabRef) || !EntityManager.TryGetBuffer(prefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
             {
@@ -324,15 +327,15 @@ namespace Recolor.Systems
                 return;
             }
 
-
             ColorSet colorSet = colorVariationBuffer[assetSeasonIdentifier.m_Index].m_ColorSet;
             if (!EntityManager.HasComponent<Game.Objects.Tree>(instanceEntity))
             {
-                m_SelectedInfoPanelColorFieldsSystem.TrySaveCustomColorSetToDisk(colorSet, assetSeasonIdentifier);
+                m_CustomColorVariationSystem.CreateOrUpdateCustomColorVariationEntity(buffer, subMeshBuffer[0].m_SubMesh, colorSet, assetSeasonIdentifier.m_Index);
             }
             else
             {
-                for (int i = 0; i < 4; i++)
+                int length = Math.Min(4, subMeshBuffer.Length);
+                for (int i = 0; i < length; i++)
                 {
                     if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[i].m_SubMesh, out PrefabBase prefabBase))
                     {
@@ -346,7 +349,7 @@ namespace Recolor.Systems
                         m_Season = assetSeasonIdentifier.m_Season,
                     };
 
-                    m_SelectedInfoPanelColorFieldsSystem.TrySaveCustomColorSetToDisk(colorSet, currentAssetSeasonIdentifier);
+                    m_CustomColorVariationSystem.CreateOrUpdateCustomColorVariationEntity(buffer, subMeshBuffer[i].m_SubMesh, colorSet, currentAssetSeasonIdentifier.m_Index);
                 }
             }
 

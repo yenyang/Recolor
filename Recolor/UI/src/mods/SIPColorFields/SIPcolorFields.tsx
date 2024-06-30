@@ -24,6 +24,7 @@ const colorPickerSrc =                  uilStandard + "PickerPipette.svg";
 const colorPaleteSrc =                 uilColored + "ColorPalette.svg";
 const minimizeSrc =                     uilStandard + "ArrowsMinimize.svg";
 const expandSrc =                     uilStandard + "ArrowsExpand.svg";
+const saveToDiskSrc =                   uilStandard + "DiskSave.svg";
 
 const CurrentColorSet$ = bindValue<ColorSet>(mod.id, "CurrentColorSet");
 const SingleInstance$ = bindValue<boolean>(mod.id, 'SingleInstance');
@@ -33,6 +34,7 @@ const MatchesVanillaColorSet$ = bindValue<boolean[]>(mod.id, 'MatchesVanillaColo
 const CanPasteColor$ = bindValue<boolean>(mod.id, "CanPasteColor");
 const CanPasteColorSet$ = bindValue<boolean>(mod.id, "CanPasteColorSet");
 const Minimized$ = bindValue<boolean>(mod.id, "Minimized");
+const MatchesSavedtoDisk$ = bindValue<boolean>(mod.id, "MatchesSavedOnDisk");
 
 const InfoSectionTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-section/info-section.module.scss",
@@ -104,6 +106,7 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
         const CanPasteColor = useValue(CanPasteColor$);
         const CanPasteColorSet = useValue(CanPasteColorSet$);
         const Minimized = useValue(Minimized$);
+        const MatchesSavedToDisk = useValue(MatchesSavedtoDisk$);
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string from en-US.json.
         const { translate } = useLocalization();
@@ -116,7 +119,7 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                 <>  
                                     {!Minimized && (
                                     <>
-                                        {!DisableSingleInstance && !Minimized && (                             
+                                        {!DisableSingleInstance && (                             
                                         <VanillaComponentResolver.instance.ToolButton
                                             src={singleSrc}
                                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
@@ -127,7 +130,7 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                             onSelect={() => handleClick("SingleInstance")}
                                         />)} 
-                                        {!DisableMatching && !Minimized && (   
+                                        {!DisableMatching && (   
                                         <VanillaComponentResolver.instance.ToolButton
                                             src={matchingSrc}
                                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
@@ -167,6 +170,17 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                             tooltip = {DisableMatching? translate("Recolor.TOOLTIP_DESCRIPTION[ResetInstanceColor]" ,locale["Recolor.TOOLTIP_DESCRIPTION[ResetInstanceColor]"]) : translate("Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]",locale["Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]"])}
                                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                             onSelect={() => handleClick("ResetColorSet")}
+                                        />)}
+                                        { (!MatchesVanillaColorSet[0] || !MatchesVanillaColorSet[1] || !MatchesVanillaColorSet[2]) && !DisableMatching && (!SingleInstance || DisableSingleInstance) &&(        
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={saveToDiskSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            selected={MatchesSavedToDisk}
+                                            multiSelect = {false}   // I haven't tested any other value here
+                                            disabled = {false}      
+                                            tooltip = {MatchesSavedToDisk?  translate("Recolor.TOOLTIP_DESCRIPTION[RemoveFromDisk]" ,locale["Recolor.TOOLTIP_DESCRIPTION[RemoveFromDisk]"]) : translate("Recolor.TOOLTIP_DESCRIPTION[SaveToDisk]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SaveToDisk]"])}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => handleClick(MatchesSavedToDisk? "RemoveFromDisk" : "SaveToDisk")}
                                         />)}
                                         <VanillaComponentResolver.instance.ToolButton
                                             src={colorPickerSrc}
