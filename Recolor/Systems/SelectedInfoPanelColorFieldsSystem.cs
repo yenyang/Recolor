@@ -428,6 +428,10 @@ namespace Recolor.Systems
             {
                 m_ToolSystem.selected = Entity.Null;
                 m_ActivateColorPainter = true;
+                if (Mod.Instance.Settings.ColorPainterAutomaticCopyColor)
+                {
+                    m_ColorPainterUISystem.ColorSet = m_CurrentColorSet.Value.GetColorSet();
+                }
             });
             CreateTrigger("Minimize", () => m_Minimized.Value = !m_Minimized.Value);
             CreateTrigger("SingleInstance", () =>

@@ -110,12 +110,13 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                             <VanillaComponentResolver.instance.ToolButton
                                 src={singleSrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                selected = {SingleInstance}
+                                selected = {SingleInstance || ColorPainterSelectionType == 1}
                                 multiSelect = {false}   // I haven't tested any other value here 
                                 tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[SingleInstance]",locale["Recolor.TOOLTIP_TITLE[SingleInstance]"]), translate("Recolor.TOOLTIP_DESCRIPTION[SingleInstance]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SingleInstance]"]))}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                 onSelect={() => handleClick("SingleInstance")}
                             />
+                            { ColorPainterSelectionType == 0 && (
                             <VanillaComponentResolver.instance.ToolButton
                                 src={matchingSrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
@@ -124,7 +125,7 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                                 tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[Matching]",locale["Recolor.TOOLTIP_TITLE[Matching]"]), translate("Recolor.TOOLTIP_DESCRIPTION[Matching]" ,locale["Recolor.TOOLTIP_DESCRIPTION[Matching]"]))}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                 onSelect={() => handleClick("Matching")}
-                            />
+                            />)}
                             <VanillaComponentResolver.instance.ToolButton
                                 src={copySrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}

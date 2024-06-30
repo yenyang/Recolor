@@ -65,11 +65,12 @@ namespace Recolor.Systems
         }
 
         /// <summary>
-        /// Gets the color set from UI.
+        /// Gets or sets the color set for color painter.
         /// </summary>
         public ColorSet ColorSet
         {
             get { return m_PainterColorSet.Value.GetColorSet(); }
+            set { m_PainterColorSet.Value = new RecolorSet(value); }
         }
 
         /// <summary>
