@@ -5,10 +5,12 @@
 namespace Recolor.Systems
 {
     using Colossal.Logging;
+    using Game.Input;
     using Game.Rendering;
     using Game.Tools;
     using Recolor.Domain;
     using Recolor.Extensions;
+    using Recolor.Settings;
 
     /// <summary>
     /// A UI System for the Color Painter Tool.
@@ -26,6 +28,28 @@ namespace Recolor.Systems
         private ValueBindingHelper<UnityEngine.Color> m_CopiedColor;
         private ValueBindingHelper<int> m_Radius;
         private ValueBindingHelper<int> m_Filter;
+        private ValueBindingHelper<PainterToolMode> m_ToolMode;
+
+        /// <summary>
+        /// Used for determining the mode of the painter tool.
+        /// </summary>
+        public enum PainterToolMode
+        {
+            /// <summary>
+            /// Change colors.
+            /// </summary>
+            Paint,
+
+            /// <summary>
+            /// Reset back to vanilla.
+            /// </summary>
+            Reset,
+
+            /// <summary>
+            /// Pick a new color.
+            /// </summary>
+            Picker,
+        }
 
         /// <summary>
         /// Used for different selection modes.
@@ -62,6 +86,14 @@ namespace Recolor.Systems
             /// Vehicles.
             /// </summary>
             Vehicles,
+        }
+
+        /// <summary>
+        /// Gets the tool mode for color painter.
+        /// </summary>
+        public PainterToolMode ToolMode
+        {
+            get { return m_ToolMode; }
         }
 
         /// <summary>
@@ -116,6 +148,7 @@ namespace Recolor.Systems
             m_CopiedColor = CreateBinding("CopiedColor", UnityEngine.Color.white);
             m_Radius = CreateBinding("Radius", 30);
             m_Filter = CreateBinding("Filter", (int)FilterType.Building);
+            m_ToolMode = CreateBinding("PainterToolMode", PainterToolMode.Paint);
 
             // These are event triggers from actions in UI.
             CreateTrigger<int, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
@@ -135,6 +168,8 @@ namespace Recolor.Systems
             CreateTrigger("BuildingFilter", () => m_Filter.Value = (int)FilterType.Building);
             CreateTrigger("PropFilter", () => m_Filter.Value = (int)FilterType.Props);
             CreateTrigger("VehicleFilter", () => m_Filter.Value = (int)FilterType.Vehicles);
+            CreateTrigger("ChangeToolMode", (int toolMode) => m_ToolMode.Value = (PainterToolMode)toolMode);
+
             Enabled = false;
         }
 

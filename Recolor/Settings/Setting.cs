@@ -1,6 +1,7 @@
 ﻿namespace Recolor.Settings
 {
     using Colossal.IO.AssetDatabase;
+    using Game.Input;
     using Game.Modding;
     using Game.Settings;
     using Recolor.Systems;
@@ -10,13 +11,18 @@
     /// Settings class for Recolor mod.
     /// </summary>
     [FileLocation("ModsSettings/" + nameof(Recolor) + "/" + nameof(Recolor))]
-    [SettingsUIGroupOrder(General, Remove, About)]
+    [SettingsUIGroupOrder(General, Keybinds, Remove, About)]
     public class Setting : ModSetting
     {
         /// <summary>
         /// This is for general settings.
         /// </summary>
         public const string General = "General";
+
+        /// <summary>
+        /// This is for general settings.
+        /// </summary>
+        public const string Keybinds = "Keybinds";
 
         /// <summary>
         /// This is for about section.
@@ -27,6 +33,11 @@
         /// This is for reseting settings button group.
         /// </summary>
         public const string Remove = "Remove";
+
+        /// <summary>
+        /// The action name for toggle anarchy keybind.
+        /// </summary>
+        public const string ActivateColorPainterActionName = "ActivateColorPainter";
 
 
         /// <summary>
@@ -59,6 +70,28 @@
                 ApplyAndSave();
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating the keybinding for Reset Elevation.
+        /// </summary>
+        [SettingsUISection(General, Keybinds)]
+        [SettingsUIKeyboardBinding(UnityEngine.InputSystem.Key.P, actionName: ActivateColorPainterActionName, ctrl: true)]
+        public ProxyBinding ActivateColorPainter { get; set; }
+
+        /// <summary>
+        /// Sets a value indicating whether: a button for Resetting the settings for keybinds.
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        [SettingsUISection(General, Keybinds)]
+        public bool ResetKeybindSettings
+        {
+            set
+            {
+                ResetKeyBindings();
+            }
+        }
+
 
         /// <summary>
         /// Sets a value indicating whether to Reset All Single Instance Color Changes.

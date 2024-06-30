@@ -16,6 +16,7 @@ namespace Recolor.Systems
     using Colossal.UI.Binding;
     using Game;
     using Game.Common;
+    using Game.Input;
     using Game.Objects;
     using Game.Prefabs;
     using Game.Prefabs.Climate;
@@ -24,6 +25,7 @@ namespace Recolor.Systems
     using Game.Tools;
     using Recolor.Domain;
     using Recolor.Extensions;
+    using Recolor.Settings;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -64,6 +66,7 @@ namespace Recolor.Systems
         private ColorPainterUISystem m_ColorPainterUISystem;
         private CustomColorVariationSystem m_CustomColorVariationSystem;
         private EntityQuery m_SubMeshQuery;
+        private ProxyAction m_ActivateColorPainterAction;
         private ClimatePrefab m_ClimatePrefab;
         private AssetSeasonIdentifier m_CurrentAssetSeasonIdentifier;
         private string m_ContentFolder;
@@ -456,6 +459,11 @@ namespace Recolor.Systems
 
             RequireForUpdate(m_SubMeshQuery);
             Enabled = false;
+
+
+            // For the keybinds
+            m_ActivateColorPainterAction = Mod.Instance.Settings.GetAction(Setting.ActivateColorPainterActionName);
+            m_ActivateColorPainterAction.shouldBeEnabled = true;
         }
 
         /// <inheritdoc/>
@@ -549,6 +557,24 @@ namespace Recolor.Systems
             {
                 m_ActivateColorPainter = false;
                 m_ToolSystem.activeTool = m_ColorPainterTool;
+            }
+
+            if (m_ActivateColorPainterAction.WasPerformedThisFrame())
+            {
+                m_ActivateColorPainter = true;
+                if (selectedEntity != Entity.Null)
+                {
+                    m_ToolSystem.selected = Entity.Null;
+                    if (Mod.Instance.Settings.ColorPainterAutomaticCopyColor)
+                    {
+                        m_ColorPainterUISystem.ColorSet = m_CurrentColorSet.Value.GetColorSet();
+                    }
+                }
+
+                visible = false;
+                m_PreviouslySelectedEntity = Entity.Null;
+
+                return;
             }
 
             if (selectedEntity == Entity.Null && m_PreviouslySelectedEntity != Entity.Null)

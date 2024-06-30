@@ -8,9 +8,11 @@ import locale from "../lang/en-US.json";
 import { ColorSet } from "mods/Domain/ColorSet";
 import styles from "../Domain/ColorFields.module.scss";
 import { useState } from "react";
+import { PainterToolMode } from "mods/Domain/PainterToolMode";
 
 // These contain the coui paths to Unified Icon Library svg assets
 const uilStandard =                          "coui://uil/Standard/";
+const uilColored =                           "coui://uil/Colored/";
 const singleSelectionSrc =                       uilStandard + "Dot.svg";
 const radiusSelectionSrc =                        uilStandard + "Circle.svg";
 const singleSrc =                        uilStandard + "SingleRhombus.svg";
@@ -21,6 +23,10 @@ const buildingSrc =                     uilStandard + "House.svg";
 const vehiclesSrc =                     uilStandard + "GenericVehicle.svg";
 const propsSrc =                        uilStandard + "BenchAndLampProps.svg";
 
+const resetSrc =                     uilStandard + "Reset.svg";
+const colorPickerSrc =                  uilStandard + "PickerPipette.svg";
+const colorPaleteSrc =                 uilColored + "ColorPalette.svg";
+
 const PainterColorSet$ = bindValue<ColorSet>(mod.id, "PainterColorSet");
 const ColorPainterSelectionType$ = bindValue<number>(mod.id, "ColorPainterSelectionType");
 const SingleInstance$ = bindValue<boolean>(mod.id, 'SingleInstance');
@@ -30,6 +36,7 @@ const CopiedColorSet$ = bindValue<ColorSet>(mod.id, "CopiedColorSet");
 const CopiedColor$ = bindValue<Color>(mod.id, "CopiedColor");
 const Radius$ = bindValue<Number>(mod.id, "Radius");
 const Filter$ = bindValue<Number>(mod.id, "Filter");
+const ToolMode$ = bindValue<PainterToolMode>(mod.id, "PainterToolMode");
 
 const arrowDownSrc =         uilStandard +  "ArrowDownThickStroke.svg";
 const arrowUpSrc =           uilStandard +  "ArrowUpThickStroke.svg";
@@ -53,6 +60,11 @@ function copyColor(color : Color) {
 function handleClick(eventName : string) {
     // This triggers an event on C# side and C# designates the method to implement.
     trigger(mod.id, eventName);
+}
+
+function changeToolMode(toolMode: PainterToolMode) {
+    // This triggers an event on C# side and C# designates the method to implement.
+    trigger(mod.id, "ChangeToolMode", toolMode);
 }
 
 function handleChannelClick(eventName : string, channel : number) {
@@ -87,6 +99,7 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
         const CopiedColor = useValue(CopiedColor$);
         const Radius = useValue(Radius$);
         const Filter = useValue(Filter$);
+        const ToolMode = useValue(ToolMode$);
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
         const { translate } = useLocalization();
@@ -105,6 +118,41 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
         if (toolActive) {
             result.props.children?.unshift(
                 <>
+                    <VanillaComponentResolver.instance.Section title={translate("Toolbar.TOOL_MODE_TITLE", "Tool Mode")}> 
+                        <>
+                            <VanillaComponentResolver.instance.ToolButton
+                                src={colorPaleteSrc}
+                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                selected = {ToolMode == PainterToolMode.Paint || ColorPainterSelectionType == 1}
+                                multiSelect = {false}   // I haven't tested any other value here 
+                                tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[PaintToolMode]" ,locale["Recolor.TOOLTIP_TITLE[PaintToolMode]"]), translate("Recolor.TOOLTIP_DESCRIPTION[PaintToolMode]" ,locale["Recolor.TOOLTIP_DESCRIPTION[PaintToolMode]"]))}
+                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                onSelect={() => changeToolMode(PainterToolMode.Paint)}
+                            />
+                            { ColorPainterSelectionType == 0 && (
+                            <>
+                                <VanillaComponentResolver.instance.ToolButton
+                                        src={resetSrc}
+                                        focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                        selected = {ToolMode == PainterToolMode.Reset}
+                                        multiSelect = {false}   // I haven't tested any other value here 
+                                        tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[ResetToolMode]",locale["Recolor.TOOLTIP_TITLE[ResetToolMode]"]), translate("Recolor.TOOLTIP_DESCRIPTION[ResetToolMode]" ,locale["Recolor.TOOLTIP_DESCRIPTION[ResetToolMode]"]))}
+                                        className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                        onSelect={() => changeToolMode(PainterToolMode.Reset)}
+                                />
+                                <VanillaComponentResolver.instance.ToolButton
+                                    src={colorPickerSrc}
+                                    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                    selected = {ToolMode == PainterToolMode.Picker}
+                                    multiSelect = {false}   // I haven't tested any other value here 
+                                    tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[PickerToolMode]",locale["Recolor.TOOLTIP_TITLE[PickerToolMode]"]), translate("Recolor.TOOLTIP_DESCRIPTION[PickerToolMode]" ,locale["Recolor.TOOLTIP_DESCRIPTION[PickerToolMode]"]))}
+                                    className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                    onSelect={() => changeToolMode(PainterToolMode.Picker)}
+                                />
+                            </>
+                            )}
+                        </>
+                    </VanillaComponentResolver.instance.Section>
                     <VanillaComponentResolver.instance.Section title={translate( "Recolor.SECTION_TITLE[InfoRowTitle]",locale["Recolor.SECTION_TITLE[InfoRowTitle]"])}> 
                         <>
                             <VanillaComponentResolver.instance.ToolButton

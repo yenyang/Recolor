@@ -63,6 +63,12 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("PropFilter"), "Color Painter tool will change single instance colors of props." },
                 { TooltipTitleKey("VehicleFilter"), "Vehicle Filter" },
                 { TooltipDescriptionKey("VehicleFilter"), "Color Painter tool will change single instance colors of vehicles." },
+                { TooltipTitleKey("PaintToolMode"), "Paint" },
+                { TooltipDescriptionKey("PaintToolMode"), "Changes single instance colors or matching color variations on a selection." },
+                { TooltipTitleKey("ResetToolMode"), "Reset" },
+                { TooltipDescriptionKey("ResetToolMode"), "Resets single instance colors back to color variation or custom color variations back to originals." },
+                { TooltipTitleKey("PickerToolMode"), "Color Picker" },
+                { TooltipDescriptionKey("PickerToolMode"), "Color picker within the painter tool." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ColorPainterAutomaticCopyColor)), "Automatically Copy Color Set when activating Color Painter" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ColorPainterAutomaticCopyColor)), "Copies and pastes the set of three colors from the selected asset whenever color painter is activated from the selected info panel button." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetSettings)), $"Reset {Mod.Id} Settings" },
@@ -82,6 +88,13 @@ namespace Recolor.Settings
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.SafelyRemove)), $"Safely Remove {Mod.Id}" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.SafelyRemove)), $"Upon confirmation this will remove all components and entities from the {Mod.Id} mod. Resets all instance colors in this save file, remove all saved color variations from this save file, and delete all saved files in ModsData related to this mod." },
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.SafelyRemove)), $"Safely Remove {Mod.Id}?" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ActivateColorPainter)), "Color Painter Tool Keybind" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ActivateColorPainter)), "A keybind to activate the color painter tool." },
+                { m_Setting.GetBindingMapLocaleID(), Mod.Id },
+                { m_Setting.GetBindingKeyLocaleID(Setting.ActivateColorPainterActionName), "Color Painter Tool Activation key" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetKeybindSettings)), $"Reset {Mod.Id} mod Keybindings" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetKeybindSettings)), $"Upon confirmation this will reset the keybindings for {Mod.Id} mod." },
+                { m_Setting.GetOptionWarningLocaleID(nameof(Setting.ResetKeybindSettings)), $"Reset {Mod.Id} mod Keybindings?" },
             };
         }
 

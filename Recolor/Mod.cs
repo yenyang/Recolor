@@ -63,6 +63,7 @@ namespace Recolor
             Log.Info($"{nameof(OnLoad)} Initalizing Settings");
 
             Settings = new Setting(this);
+            Settings.RegisterKeyBindings();
             Settings.RegisterInOptionsUI();
             AssetDatabase.global.LoadSettings(nameof(Recolor), Settings, new Setting(this));
             Log.Info($"{nameof(OnLoad)} Initalizing en-US localization.");
