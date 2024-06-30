@@ -2,6 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
+#define BURST
 namespace Recolor.Systems
 {
     using Colossal.Entities;
@@ -15,6 +16,7 @@ namespace Recolor.Systems
     using Game.Routes;
     using Recolor.Domain;
     using Recolor.Extensions;
+    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
@@ -166,7 +168,7 @@ namespace Recolor.Systems
                     DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(rentersUpdated.m_Property);
 
                     meshColorBuffer.Add(new MeshColor() { m_ColorSet = customMeshColorBuffer[0].m_ColorSet });
-                    buffer.AddComponent<BatchesUpdatedNextFrame>(rentersUpdated.m_Property);
+                    buffer.AddComponent<BatchesUpdated>(rentersUpdated.m_Property);
                 }
             }
         }
