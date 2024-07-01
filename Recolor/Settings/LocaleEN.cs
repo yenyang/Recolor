@@ -6,6 +6,7 @@ namespace Recolor.Settings
 {
     using System.Collections.Generic;
     using Colossal;
+    using Colossal.IO.AssetDatabase.Internal;
     using Recolor;
 
     /// <summary>
@@ -42,6 +43,8 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("PasteColorSet"), "Paste the copied color set." },
                 { TooltipDescriptionKey("ResetColorSet"), "Reset the whole color set and saves the colors back to the original colors for this asset (and season, if applicable)." },
                 { TooltipDescriptionKey("ResetInstanceColor"), "Resets the instance colors and this instance will return to utilizing its color variation." },
+                { TooltipDescriptionKey("SaveToDisk"), "Saves the color variation to ModsData folder so that it can be used as default across multiple saves." },
+                { TooltipDescriptionKey("RemoveFromDisk"), "Removes the saved color variation from ModsData folder so that it no longer is used across multiple saves." },
                 { TooltipTitleKey("SingleInstance"), "Single Instance" },
                 { TooltipDescriptionKey("SingleInstance"), "Change the colors of the current selection only." },
                 { TooltipTitleKey("Matching"), "Matching Color Variation" },
@@ -55,14 +58,46 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("DecreaseRadius"), "Decrease the radius." },
                 { SectionLabel("Radius"), "Radius" },
                 { SectionLabel("Filter"), "Filter" },
-                { TooltipTitleKey("AllFilters"), "Toggle all Filters on/off" },
-                { TooltipDescriptionKey("AllFilters"), "Either selects all or none of the Filters depending on your current selection. Having none selected will prevent the Bulldoze Tool from working." },
                 { TooltipTitleKey("BuildingFilter"), "Building Filter" },
-                { TooltipDescriptionKey("BuildingFilter"), "Toggling this off will prevent the Color Painter tool from chaning single instance colors of buildings." },
+                { TooltipDescriptionKey("BuildingFilter"), "Color Painter tool will change single instance colors of buildings." },
                 { TooltipTitleKey("PropFilter"), "Prop Filter" },
-                { TooltipDescriptionKey("PropFilter"), "Toggling this off will prevent the Color Painter tool from chaning single instance colors of props." },
+                { TooltipDescriptionKey("PropFilter"), "Color Painter tool will change single instance colors of props." },
                 { TooltipTitleKey("VehicleFilter"), "Vehicle Filter" },
-                { TooltipDescriptionKey("VehicleFilter"), "Toggling this off will prevent the Color Painter tool from chaning single instance colors of vehicles." },
+                { TooltipDescriptionKey("VehicleFilter"), "Color Painter tool will change single instance colors of vehicles." },
+                { TooltipTitleKey("PaintToolMode"), "Paint" },
+                { TooltipDescriptionKey("PaintToolMode"), "Changes single instance colors or matching color variations on a selection." },
+                { TooltipTitleKey("ResetToolMode"), "Reset" },
+                { TooltipDescriptionKey("ResetToolMode"), "Resets single instance colors back to color variation or custom color variations back to originals." },
+                { TooltipTitleKey("PickerToolMode"), "Color Picker" },
+                { TooltipDescriptionKey("PickerToolMode"), "Color picker within the painter tool." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ColorPainterAutomaticCopyColor)), "Automatically Copy Color Set when activating Color Painter" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ColorPainterAutomaticCopyColor)), "Copies and pastes the set of three colors from the selected asset whenever color painter is activated from the selected info panel button." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetSettings)), $"Reset {Mod.Id} Settings" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetSettings)), $"Upon confirmation this will reset all settings for {Mod.Id} mod." },
+                { m_Setting.GetOptionWarningLocaleID(nameof(Setting.ResetSettings)), $"Reset {Mod.Id} Settings?" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(setting.Version)), "Version" },
+                { m_Setting.GetOptionDescLocaleID(nameof(setting.Version)), $"Version number for the {Mod.Id} mod installed." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetAllSingleInstanceColorChanges)), $"Reset All Single Instance Color Changes" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetAllSingleInstanceColorChanges)), $"Upon confirmation resets all instance colors in this save file." },
+                { m_Setting.GetOptionWarningLocaleID(nameof(Setting.ResetAllSingleInstanceColorChanges)), $"Reset All Single Instance Color Changes?" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetColorVariationsInThisSaveGame)), $"Reset Color Variations in this Save Game" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetColorVariationsInThisSaveGame)), $"Upon confirmation removes all saved color variations from this save file." },
+                { m_Setting.GetOptionWarningLocaleID(nameof(Setting.ResetColorVariationsInThisSaveGame)), $"Reset Color Variations in this Save Game?" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DeleteModsDataSavedColorVariations)), $"Delete ModsData Saved Color Variations" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.DeleteModsDataSavedColorVariations)), $"Upon confirmation deletes all saved files in ModsData related to this mod." },
+                { m_Setting.GetOptionWarningLocaleID(nameof(Setting.DeleteModsDataSavedColorVariations)), $"Delete ModsData Saved Color Variations?" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.SafelyRemove)), $"Safely Remove {Mod.Id}" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.SafelyRemove)), $"Upon confirmation this will remove all components and entities from the {Mod.Id} mod. Resets all instance colors in this save file, remove all saved color variations from this save file, and delete all saved files in ModsData related to this mod." },
+                { m_Setting.GetOptionWarningLocaleID(nameof(Setting.SafelyRemove)), $"Safely Remove {Mod.Id}?" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ActivateColorPainter)), "Color Painter Tool Keybind" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ActivateColorPainter)), "A keybind to activate the color painter tool." },
+                { m_Setting.GetBindingMapLocaleID(), Mod.Id },
+                { m_Setting.GetBindingKeyLocaleID(Setting.ActivateColorPainterActionName), "Color Painter Tool Activation key" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetKeybindSettings)), $"Reset {Mod.Id} mod Keybindings" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetKeybindSettings)), $"Upon confirmation this will reset the keybindings for {Mod.Id} mod." },
+                { m_Setting.GetOptionWarningLocaleID(nameof(Setting.ResetKeybindSettings)), $"Reset {Mod.Id} mod Keybindings?" },
+                { MouseTooltipKey("SingleInstancePlantWarning"), "Single instance color changes for plants is not currently supported." },
+                { MouseTooltipKey("HasCustomMeshColorWarning"),  "Cannot change color variation on this because it has custom instance colors." },
             };
         }
 

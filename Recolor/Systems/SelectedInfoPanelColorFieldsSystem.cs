@@ -2,7 +2,6 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-#define ECONOMY
 namespace Recolor.Systems
 {
     using System;
@@ -17,6 +16,7 @@ namespace Recolor.Systems
     using Colossal.UI.Binding;
     using Game;
     using Game.Common;
+    using Game.Input;
     using Game.Objects;
     using Game.Prefabs;
     using Game.Prefabs.Climate;
@@ -25,6 +25,7 @@ namespace Recolor.Systems
     using Game.Tools;
     using Recolor.Domain;
     using Recolor.Extensions;
+    using Recolor.Settings;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -59,15 +60,19 @@ namespace Recolor.Systems
         private ValueBindingHelper<bool> m_CanPasteColorSet;
         private ValueBindingHelper<bool> m_Minimized;
         private Dictionary<AssetSeasonIdentifier, Game.Rendering.ColorSet> m_VanillaColorSets;
+        private ValueBindingHelper<bool> m_MatchesSavedOnDisk;
         private ColorPickerToolSystem m_ColorPickerTool;
         private ColorPainterToolSystem m_ColorPainterTool;
         private ColorPainterUISystem m_ColorPainterUISystem;
+        private CustomColorVariationSystem m_CustomColorVariationSystem;
         private EntityQuery m_SubMeshQuery;
+        private ProxyAction m_ActivateColorPainterAction;
         private ClimatePrefab m_ClimatePrefab;
         private AssetSeasonIdentifier m_CurrentAssetSeasonIdentifier;
         private string m_ContentFolder;
         private int m_ReloadInXFrames = 0;
         private float m_TimeColorLastChanged = 0f;
+        private bool m_NeedsColorRefresh = false;
         private UnityEngine.Color m_CopiedColor;
         private ColorSet m_CopiedColorSet;
         private bool m_ActivateColorPainter;
@@ -145,6 +150,12 @@ namespace Recolor.Systems
             get { return m_CopiedColor; }
         }
 
+        /// <inheritdoc/>
+        protected override string group => Mod.Id;
+
+        /// <inheritdoc/>
+        protected override bool displayForUpgrades => true;
+
         /// <summary>
         /// Resets the previously selected entity.
         /// </summary>
@@ -153,41 +164,60 @@ namespace Recolor.Systems
             m_PreviouslySelectedEntity = Entity.Null;
         }
 
-        /// <inheritdoc/>
-        protected override string group => Mod.Id;
-
-#if ECONOMY
-        /// <inheritdoc/>
-        protected override bool displayForUpgrades => true;
-#endif
-
         /// <summary>
-        /// Tries to save a custom color set.
+        /// Checks if the entire color set matches vanilla.
         /// </summary>
-        /// <param name="colorSet">Set of 3 colors.</param>
-        /// <param name="assetSeasonIdentifier">struct with necessary data.</param>
-        /// <returns>True if saved, false if error occured.</returns>
-        public bool TrySaveCustomColorSet(ColorSet colorSet, AssetSeasonIdentifier assetSeasonIdentifier)
+        /// <param name="colorSet">Color set for comparison.</param>
+        /// <param name="assetSeasonIdentifier">Identifier.</param>
+        /// <returns>True if matches entires, false if not.</returns>
+        public bool MatchesEntireVanillaColorSet(ColorSet colorSet, AssetSeasonIdentifier assetSeasonIdentifier)
         {
-            string colorDataFilePath = GetAssetSeasonIdentifierFilePath(assetSeasonIdentifier);
-            SavedColorSet customColorSet = new SavedColorSet(colorSet, assetSeasonIdentifier);
-
-            try
+            bool[] matches = MatchesVanillaColorSet(colorSet, assetSeasonIdentifier);
+            if (matches[0] && matches[1] && matches[2])
             {
-                XmlSerializer serTool = new XmlSerializer(typeof(SavedColorSet)); // Create serializer
-                using (System.IO.FileStream file = System.IO.File.Create(colorDataFilePath)) // Create file
-                {
-                    serTool.Serialize(file, customColorSet); // Serialize whole properties
-                }
-
-                m_Log.Debug($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(TrySaveCustomColorSet)} saved color set for {assetSeasonIdentifier.m_PrefabID}.");
                 return true;
             }
-            catch (Exception ex)
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets season from color group id using a loop and consistency with color group ids equally season. May need adjustment later.
+        /// </summary>
+        /// <param name="colorGroupID">Color group ID from color variation.</param>
+        /// <param name="season">outputted season or spring if false.</param>
+        /// <returns>true is converted, false if not.</returns>
+        public bool TryGetSeasonFromColorGroupID(ColorGroupID colorGroupID, out Season season)
+        {
+            season = Season.None;
+            for (int i = 0; i <= 3; i++)
             {
-                m_Log.Warn($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(TrySaveCustomColorSet)} Could not save values for {assetSeasonIdentifier.m_PrefabID}. Encountered exception {ex}");
+                if (colorGroupID == new ColorGroupID(i))
+                {
+                    season = (Season)i;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if vanilla color set has been recorded and returns it in out if available.
+        /// </summary>
+        /// <param name="assetSeasonIdentifier">struct with necessary data.</param>
+        /// <param name="colorSet">Color set returned through out parameter.</param>
+        /// <returns>True if found. false if not.</returns>
+        public bool TryGetVanillaColorSet(AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet colorSet)
+        {
+            colorSet = default;
+            if (!m_VanillaColorSets.ContainsKey(assetSeasonIdentifier))
+            {
                 return false;
             }
+
+            colorSet = m_VanillaColorSets[assetSeasonIdentifier];
+            return true;
         }
 
         /// <summary>
@@ -197,7 +227,7 @@ namespace Recolor.Systems
         /// <param name="assetSeasonIdentifier">The out result with Asset Season Idenifier.</param>
         /// <param name="colorSet">The closest color variation set.</param>
         /// <returns>True if found, false if not.</returns>
-        public bool GetAssetSeasonIdentifier(Entity entity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet colorSet)
+        public bool TryGetAssetSeasonIdentifier(Entity entity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet colorSet)
         {
             assetSeasonIdentifier = default;
             colorSet = default;
@@ -266,6 +296,102 @@ namespace Recolor.Systems
             return true;
         }
 
+        /// <summary>
+        /// Deletes all xml data files in ModsData and resets instances.
+        /// </summary>
+        public void DeleteAllModsDataFiles()
+        {
+            string[] filePaths = Directory.GetFiles(m_ContentFolder);
+            NativeList<Entity> prefabsNeedingUpdates = new NativeList<Entity>(Allocator.Temp);
+            foreach (string filePath in filePaths)
+            {
+                SavedColorSet colorSet = default;
+                if (File.Exists(filePath))
+                {
+                    try
+                    {
+                        XmlSerializer serTool = new XmlSerializer(typeof(SavedColorSet)); // Create serializer
+                        using (System.IO.FileStream readStream = new System.IO.FileStream(filePath, System.IO.FileMode.Open)) // Open
+                        {
+                            colorSet = (SavedColorSet)serTool.Deserialize(readStream);
+                        }
+
+                        System.IO.File.Delete(filePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        m_Log.Warn($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(ReloadSavedColorSetsFromDisk)} Could not deserialize file at {filePath}. Encountered exception {ex}");
+                        continue;
+                    }
+                }
+
+                PrefabID prefabID = new PrefabID(colorSet.PrefabType, colorSet.PrefabName);
+
+                if (!m_PrefabSystem.TryGetPrefab(prefabID, out PrefabBase prefabBase))
+                {
+                    continue;
+                }
+
+                if (!m_PrefabSystem.TryGetEntity(prefabBase, out Entity e))
+                {
+                    continue;
+                }
+
+                if (!EntityManager.TryGetBuffer(e, isReadOnly: false, out DynamicBuffer<ColorVariation> colorVariationBuffer))
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < colorVariationBuffer.Length; j++)
+                {
+#if VERBOSE
+                m_Log.Verbose($"{prefabID.GetName()} {(TreeState)(int)Math.Pow(2, i - 1)} {(FoliageUtils.Season)j} {colorVariationBuffer[j].m_ColorSet.m_Channel0} {colorVariationBuffer[j].m_ColorSet.m_Channel2} {colorVariationBuffer[j].m_ColorSet.m_Channel2}");
+#endif
+                    ColorVariation currentColorVariation = colorVariationBuffer[j];
+                    TryGetSeasonFromColorGroupID(currentColorVariation.m_GroupID, out Season season);
+
+                    AssetSeasonIdentifier assetSeasonIdentifier = new ()
+                    {
+                        m_PrefabID = prefabID,
+                        m_Season = season,
+                        m_Index = j,
+                    };
+
+                    if (!m_CustomColorVariationSystem.TryGetCustomColorVariation(e, out CustomColorVariation customColorVariation) && TryGetVanillaColorSet(assetSeasonIdentifier, out currentColorVariation.m_ColorSet))
+                    {
+                        colorVariationBuffer[j] = currentColorVariation;
+                        if (!prefabsNeedingUpdates.Contains(e))
+                        {
+                            prefabsNeedingUpdates.Add(e);
+                        }
+
+                        m_Log.Debug($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(DeleteAllModsDataFiles)} Reset Colorset for {prefabID} in {assetSeasonIdentifier.m_Season}");
+                    }
+                }
+            }
+
+            if (prefabsNeedingUpdates.Length == 0)
+            {
+                return;
+            }
+
+            EntityQuery prefabRefQuery = SystemAPI.QueryBuilder()
+                .WithAll<PrefabRef>()
+                .WithNone<Deleted, Game.Common.Overridden, Game.Tools.Temp>()
+                .Build();
+
+            EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
+
+            NativeArray<Entity> entities = prefabRefQuery.ToEntityArray(Allocator.Temp);
+            foreach (Entity e in entities)
+            {
+                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) && prefabsNeedingUpdates.Contains(currentSubMeshBuffer[0].m_SubMesh))
+                {
+                    buffer.AddComponent<BatchesUpdated>(e);
+                }
+            }
+        }
+
         /// <inheritdoc/>
         public override void OnWriteProperties(IJsonWriter writer)
         {
@@ -293,6 +419,7 @@ namespace Recolor.Systems
             m_ColorPainterTool = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
             m_ColorPainterUISystem = World.GetOrCreateSystemManaged<ColorPainterUISystem>();
             m_ColorPickerTool = World.GetOrCreateSystemManaged<ColorPickerToolSystem>();
+            m_CustomColorVariationSystem = World.GetOrCreateSystemManaged<CustomColorVariationSystem>();
 
             // These establish bindings to communicate between UI and C#.
             m_CurrentColorSet = CreateBinding("CurrentColorSet", new RecolorSet(default, default, default));
@@ -303,6 +430,7 @@ namespace Recolor.Systems
             m_Minimized = CreateBinding("Minimized", false);
             m_DisableSingleInstance = CreateBinding("DisableSingleInstance", false);
             m_DisableMatching = CreateBinding("DisableMatching", false);
+            m_MatchesSavedOnDisk = CreateBinding("MatchesSavedOnDisk", false);
 
             // These handle actions triggered by UI.
             CreateTrigger<int, UnityEngine.Color>("ChangeColor", ChangeColorAction);
@@ -312,11 +440,17 @@ namespace Recolor.Systems
             CreateTrigger("CopyColorSet", CopyColorSet);
             CreateTrigger("PasteColorSet", PasteColorSet);
             CreateTrigger("ResetColorSet", ResetColorSet);
+            CreateTrigger("SaveToDisk", SaveColorSetToDisk);
+            CreateTrigger("RemoveFromDisk", RemoveFromDisk);
             CreateTrigger("ActivateColorPicker", () => m_ToolSystem.activeTool = m_ToolSystem.activeTool = m_ColorPickerTool);
             CreateTrigger("ActivateColorPainter", () =>
             {
                 m_ToolSystem.selected = Entity.Null;
                 m_ActivateColorPainter = true;
+                if (Mod.Instance.Settings.ColorPainterAutomaticCopyColor)
+                {
+                    m_ColorPainterUISystem.ColorSet = m_CurrentColorSet.Value.GetColorSet();
+                }
             });
             CreateTrigger("Minimize", () => m_Minimized.Value = !m_Minimized.Value);
             CreateTrigger("SingleInstance", () =>
@@ -341,6 +475,11 @@ namespace Recolor.Systems
 
             RequireForUpdate(m_SubMeshQuery);
             Enabled = false;
+
+
+            // For the keybinds
+            m_ActivateColorPainterAction = Mod.Instance.Settings.GetAction(Setting.ActivateColorPainterActionName);
+            m_ActivateColorPainterAction.shouldBeEnabled = true;
         }
 
         /// <inheritdoc/>
@@ -424,7 +563,8 @@ namespace Recolor.Systems
                 m_ReloadInXFrames--;
                 if (m_ReloadInXFrames == 0)
                 {
-                    ReloadSavedColorSets();
+                    ReloadSavedColorSetsFromDisk();
+                    m_CustomColorVariationSystem.ReloadCustomColorVariations(m_EndFrameBarrier.CreateCommandBuffer());
                 }
             }
 
@@ -433,6 +573,24 @@ namespace Recolor.Systems
             {
                 m_ActivateColorPainter = false;
                 m_ToolSystem.activeTool = m_ColorPainterTool;
+            }
+
+            if (m_ActivateColorPainterAction.WasPerformedThisFrame())
+            {
+                m_ActivateColorPainter = true;
+                if (selectedEntity != Entity.Null)
+                {
+                    m_ToolSystem.selected = Entity.Null;
+                    if (Mod.Instance.Settings.ColorPainterAutomaticCopyColor)
+                    {
+                        m_ColorPainterUISystem.ColorSet = m_CurrentColorSet.Value.GetColorSet();
+                    }
+                }
+
+                visible = false;
+                m_PreviouslySelectedEntity = Entity.Null;
+
+                return;
             }
 
             if (selectedEntity == Entity.Null && m_PreviouslySelectedEntity != Entity.Null)
@@ -557,6 +715,7 @@ namespace Recolor.Systems
                 m_PreviouslySelectedEntity = selectedEntity;
 
                 m_MatchesVanillaColorSet.Value = MatchesVanillaColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
+                m_MatchesSavedOnDisk.Value = MatchesSavedOnDiskColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
             }
 
             if (m_PreviouslySelectedEntity != selectedEntity
@@ -573,10 +732,10 @@ namespace Recolor.Systems
             if (m_PreviouslySelectedEntity == selectedEntity &&
                 (!m_SingleInstance.Value || EntityManager.HasComponent<Game.Objects.Plant>(selectedEntity)) &&
                 !EntityManager.HasBuffer<CustomMeshColor>(selectedEntity) &&
-                !MatchesSavedColorSet(m_CurrentColorSet.Value.GetColorSet(), m_CurrentAssetSeasonIdentifier) &&
+                m_NeedsColorRefresh == true &&
                 UnityEngine.Time.time > m_TimeColorLastChanged + 0.5f)
             {
-                SaveColorSet();
+                ColorRefresh();
             }
         }
 
@@ -680,8 +839,7 @@ namespace Recolor.Systems
             }
             else if (!m_DisableMatching && !EntityManager.HasBuffer<CustomMeshColor>(selectedEntity))
             {
-                DynamicBuffer<SubMesh> subMeshBuffer = default;
-                if (!EntityManager.TryGetBuffer(selectedPrefab, isReadOnly: true, out subMeshBuffer))
+                if (!EntityManager.TryGetBuffer(selectedPrefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
                 {
                     return default;
                 }
@@ -721,13 +879,81 @@ namespace Recolor.Systems
                     buffer.AddComponent<BatchesUpdated>(selectedEntity);
                 }
 
+                GenerateOrUpdateCustomColorVariationEntity();
+                m_NeedsColorRefresh = true;
+
                 return colorVariation.m_ColorSet;
             }
 
             return default;
         }
 
-        private void SaveColorSet()
+        private void GenerateOrUpdateCustomColorVariationEntity()
+        {
+            EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
+            if (!EntityManager.TryGetBuffer(selectedPrefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
+            {
+                return;
+            }
+
+            if (!EntityManager.TryGetBuffer(subMeshBuffer[0].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
+            {
+                return;
+            }
+
+            ColorSet colorSet = colorVariationBuffer[m_CurrentAssetSeasonIdentifier.m_Index].m_ColorSet;
+            if (!EntityManager.HasComponent<Game.Objects.Tree>(selectedEntity))
+            {
+                m_CustomColorVariationSystem.CreateOrUpdateCustomColorVariationEntity(buffer, subMeshBuffer[0].m_SubMesh, colorSet, m_CurrentAssetSeasonIdentifier.m_Index);
+            }
+            else
+            {
+                int length = Math.Min(4, subMeshBuffer.Length);
+                for (int i = 0; i < length; i++)
+                {
+                    if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[i].m_SubMesh, out PrefabBase prefabBase))
+                    {
+                        continue;
+                    }
+
+                    m_CustomColorVariationSystem.CreateOrUpdateCustomColorVariationEntity(buffer, subMeshBuffer[i].m_SubMesh, colorSet, m_CurrentAssetSeasonIdentifier.m_Index);
+                }
+            }
+        }
+
+        private void DeleteCustomColorVariationEntity()
+        {
+            EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
+            if (!EntityManager.TryGetBuffer(selectedPrefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
+            {
+                return;
+            }
+
+            if (!EntityManager.TryGetBuffer(subMeshBuffer[0].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
+            {
+                return;
+            }
+
+            if (!EntityManager.HasComponent<Game.Objects.Tree>(selectedEntity))
+            {
+                m_CustomColorVariationSystem.DeleteCustomColorVariationEntity(buffer, subMeshBuffer[0].m_SubMesh);
+            }
+            else
+            {
+                int length = Math.Min(4, subMeshBuffer.Length);
+                for (int i = 0; i < length; i++)
+                {
+                    if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[i].m_SubMesh, out PrefabBase prefabBase))
+                    {
+                        continue;
+                    }
+
+                    m_CustomColorVariationSystem.DeleteCustomColorVariationEntity(buffer, subMeshBuffer[i].m_SubMesh);
+                }
+            }
+        }
+
+        private void SaveColorSetToDisk()
         {
             if (!EntityManager.TryGetBuffer(selectedPrefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
             {
@@ -742,7 +968,7 @@ namespace Recolor.Systems
             ColorSet colorSet = colorVariationBuffer[m_CurrentAssetSeasonIdentifier.m_Index].m_ColorSet;
             if (!EntityManager.HasComponent<Game.Objects.Tree>(selectedEntity))
             {
-                TrySaveCustomColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
+                TrySaveCustomColorSetToDisk(colorSet, m_CurrentAssetSeasonIdentifier);
             }
             else
             {
@@ -760,7 +986,7 @@ namespace Recolor.Systems
                         m_Season = m_CurrentAssetSeasonIdentifier.m_Season,
                     };
 
-                    TrySaveCustomColorSet(colorSet, assetSeasonIdentifier);
+                    TrySaveCustomColorSetToDisk(colorSet, assetSeasonIdentifier);
                 }
             }
 
@@ -783,6 +1009,36 @@ namespace Recolor.Systems
             }
         }
 
+
+        /// <summary>
+        /// Tries to save a custom color set.
+        /// </summary>
+        /// <param name="colorSet">Set of 3 colors.</param>
+        /// <param name="assetSeasonIdentifier">struct with necessary data.</param>
+        /// <returns>True if saved, false if error occured.</returns>
+        private bool TrySaveCustomColorSetToDisk(ColorSet colorSet, AssetSeasonIdentifier assetSeasonIdentifier)
+        {
+            string colorDataFilePath = GetAssetSeasonIdentifierFilePath(assetSeasonIdentifier);
+            SavedColorSet customColorSet = new SavedColorSet(colorSet, assetSeasonIdentifier);
+
+            try
+            {
+                XmlSerializer serTool = new XmlSerializer(typeof(SavedColorSet)); // Create serializer
+                using (System.IO.FileStream file = System.IO.File.Create(colorDataFilePath)) // Create file
+                {
+                    serTool.Serialize(file, customColorSet); // Serialize whole properties
+                }
+
+                m_Log.Debug($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(TrySaveCustomColorSetToDisk)} saved color set for {assetSeasonIdentifier.m_PrefabID}.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                m_Log.Warn($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(TrySaveCustomColorSetToDisk)} Could not save values for {assetSeasonIdentifier.m_PrefabID}. Encountered exception {ex}");
+                return false;
+            }
+        }
+
         private void ResetColorSet()
         {
             ResetColor(0);
@@ -790,9 +1046,43 @@ namespace Recolor.Systems
             ResetColor(2);
         }
 
-        private void DeleteSavedColorSetFile()
+        private void RemoveFromDisk()
         {
-            string colorDataFilePath = GetAssetSeasonIdentifierFilePath(m_CurrentAssetSeasonIdentifier);
+            if (!EntityManager.TryGetBuffer(selectedPrefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
+            {
+                return;
+            }
+
+            if (!EntityManager.HasComponent<Game.Objects.Tree>(selectedEntity))
+            {
+                TryDeleteSavedColorSetFile(m_CurrentAssetSeasonIdentifier);
+            }
+            else
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[i].m_SubMesh, out PrefabBase prefabBase))
+                    {
+                        continue;
+                    }
+
+                    AssetSeasonIdentifier assetSeasonIdentifier = new AssetSeasonIdentifier()
+                    {
+                        m_Index = m_CurrentAssetSeasonIdentifier.m_Index,
+                        m_PrefabID = prefabBase.GetPrefabID(),
+                        m_Season = m_CurrentAssetSeasonIdentifier.m_Season,
+                    };
+
+                    TryDeleteSavedColorSetFile(assetSeasonIdentifier);
+                }
+            }
+
+            m_PreviouslySelectedEntity = Entity.Null;
+        }
+
+        private void TryDeleteSavedColorSetFile(AssetSeasonIdentifier assetSeasonIdentifier)
+        {
+            string colorDataFilePath = GetAssetSeasonIdentifierFilePath(assetSeasonIdentifier);
             if (File.Exists(colorDataFilePath))
             {
                 try
@@ -801,13 +1091,14 @@ namespace Recolor.Systems
                 }
                 catch (Exception ex)
                 {
-                    m_Log.Warn($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(DeleteSavedColorSetFile)} Could not delete file for Set {m_CurrentAssetSeasonIdentifier.m_PrefabID}. Encountered exception {ex}");
+                    m_Log.Warn($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(TryDeleteSavedColorSetFile)} Could not delete file for Set {assetSeasonIdentifier.m_PrefabID}. Encountered exception {ex}");
                 }
             }
             else
             {
-                m_Log.Debug($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(DeleteSavedColorSetFile)} Could not find file for {m_CurrentAssetSeasonIdentifier.m_PrefabID} {m_CurrentAssetSeasonIdentifier.m_Season} {m_CurrentAssetSeasonIdentifier.m_Index} at {GetAssetSeasonIdentifierFilePath(m_CurrentAssetSeasonIdentifier)}");
+                m_Log.Debug($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(TryDeleteSavedColorSetFile)} Could not find file for {assetSeasonIdentifier.m_PrefabID} {assetSeasonIdentifier.m_Season} {assetSeasonIdentifier.m_Index} at {GetAssetSeasonIdentifierFilePath(m_CurrentAssetSeasonIdentifier)}");
             }
+
         }
 
         private void ResetColor(int channel)
@@ -849,11 +1140,11 @@ namespace Recolor.Systems
 
             if (matches.Length >= 3 && matches[0] && matches[1] && matches[2])
             {
-                DeleteSavedColorSetFile();
+
             }
             else
             {
-                SaveColorSet();
+                GenerateOrUpdateCustomColorVariationEntity();
                 return;
             }
 
@@ -866,15 +1157,11 @@ namespace Recolor.Systems
         /// <param name="colorSet">Comparison color set.</param>
         /// <param name="assetSeasonIdentifier">struct with necessary data.</param>
         /// <returns>True if match found. False if not.</returns>
-        private bool MatchesSavedColorSet(ColorSet colorSet, AssetSeasonIdentifier assetSeasonIdentifier)
+        private bool MatchesSavedOnDiskColorSet(ColorSet colorSet, AssetSeasonIdentifier assetSeasonIdentifier)
         {
-            if (!TryLoadCustomColorSet(assetSeasonIdentifier, out SavedColorSet customColorSet))
+            if (!TryLoadCustomColorSetFromDisk(assetSeasonIdentifier, out SavedColorSet customColorSet))
             {
-                bool[] matches = MatchesVanillaColorSet(colorSet, assetSeasonIdentifier);
-                if (matches.Length >= 3 && matches[0] && matches[1] && matches[2])
-                {
-                    return true;
-                }
+                return false;
             }
             else
             {
@@ -916,25 +1203,7 @@ namespace Recolor.Systems
             return matches;
         }
 
-        /// <summary>
-        /// Checks if vanilla color set has been recorded and returns it in out if available.
-        /// </summary>
-        /// <param name="assetSeasonIdentifier">struct with necessary data.</param>
-        /// <param name="colorSet">Color set returned through out parameter.</param>
-        /// <returns>True if found. false if not.</returns>
-        private bool TryGetVanillaColorSet(AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet colorSet)
-        {
-            colorSet = default;
-            if (!m_VanillaColorSets.ContainsKey(assetSeasonIdentifier))
-            {
-                return false;
-            }
-
-            colorSet = m_VanillaColorSets[assetSeasonIdentifier];
-            return true;
-        }
-
-        private bool TryLoadCustomColorSet(AssetSeasonIdentifier assetSeasonIdentifier, out SavedColorSet result)
+        private bool TryLoadCustomColorSetFromDisk(AssetSeasonIdentifier assetSeasonIdentifier, out SavedColorSet result)
         {
             string colorDataFilePath = GetAssetSeasonIdentifierFilePath(assetSeasonIdentifier);
             result = default;
@@ -951,7 +1220,7 @@ namespace Recolor.Systems
                 }
                 catch (Exception ex)
                 {
-                    m_Log.Warn($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(TryLoadCustomColorSet)} Could not get default values for Set {assetSeasonIdentifier.m_PrefabID}. Encountered exception {ex}");
+                    m_Log.Warn($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(TryLoadCustomColorSetFromDisk)} Could not get default values for Set {assetSeasonIdentifier.m_PrefabID}. Encountered exception {ex}");
                     return false;
                 }
             }
@@ -973,27 +1242,6 @@ namespace Recolor.Systems
 
             Mod.Instance.Log.Info($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(GetSeasonFromSeasonID)} couldn't find season for {seasonID}.");
             return Season.None;
-        }
-
-        /// <summary>
-        /// Gets season from color group id using a loop and consistency with color group ids equally season. May need adjustment later.
-        /// </summary>
-        /// <param name="colorGroupID">Color group ID from color variation.</param>
-        /// <param name="season">outputted season or spring if false.</param>
-        /// <returns>true is converted, false if not.</returns>
-        private bool TryGetSeasonFromColorGroupID(ColorGroupID colorGroupID, out Season season)
-        {
-            season = Season.None;
-            for (int i = 0; i <= 3; i++)
-            {
-                if (colorGroupID == new ColorGroupID(i))
-                {
-                    season = (Season)i;
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private string GetAssetSeasonIdentifierFilePath(AssetSeasonIdentifier assetSeasonIdentifier)
@@ -1044,9 +1292,11 @@ namespace Recolor.Systems
                     buffer.AddComponent<BatchesUpdated>(e);
                 }
             }
+
+            m_NeedsColorRefresh = false;
         }
 
-        private void ReloadSavedColorSets()
+        private void ReloadSavedColorSetsFromDisk()
         {
             string[] filePaths = Directory.GetFiles(m_ContentFolder);
             NativeList<Entity> prefabsNeedingUpdates = new NativeList<Entity>(Allocator.Temp);
@@ -1063,7 +1313,7 @@ namespace Recolor.Systems
                     }
                     catch (Exception ex)
                     {
-                        m_Log.Warn($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(ReloadSavedColorSets)} Could not deserialize file at {filePath}. Encountered exception {ex}");
+                        m_Log.Warn($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(ReloadSavedColorSetsFromDisk)} Could not deserialize file at {filePath}. Encountered exception {ex}");
                         continue;
                     }
                 }
@@ -1100,7 +1350,7 @@ namespace Recolor.Systems
                         m_Index = j,
                     };
 
-                    if (TryLoadCustomColorSet(assetSeasonIdentifier, out SavedColorSet customColorSet))
+                    if (TryLoadCustomColorSetFromDisk(assetSeasonIdentifier, out SavedColorSet customColorSet))
                     {
                         currentColorVariation.m_ColorSet = customColorSet.ColorSet;
                         colorVariationBuffer[j] = currentColorVariation;
@@ -1109,7 +1359,7 @@ namespace Recolor.Systems
                             prefabsNeedingUpdates.Add(e);
                         }
 
-                        m_Log.Info($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(OnGameLoadingComplete)} Imported Colorset for {prefabID} in {assetSeasonIdentifier.m_Season}");
+                        m_Log.Debug($"{nameof(SelectedInfoPanelColorFieldsSystem)}.{nameof(OnGameLoadingComplete)} Imported Colorset for {prefabID} in {assetSeasonIdentifier.m_Season}");
                     }
                 }
             }
