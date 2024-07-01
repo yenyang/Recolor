@@ -120,7 +120,7 @@ namespace Recolor.Systems
 
             m_PropMeshColorQuery = SystemAPI.QueryBuilder()
                 .WithAll<Game.Objects.Object, Game.Objects.Static, MeshColor, Game.Objects.Transform>()
-                .WithNone<Temp, Deleted, Game.Common.Overridden, Tree, Plant>()
+                .WithNone<Temp, Deleted, Game.Common.Overridden, Tree, Plant, Building>()
                 .Build();
 
             m_BuildingCustomMeshColorQuery = SystemAPI.QueryBuilder()
@@ -135,7 +135,7 @@ namespace Recolor.Systems
 
             m_PropCustomMeshColorQuery = SystemAPI.QueryBuilder()
                 .WithAll<Game.Objects.Object, Game.Objects.Static, MeshColor, Game.Objects.Transform, CustomMeshColor>()
-                .WithNone<Temp, Deleted, Game.Common.Overridden, Tree, Plant>()
+                .WithNone<Temp, Deleted, Game.Common.Overridden, Tree, Plant, Building>()
                 .Build();
         }
 
@@ -201,7 +201,7 @@ namespace Recolor.Systems
                     return inputDeps;
                 }
             }
-            else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint)
+            else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
             {
                 if (!raycastResult
                     || ((!EntityManager.HasBuffer<MeshColor>(currentRaycastEntity) || (EntityManager.HasComponent<Plant>(currentRaycastEntity) && m_SelectedInfoPanelColorFieldsSystem.SingleInstance)) && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
@@ -234,7 +234,7 @@ namespace Recolor.Systems
                 buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtRecord);
             }
 
-            if (m_HighlightedQuery.IsEmptyIgnoreFilter && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
+            if (m_HighlightedQuery.IsEmptyIgnoreFilter && (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single || m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker))
             {
                 buffer.AddComponent<BatchesUpdated>(currentRaycastEntity);
                 buffer.AddComponent<Highlighted>(currentRaycastEntity);
@@ -323,7 +323,8 @@ namespace Recolor.Systems
                     ChangeColorVariation(VanillaColorSet, ref buffer, currentRaycastEntity, assetSeasonIdentifier);
                     DeleteCustomColorVariationEntity(currentRaycastEntity, ref buffer, assetSeasonIdentifier);
                 }
-            } else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset && m_ApplyAction.IsPressed() && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius)
+            }
+            else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset && m_ApplyAction.IsPressed() && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius)
             {
                 if (m_ColorPainterUISystem.ColorPainterFilterType != ColorPainterUISystem.FilterType.Vehicles)
                 {

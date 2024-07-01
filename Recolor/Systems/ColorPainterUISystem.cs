@@ -102,8 +102,16 @@ namespace Recolor.Systems
         /// </summary>
         public ColorSet ColorSet
         {
-            get { return m_PainterColorSet.Value.GetColorSet(); }
-            set { m_PainterColorSet.Value = new RecolorSet(value); }
+            get
+            {
+                return m_PainterColorSet.Value.GetColorSet();
+            }
+
+            set
+            {
+                m_PainterColorSet.Value = new RecolorSet(value);
+                m_PainterColorSet.Binding.TriggerUpdate();
+            }
         }
 
         /// <summary>
@@ -157,9 +165,10 @@ namespace Recolor.Systems
             CreateTrigger("ColorPainterRadiusSelection", () => m_SelectionType.Value = (int)SelectionType.Radius);
             CreateTrigger("CopyColor", (UnityEngine.Color color) => m_CopiedColor.Value = color);
             CreateTrigger("ColorPainterPasteColor", (int value) => ChangePainterColor(value, m_SelectedInfoPanelColorFieldsSystem.CopiedColor));
-            CreateTrigger("ColorPainterPasteColorSet", () => 
+            CreateTrigger("ColorPainterPasteColorSet", () =>
             {
                 m_PainterColorSet.Value = new RecolorSet(m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet);
+                m_PainterColorSet.Binding.TriggerUpdate();
             });
             CreateTrigger("ColorPainterCopyColorSet", () =>
             {
