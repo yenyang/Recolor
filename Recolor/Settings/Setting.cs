@@ -75,7 +75,7 @@
         /// Gets or sets a value indicating the keybinding for Reset Elevation.
         /// </summary>
         [SettingsUISection(General, Keybinds)]
-        [SettingsUIKeyboardBinding(UnityEngine.InputSystem.Key.P, actionName: ActivateColorPainterActionName, ctrl: true)]
+        [SettingsUIKeyboardBinding(UnityEngine.InputSystem.Key.P, actionName: ActivateColorPainterActionName, shift: true)]
         public ProxyBinding ActivateColorPainter { get; set; }
 
         /// <summary>

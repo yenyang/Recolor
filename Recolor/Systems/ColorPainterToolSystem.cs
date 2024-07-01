@@ -8,8 +8,6 @@ namespace Recolor.Systems
     using System;
     using Colossal.Entities;
     using Colossal.Logging;
-    using Game;
-    using Game.Audio.Radio;
     using Game.Buildings;
     using Game.Common;
     using Game.Input;
@@ -19,6 +17,7 @@ namespace Recolor.Systems
     using Game.Tools;
     using Game.Vehicles;
     using Recolor.Domain;
+    using Recolor.Settings;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -46,9 +45,11 @@ namespace Recolor.Systems
         private ColorPainterUISystem m_ColorPainterUISystem;
         private EntityQuery m_BuildingMeshColorQuery;
         private EntityQuery m_VehicleMeshColorQuery;
+        private EntityQuery m_ParkedVehicleMeshColorQuery;
         private EntityQuery m_PropMeshColorQuery;
         private EntityQuery m_BuildingCustomMeshColorQuery;
         private EntityQuery m_VehicleCustomMeshColorQuery;
+        private EntityQuery m_ParkedVehicleCustomMeshColorQuery;
         private EntityQuery m_PropCustomMeshColorQuery;
 
         /// <inheritdoc/>
@@ -70,7 +71,7 @@ namespace Recolor.Systems
         public override void InitializeRaycast()
         {
             base.InitializeRaycast();
-            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
+            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single || m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker)
             {
                 m_ToolRaycastSystem.collisionMask = Game.Common.CollisionMask.OnGround | Game.Common.CollisionMask.Overground;
                 m_ToolRaycastSystem.typeMask = Game.Common.TypeMask.MovingObjects | Game.Common.TypeMask.StaticObjects;
@@ -118,6 +119,11 @@ namespace Recolor.Systems
                 .WithNone<Temp, Deleted, Game.Common.Overridden>()
                 .Build();
 
+            m_ParkedVehicleMeshColorQuery = SystemAPI.QueryBuilder()
+                .WithAll<Vehicle, MeshColor, Game.Objects.Transform, ParkedCar>()
+                .WithNone<Temp, Deleted, Game.Common.Overridden>()
+                .Build();
+
             m_PropMeshColorQuery = SystemAPI.QueryBuilder()
                 .WithAll<Game.Objects.Object, Game.Objects.Static, MeshColor, Game.Objects.Transform>()
                 .WithNone<Temp, Deleted, Game.Common.Overridden, Tree, Plant, Building>()
@@ -130,6 +136,11 @@ namespace Recolor.Systems
 
             m_VehicleCustomMeshColorQuery = SystemAPI.QueryBuilder()
                 .WithAll<Vehicle, MeshColor, InterpolatedTransform, CustomMeshColor>()
+                .WithNone<Temp, Deleted, Game.Common.Overridden>()
+                .Build();
+
+            m_ParkedVehicleCustomMeshColorQuery = SystemAPI.QueryBuilder()
+                .WithAll<Vehicle, MeshColor, Game.Objects.Transform, ParkedCar, CustomMeshColor>()
                 .WithNone<Temp, Deleted, Game.Common.Overridden>()
                 .Build();
 
@@ -204,13 +215,33 @@ namespace Recolor.Systems
             else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
             {
                 if (!raycastResult
-                    || ((!EntityManager.HasBuffer<MeshColor>(currentRaycastEntity) || (EntityManager.HasComponent<Plant>(currentRaycastEntity) && m_SelectedInfoPanelColorFieldsSystem.SingleInstance)) && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
-                    || (EntityManager.HasBuffer<CustomMeshColor>(currentRaycastEntity) && !m_SelectedInfoPanelColorFieldsSystem.SingleInstance && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
+                    || !EntityManager.HasBuffer<MeshColor>(currentRaycastEntity)
+                    || (EntityManager.HasComponent<Plant>(currentRaycastEntity) && m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
+                    || (EntityManager.HasBuffer<CustomMeshColor>(currentRaycastEntity) && !m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
                     || (hit.m_HitPosition.x == 0 && hit.m_HitPosition.y == 0 && hit.m_HitPosition.z == 0))
                 {
                     buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
                     buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
                     m_PreviousRaycastedEntity = Entity.Null;
+
+                    if (EntityManager.HasComponent<Plant>(currentRaycastEntity) && m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
+                    {
+                        m_GenericTooltipSystem.RegisterTooltip("SingleInstancePlantWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.MouseTooltipKey("SingleInstancePlantWarning"), "Single instance color changes for plants is not currently supported.");
+                    }
+                    else
+                    {
+                        m_GenericTooltipSystem.RemoveTooltip("SingleInstancePlantWarning");
+                    }
+
+                    if (EntityManager.HasBuffer<CustomMeshColor>(currentRaycastEntity) && !m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
+                    {
+                        m_GenericTooltipSystem.RegisterTooltip("HasCustomMeshColorWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.MouseTooltipKey("HasCustomMeshColorWarning"), "Cannot change color variation on this because it has custom instance colors.");
+                    }
+                    else
+                    {
+                        m_GenericTooltipSystem.RemoveTooltip("HasCustomMeshColorWarning");
+                    }
+
                     return inputDeps;
                 }
             }
@@ -226,6 +257,9 @@ namespace Recolor.Systems
                     return inputDeps;
                 }
             }
+
+            m_GenericTooltipSystem.RemoveTooltip("SingleInstancePlantWarning");
+            m_GenericTooltipSystem.RemoveTooltip("HasCustomMeshColorWarning");
 
             if (currentRaycastEntity != m_PreviousRaycastedEntity && !m_HighlightedQuery.IsEmptyIgnoreFilter)
             {
@@ -273,30 +307,33 @@ namespace Recolor.Systems
             }
             else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius && m_ApplyAction.IsPressed())
             {
-                if (m_ColorPainterUISystem.ColorPainterFilterType != ColorPainterUISystem.FilterType.Vehicles)
+                ChangeMeshColorWithinRadiusJob changeMeshColorWithinRadiusJob = new ()
                 {
-                    ChangeMeshColorWithinRadiusJob changeBuildingOrPropMeshColorWithinRadiusJob = new ()
-                    {
-                        m_EntityType = SystemAPI.GetEntityTypeHandle(),
-                        m_Position = hit.m_HitPosition,
-                        m_Radius = radius,
-                        m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
-                        m_ApplyColorSet = m_ColorPainterUISystem.ColorSet,
-                        buffer = m_Barrier.CreateCommandBuffer(),
-                    };
+                    m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                    m_Position = hit.m_HitPosition,
+                    m_Radius = radius,
+                    m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
+                    m_ApplyColorSet = m_ColorPainterUISystem.ColorSet,
+                    buffer = m_Barrier.CreateCommandBuffer(),
+                };
 
-                    if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
-                    {
-                        inputDeps = JobChunkExtensions.Schedule(changeBuildingOrPropMeshColorWithinRadiusJob, m_BuildingMeshColorQuery, inputDeps);
-                        m_Barrier.AddJobHandleForProducer(inputDeps);
-                    }
-                    else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Props)
-                    {
-                        inputDeps = JobChunkExtensions.Schedule(changeBuildingOrPropMeshColorWithinRadiusJob, m_PropMeshColorQuery, inputDeps);
-                        m_Barrier.AddJobHandleForProducer(inputDeps);
-                    }
+                if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
+                {
+                    inputDeps = JobChunkExtensions.Schedule(changeMeshColorWithinRadiusJob, m_BuildingMeshColorQuery, inputDeps);
+                    m_Barrier.AddJobHandleForProducer(inputDeps);
                 }
-                else
+                else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Props)
+                {
+                    inputDeps = JobChunkExtensions.Schedule(changeMeshColorWithinRadiusJob, m_PropMeshColorQuery, inputDeps);
+                    m_Barrier.AddJobHandleForProducer(inputDeps);
+                }
+                else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Vehicles)
+                {
+                    inputDeps = JobChunkExtensions.Schedule(changeMeshColorWithinRadiusJob, m_ParkedVehicleMeshColorQuery, inputDeps);
+                    m_Barrier.AddJobHandleForProducer(inputDeps);
+                }
+
+                if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Vehicles)
                 {
                     ChangeVehicleMeshColorWithinRadiusJob changeVehicleMeshColorWithinRadiusJob = new()
                     {
@@ -326,29 +363,32 @@ namespace Recolor.Systems
             }
             else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset && m_ApplyAction.IsPressed() && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius)
             {
-                if (m_ColorPainterUISystem.ColorPainterFilterType != ColorPainterUISystem.FilterType.Vehicles)
+                ResetMeshColorWithinRadiusJob resetCustomMeshColorWithinRadiusJob = new()
                 {
-                    ResetMeshColorWithinRadiusJob resetBuildingOrPropMeshColorWithinRadiusJob = new()
-                    {
-                        m_EntityType = SystemAPI.GetEntityTypeHandle(),
-                        m_Position = hit.m_HitPosition,
-                        m_Radius = radius,
-                        m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
-                        buffer = m_Barrier.CreateCommandBuffer(),
-                    };
+                    m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                    m_Position = hit.m_HitPosition,
+                    m_Radius = radius,
+                    m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
+                    buffer = m_Barrier.CreateCommandBuffer(),
+                };
 
-                    if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
-                    {
-                        inputDeps = JobChunkExtensions.Schedule(resetBuildingOrPropMeshColorWithinRadiusJob, m_BuildingCustomMeshColorQuery, inputDeps);
-                        m_Barrier.AddJobHandleForProducer(inputDeps);
-                    }
-                    else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Props)
-                    {
-                        inputDeps = JobChunkExtensions.Schedule(resetBuildingOrPropMeshColorWithinRadiusJob, m_PropCustomMeshColorQuery, inputDeps);
-                        m_Barrier.AddJobHandleForProducer(inputDeps);
-                    }
+                if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
+                {
+                    inputDeps = JobChunkExtensions.Schedule(resetCustomMeshColorWithinRadiusJob, m_BuildingCustomMeshColorQuery, inputDeps);
+                    m_Barrier.AddJobHandleForProducer(inputDeps);
                 }
-                else
+                else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Props)
+                {
+                    inputDeps = JobChunkExtensions.Schedule(resetCustomMeshColorWithinRadiusJob, m_PropCustomMeshColorQuery, inputDeps);
+                    m_Barrier.AddJobHandleForProducer(inputDeps);
+                }
+                else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Vehicles)
+                {
+                    inputDeps = JobChunkExtensions.Schedule(resetCustomMeshColorWithinRadiusJob, m_ParkedVehicleCustomMeshColorQuery, inputDeps);
+                    m_Barrier.AddJobHandleForProducer(inputDeps);
+                }
+
+                if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Vehicles)
                 {
                     ResetVehicleMeshColorWithinRadiusJob resetVehicleMeshColorWithinRadiusJob = new ()
                     {
