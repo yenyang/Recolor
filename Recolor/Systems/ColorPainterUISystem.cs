@@ -89,11 +89,12 @@ namespace Recolor.Systems
         }
 
         /// <summary>
-        /// Gets the tool mode for color painter.
+        /// Gets or sets the tool mode for color painter.
         /// </summary>
         public PainterToolMode ToolMode
         {
             get { return m_ToolMode; }
+            set { m_ToolMode.Value = value; }
         }
 
         /// <summary>
@@ -156,7 +157,10 @@ namespace Recolor.Systems
             CreateTrigger("ColorPainterRadiusSelection", () => m_SelectionType.Value = (int)SelectionType.Radius);
             CreateTrigger("CopyColor", (UnityEngine.Color color) => m_CopiedColor.Value = color);
             CreateTrigger("ColorPainterPasteColor", (int value) => ChangePainterColor(value, m_SelectedInfoPanelColorFieldsSystem.CopiedColor));
-            CreateTrigger("ColorPainterPasteColorSet", () => m_PainterColorSet.Value = new RecolorSet(m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet));
+            CreateTrigger("ColorPainterPasteColorSet", () => 
+            {
+                m_PainterColorSet.Value = new RecolorSet(m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet);
+            });
             CreateTrigger("ColorPainterCopyColorSet", () =>
             {
                 m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet = m_PainterColorSet.Value.GetColorSet();
@@ -188,6 +192,8 @@ namespace Recolor.Systems
             {
                 m_PainterColorSet.Value.Channel2 = color;
             }
+
+            m_PainterColorSet.Binding.TriggerUpdate();
         }
 
         private void OnToolChanged(ToolBaseSystem tool)

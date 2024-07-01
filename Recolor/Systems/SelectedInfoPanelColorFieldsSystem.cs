@@ -165,6 +165,23 @@ namespace Recolor.Systems
         }
 
         /// <summary>
+        /// Checks if the entire color set matches vanilla.
+        /// </summary>
+        /// <param name="colorSet">Color set for comparison.</param>
+        /// <param name="assetSeasonIdentifier">Identifier.</param>
+        /// <returns>True if matches entires, false if not.</returns>
+        public bool MatchesEntireVanillaColorSet(ColorSet colorSet, AssetSeasonIdentifier assetSeasonIdentifier)
+        {
+            bool[] matches = MatchesVanillaColorSet(colorSet, assetSeasonIdentifier);
+            if (matches[0] && matches[1] && matches[2])
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Gets season from color group id using a loop and consistency with color group ids equally season. May need adjustment later.
         /// </summary>
         /// <param name="colorGroupID">Color group ID from color variation.</param>
@@ -203,7 +220,6 @@ namespace Recolor.Systems
             return true;
         }
 
-
         /// <summary>
         /// Gets AssetSeasonIdentifier and closes colorVariation color set as outs.
         /// </summary>
@@ -211,7 +227,7 @@ namespace Recolor.Systems
         /// <param name="assetSeasonIdentifier">The out result with Asset Season Idenifier.</param>
         /// <param name="colorSet">The closest color variation set.</param>
         /// <returns>True if found, false if not.</returns>
-        public bool GetAssetSeasonIdentifier(Entity entity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet colorSet)
+        public bool TryGetAssetSeasonIdentifier(Entity entity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet colorSet)
         {
             assetSeasonIdentifier = default;
             colorSet = default;
