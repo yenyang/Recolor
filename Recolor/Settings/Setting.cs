@@ -35,7 +35,7 @@
         public const string Remove = "Remove";
 
         /// <summary>
-        /// The action name for toggle anarchy keybind.
+        /// The action name for toggle color painter keybind.
         /// </summary>
         public const string ActivateColorPainterActionName = "ActivateColorPainter";
 

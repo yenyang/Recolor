@@ -59,5 +59,14 @@
   "Options.WARNING[Recolor.Recolor.Mod.Setting.DeleteModsDataSavedColorVariations]": "Delete ModsData Saved Color Variations?",
   "Options.OPTION[Recolor.Recolor.Mod.Setting.SafelyRemove]": "Safely Remove Recolor",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.SafelyRemove]": "Upon confirmation this will remove all components and entities from the Recolor mod. Resets all instance colors in this save file, remove all saved color variations from this save file, and delete all saved files in ModsData related to this mod.",
-  "Options.WARNING[Recolor.Recolor.Mod.Setting.SafelyRemove]": "Safely Remove Recolor?"
+  "Options.WARNING[Recolor.Recolor.Mod.Setting.SafelyRemove]": "Safely Remove Recolor?",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.ActivateColorPainter]": "Color Painter Tool Keybind",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ActivateColorPainter]": "A keybind to activate the color painter tool.",
+  "Options.INPUT_MAP[Recolor.Recolor.Mod]": "Recolor",
+  "Options.OPTION[Recolor.Recolor.Mod/ActivateColorPainter/binding]": "Color Painter Tool Activation key",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Reset Recolor mod Keybindings",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Upon confirmation this will reset the keybindings for Recolor mod.",
+  "Options.WARNING[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Reset Recolor mod Keybindings?",
+  "Recolor.MOUSE_TOOLTIP[SingleInstancePlantWarning]": "Single instance color changes for plants is not currently supported.",
+  "Recolor.MOUSE_TOOLTIP[HasCustomMeshColorWarning]": "Cannot change color variation on this because it has custom instance colors."
 }
