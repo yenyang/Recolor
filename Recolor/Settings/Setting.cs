@@ -1,9 +1,11 @@
 ﻿namespace Recolor.Settings
 {
     using Colossal.IO.AssetDatabase;
+    using Game;
     using Game.Input;
     using Game.Modding;
     using Game.Settings;
+    using Game.Tools;
     using Recolor.Systems;
     using Unity.Entities;
 
@@ -12,6 +14,8 @@
     /// </summary>
     [FileLocation("ModsSettings/" + nameof(Recolor) + "/" + nameof(Recolor))]
     [SettingsUIGroupOrder(General, Keybinds, Remove, About)]
+    [SettingsUIMouseAction(Mod.PickerApplyMimicAction, "PickerApplyAction")]
+    [SettingsUIMouseAction(Mod.PainterApplyMimicAction, "PainterApplyAction")]
     public class Setting : ModSetting
     {
         /// <summary>
@@ -79,6 +83,21 @@
         public ProxyBinding ActivateColorPainter { get; set; }
 
         /// <summary>
+        /// Gets or sets hidden keybinding for Remove Sub Elements apply action.
+        /// </summary>
+        [SettingsUIMouseBinding(Mod.PickerApplyMimicAction)]
+        [SettingsUIHidden]
+        public ProxyBinding PickerApplyMimic { get; set; }
+
+        /// <summary>
+        /// Gets or sets hidden keybinding for Remove Vehicle Cims and Animals action.
+        /// </summary>
+        [SettingsUIMouseBinding(Mod.PainterApplyMimicAction)]
+        [SettingsUIHidden]
+        public ProxyBinding PainterApplyMimic { get; set; }
+
+
+        /// <summary>
         /// Sets a value indicating whether: a button for Resetting the settings for keybinds.
         /// </summary>
         [SettingsUIButton]
@@ -99,6 +118,7 @@
         [SettingsUIButton]
         [SettingsUIConfirmation]
         [SettingsUISection(General, Remove)]
+        [SettingsUIDisableByCondition(typeof(Setting), nameof(IsNotGame))]
         public bool ResetAllSingleInstanceColorChanges
         {
             set
@@ -114,6 +134,7 @@
         [SettingsUIButton]
         [SettingsUIConfirmation]
         [SettingsUISection(General, Remove)]
+        [SettingsUIDisableByCondition(typeof(Setting), nameof(IsNotGame))]
         public bool ResetColorVariationsInThisSaveGame
         {
             set
@@ -167,6 +188,12 @@
         public override void SetDefaults()
         {
             ColorPainterAutomaticCopyColor = true;
+        }
+
+        private bool IsNotGame()
+        {
+            ToolSystem toolSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ToolSystem>();
+            return !toolSystem.actionMode.IsGame();
         }
     }
 }

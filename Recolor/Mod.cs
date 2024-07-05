@@ -1,30 +1,44 @@
 ﻿// <copyright file="Mod.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
+
 namespace Recolor
 {
-    using Colossal;
+    using System.Reflection;
     using Colossal.IO.AssetDatabase;
     using Colossal.Logging;
     using Game;
     using Game.Modding;
     using Game.Rendering;
     using Game.SceneFlow;
-    using Newtonsoft.Json;
     using Recolor.Settings;
     using Recolor.Systems;
+
+#if DEBUG
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
-    using UnityEngine;
+    using Newtonsoft.Json;
+    using UnityEngine;using Colossal;
+#endif
 
     /// <summary>
     /// Mod entry point.
     /// </summary>
     public class Mod : IMod
     {
+
+        /// <summary>
+        /// Fake keybind action for apply.
+        /// </summary>
+        public const string PickerApplyMimicAction = "PickerApplyMimic";
+
+        /// <summary>
+        /// Fake keybind action for apply.
+        /// </summary>
+        public const string PainterApplyMimicAction = "PainterApplyMimic";
+
         /// <summary>
         /// An id used for bindings between UI and C#.
         /// </summary>
@@ -66,6 +80,7 @@ namespace Recolor
 #else
             Log.effectivenessLevel = Level.Info;
 #endif
+            Log.Info($"{nameof(OnLoad)} Version: " + Version);
             Log.Info($"{nameof(OnLoad)} Initalizing Settings");
 
             Settings = new Setting(this);
