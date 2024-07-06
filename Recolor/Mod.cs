@@ -1,8 +1,10 @@
 ﻿// <copyright file="Mod.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
+
 namespace Recolor
 {
+    using System.Reflection;
     using Colossal.IO.AssetDatabase;
     using Colossal.Logging;
     using Game;
@@ -11,14 +13,37 @@ namespace Recolor
     using Game.SceneFlow;
     using Recolor.Settings;
     using Recolor.Systems;
-    using System.Reflection;
-    using UnityEngine;
+
+#if DEBUG
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using Newtonsoft.Json;
+    using UnityEngine;using Colossal;
+#endif
 
     /// <summary>
     /// Mod entry point.
     /// </summary>
     public class Mod : IMod
     {
+
+        /// <summary>
+        /// Fake keybind action for apply.
+        /// </summary>
+        public const string PickerApplyMimicAction = "PickerApplyMimic";
+
+        /// <summary>
+        /// Fake keybind action for apply.
+        /// </summary>
+        public const string PainterApplyMimicAction = "PainterApplyMimic";
+
+        /// <summary>
+        /// Fake keybind action for secondary apply.
+        /// </summary>
+        public const string PainterSecondaryApplyMimicAction = "PainterSecondaryApplyMimic";
+
         /// <summary>
         /// An id used for bindings between UI and C#.
         /// </summary>
@@ -60,6 +85,7 @@ namespace Recolor
 #else
             Log.effectivenessLevel = Level.Info;
 #endif
+            Log.Info($"{nameof(OnLoad)} Version: " + Version);
             Log.Info($"{nameof(OnLoad)} Initalizing Settings");
 
             Settings = new Setting(this);
@@ -68,6 +94,19 @@ namespace Recolor
             AssetDatabase.global.LoadSettings(nameof(Recolor), Settings, new Setting(this));
             Log.Info($"{nameof(OnLoad)} Initalizing en-US localization.");
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Settings));
+#if DEBUG
+            Log.Info($"{nameof(Mod)}.{nameof(OnLoad)} Exporting localization");
+            var localeDict = new LocaleEN(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
+            var str = JsonConvert.SerializeObject(localeDict, Formatting.Indented);
+            try
+            {
+                File.WriteAllText($"C:\\Users\\TJ\\source\\repos\\{Id}\\{Id}\\UI\\src\\mods\\lang\\en-US.json", str);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.ToString());
+            }
+#endif
             Log.Info($"{nameof(OnLoad)} Initalizing systems");
             updateSystem.UpdateAt<SelectedInfoPanelColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<TempCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);

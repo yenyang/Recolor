@@ -357,7 +357,7 @@ namespace Recolor.Systems
                         m_Index = j,
                     };
 
-                    if (!m_CustomColorVariationSystem.TryGetCustomColorVariation(e, out CustomColorVariation customColorVariation) && TryGetVanillaColorSet(assetSeasonIdentifier, out currentColorVariation.m_ColorSet))
+                    if (!m_CustomColorVariationSystem.TryGetCustomColorVariation(e, j, out CustomColorVariations customColorVariation) && TryGetVanillaColorSet(assetSeasonIdentifier, out currentColorVariation.m_ColorSet))
                     {
                         colorVariationBuffer[j] = currentColorVariation;
                         if (!prefabsNeedingUpdates.Contains(e))

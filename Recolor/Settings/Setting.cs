@@ -1,9 +1,11 @@
 ﻿namespace Recolor.Settings
 {
     using Colossal.IO.AssetDatabase;
+    using Game;
     using Game.Input;
     using Game.Modding;
     using Game.Settings;
+    using Game.Tools;
     using Recolor.Systems;
     using Unity.Entities;
 
@@ -12,6 +14,9 @@
     /// </summary>
     [FileLocation("ModsSettings/" + nameof(Recolor) + "/" + nameof(Recolor))]
     [SettingsUIGroupOrder(General, Keybinds, Remove, About)]
+    [SettingsUIMouseAction(Mod.PickerApplyMimicAction, "ColorPickerActions")]
+    [SettingsUIMouseAction(Mod.PainterApplyMimicAction, "ColorPainterActions")]
+    [SettingsUIMouseAction(Mod.PainterSecondaryApplyMimicAction, "ColorPainterActions")]
     public class Setting : ModSetting
     {
         /// <summary>
@@ -35,7 +40,7 @@
         public const string Remove = "Remove";
 
         /// <summary>
-        /// The action name for toggle anarchy keybind.
+        /// The action name for toggle color painter keybind.
         /// </summary>
         public const string ActivateColorPainterActionName = "ActivateColorPainter";
 
@@ -75,8 +80,30 @@
         /// Gets or sets a value indicating the keybinding for Reset Elevation.
         /// </summary>
         [SettingsUISection(General, Keybinds)]
-        [SettingsUIKeyboardBinding(UnityEngine.InputSystem.Key.P, actionName: ActivateColorPainterActionName, shift: true)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.P, actionName: ActivateColorPainterActionName, shift: true)]
         public ProxyBinding ActivateColorPainter { get; set; }
+
+        /// <summary>
+        /// Gets or sets hidden keybinding for Picker apply action
+        /// </summary>
+        [SettingsUIMouseBinding(Mod.PickerApplyMimicAction)]
+        [SettingsUIHidden]
+        public ProxyBinding PickerApplyMimic { get; set; }
+
+        /// <summary>
+        /// Gets or sets hidden keybinding for Painter Apply Action.
+        /// </summary>
+        [SettingsUIMouseBinding(Mod.PainterApplyMimicAction)]
+        [SettingsUIHidden]
+        public ProxyBinding PainterApplyMimic { get; set; }
+
+        /// <summary>
+        /// Gets or sets hidden keybinding for Painter secondary apply action.
+        /// </summary>
+        [SettingsUIMouseBinding(Mod.PainterSecondaryApplyMimicAction)]
+        [SettingsUIHidden]
+        public ProxyBinding PainterSecondaryApplyMimic { get; set; }
+
 
         /// <summary>
         /// Sets a value indicating whether: a button for Resetting the settings for keybinds.
@@ -99,6 +126,7 @@
         [SettingsUIButton]
         [SettingsUIConfirmation]
         [SettingsUISection(General, Remove)]
+        [SettingsUIDisableByCondition(typeof(Setting), nameof(IsNotGame))]
         public bool ResetAllSingleInstanceColorChanges
         {
             set
@@ -114,6 +142,7 @@
         [SettingsUIButton]
         [SettingsUIConfirmation]
         [SettingsUISection(General, Remove)]
+        [SettingsUIDisableByCondition(typeof(Setting), nameof(IsNotGame))]
         public bool ResetColorVariationsInThisSaveGame
         {
             set
@@ -167,6 +196,12 @@
         public override void SetDefaults()
         {
             ColorPainterAutomaticCopyColor = true;
+        }
+
+        private bool IsNotGame()
+        {
+            ToolSystem toolSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ToolSystem>();
+            return !toolSystem.actionMode.IsGame();
         }
     }
 }

@@ -65,7 +65,7 @@ namespace Recolor.Settings
                 { TooltipTitleKey("VehicleFilter"), "Vehicle Filter" },
                 { TooltipDescriptionKey("VehicleFilter"), "Color Painter tool will change single instance colors of vehicles." },
                 { TooltipTitleKey("PaintToolMode"), "Paint" },
-                { TooltipDescriptionKey("PaintToolMode"), "Changes single instance colors or matching color variations on a selection." },
+                { TooltipDescriptionKey("PaintToolMode"), "Left Click: Changes single instance colors or matching color variations on a selection. Right Click: Resets single instance colors back to color variation or custom color variations back to originals." },
                 { TooltipTitleKey("ResetToolMode"), "Reset" },
                 { TooltipDescriptionKey("ResetToolMode"), "Resets single instance colors back to color variation or custom color variations back to originals." },
                 { TooltipTitleKey("PickerToolMode"), "Color Picker" },
