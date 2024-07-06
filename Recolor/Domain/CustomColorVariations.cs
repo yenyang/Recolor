@@ -1,4 +1,4 @@
-﻿// <copyright file="CustomColorVariation.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="CustomColorVariations.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
@@ -10,9 +10,9 @@ namespace Recolor.Domain
     using UnityEngine;
 
     /// <summary>
-    /// RETIRED Custom component for saving custom color variations into save file. Needed for migration.
+    /// Custom component for saving custom color variations into save file with a buffer.
     /// </summary>
-    public struct CustomColorVariation : IComponentData, ISerializable
+    public struct CustomColorVariations : IBufferElementData, ISerializable
     {
         /// <summary>
         /// The set of 3 colors.
@@ -25,11 +25,11 @@ namespace Recolor.Domain
         public int m_Index;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CustomColorVariation"/> struct.
+        /// Initializes a new instance of the <see cref="CustomColorVariations"/> struct.
         /// </summary>
         /// <param name="colorSet">Set of colors.</param>
         /// <param name="index">Submesh index.</param>
-        public CustomColorVariation (ColorSet colorSet, int index)
+        public CustomColorVariations (ColorSet colorSet, int index)
         {
             m_ColorSet = colorSet;
             m_Index = index;

@@ -33,19 +33,25 @@ namespace Recolor.Systems
         /// Tries to get a custom color variation from the recorded map.
         /// </summary>
         /// <param name="prefabEntity">The prefab entity for the render prefab.</param>
+        /// <param name="index">the color variation index.</param>
         /// <param name="customColorVariation">The color set and index needed for custom color variation.</param>
         /// <returns>True if found, false if not.</returns>
-        public bool TryGetCustomColorVariation(Entity prefabEntity, out CustomColorVariation customColorVariation)
+        public bool TryGetCustomColorVariation(Entity prefabEntity, int index, out CustomColorVariations customColorVariation)
         {
             customColorVariation = default;
-            if (m_CustomColorVariationMap.ContainsKey(prefabEntity) && m_CustomColorVariationMap[prefabEntity] != Entity.Null && EntityManager.TryGetComponent(m_CustomColorVariationMap[prefabEntity], out customColorVariation))
+            if (m_CustomColorVariationMap.ContainsKey(prefabEntity) && m_CustomColorVariationMap[prefabEntity] != Entity.Null && EntityManager.TryGetBuffer(m_CustomColorVariationMap[prefabEntity], isReadOnly: true, out DynamicBuffer<CustomColorVariations> customColorVariations))
             {
-                return true;
+                foreach (CustomColorVariations currentVariation in customColorVariations)
+                {
+                    if (currentVariation.m_Index == index)
+                    {
+                        customColorVariation = currentVariation;
+                        return true;
+                    }
+                }
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         /// <summary>
@@ -61,14 +67,28 @@ namespace Recolor.Systems
             {
                 Entity customColorVariationEntity = buffer.CreateEntity(m_CustomColorVariationArchetype);
                 buffer.SetComponent(customColorVariationEntity, new PrefabRef(prefabEntity));
-                buffer.SetComponent(customColorVariationEntity, new CustomColorVariation(colorSet, index));
+                buffer.AddBuffer<CustomColorVariations>(customColorVariationEntity);
+                buffer.AppendToBuffer(customColorVariationEntity, new CustomColorVariations(colorSet, index));
                 buffer.AddComponent<Updated>(customColorVariationEntity);
                 m_CustomColorVariationMap.Add(prefabEntity, Entity.Null);
             }
-            else if (EntityManager.HasComponent<CustomColorVariation>(m_CustomColorVariationMap[prefabEntity]) && m_CustomColorVariationMap[prefabEntity] != Entity.Null)
+            else if (EntityManager.HasBuffer<CustomColorVariations>(m_CustomColorVariationMap[prefabEntity]) && m_CustomColorVariationMap[prefabEntity] != Entity.Null && !TryGetCustomColorVariation(prefabEntity, index, out CustomColorVariations customColorVariation))
             {
-                buffer.SetComponent(m_CustomColorVariationMap[prefabEntity], new CustomColorVariation(colorSet, index));
+                buffer.AppendToBuffer(m_CustomColorVariationMap[prefabEntity], new CustomColorVariations(colorSet, index));
                 buffer.AddComponent<Updated>(m_CustomColorVariationMap[prefabEntity]);
+            }
+            else if (EntityManager.TryGetBuffer(m_CustomColorVariationMap[prefabEntity], isReadOnly: false, out DynamicBuffer<CustomColorVariations> customColorVariations) && m_CustomColorVariationMap[prefabEntity] != Entity.Null && TryGetCustomColorVariation(prefabEntity, index, out CustomColorVariations matchingIndexVariation)) 
+            {
+                for (int i = 0; i < customColorVariations.Length; i++)
+                {
+                    if (customColorVariations[i].m_Index == index)
+                    {
+                        CustomColorVariations currentColorVariation = customColorVariations[i];
+                        currentColorVariation.m_ColorSet = colorSet;
+                        customColorVariations[i] = currentColorVariation;
+                        return;
+                    }
+                }
             }
         }
 
@@ -94,7 +114,7 @@ namespace Recolor.Systems
         public void ReloadCustomColorVariations(EntityCommandBuffer buffer)
         {
             EntityQuery customColorVariationQuery = SystemAPI.QueryBuilder()
-                   .WithAll<CustomColorVariation, PrefabRef>()
+                   .WithAll<CustomColorVariations, PrefabRef>()
                    .WithNone<Deleted>()
                    .Build();
 
@@ -107,7 +127,7 @@ namespace Recolor.Systems
                     continue;
                 }
 
-                if (!TryGetCustomColorVariation(prefabRef.m_Prefab, out CustomColorVariation customColorVariation))
+                if (!TryGetCustomColorVariationsBuffer(prefabRef.m_Prefab, true, out DynamicBuffer<CustomColorVariations> customColorVariations))
                 {
                     continue;
                 }
@@ -122,19 +142,23 @@ namespace Recolor.Systems
                     continue;
                 }
 
-                if (colorVariationBuffer.Length > customColorVariation.m_Index)
+                for (int i = 0; i < customColorVariations.Length; i++)
                 {
-                    ColorVariation currentColorVariation = colorVariationBuffer[customColorVariation.m_Index];
-
-                    currentColorVariation.m_ColorSet = customColorVariation.m_ColorSet;
-                    colorVariationBuffer[customColorVariation.m_Index] = currentColorVariation;
-                    if (!prefabsNeedingUpdates.Contains(prefabRef.m_Prefab))
+                    CustomColorVariations customColorVariation = customColorVariations[i];
+                    if (colorVariationBuffer.Length > customColorVariation.m_Index)
                     {
-                        prefabsNeedingUpdates.Add(prefabRef.m_Prefab);
-                    }
+                        ColorVariation currentColorVariation = colorVariationBuffer[customColorVariation.m_Index];
 
-                    m_SelectedInfoPanelColorFieldsSystem.TryGetSeasonFromColorGroupID(currentColorVariation.m_GroupID, out Season season);
-                    m_Log.Debug($"{nameof(CustomColorVariationSystem)}.{nameof(ReloadCustomColorVariations)} Loaded Colorset for {prefabBase.GetPrefabID()} in {season}");
+                        currentColorVariation.m_ColorSet = customColorVariation.m_ColorSet;
+                        colorVariationBuffer[customColorVariation.m_Index] = currentColorVariation;
+                        if (!prefabsNeedingUpdates.Contains(prefabRef.m_Prefab))
+                        {
+                            prefabsNeedingUpdates.Add(prefabRef.m_Prefab);
+                        }
+
+                        m_SelectedInfoPanelColorFieldsSystem.TryGetSeasonFromColorGroupID(currentColorVariation.m_GroupID, out Season season);
+                        m_Log.Debug($"{nameof(CustomColorVariationSystem)}.{nameof(ReloadCustomColorVariations)} Loaded Colorset for {prefabBase.GetPrefabID()} in {season}");
+                    }
                 }
             }
 
@@ -164,7 +188,7 @@ namespace Recolor.Systems
         public void ResetAllCustomColorVariations()
         {
             EntityQuery customColorVariationQuery = SystemAPI.QueryBuilder()
-                   .WithAll<CustomColorVariation, PrefabRef>()
+                   .WithAll<CustomColorVariations, PrefabRef>()
                    .WithNone<Deleted>()
                    .Build();
 
@@ -178,7 +202,7 @@ namespace Recolor.Systems
                     continue;
                 }
 
-                if (!TryGetCustomColorVariation(prefabRef.m_Prefab, out CustomColorVariation customColorVariation))
+                if (!TryGetCustomColorVariationsBuffer(prefabRef.m_Prefab, true, out DynamicBuffer<CustomColorVariations> customColorVariations))
                 {
                     EntityManager.AddComponent<Deleted>(entity);
                     continue;
@@ -196,31 +220,35 @@ namespace Recolor.Systems
                     continue;
                 }
 
-                if (colorVariationBuffer.Length > customColorVariation.m_Index)
+                for (int i = 0; i < customColorVariations.Length; i++)
                 {
-                    ColorVariation currentColorVariation = colorVariationBuffer[customColorVariation.m_Index];
-
-                    m_SelectedInfoPanelColorFieldsSystem.TryGetSeasonFromColorGroupID(currentColorVariation.m_GroupID, out Season season);
-                    AssetSeasonIdentifier assetSeasonIdentifier = new AssetSeasonIdentifier()
+                    CustomColorVariations customColorVariation = customColorVariations[i];
+                    if (colorVariationBuffer.Length > customColorVariation.m_Index)
                     {
-                        m_Index = customColorVariation.m_Index,
-                        m_PrefabID = prefabBase.GetPrefabID(),
-                        m_Season = season,
-                    };
+                        ColorVariation currentColorVariation = colorVariationBuffer[customColorVariation.m_Index];
 
-                    if (!prefabsNeedingUpdates.Contains(prefabRef.m_Prefab))
-                    {
-                        prefabsNeedingUpdates.Add(prefabRef.m_Prefab);
+                        m_SelectedInfoPanelColorFieldsSystem.TryGetSeasonFromColorGroupID(currentColorVariation.m_GroupID, out Season season);
+                        AssetSeasonIdentifier assetSeasonIdentifier = new AssetSeasonIdentifier()
+                        {
+                            m_Index = customColorVariation.m_Index,
+                            m_PrefabID = prefabBase.GetPrefabID(),
+                            m_Season = season,
+                        };
+
+                        if (!prefabsNeedingUpdates.Contains(prefabRef.m_Prefab))
+                        {
+                            prefabsNeedingUpdates.Add(prefabRef.m_Prefab);
+                        }
+
+                        if (!m_SelectedInfoPanelColorFieldsSystem.TryGetVanillaColorSet(assetSeasonIdentifier, out currentColorVariation.m_ColorSet))
+                        {
+                            EntityManager.AddComponent<Deleted>(entity);
+                            continue;
+                        }
+
+                        colorVariationBuffer[customColorVariation.m_Index] = currentColorVariation;
+                        m_Log.Debug($"{nameof(CustomColorVariationSystem)}.{nameof(ResetAllCustomColorVariations)} Reset Colorset for {prefabBase.GetPrefabID()} in {season}");
                     }
-
-                    if (!m_SelectedInfoPanelColorFieldsSystem.TryGetVanillaColorSet(assetSeasonIdentifier, out currentColorVariation.m_ColorSet))
-                    {
-                        EntityManager.AddComponent<Deleted>(entity);
-                        continue;
-                    }
-
-                    colorVariationBuffer[customColorVariation.m_Index] = currentColorVariation;
-                    m_Log.Debug($"{nameof(CustomColorVariationSystem)}.{nameof(ResetAllCustomColorVariations)} Reset Colorset for {prefabBase.GetPrefabID()} in {season}");
                 }
 
                 EntityManager.AddComponent<Deleted>(entity);
@@ -256,15 +284,15 @@ namespace Recolor.Systems
             m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
             m_CustomColorVariationMap = new NativeHashMap<Entity, Entity>(0, Allocator.Persistent);
 
-            m_CustomColorVariationArchetype = EntityManager.CreateArchetype(ComponentType.ReadWrite<CustomColorVariation>(), ComponentType.ReadWrite<PrefabRef>());
+            m_CustomColorVariationArchetype = EntityManager.CreateArchetype(ComponentType.ReadWrite<CustomColorVariations>(), ComponentType.ReadWrite<PrefabRef>());
 
             m_UpdatedCustomColorVariationQuery = SystemAPI.QueryBuilder()
-                   .WithAll<Updated, CustomColorVariation, PrefabRef>()
+                   .WithAll<Updated, CustomColorVariations, PrefabRef>()
                    .WithNone<Deleted>()
                    .Build();
 
             m_DeletedCustomColorVariationQuery = SystemAPI.QueryBuilder()
-                   .WithAll<Deleted, CustomColorVariation, PrefabRef>()
+                   .WithAll<Deleted, CustomColorVariations, PrefabRef>()
                    .Build();
 
             RequireAnyForUpdate(m_UpdatedCustomColorVariationQuery, m_DeletedCustomColorVariationQuery);
@@ -281,17 +309,41 @@ namespace Recolor.Systems
         /// <inheritdoc/>
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
-            EntityQuery customColorVariationQuery = SystemAPI.QueryBuilder()
+            // Handles migration from component to buffer.
+            EntityQuery retiredCustomColorVariationQuery = SystemAPI.QueryBuilder()
                    .WithAll<CustomColorVariation, PrefabRef>()
+                   .WithNone<Deleted>()
+                   .Build();
+
+            if (!retiredCustomColorVariationQuery.IsEmptyIgnoreFilter)
+            {
+                NativeArray<Entity> retiredEntities = retiredCustomColorVariationQuery.ToEntityArray(Allocator.Temp);
+                foreach (Entity entity in retiredEntities)
+                {
+                    if (EntityManager.TryGetComponent(entity, out CustomColorVariation customColorVariation))
+                    {
+                        DynamicBuffer<CustomColorVariations> customColorVariations = EntityManager.AddBuffer<CustomColorVariations>(entity);
+                        customColorVariations.Add(new CustomColorVariations(customColorVariation.m_ColorSet, customColorVariation.m_Index));
+                        EntityManager.RemoveComponent<CustomColorVariation>(entity);
+                    }
+                    else
+                    {
+                        EntityManager.AddComponent<Deleted>(entity);
+                    }
+                }
+            }
+
+            EntityQuery customColorVariationsQuery = SystemAPI.QueryBuilder()
+                   .WithAll<CustomColorVariations, PrefabRef>()
                    .WithNone<Deleted>()
                    .Build();
 
             m_CustomColorVariationMap.Clear();
 
-            NativeArray<Entity> entities = customColorVariationQuery.ToEntityArray(Allocator.Temp);
+            NativeArray<Entity> entities = customColorVariationsQuery.ToEntityArray(Allocator.Temp);
             foreach (Entity entity in entities)
             {
-                if (!EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) || !EntityManager.HasComponent<CustomColorVariation>(entity))
+                if (!EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) || !EntityManager.HasBuffer<CustomColorVariations>(entity))
                 {
                     continue;
                 }
@@ -317,7 +369,7 @@ namespace Recolor.Systems
                 NativeArray<Entity> entities = m_UpdatedCustomColorVariationQuery.ToEntityArray(Allocator.Temp);
                 foreach (Entity entity in entities)
                 {
-                    if (!EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) || !EntityManager.HasComponent<CustomColorVariation>(entity))
+                    if (!EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) || !EntityManager.HasBuffer<CustomColorVariations>(entity))
                     {
                         continue;
                     }
@@ -356,6 +408,17 @@ namespace Recolor.Systems
         {
             base.OnDestroy();
             m_CustomColorVariationMap.Dispose();
+        }
+
+        private bool TryGetCustomColorVariationsBuffer(Entity prefabEntity, bool isReadOnly, out DynamicBuffer<CustomColorVariations> customColorVariations)
+        {
+            customColorVariations = default;
+            if (m_CustomColorVariationMap.ContainsKey(prefabEntity) && m_CustomColorVariationMap[prefabEntity] != Entity.Null)
+            {
+                return EntityManager.TryGetBuffer(m_CustomColorVariationMap[prefabEntity], isReadOnly: isReadOnly, out customColorVariations);
+            }
+
+            return false;
         }
     }
 }

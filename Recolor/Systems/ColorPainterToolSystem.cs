@@ -69,6 +69,22 @@ namespace Recolor.Systems
             return false;
         }
 
+        /// <summary>
+        /// So tree controller can check if something in this save game has custom color variation.
+        /// </summary>
+        /// <param name="prefabEntity">Prefab entity for submesh.</param>
+        /// <param name="index">color variation index.</param>
+        /// <returns>True if has custom color variation, false if not.</returns>
+        public bool HasCustomColorVariation(Entity prefabEntity, int index)
+        {
+            if (!m_CustomColorVariationSystem.TryGetCustomColorVariation(prefabEntity, index, out CustomColorVariations customColorVariation))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         /// <inheritdoc/>
         public override void InitializeRaycast()
         {
