@@ -14,8 +14,9 @@
     /// </summary>
     [FileLocation("ModsSettings/" + nameof(Recolor) + "/" + nameof(Recolor))]
     [SettingsUIGroupOrder(General, Keybinds, Remove, About)]
-    [SettingsUIMouseAction(Mod.PickerApplyMimicAction, "PickerApplyAction")]
-    [SettingsUIMouseAction(Mod.PainterApplyMimicAction, "PainterApplyAction")]
+    [SettingsUIMouseAction(Mod.PickerApplyMimicAction, "ColorPickerActions")]
+    [SettingsUIMouseAction(Mod.PainterApplyMimicAction, "ColorPainterActions")]
+    [SettingsUIMouseAction(Mod.PainterSecondaryApplyMimicAction, "ColorPainterActions")]
     public class Setting : ModSetting
     {
         /// <summary>
@@ -79,22 +80,29 @@
         /// Gets or sets a value indicating the keybinding for Reset Elevation.
         /// </summary>
         [SettingsUISection(General, Keybinds)]
-        [SettingsUIKeyboardBinding(UnityEngine.InputSystem.Key.P, actionName: ActivateColorPainterActionName, shift: true)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.P, actionName: ActivateColorPainterActionName, shift: true)]
         public ProxyBinding ActivateColorPainter { get; set; }
 
         /// <summary>
-        /// Gets or sets hidden keybinding for Remove Sub Elements apply action.
+        /// Gets or sets hidden keybinding for Picker apply action
         /// </summary>
         [SettingsUIMouseBinding(Mod.PickerApplyMimicAction)]
         [SettingsUIHidden]
         public ProxyBinding PickerApplyMimic { get; set; }
 
         /// <summary>
-        /// Gets or sets hidden keybinding for Remove Vehicle Cims and Animals action.
+        /// Gets or sets hidden keybinding for Painter Apply Action.
         /// </summary>
         [SettingsUIMouseBinding(Mod.PainterApplyMimicAction)]
         [SettingsUIHidden]
         public ProxyBinding PainterApplyMimic { get; set; }
+
+        /// <summary>
+        /// Gets or sets hidden keybinding for Painter secondary apply action.
+        /// </summary>
+        [SettingsUIMouseBinding(Mod.PainterSecondaryApplyMimicAction)]
+        [SettingsUIHidden]
+        public ProxyBinding PainterSecondaryApplyMimic { get; set; }
 
 
         /// <summary>

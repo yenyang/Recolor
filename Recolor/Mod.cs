@@ -40,6 +40,11 @@ namespace Recolor
         public const string PainterApplyMimicAction = "PainterApplyMimic";
 
         /// <summary>
+        /// Fake keybind action for secondary apply.
+        /// </summary>
+        public const string PainterSecondaryApplyMimicAction = "PainterSecondaryApplyMimic";
+
+        /// <summary>
         /// An id used for bindings between UI and C#.
         /// </summary>
         public static readonly string Id = "Recolor";

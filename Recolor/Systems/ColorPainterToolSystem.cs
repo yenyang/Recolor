@@ -35,6 +35,7 @@ namespace Recolor.Systems
     public partial class ColorPainterToolSystem : ToolBaseSystem
     {
         private ProxyAction m_ApplyAction;
+        private ProxyAction m_SecondaryApplyAction;
         private ILog m_Log;
         private Entity m_PreviousRaycastedEntity;
         private Entity m_PreviousSelectedEntity;
@@ -172,6 +173,13 @@ namespace Recolor.Systems
             var builtInApplyBinding = builtInApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
             var applyWatcher = new ProxyBinding.Watcher(builtInApplyBinding, binding => SetMimic(mimicApplyBinding, binding));
             SetMimic(mimicApplyBinding, applyWatcher.binding);
+
+            m_SecondaryApplyAction = Mod.Instance.Settings.GetAction(Mod.PainterSecondaryApplyMimicAction);
+            var builtInSecondaryApplyAction = InputManager.instance.FindAction(InputManager.kToolMap, "Secondary Apply");
+            var mimicSecondaryApplyBinding = m_SecondaryApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
+            var builtInSecondaryApplyBinding = builtInSecondaryApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
+            var secondaryApplyWatcher = new ProxyBinding.Watcher(builtInSecondaryApplyBinding, binding => SetMimic(mimicSecondaryApplyBinding, binding));
+            SetMimic(mimicSecondaryApplyBinding, secondaryApplyWatcher.binding);
         }
 
         /// <inheritdoc/>
@@ -179,6 +187,7 @@ namespace Recolor.Systems
         {
             base.OnStartRunning();
             m_ApplyAction.shouldBeEnabled = true;
+            m_SecondaryApplyAction.shouldBeEnabled = true;
             m_Log.Debug($"{nameof(ColorPainterToolSystem)}.{nameof(OnStartRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
         }
@@ -188,6 +197,7 @@ namespace Recolor.Systems
         {
             base.OnStopRunning();
             m_ApplyAction.shouldBeEnabled = false;
+            m_SecondaryApplyAction.shouldBeEnabled = false;
             EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
             EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
             m_PreviousRaycastedEntity = Entity.Null;
@@ -222,7 +232,8 @@ namespace Recolor.Systems
 
             bool raycastResult = GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit);
 
-            if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
+            if ((m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
+                || (m_SecondaryApplyAction.WasPerformedThisFrame() && m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single))
             {
                 if (!raycastResult
                 || !EntityManager.HasBuffer<MeshColor>(currentRaycastEntity)
@@ -312,7 +323,7 @@ namespace Recolor.Systems
                 m_OverlayRenderSystem.AddBufferWriter(inputDeps);
             }
 
-            if (!m_ApplyAction.WasPerformedThisFrame() && !m_ApplyAction.IsPressed())
+            if (!m_ApplyAction.WasPerformedThisFrame() && !m_ApplyAction.IsPressed() && !m_SecondaryApplyAction.WasPerformedThisFrame() && !m_SecondaryApplyAction.IsPressed())
             {
                 return inputDeps;
             }
@@ -372,7 +383,8 @@ namespace Recolor.Systems
                     m_Barrier.AddJobHandleForProducer(inputDeps);
                 }
             }
-            else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset && m_ApplyAction.WasPerformedThisFrame() && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
+            else if ((m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset && m_ApplyAction.WasPerformedThisFrame() && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
+                    || (m_SecondaryApplyAction.WasPerformedThisFrame() && m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single))
             {
                 if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
                 {
@@ -385,9 +397,10 @@ namespace Recolor.Systems
                     DeleteCustomColorVariationEntity(currentRaycastEntity, ref buffer, assetSeasonIdentifier);
                 }
             }
-            else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset && m_ApplyAction.IsPressed() && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius)
+            else if ((m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset && m_ApplyAction.IsPressed() && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius)
+                || (m_SecondaryApplyAction.IsPressed() && m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius))
             {
-                ResetMeshColorWithinRadiusJob resetCustomMeshColorWithinRadiusJob = new()
+                ResetMeshColorWithinRadiusJob resetCustomMeshColorWithinRadiusJob = new ()
                 {
                     m_EntityType = SystemAPI.GetEntityTypeHandle(),
                     m_Position = hit.m_HitPosition,
