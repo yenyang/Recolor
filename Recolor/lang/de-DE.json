@@ -1,0 +1,16 @@
+{
+  "Options.SECTION[Recolor.Recolor.Mod]": "Recolor",
+  "Recolor.SECTION_TITLE[InfoRowTitle]": "Recolor",
+  "Recolor.TOOLTIP_DESCRIPTION[InfoRowTooltip]": "Zur Auswahl benutzerdefinierter Farben.",
+  "Recolor.SECTION_TITLE[ColorSet]": "Farbset",
+  "Recolor.TOOLTIP_DESCRIPTION[Minimize]": "Das Recolor-Menü minimieren, um Platz zu sparen.",
+  "Recolor.TOOLTIP_DESCRIPTION[Expand]": "Das Recolor-Menü zur Verwendung maximieren.",
+  "Recolor.TOOLTIP_DESCRIPTION[ColorPicker]": "Aktiviert das Farbauswahl-Werkzeug.",
+  "Recolor.TOOLTIP_DESCRIPTION[ColorPainter]": "Aktiviert das Farbmaler-Werkzeug.",
+  "Recolor.TOOLTIP_DESCRIPTION[CopyColor]": "Eine einzelne Farbe kopieren, um sie später einzufügen.",
+  "Recolor.TOOLTIP_DESCRIPTION[PasteColor]": "Eine einzelne Farbe als Teil eines Farbsets einfügen.",
+  "Recolor.TOOLTIP_DESCRIPTION[ResetColor]": "Setzt eine einzelne Farbe des Originalen Assets auf das Original zurück (und Saison, falls zutreffend).",
+  "Recolor.TOOLTIP_DESCRIPTION[CopyColorSet]": "Das ganze Farbset kopieren, um es später einzufügen.",
+  "Recolor.TOOLTIP_DESCRIPTION[PasteColorSet]": "Das kopierte Farbset einfügen.",
+  "Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]": "Setzt das ganze Farbset des Originalen Assets auf das Original zurück (und Saison, falls zutreffend)."
+}

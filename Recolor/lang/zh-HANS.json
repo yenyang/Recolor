@@ -1,0 +1,23 @@
+{
+  "Options.SECTION[Recolor.Recolor.Mod]": "Recolor",
+  "Recolor.SECTION_TITLE[InfoRowTitle]": "Recolor",
+  "Recolor.TOOLTIP_DESCRIPTION[InfoRowTooltip]": "用于更改资产的颜色。",
+  "Recolor.SECTION_TITLE[ColorSet]": "颜色设定",
+  "Recolor.TOOLTIP_DESCRIPTION[Minimize]": "最小化 Recolor 模组的面板以节省空间。",
+  "Recolor.TOOLTIP_DESCRIPTION[Expand]": "展开 Recolor 模组的面板以供使用。",
+  "Recolor.TOOLTIP_DESCRIPTION[ColorPicker]": "激活颜色选择工具。",
+  "Recolor.TOOLTIP_DESCRIPTION[ColorPainter]": "激活颜色绘制工具。",
+  "Recolor.TOOLTIP_DESCRIPTION[CopyColor]": "复制一种颜色以便稍后粘贴。",
+  "Recolor.SECTION_TITLE[Radius]": "半径",
+  "Recolor.SECTION_TITLE[Filter]": "过滤器",
+  "Recolor.TOOLTIP_TITLE[BuildingFilter]": "建筑过滤器",
+  "Recolor.TOOLTIP_TITLE[PropFilter]": "摆件过滤器",
+  "Recolor.TOOLTIP_TITLE[VehicleFilter]": "车辆过滤器",
+  "Recolor.TOOLTIP_TITLE[ResetToolMode]": "重置",
+  "Recolor.TOOLTIP_TITLE[PickerToolMode]": "颜色选择器",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.ResetSettings]": "重置 Recolor 设置",
+  "Options.WARNING[Recolor.Recolor.Mod.Setting.ResetSettings]": "确定重置 Recolor 设置？",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.Version]": "版本",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.Version]": "已安装的 Recolor 版本号。",
+  "Options.INPUT_MAP[Recolor.Recolor.Mod]": "Recolor"
+}
