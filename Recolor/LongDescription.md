@@ -1,5 +1,8 @@
+Panel, Picker, Painter
 
+Gives player control over single instance colors for most buildings, vehicles, props, and a few other assets. Gives player control over color variations for the meshes for trees, plants, most buildings, vehicles, props, and a few other assets.
 
+CloverPie has produced a colorful video demonstation with a pre-release version of the mod. Please watch on YouTube.
 ## Dependencies
 Unified Icon Library
 I18n Everywhere (Soft dependency required for loading languages other than English.)
@@ -8,16 +11,40 @@ I18n Everywhere (Soft dependency required for loading languages other than Engli
 If you want to say thank you with a donation you can do so on Paypal.
 
 ## Translations
-I am looking for volunteers to help translate the mod into the official languages. For those interested please find the project in the discord link. CSL2:CODEMODS -> mods-wip -> 
+I am looking for volunteers to help translate the mod into the other languages. For those interested please find the project in the discord link. CSL2:CODEMODS -> mods-wip -> Recolor. Also see Crowdin link.
+The mod is fully or partially available in the following languages: French, Polish, Brazilian Portuguese, Russian, Spanish, German, and Chinese Simplified.
   
 # Detailed Descrption
+## Recolor Panel Section
+Adds a Recolor section to the top left panel when selecting an asset instance if that asset’s main mesh supports custom colors. This panel section has 3 color fields with Hue, Saturation, and Brightness sliders that will change up to three colors of the asset. The asset must have been designed to utilize customizable colors, not all assets utilize all 3 colors, and the parts affected by each color in the color set are predefined and cannot be changed. An unsupported color channel are often by default just white. 
 
+The Recolor panel can control the single instance colors or color variations of all assets that utilize the matching mesh and color variation. Single instance colors of plants and trees is not currently supported. Color changes are immediately applied and saved into this save game. With a button press you can save color variations to the ModsData folder so that color variation will be a default for all other saves. These xml files can also be shared out of game. 
 
+The panel features copy, paste, and reset functions. Sets of colors and single color fields can be independently copied and pasted, and are separate. The panel can be minimized when not being used. The panel has a color picker tool as an alternative to copy/paste. 
+
+## Color Painter Tool
+The recolor panel has a button to activate the color painter tool. You can also use a customizable keyboard shortcut (default Shift + P). By default when activating the color painter tool the color set of the selected asset is copied automatically. This can be changed in settings. 
+
+The color painter tool has similar functionality to the recolor panel but with a different workflow. It’s faster but changes to the colors are not applied immediately, you must select the asset to apply changes. Paint tool mode uses left mouse button to change colors, and right mouse button to do a quick reset. Reset tool mode will only highlight assets that can be reset and uses left mouse button to apply the reset. You can copy/paste colors between the color painter tool and the Recolor panel. The color painter has its own color picker tool mode as an alternative to copy/paste. For even faster application you can change instance colors of buildings, props, and vehicles over a radius. You must choose the filter that you want to use between those three. 
+
+## Limitations
+* Not all buildings or props support custom colors because their mesh was not designed to support this. For instance most unique buildings were intended to be unique.
+* NetLane Fencing from EDT is not supported, and this cannot change their colors. Fencing props with color variations can be changed.
+* This mod has not yet been designed to handle experimental custom assets from unfinished editor featuring multiple meshes. Trying to use this mod on these types of assets may have varying and undesirable results.
+* To select sub-objects other than service upgrades and utilize the Recolor panel, you must enable DevUI Tab Menu -> Simulation tab -> Debug Toggle. The color painter can target sub-objects without debug toggle.
+
+## Other Color Variation Mods
+Other existing mods such as Tree Controller and Vehicle Variation Packs by Konsi/Mimonsi contain curated sets of color variations. This mod is intended to be the user override for those mods. You can still use those other mods that affect color variation, but this mod should take precedence if you've assigned an overriding color variation.
 
 ## Support
 I will respond on the code modding channels on **Cities: Skylines Modding Discord**
 
 ## Credits 
 * yenyang - Mod Author
-* Chameleon TBN - Testing, Feedback, Icon..
-* Klyte45, Algernon, T.D.W.,krzychu124, Trejek, Triton Supreme, and Quboid - Help with UI, Cooperative Development and Code Sharing
+* CloverPie - Testing, Feedback, Promotional Material, Logo.
+* Chameleon TBN - Testing, Feedback, Icons, Logo.
+* HarborMasterJay, Sully, Dome - Testing, Feedback
+* Klyte45, Algernon, T.D.W., krzychu124, Trejek, Triton Supreme, and Quboid - Help with UI, Cooperative Development and Code Sharing
+* Translators: enGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey (French), Hendrix (German)
+* Bruceyboy24804, spacechad, Tigon Ologdring - Project discussions.
+* Vecteezy.com as an image source for parts of Logo design.
