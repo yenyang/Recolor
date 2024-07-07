@@ -1,5 +1,6 @@
-Controls single instance colors for most buildings, vehicles, props, and a few other assets. Controls color variations for the meshes for trees, plants, most buildings, vehicles, props, and a few other assets.
+Gives player control over single instance colors for most buildings, vehicles, props, and a few other assets. Gives player control over color variations for the meshes for trees, plants, most buildings, vehicles, props, and a few other assets.
 
+CloverPie has produced a colorful video demonstation with a pre-release version of the mod. Please watch on YouTube.
 ## Dependencies
 Unified Icon Library
 I18n Everywhere (Soft dependency required for loading languages other than English.)
@@ -13,7 +14,7 @@ The mod is fully or partially available in the following languages: French, Poli
   
 # Detailed Descrption
 ## Recolor Panel Section
-Adds a Recolor section to the top left panel when selecting an asset instance if that asset’s main mesh supports custom colors. This panel section has 3 color fields that will change up to three colors of the asset. The asset must have been designed to utilize customizable colors, not all assets utilize all 3 colors, and the parts affected by each color in the color set are predefined and cannot be changed. An unsupported color channel should by default be white. 
+Adds a Recolor section to the top left panel when selecting an asset instance if that asset’s main mesh supports custom colors. This panel section has 3 color fields with Hue, Saturation, and Brightness sliders that will change up to three colors of the asset. The asset must have been designed to utilize customizable colors, not all assets utilize all 3 colors, and the parts affected by each color in the color set are predefined and cannot be changed. An unsupported color channel should by default be white. 
 
 The Recolor panel can control the single instance colors or color variations of all assets that utilize the matching mesh and color variation. Single instance colors of plants and trees is not currently supported. Color changes are immediately applied and saved into this save game. With a button press you can save color variations to the ModsData folder so that color variation will be a default for all other saves. These xml files can also be shared out of game. 
 
@@ -28,7 +29,10 @@ The color painter tool has similar functionality to the recolor panel but with a
 * Not all buildings or props support custom colors because they mesh was not designed to support this. For instance most unique buildings were intended to be unique.
 * Network Fencing from EDT is not supported, and this cannot change their colors. Fencing props with color variations can be changed.
 * This mod has not yet been designed to handle experimental custom assets from unfinished editor featuring multiple meshes. Trying to use this mod on these types of assets may have varying and undesirable results.
-* To select sub-objects other than service upgrades and utilize the Recolor panel, you must utilize DevUI Tab Menu -> Simulation tab -> Debug Toggle. The color painter can target sub-objects without debug toggle.
+* To select sub-objects other than service upgrades and utilize the Recolor panel, you must enable DevUI Tab Menu -> Simulation tab -> Debug Toggle. The color painter can target sub-objects without debug toggle.
+
+## Other Color Variation Mods
+Other existing mods such as Tree Controller and Vehicle Variation Packs by Konsi/Mimonsi contain curated sets of color variations. This mod is intended to be the user override for those mods. You can still use those other mods that affect color variation, but this mod should take precedence if you've assigned an overriding color variation.
 
 ## Support
 I will respond on the code modding channels on **Cities: Skylines Modding Discord**
