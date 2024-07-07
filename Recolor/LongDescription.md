@@ -5,6 +5,7 @@ Gives player control over single instance colors for most buildings, vehicles, p
 CloverPie has produced a colorful video demonstation with a pre-release version of the mod. Please watch on YouTube.
 ## Dependencies
 Unified Icon Library
+
 I18n Everywhere (Soft dependency required for loading languages other than English.)
 
 ## Donations
@@ -16,7 +17,7 @@ The mod is fully or partially available in the following languages: French, Poli
   
 # Detailed Descrption
 ## Recolor Panel Section
-Adds a Recolor section to the top left panel when selecting an asset instance if that asset’s main mesh supports custom colors. This panel section has 3 color fields with Hue, Saturation, and Brightness sliders that will change up to three colors of the asset. The asset must have been designed to utilize customizable colors, not all assets utilize all 3 colors, and the parts affected by each color in the color set are predefined and cannot be changed. An unsupported color channel are often by default just white. 
+Adds a Recolor section to the top left panel when selecting an asset instance if the main mesh of that asset supports custom colors. This panel section has 3 color fields with Hue, Saturation, and Brightness sliders that will change up to three colors of the asset. The asset must have been designed to utilize customizable colors, not all assets utilize all 3 colors, and the parts affected by each color in the color set are predefined and cannot be changed. An unsupported color channel are often by default just white. 
 
 The Recolor panel can control the single instance colors or color variations of all assets that utilize the matching mesh and color variation. Single instance colors of plants and trees is not currently supported. Color changes are immediately applied and saved into this save game. With a button press you can save color variations to the ModsData folder so that color variation will be a default for all other saves. These xml files can also be shared out of game. 
 
@@ -25,7 +26,7 @@ The panel features copy, paste, and reset functions. Sets of colors and single c
 ## Color Painter Tool
 The recolor panel has a button to activate the color painter tool. You can also use a customizable keyboard shortcut (default Shift + P). By default when activating the color painter tool the color set of the selected asset is copied automatically. This can be changed in settings. 
 
-The color painter tool has similar functionality to the recolor panel but with a different workflow. It’s faster but changes to the colors are not applied immediately, you must select the asset to apply changes. Paint tool mode uses left mouse button to change colors, and right mouse button to do a quick reset. Reset tool mode will only highlight assets that can be reset and uses left mouse button to apply the reset. You can copy/paste colors between the color painter tool and the Recolor panel. The color painter has its own color picker tool mode as an alternative to copy/paste. For even faster application you can change instance colors of buildings, props, and vehicles over a radius. You must choose the filter that you want to use between those three. 
+The color painter tool has similar functionality to the recolor panel but with a different workflow. It is faster but changes to the colors are not applied immediately, you must select the asset to apply changes. Paint tool mode uses left mouse button to change colors, and right mouse button to do a quick reset. Reset tool mode will only highlight assets that can be reset and uses left mouse button to apply the reset. You can copy/paste colors between the color painter tool and the Recolor panel. The color painter has its own color picker tool mode as an alternative to copy/paste. For even faster application you can change instance colors of buildings, props, and vehicles over a radius. You must choose the filter that you want to use between those three. 
 
 ## Limitations
 * Not all buildings or props support custom colors because their mesh was not designed to support this. For instance most unique buildings were intended to be unique.
