@@ -28,7 +28,7 @@ The recolor panel has a button to activate the color painter tool. You can also 
 The color painter tool has similar functionality to the recolor panel but with a different workflow. It’s faster but changes to the colors are not applied immediately, you must select the asset to apply changes. Paint tool mode uses left mouse button to change colors, and right mouse button to do a quick reset. Reset tool mode will only highlight assets that can be reset and uses left mouse button to apply the reset. You can copy/paste colors between the color painter tool and the Recolor panel. The color painter has its own color picker tool mode as an alternative to copy/paste. For even faster application you can change instance colors of buildings, props, and vehicles over a radius. You must choose the filter that you want to use between those three. 
 
 ## Limitations
-* Not all buildings or props support custom colors because they mesh was not designed to support this. For instance most unique buildings were intended to be unique.
+* Not all buildings or props support custom colors because their mesh was not designed to support this. For instance most unique buildings were intended to be unique.
 * NetLane Fencing from EDT is not supported, and this cannot change their colors. Fencing props with color variations can be changed.
 * This mod has not yet been designed to handle experimental custom assets from unfinished editor featuring multiple meshes. Trying to use this mod on these types of assets may have varying and undesirable results.
 * To select sub-objects other than service upgrades and utilize the Recolor panel, you must enable DevUI Tab Menu -> Simulation tab -> Debug Toggle. The color painter can target sub-objects without debug toggle.
