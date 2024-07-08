@@ -2,7 +2,7 @@ Panel, Picker, Painter
 
 Gives player control over single instance colors for most buildings, vehicles, props, and a few other assets. Gives player control over color variations for the meshes for trees, plants, most buildings, vehicles, props, and a few other assets.
 
-CloverPie has produced a colorful video demonstation with a pre-release version of the mod. Please watch on YouTube.
+CloverPie has produced a colorful video demonstration with a pre-release version of the mod. Please watch on YouTube.
 ## Dependencies
 Unified Icon Library
 
@@ -15,7 +15,7 @@ If you want to say thank you with a donation you can do so on Paypal.
 I am looking for volunteers to help translate the mod into the other languages. For those interested please find the project in the discord link. CSL2:CODEMODS -> mods-wip -> Recolor. Also see Crowdin link.
 The mod is fully or partially available in the following languages: French, Polish, Brazilian Portuguese, Russian, Spanish, German, and Chinese Simplified.
   
-# Detailed Descrption
+# Detailed Description
 ## Recolor Panel Section
 Adds a Recolor section to the top left panel when selecting an asset instance if the main mesh of that asset supports custom colors. This panel section has 3 color fields with Hue, Saturation, and Brightness sliders that will change up to three colors of the asset. The asset must have been designed to utilize customizable colors, not all assets utilize all 3 colors, and the parts affected by each color in the color set are predefined and cannot be changed. An unsupported color channel are often by default just white. 
 

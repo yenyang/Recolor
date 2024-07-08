@@ -61,11 +61,11 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
   <!--Thumbnail-->
   <Thumbnail Value="Properties/Thumbnail.png" />
   <!--Screenshot, can be set multiple times-->
-  <Screenshot Value="Properties/Previews/rowHousesSmall.png" />
-  <Screenshot Value="Properties/Previews/panelExplanationWithLogo.png" />
+  <Screenshot Value="Properties/Previews/aRowHousesSmall.png" />
+  <Screenshot Value="Properties/Previews/bPanelExplanationWithLogo1.png" />
   <Screenshot Value="Properties/Previews/midRiseApartmentsSmall.png" />
   <Screenshot Value="Properties/Previews/painterTool.png" />
-  <Screenshot Value="Properties/Previews/campgroundWithLogo.png" />
+  <Screenshot Value="Properties/Previews/zCampgroundWithLogo.png" />
   <!--Tag, can be set multiple times-->
   <Tag Value="Code Mod" />
   <!--Link to the forum post where the mod can be discussed-->
