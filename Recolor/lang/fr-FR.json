@@ -36,7 +36,6 @@
   "Recolor.TOOLTIP_TITLE[VehicleFilter]": "Filtre de véhicule",
   "Recolor.TOOLTIP_DESCRIPTION[VehicleFilter]": "L'outil de peinture changera les couleurs d’instance des véhicules.",
   "Recolor.TOOLTIP_TITLE[PaintToolMode]": "Peindre",
-  "Recolor.TOOLTIP_DESCRIPTION[PaintToolMode]": "Modifie les couleurs d’instance ou par jeu de couleur correspondant sur une sélection.",
   "Recolor.TOOLTIP_TITLE[ResetToolMode]": "Réinitialiser",
   "Recolor.TOOLTIP_DESCRIPTION[ResetToolMode]": "Réinitialise le mode de couleur d’instance au mode par correspondance de variation, ou bien les variations personnalisées par correspondance à leur jeu de couleur original.",
   "Recolor.TOOLTIP_TITLE[PickerToolMode]": "Sélecteur de couleur",

@@ -36,7 +36,7 @@
   "Recolor.TOOLTIP_TITLE[VehicleFilter]": "Filtro de veículos",
   "Recolor.TOOLTIP_DESCRIPTION[VehicleFilter]": "A ferramenta de Pintura vai alterar uma única ocorrência de cores de veículos.",
   "Recolor.TOOLTIP_TITLE[PaintToolMode]": "Pintar",
-  "Recolor.TOOLTIP_DESCRIPTION[PaintToolMode]": "Altera uma única ocorrência de cores ou variações de combinações de cores em uma seleção.",
+  "Recolor.TOOLTIP_DESCRIPTION[PaintToolMode]": "Clique com o botão esquerdo: Altera as cores individuais ou as variações de cores correspondentes em uma seleção. Clique com o botão direito: Reverte as cores individuais ou variações de cores customizadas de volta às originais.",
   "Recolor.TOOLTIP_TITLE[ResetToolMode]": "Redefinir",
   "Recolor.TOOLTIP_DESCRIPTION[ResetToolMode]": "Redefine as cores de uma ocorrência única de volta à variação de cores original ou variações de cores personalizadas de volta às originais.",
   "Recolor.TOOLTIP_TITLE[PickerToolMode]": "Seletor de cores",
@@ -56,10 +56,17 @@
   "Options.WARNING[Recolor.Recolor.Mod.Setting.ResetColorVariationsInThisSaveGame]": "Redefinir as variações de cores neste arquivo de salvamento?",
   "Options.OPTION[Recolor.Recolor.Mod.Setting.DeleteModsDataSavedColorVariations]": "Excluir o arquivo ModsData das alterações de cor salvas",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.DeleteModsDataSavedColorVariations]": "Após a confirmação, exclui todos os arquivos salvos em ModsData relacionados a este mod.",
+  "Options.WARNING[Recolor.Recolor.Mod.Setting.DeleteModsDataSavedColorVariations]": "Excluir as variações de cores salvas em ModsData?",
   "Options.OPTION[Recolor.Recolor.Mod.Setting.SafelyRemove]": "Remover o Recolor com segurança",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.SafelyRemove]": "Após a confirmação, isso irá remover todos os componentes e entidades do mod Recolor. Redefinir todas as ocorrências de cores neste arquivo de salvamento, remover todas as variações de cor salvas deste arquivo de salvamento e apagar todos os arquivos salvos no ModsData relacionados a este mod.",
   "Options.WARNING[Recolor.Recolor.Mod.Setting.SafelyRemove]": "Remover o Recolor com segurança?",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.ActivateColorPainter]": "Tecla de Atalho para a Ferramenta de Pintura",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ActivateColorPainter]": "Uma tecla para ativar a ferramenta de Pintura.",
   "Options.INPUT_MAP[Recolor.Recolor.Mod]": "Recolor",
-  "Options.OPTION[Recolor.Recolor.Mod/ActivateColorPainter/binding]": "Tecla de Ativação da Ferramenta de Pintura"
+  "Options.OPTION[Recolor.Recolor.Mod/ActivateColorPainter/binding]": "Tecla de Ativação da Ferramenta de Pintura",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Redefinir as Teclas de Atalho para o mod Recolor",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Após confirmação, as teclas de atalho para o mod Recolor serão redefinidas.",
+  "Options.WARNING[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Redefinir as Teclas de Atalho para o mod Recolor?",
+  "Recolor.MOUSE_TOOLTIP[SingleInstancePlantWarning]": "A alteração de cores individuais para plantas ainda não é suportada.",
+  "Recolor.MOUSE_TOOLTIP[HasCustomMeshColorWarning]": "Não é possível alterar a variação de cores neste item, pois ele tem cores customizadas."
 }

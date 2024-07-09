@@ -36,7 +36,7 @@
   "Recolor.TOOLTIP_TITLE[VehicleFilter]": "Filtr pojazdów",
   "Recolor.TOOLTIP_DESCRIPTION[VehicleFilter]": "Narzędzie do malowania zmieni indywidualne kolory pojazdów.",
   "Recolor.TOOLTIP_TITLE[PaintToolMode]": "Maluj",
-  "Recolor.TOOLTIP_DESCRIPTION[PaintToolMode]": "Zmienia indywidualne kolory lub dopasowane warianty kolorystyczne przy wyborze.",
+  "Recolor.TOOLTIP_DESCRIPTION[PaintToolMode]": "LPM: Zmienia indywidualne kolory lub dopasowane warianty kolorystyczne przy wyborze. PPM: Przywraca indywidualne kolory z powrotem do oryginalnych wariantów kolorystycznych lub niestandardowych wariantów kolorystycznych.",
   "Recolor.TOOLTIP_TITLE[ResetToolMode]": "Zresetuj",
   "Recolor.TOOLTIP_DESCRIPTION[ResetToolMode]": "Przywraca indywidualne kolory z powrotem do oryginalnych wariantów kolorystycznych lub niestandardowych wariantów kolorystycznych.",
   "Recolor.TOOLTIP_TITLE[PickerToolMode]": "Próbnik kolorów",

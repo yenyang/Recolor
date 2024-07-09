@@ -36,7 +36,6 @@
   "Recolor.TOOLTIP_TITLE[VehicleFilter]": "Фильтр транспортных средств",
   "Recolor.TOOLTIP_DESCRIPTION[VehicleFilter]": "Инструмент покраски изменит индивидуальные цвета транспортных средств.",
   "Recolor.TOOLTIP_TITLE[PaintToolMode]": "Покраска",
-  "Recolor.TOOLTIP_DESCRIPTION[PaintToolMode]": "Изменить индивидуальные цвета или одинаковые цветовые вариации для текущей выборки.",
   "Recolor.TOOLTIP_TITLE[ResetToolMode]": "Сброс",
   "Recolor.TOOLTIP_DESCRIPTION[ResetToolMode]": "Сбросить индивидуальные цвета к настройкам вариации цветов или же пользовательские вариации цветов к вариациям по умолчанию.",
   "Recolor.TOOLTIP_TITLE[PickerToolMode]": "Инструмент подбора цвета",
