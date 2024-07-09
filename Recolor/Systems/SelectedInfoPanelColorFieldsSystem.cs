@@ -614,9 +614,14 @@ namespace Recolor.Systems
                 return;
             }
 
-            if (m_PreviouslySelectedEntity == Entity.Null || m_PreviouslySelectedEntity != selectedEntity)
+            if (m_PreviouslySelectedEntity == Entity.Null)
             {
                 visible = false;
+            }
+
+            if (m_PreviouslySelectedEntity != selectedEntity)
+            {
+                m_PreviouslySelectedEntity = Entity.Null;
             }
 
             bool foundClimatePrefab = true;

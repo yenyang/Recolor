@@ -1,3 +1,4 @@
-﻿# Patch V1.0.1
-* Added forum link and swapped photo order.
-* Recolor Panel Picker tool can now select sub-buildings and sub-objects.
+﻿# Patch V1.0.2
+* Fix panel not showing up if switching between a supported asset and unsupported asset.
+* Updated Localization.
+* Fix logo issues.

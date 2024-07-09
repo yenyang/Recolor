@@ -36,7 +36,7 @@
   "Recolor.TOOLTIP_TITLE[VehicleFilter]": "Filtro de Vehículos",
   "Recolor.TOOLTIP_DESCRIPTION[VehicleFilter]": "La herramienta para pintar colores, cambiará los colores de los objetos únicos de vehículos.",
   "Recolor.TOOLTIP_TITLE[PaintToolMode]": "Pintar",
-  "Recolor.TOOLTIP_DESCRIPTION[PaintToolMode]": "Cambia los colores de un objeto único o de varios objetos con la misma variación de color en una selección.",
+  "Recolor.TOOLTIP_DESCRIPTION[PaintToolMode]": "Clic izquierdo: Cambia los colores de un único objeto o los de la misma variación de color en una selección. Clic Derecho: Restablece los colores personalizados de un único objeto o los de la misma variación de color, de vuelta a los originales.",
   "Recolor.TOOLTIP_TITLE[ResetToolMode]": "Restablecer",
   "Recolor.TOOLTIP_DESCRIPTION[ResetToolMode]": "Restablece los colores de un objeto único de vuelta a la variación de color o las variaciones de color personalizadas de vuelta a los originales.",
   "Recolor.TOOLTIP_TITLE[PickerToolMode]": "Selector de color",
