@@ -127,7 +127,7 @@ namespace Recolor.Systems
                 .WithNone<Deleted, Temp, Game.Common.Overridden>()
                 .Build();
             m_GenericTooltipSystem = World.GetOrCreateSystemManaged<GenericTooltipSystem>();
-
+            
             m_BuildingMeshColorQuery = SystemAPI.QueryBuilder()
                 .WithAll<Building, MeshColor, Game.Objects.Transform>()
                 .WithNone<Temp, Deleted, Game.Common.Overridden>()
