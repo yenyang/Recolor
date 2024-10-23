@@ -127,7 +127,7 @@ namespace Recolor.Systems
                 .WithNone<Deleted, Temp, Game.Common.Overridden>()
                 .Build();
             m_GenericTooltipSystem = World.GetOrCreateSystemManaged<GenericTooltipSystem>();
-
+            
             m_BuildingMeshColorQuery = SystemAPI.QueryBuilder()
                 .WithAll<Building, MeshColor, Game.Objects.Transform>()
                 .WithNone<Temp, Deleted, Game.Common.Overridden>()
@@ -169,18 +169,8 @@ namespace Recolor.Systems
                 .Build();
 
             m_ApplyAction = Mod.Instance.Settings.GetAction(Mod.PainterApplyMimicAction);
-            var builtInApplyAction = InputManager.instance.FindAction(InputManager.kToolMap, "Apply");
-            var mimicApplyBinding = m_ApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
-            var builtInApplyBinding = builtInApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
-            var applyWatcher = new ProxyBinding.Watcher(builtInApplyBinding, binding => SetMimic(mimicApplyBinding, binding));
-            SetMimic(mimicApplyBinding, applyWatcher.binding);
 
             m_SecondaryApplyAction = Mod.Instance.Settings.GetAction(Mod.PainterSecondaryApplyMimicAction);
-            var builtInSecondaryApplyAction = InputManager.instance.FindAction(InputManager.kToolMap, "Secondary Apply");
-            var mimicSecondaryApplyBinding = m_SecondaryApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
-            var builtInSecondaryApplyBinding = builtInSecondaryApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
-            var secondaryApplyWatcher = new ProxyBinding.Watcher(builtInSecondaryApplyBinding, binding => SetMimic(mimicSecondaryApplyBinding, binding));
-            SetMimic(mimicSecondaryApplyBinding, secondaryApplyWatcher.binding);
         }
 
         /// <inheritdoc/>
@@ -447,14 +437,6 @@ namespace Recolor.Systems
             }
 
             return inputDeps;
-        }
-
-        private void SetMimic(ProxyBinding mimic, ProxyBinding buildIn)
-        {
-            var newMimicBinding = mimic.Copy();
-            newMimicBinding.path = buildIn.path;
-            newMimicBinding.modifiers = buildIn.modifiers;
-            InputManager.instance.SetBinding(newMimicBinding, out _);
         }
 
         private void ChangeInstanceColorSet(ColorSet colorSet, ref EntityCommandBuffer buffer, Entity entity)

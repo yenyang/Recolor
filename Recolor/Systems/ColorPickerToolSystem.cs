@@ -5,10 +5,8 @@
 namespace Recolor.Systems
 {
     using System;
-    using System.Linq;
     using Colossal.Entities;
     using Colossal.Logging;
-    using Game;
     using Game.Common;
     using Game.Input;
     using Game.Objects;
@@ -19,7 +17,6 @@ namespace Recolor.Systems
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
-    using UnityEngine.InputSystem;
     using static Recolor.Systems.SelectedInfoPanelColorFieldsSystem;
 
     /// <summary>
@@ -86,11 +83,6 @@ namespace Recolor.Systems
             m_GenericTooltipSystem = World.GetOrCreateSystemManaged<GenericTooltipSystem>();
 
             m_ApplyAction = Mod.Instance.Settings.GetAction(Mod.PickerApplyMimicAction);
-            var builtInApplyAction = InputManager.instance.FindAction(InputManager.kToolMap, "Apply");
-            var mimicApplyBinding = m_ApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
-            var builtInApplyBinding = builtInApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
-            var applyWatcher = new ProxyBinding.Watcher(builtInApplyBinding, binding => SetMimic(mimicApplyBinding, binding));
-            SetMimic(mimicApplyBinding, applyWatcher.binding);
         }
 
         /// <inheritdoc/>
@@ -161,14 +153,6 @@ namespace Recolor.Systems
 
             m_ToolSystem.activeTool = m_DefaultToolSystem;
             return inputDeps;
-        }
-
-        private void SetMimic(ProxyBinding mimic, ProxyBinding buildIn)
-        {
-            var newMimicBinding = mimic.Copy();
-            newMimicBinding.path = buildIn.path;
-            newMimicBinding.modifiers = buildIn.modifiers;
-            InputManager.instance.SetBinding(newMimicBinding, out _);
         }
 
         private void ChangeInstanceColorSet(ColorSet colorSet, ref EntityCommandBuffer buffer, Entity entity)

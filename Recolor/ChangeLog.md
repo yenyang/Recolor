@@ -1,4 +1,5 @@
-﻿# Patch V1.0.2
-* Fix panel not showing up if switching between a supported asset and unsupported asset.
-* Updated Localization.
-* Fix logo issues.
+﻿# Patch V1.0.3
+* Code Cleanup
+* Updated Localization
+* Painter tool options no longer says color set
+* LICENSE.txt ships with mod to include MIT License.

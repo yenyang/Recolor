@@ -256,7 +256,7 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                         </VanillaComponentResolver.instance.Section>
                     )}
                     { ToolMode == PainterToolMode.Paint && (
-                        <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[ColorSet]", locale["Recolor.SECTION_TITLE[ColorSet]"])}>
+                        <VanillaComponentResolver.instance.Section title={""/*translate("Recolor.SECTION_TITLE[ColorSet]", locale["Recolor.SECTION_TITLE[ColorSet]"])*/}>
                             <div className={styles.columnGroup}>
                                 <div className={styles.rowGroup}>
                                     <VanillaComponentResolver.instance.ColorField className={ColorFieldTheme.colorField + " " + styles.rcColorField} value={PainterColorSet.Channel0} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(0, e); }}/>

@@ -3,6 +3,7 @@ Panel, Picker, Painter
 Gives player control over single instance colors for most buildings, vehicles, props, and a few other assets. Gives player control over color variations for the meshes for trees, plants, most buildings, vehicles, props, and a few other assets.
 
 CloverPie has produced a colorful video demonstration with a pre-release version of the mod. Please watch on YouTube.
+
 ## Dependencies
 Unified Icon Library
 
@@ -12,8 +13,11 @@ I18n Everywhere (Soft dependency required for loading languages other than Engli
 If you want to say thank you with a donation you can do so on Paypal.
 
 ## Translations
-I am looking for volunteers to help translate the mod into the other languages. For those interested please find the project in the discord link. CSL2:CODEMODS -> mods-wip -> Recolor. Also see Crowdin link.
-The mod is fully or partially available in the following languages: French, Polish, Brazilian Portuguese, Russian, Spanish, German, and Chinese Simplified.
+I am looking for volunteers to help translate the mod into the other languages. For those interested please find the project in the crowdin or discord link. CSL2:CODEMODS -> mods-wip -> Recolor. Also see Crowdin link.
+The mod is fully or partially available in the following languages: French, Polish, Brazilian Portuguese, Russian, Spanish, German, Chinese Simplified, and European Portuguese.
+
+## Supplemental Mods
+European Portuguese Localization (Only needed for European Portuguese Translations)
   
 # Detailed Description
 ## Recolor Panel Section
@@ -46,6 +50,6 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * Chameleon TBN - Testing, Feedback, Icons, Logo.
 * HarborMasterJay, Sully, Dome - Testing, Feedback
 * Klyte45, Algernon, T.D.W., krzychu124, Trejek, Triton Supreme, and Quboid - Help with UI, Cooperative Development and Code Sharing
-* Translators: enGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey (French), Hendrix (German)
+* Translators: enGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey (French), Hendrix and KaeseMitKuchen (German), Ti4goc (European Portuguese)
 * Bruceyboy24804, spacechad, Tigon Ologdring - Project discussions.
 * Vecteezy.com as an image source for parts of Logo design.

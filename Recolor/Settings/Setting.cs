@@ -87,6 +87,7 @@
         /// Gets or sets hidden keybinding for Picker apply action
         /// </summary>
         [SettingsUIMouseBinding(Mod.PickerApplyMimicAction)]
+        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
         [SettingsUIHidden]
         public ProxyBinding PickerApplyMimic { get; set; }
 
@@ -94,6 +95,7 @@
         /// Gets or sets hidden keybinding for Painter Apply Action.
         /// </summary>
         [SettingsUIMouseBinding(Mod.PainterApplyMimicAction)]
+        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
         [SettingsUIHidden]
         public ProxyBinding PainterApplyMimic { get; set; }
 
@@ -101,6 +103,7 @@
         /// Gets or sets hidden keybinding for Painter secondary apply action.
         /// </summary>
         [SettingsUIMouseBinding(Mod.PainterSecondaryApplyMimicAction)]
+        [SettingsUIBindingMimic(InputManager.kToolMap, "Secondary Apply")]
         [SettingsUIHidden]
         public ProxyBinding PainterSecondaryApplyMimic { get; set; }
 
