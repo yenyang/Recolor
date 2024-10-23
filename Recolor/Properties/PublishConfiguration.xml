@@ -85,7 +85,8 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
   <ChangeLog># Patch V1.0.3
 * Code Cleanup
 * Updated Localization
-* Painter tool options no longer says color set</ChangeLog>
+* Painter tool options no longer says color set
+* LICENSE.txt ships with mod to include MIT License.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=2FX0UDSThmQ" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />

@@ -152,6 +152,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Update="LICENSE.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Reference Update="System.Drawing">
 	    <Private>False</Private>
 	  </Reference>
