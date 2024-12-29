@@ -62,6 +62,8 @@
   "Options.WARNING[Recolor.Recolor.Mod.Setting.SafelyRemove]": "Safely Remove Recolor?",
   "Options.OPTION[Recolor.Recolor.Mod.Setting.ActivateColorPainter]": "Color Painter Tool Keybind",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ActivateColorPainter]": "A keybind to activate the color painter tool.",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.FenceSelectorMode]": "Fence Selector Mode",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.FenceSelectorMode]": "Hold these keys down to select net lane fences.",
   "Options.INPUT_MAP[Recolor.Recolor.Mod]": "Recolor",
   "Options.OPTION[Recolor.Recolor.Mod/ActivateColorPainter/binding]": "Color Painter Tool Activation key",
   "Options.OPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Reset Recolor mod Keybindings",

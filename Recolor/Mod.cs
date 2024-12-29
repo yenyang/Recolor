@@ -11,6 +11,7 @@ namespace Recolor
     using Game.Modding;
     using Game.Rendering;
     using Game.SceneFlow;
+    using HarmonyLib;
     using Recolor.Settings;
     using Recolor.Systems;
 
@@ -45,9 +46,16 @@ namespace Recolor
         public const string PainterSecondaryApplyMimicAction = "PainterSecondaryApplyMimic";
 
         /// <summary>
+        /// Fake keybind action for apply.
+        /// </summary>
+        public const string SelectNetLaneFencesToolApplyMimicAction = "SelectNetLaneFencesToolApplyMimic";
+
+        /// <summary>
         /// An id used for bindings between UI and C#.
         /// </summary>
         public static readonly string Id = "Recolor";
+
+        private Harmony m_Harmony;
 
         /// <summary>
         /// Gets the static reference to the mod instance.
@@ -107,6 +115,9 @@ namespace Recolor
                 Log.Error(ex.ToString());
             }
 #endif
+            Log.Info($"{nameof(Mod)}.{nameof(OnLoad)} Injecting Harmony Patches.");
+            m_Harmony = new Harmony("Yenyang_Recolor");
+            m_Harmony.PatchAll();
             Log.Info($"{nameof(OnLoad)} Initalizing systems");
             updateSystem.UpdateAt<SelectedInfoPanelColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<TempCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
@@ -125,6 +136,7 @@ namespace Recolor
         public void OnDispose()
         {
             Log.Info(nameof(OnDispose));
+            m_Harmony.UnpatchAll();
             if (Settings != null)
             {
                 Settings.UnregisterInOptionsUI();

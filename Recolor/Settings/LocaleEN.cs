@@ -91,6 +91,8 @@ namespace Recolor.Settings
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.SafelyRemove)), $"Safely Remove {Mod.Id}?" },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ActivateColorPainter)), "Color Painter Tool Keybind" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ActivateColorPainter)), "A keybind to activate the color painter tool." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.FenceSelectorMode)), "Fence Selector Mode" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.FenceSelectorMode)), "Hold these keys down to select net lane fences." },
                 { m_Setting.GetBindingMapLocaleID(), Mod.Id },
                 { m_Setting.GetBindingKeyLocaleID(Setting.ActivateColorPainterActionName), "Color Painter Tool Activation key" },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetKeybindSettings)), $"Reset {Mod.Id} mod Keybindings" },
@@ -98,6 +100,7 @@ namespace Recolor.Settings
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.ResetKeybindSettings)), $"Reset {Mod.Id} mod Keybindings?" },
                 { MouseTooltipKey("SingleInstancePlantWarning"), "Single instance color changes for plants is not currently supported." },
                 { MouseTooltipKey("HasCustomMeshColorWarning"),  "Cannot change color variation on this because it has custom instance colors." },
+                { MouseTooltipKey("SelectANetLaneFence", "Select a NetLane Fence.") },
             };
         }
 

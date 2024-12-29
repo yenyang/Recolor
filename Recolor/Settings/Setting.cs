@@ -17,6 +17,7 @@
     [SettingsUIMouseAction(Mod.PickerApplyMimicAction, "ColorPickerActions")]
     [SettingsUIMouseAction(Mod.PainterApplyMimicAction, "ColorPainterActions")]
     [SettingsUIMouseAction(Mod.PainterSecondaryApplyMimicAction, "ColorPainterActions")]
+    [SettingsUIMouseAction(Mod.SelectNetLaneFencesToolApplyMimicAction, "SelectNetLaneFencesToolApplyMimic")]
     public class Setting : ModSetting
     {
         /// <summary>
@@ -43,6 +44,12 @@
         /// The action name for toggle color painter keybind.
         /// </summary>
         public const string ActivateColorPainterActionName = "ActivateColorPainter";
+
+
+        /// <summary>
+        /// The action name for activate fence selector mode.
+        /// </summary>
+        public const string FenceSelectorModeActionName = "FenceSelectorMode";
 
 
         /// <summary>
@@ -77,11 +84,18 @@
         }
 
         /// <summary>
-        /// Gets or sets a value indicating the keybinding for Reset Elevation.
+        /// Gets or sets a value indicating the keybinding for activating color painter.
         /// </summary>
         [SettingsUISection(General, Keybinds)]
         [SettingsUIKeyboardBinding(BindingKeyboard.P, actionName: ActivateColorPainterActionName, shift: true)]
         public ProxyBinding ActivateColorPainter { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the keybinding for activating color painter.
+        /// </summary>
+        [SettingsUISection(General, Keybinds)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.F, actionName: FenceSelectorModeActionName, alt: true)]
+        public ProxyBinding FenceSelectorMode { get; set; }
 
         /// <summary>
         /// Gets or sets hidden keybinding for Picker apply action
@@ -106,6 +120,15 @@
         [SettingsUIBindingMimic(InputManager.kToolMap, "Secondary Apply")]
         [SettingsUIHidden]
         public ProxyBinding PainterSecondaryApplyMimic { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets hidden keybinding for default tool apply action.
+        /// </summary>
+        [SettingsUIMouseBinding(Mod.SelectNetLaneFencesToolApplyMimicAction)]
+        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
+        [SettingsUIHidden]
+        public ProxyBinding SelectNetLaneFencesToolApplyMimic { get; set; }
 
 
         /// <summary>
