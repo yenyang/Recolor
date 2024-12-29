@@ -54,8 +54,10 @@ namespace Recolor.Systems
         {
             base.InitializeRaycast();
             m_ToolRaycastSystem.collisionMask = Game.Common.CollisionMask.OnGround | Game.Common.CollisionMask.Overground;
-            m_ToolRaycastSystem.typeMask = Game.Common.TypeMask.MovingObjects | Game.Common.TypeMask.StaticObjects;
+            m_ToolRaycastSystem.typeMask = Game.Common.TypeMask.MovingObjects | Game.Common.TypeMask.StaticObjects | TypeMask.Lanes;
             m_ToolRaycastSystem.raycastFlags |= RaycastFlags.SubBuildings | RaycastFlags.SubElements;
+            m_ToolRaycastSystem.netLayerMask = Game.Net.Layer.Fence;
+            m_ToolRaycastSystem.utilityTypeMask = Game.Net.UtilityTypes.Fence;
         }
 
         /// <summary>

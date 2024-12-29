@@ -93,8 +93,10 @@ namespace Recolor.Systems
             if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single || m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker)
             {
                 m_ToolRaycastSystem.collisionMask = Game.Common.CollisionMask.OnGround | Game.Common.CollisionMask.Overground;
-                m_ToolRaycastSystem.typeMask = Game.Common.TypeMask.MovingObjects | Game.Common.TypeMask.StaticObjects;
+                m_ToolRaycastSystem.typeMask = Game.Common.TypeMask.MovingObjects | Game.Common.TypeMask.StaticObjects | TypeMask.Lanes;
                 m_ToolRaycastSystem.raycastFlags |= RaycastFlags.SubBuildings | RaycastFlags.SubElements;
+                m_ToolRaycastSystem.netLayerMask = Game.Net.Layer.Fence;
+                m_ToolRaycastSystem.utilityTypeMask = Game.Net.UtilityTypes.Fence;
             }
             else if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius)
             {
@@ -127,7 +129,7 @@ namespace Recolor.Systems
                 .WithNone<Deleted, Temp, Game.Common.Overridden>()
                 .Build();
             m_GenericTooltipSystem = World.GetOrCreateSystemManaged<GenericTooltipSystem>();
-            
+
             m_BuildingMeshColorQuery = SystemAPI.QueryBuilder()
                 .WithAll<Building, MeshColor, Game.Objects.Transform>()
                 .WithNone<Temp, Deleted, Game.Common.Overridden>()

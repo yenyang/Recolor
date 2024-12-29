@@ -49,7 +49,7 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * CloverPie - Testing, Feedback, Promotional Material, Logo.
 * Chameleon TBN - Testing, Feedback, Icons, Logo.
 * HarborMasterJay, Sully, Dome - Testing, Feedback
-* Klyte45, Algernon, T.D.W., krzychu124, Trejek, Triton Supreme, and Quboid - Help with UI, Cooperative Development and Code Sharing
+* Klyte45, Algernon, T.D.W., krzychu124, Trejek, Triton Supreme, Konsi, and Quboid - Help with UI, Cooperative Development and Code Sharing
 * Translators: enGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey (French), Hendrix and KaeseMitKuchen (German), Ti4goc (European Portuguese)
 * Bruceyboy24804, spacechad, Tigon Ologdring - Project discussions.
 * Vecteezy.com as an image source for parts of Logo design.

@@ -18,7 +18,7 @@ namespace Recolr.Systems
     using Unity.Jobs;
 
     /// <summary>
-    /// Tool for removing subelements. For debuggin use --burst-disable-compilation launch parameter.
+    /// Tool for selecting net lane fences and hedges.
     /// </summary>
     public partial class SelectNetLaneFencesToolSystem : ToolBaseSystem
     {
