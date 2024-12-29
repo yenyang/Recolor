@@ -11,7 +11,6 @@ namespace Recolor
     using Game.Modding;
     using Game.Rendering;
     using Game.SceneFlow;
-    using HarmonyLib;
     using Recolor.Settings;
     using Recolor.Systems;
 
@@ -21,7 +20,8 @@ namespace Recolor
     using System.IO;
     using System.Linq;
     using Newtonsoft.Json;
-    using UnityEngine;using Colossal;
+    using Colossal;
+    using Recolr.Systems;
 #endif
 
     /// <summary>
@@ -54,8 +54,6 @@ namespace Recolor
         /// An id used for bindings between UI and C#.
         /// </summary>
         public static readonly string Id = "Recolor";
-
-        private Harmony m_Harmony;
 
         /// <summary>
         /// Gets the static reference to the mod instance.
@@ -115,9 +113,6 @@ namespace Recolor
                 Log.Error(ex.ToString());
             }
 #endif
-            Log.Info($"{nameof(Mod)}.{nameof(OnLoad)} Injecting Harmony Patches.");
-            m_Harmony = new Harmony("Yenyang_Recolor");
-            m_Harmony.PatchAll();
             Log.Info($"{nameof(OnLoad)} Initalizing systems");
             updateSystem.UpdateAt<SelectedInfoPanelColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<TempCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
@@ -129,6 +124,7 @@ namespace Recolor
             updateSystem.UpdateAt<CustomColorVariationSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<RentersUpdatedCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<ResetCustomMeshColorSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateAt<SelectNetLaneFencesToolSystem>(SystemUpdatePhase.ToolUpdate);
             Log.Info($"{nameof(OnLoad)} complete.");
         }
 
@@ -136,7 +132,6 @@ namespace Recolor
         public void OnDispose()
         {
             Log.Info(nameof(OnDispose));
-            m_Harmony.UnpatchAll();
             if (Settings != null)
             {
                 Settings.UnregisterInOptionsUI();

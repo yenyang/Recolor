@@ -100,7 +100,7 @@ namespace Recolor.Settings
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.ResetKeybindSettings)), $"Reset {Mod.Id} mod Keybindings?" },
                 { MouseTooltipKey("SingleInstancePlantWarning"), "Single instance color changes for plants is not currently supported." },
                 { MouseTooltipKey("HasCustomMeshColorWarning"),  "Cannot change color variation on this because it has custom instance colors." },
-                { MouseTooltipKey("SelectANetLaneFence", "Select a NetLane Fence.") },
+                { MouseTooltipKey("SelectANetLaneFence"), "Select a NetLane Fence." },
             };
         }
 

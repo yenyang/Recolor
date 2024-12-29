@@ -1,4 +1,4 @@
-﻿# Patch V1.0.3
+﻿# Patch V1.1.0
 * Code Cleanup
 * Updated Localization
 * Painter tool options no longer says color set

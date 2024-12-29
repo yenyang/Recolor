@@ -1,31 +1,21 @@
-﻿// <copyright file="SubElementBulldozerTool.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="SelectNetLaneFencesToolSystem.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
 namespace Recolr.Systems
 {
-    using System;
-    using System.Linq;
-    using System.Reflection;
     using Colossal.Entities;
     using Colossal.Logging;
-    using Colossal.Serialization.Entities;
-    using Game;
-    using Game.Areas;
-    using Game.Buildings;
     using Game.Common;
     using Game.Input;
     using Game.Net;
-    using Game.Objects;
     using Game.Prefabs;
-    using Game.Rendering;
     using Game.Tools;
     using Recolor;
+    using Recolor.Settings;
     using Recolor.Systems;
-    using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
-    using UnityEngine.InputSystem;
 
     /// <summary>
     /// Tool for removing subelements. For debuggin use --burst-disable-compilation launch parameter.
@@ -33,13 +23,12 @@ namespace Recolr.Systems
     public partial class SelectNetLaneFencesToolSystem : ToolBaseSystem
     {
         private ProxyAction m_ApplyAction;
-        private BulldozeToolSystem m_BulldozeToolSystem;
         private ToolOutputBarrier m_ToolOutputBarrier;
-        private EntityQuery m_OwnedQuery;
         private ILog m_Log;
         private Entity m_PreviousRaycastedEntity;
         private EntityQuery m_HighlightedQuery;
         private GenericTooltipSystem m_TooltipSystem;
+        private ProxyAction m_ActivateAction;
 
         /// <inheritdoc/>
         public override string toolID => "Select Net Lane Fences Tool";
@@ -47,7 +36,7 @@ namespace Recolr.Systems
         /// <inheritdoc/>
         public override PrefabBase GetPrefab()
         {
-            return m_BulldozeToolSystem.GetPrefab();
+            return null;
         }
 
         /// <inheritdoc/>
@@ -78,29 +67,14 @@ namespace Recolr.Systems
         /// <inheritdoc/>
         protected override void OnCreate()
         {
+            base.OnCreate();
             Enabled = false;
             m_Log = Mod.Instance.Log;
             m_Log.Info($"[{nameof(SelectNetLaneFencesToolSystem)}] {nameof(OnCreate)}");
             m_ToolOutputBarrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_TooltipSystem = World.GetExistingSystemManaged<GenericTooltipSystem>();
-            m_BulldozeToolSystem = World.GetOrCreateSystemManaged<BulldozeToolSystem>();
-            base.OnCreate();
-            m_OwnedQuery = GetEntityQuery(new EntityQueryDesc[]
-            {
-                new EntityQueryDesc
-                {
-                    All = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<Owner>(),
-                    },
-                    None = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<Deleted>(),
-                        ComponentType.ReadOnly<Temp>(),
-                        ComponentType.ReadOnly<Overridden>(),
-                    },
-                },
-            });
+            m_ActivateAction = Mod.Instance.Settings.GetAction(Setting.FenceSelectorModeActionName);
+            m_ToolSystem.EventToolChanged += (ToolBaseSystem tool) => m_ActivateAction.shouldBeEnabled = tool == m_DefaultToolSystem;
             m_HighlightedQuery = GetEntityQuery(new EntityQueryDesc[]
             {
                 new EntityQueryDesc
@@ -117,9 +91,11 @@ namespace Recolr.Systems
                     },
                 },
             });
-            RequireForUpdate(m_OwnedQuery);
+
+            m_ActivateAction.shouldBeEnabled = true;
 
             m_ApplyAction = Mod.Instance.Settings.GetAction(Mod.SelectNetLaneFencesToolApplyMimicAction);
+            m_ActivateAction.onInteraction += (_, _) => m_ToolSystem.activeTool = this;
         }
 
         /// <inheritdoc/>
@@ -127,7 +103,7 @@ namespace Recolr.Systems
         {
             m_ApplyAction.shouldBeEnabled = true;
             m_Log.Debug($"{nameof(SelectNetLaneFencesToolSystem)}.{nameof(OnStartRunning)}");
-            m_TooltipSystem.RegisterTooltip(,"Select a NetLane Fence.");
+            m_TooltipSystem.RegisterTooltip("SelectANetLaneFence", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.MouseTooltipKey("SelectANetLaneFence"), "Select a NetLane Fence.");
         }
 
         /// <inheritdoc/>

@@ -29,7 +29,6 @@ namespace Recolor.Systems
         private ValueBindingHelper<int> m_Radius;
         private ValueBindingHelper<int> m_Filter;
         private ValueBindingHelper<PainterToolMode> m_ToolMode;
-        private ProxyAction m_FenceSelectorModeAction;
 
         /// <summary>
         /// Used for determining the mode of the painter tool.
@@ -184,8 +183,6 @@ namespace Recolor.Systems
             CreateTrigger("VehicleFilter", () => m_Filter.Value = (int)FilterType.Vehicles);
             CreateTrigger("ChangeToolMode", (int toolMode) => m_ToolMode.Value = (PainterToolMode)toolMode);
 
-            m_FenceSelectorModeAction = Mod.Instance.Settings.GetAction(Settings.Setting.FenceSelectorModeActionName);
-
             Enabled = false;
         }
 
@@ -215,8 +212,6 @@ namespace Recolor.Systems
                 m_CopiedColorSet.Value = new RecolorSet(m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet);
                 m_CopiedColor.Value = m_SelectedInfoPanelColorFieldsSystem.CopiedColor;
             }
-
-            m_FenceSelectorModeAction.shouldBeEnabled = tool == m_DefaultToolSystem;
         }
 
         private void IncreaseRadius()
