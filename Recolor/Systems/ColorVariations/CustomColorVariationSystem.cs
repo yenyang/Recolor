@@ -2,7 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-namespace Recolor.Systems
+namespace Recolor.Systems.ColorVariations
 {
     using Colossal.Entities;
     using Colossal.Logging;
@@ -12,9 +12,10 @@ namespace Recolor.Systems
     using Game.Prefabs;
     using Game.Rendering;
     using Recolor.Domain;
+    using Recolor.Systems.SelectedInfoPanel;
     using Unity.Collections;
     using Unity.Entities;
-    using static Recolor.Systems.SelectedInfoPanelColorFieldsSystem;
+    using static Recolor.Systems.SelectedInfoPanel.SIPColorFieldsSystem;
 
     /// <summary>
     /// A system for handling custom color variation entities that record custom color variations that can be saved per save game.
@@ -26,7 +27,7 @@ namespace Recolor.Systems
         private NativeHashMap<Entity, Entity> m_CustomColorVariationMap;
         private EntityQuery m_DeletedCustomColorVariationQuery;
         private EntityArchetype m_CustomColorVariationArchetype;
-        private SelectedInfoPanelColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
+        private SIPColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
         private PrefabSystem m_PrefabSystem;
 
         /// <summary>
@@ -281,7 +282,7 @@ namespace Recolor.Systems
             m_Log = Mod.Instance.Log;
             m_Log.Info($"{nameof(CustomColorVariationSystem)}.{nameof(OnCreate)}");
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
-            m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
+            m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
             m_CustomColorVariationMap = new NativeHashMap<Entity, Entity>(0, Allocator.Persistent);
 
             m_CustomColorVariationArchetype = EntityManager.CreateArchetype(ComponentType.ReadWrite<CustomColorVariations>(), ComponentType.ReadWrite<PrefabRef>());

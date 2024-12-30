@@ -2,13 +2,14 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-namespace Recolor.Systems
+namespace Recolor.Systems.Tools
 {
     using System.Collections.Generic;
     using Colossal.Logging;
     using Game.Tools;
     using Game.UI.Localization;
     using Game.UI.Tooltip;
+    using Recolor;
 
     /// <summary>
     /// Adds and removes tooltips.

@@ -12,7 +12,10 @@ namespace Recolor
     using Game.Rendering;
     using Game.SceneFlow;
     using Recolor.Settings;
-    using Recolor.Systems;
+    using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.SelectedInfoPanel;
+    using Recolor.Systems.SingleInstance;
+    using Recolor.Systems.Tools;
 
 #if DEBUG
     using System;
@@ -21,7 +24,6 @@ namespace Recolor
     using System.Linq;
     using Newtonsoft.Json;
     using Colossal;
-    using Recolr.Systems;
 #endif
 
     /// <summary>
@@ -114,7 +116,7 @@ namespace Recolor
             }
 #endif
             Log.Info($"{nameof(OnLoad)} Initalizing systems");
-            updateSystem.UpdateAt<SelectedInfoPanelColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<SIPColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<TempCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAfter<CustomMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<ColorPickerToolSystem>(SystemUpdatePhase.ToolUpdate);

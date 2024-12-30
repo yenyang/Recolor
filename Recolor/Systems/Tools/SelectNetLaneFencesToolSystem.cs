@@ -2,7 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-namespace Recolr.Systems
+namespace Recolor.Systems.Tools
 {
     using Colossal.Entities;
     using Colossal.Logging;
@@ -13,7 +13,6 @@ namespace Recolr.Systems
     using Game.Tools;
     using Recolor;
     using Recolor.Settings;
-    using Recolor.Systems;
     using Unity.Entities;
     using Unity.Jobs;
 
@@ -74,10 +73,10 @@ namespace Recolr.Systems
             m_ToolOutputBarrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_TooltipSystem = World.GetExistingSystemManaged<GenericTooltipSystem>();
             m_ActivateAction = Mod.Instance.Settings.GetAction(Setting.FenceSelectorModeActionName);
-            m_ToolSystem.EventToolChanged += (ToolBaseSystem tool) => m_ActivateAction.shouldBeEnabled = tool == m_DefaultToolSystem;
+            m_ToolSystem.EventToolChanged += (tool) => m_ActivateAction.shouldBeEnabled = tool == m_DefaultToolSystem;
             m_HighlightedQuery = GetEntityQuery(new EntityQueryDesc[]
             {
-                new EntityQueryDesc
+                new ()
                 {
                     All = new ComponentType[]
                     {
@@ -127,8 +126,8 @@ namespace Recolr.Systems
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             inputDeps = Dependency;
-            bool raycastFlag = GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit);
-            bool hasOwnerComponentFlag = EntityManager.TryGetComponent(currentRaycastEntity, out Owner owner);
+            bool raycastFlag = GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit _);
+            bool hasOwnerComponentFlag = EntityManager.TryGetComponent(currentRaycastEntity, out Owner _);
             EntityCommandBuffer buffer = m_ToolOutputBarrier.CreateCommandBuffer();
 
             // This section handles highlight removal.

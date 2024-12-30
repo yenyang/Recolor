@@ -3,7 +3,7 @@
 // </copyright>
 
 #define BURST
-namespace Recolor.Systems
+namespace Recolor.Systems.SingleInstance
 {
     using Colossal.Logging;
     using Game;
@@ -44,41 +44,6 @@ namespace Recolor.Systems
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            /*
-            NativeArray<Entity> entities = m_TempMeshColorQuery.ToEntityArray(Allocator.Temp);
-            foreach (Entity entity in entities)
-            {
-                if (!EntityManager.TryGetComponent(entity, out Temp temp))
-                {
-                    continue;
-                }
-
-                if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<MeshColor> meshColorBuffer) || meshColorBuffer.Length == 0)
-                {
-                    continue;
-                }
-
-                if (!EntityManager.TryGetBuffer(temp.m_Original, isReadOnly: true, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) || customMeshColorBuffer.Length == 0)
-                {
-                    continue;
-                }
-
-                EntityManager.AddComponent<BatchesUpdated>(entity);
-                for (int i = 0; i < meshColorBuffer.Length; i++)
-                {
-                    if (customMeshColorBuffer.Length > i)
-                    {
-                        meshColorBuffer[i] = new MeshColor() { m_ColorSet = customMeshColorBuffer[i].m_ColorSet };
-                    }
-                }
-
-                DynamicBuffer<CustomMeshColor> newBuffer = EntityManager.AddBuffer<CustomMeshColor>(entity);
-                foreach (CustomMeshColor customMeshColor in customMeshColorBuffer)
-                {
-                    newBuffer.Add(customMeshColor);
-                }
-            }*/
-
             TempCustomMeshColorJob tempCustomMeshColorJob = new TempCustomMeshColorJob()
             {
                 m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),

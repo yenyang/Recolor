@@ -96,7 +96,7 @@ function DescriptionTooltip(tooltipTitle: string | null, tooltipDescription: str
 
 export const SIPcolorFieldsComponent = (componentList: any): any => {
     // I believe you should not put anything here.
-	componentList["Recolor.Systems.SelectedInfoPanelColorFieldsSystem"] = (e: InfoSectionComponent) => {
+	componentList["Recolor.Systems.SelectedInfoPanel.SIPColorFieldsSystem"] = (e: InfoSectionComponent) => {
         // These get the value of the bindings.
         const CurrentColorSet = useValue(CurrentColorSet$);
         const SingleInstance = useValue(SingleInstance$);

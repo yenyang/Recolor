@@ -1,4 +1,8 @@
-﻿namespace Recolor.Settings
+﻿// <copyright file="Setting.cs" company="Yenyang's Mods. MIT License">
+// Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
+// </copyright>
+
+namespace Recolor.Settings
 {
     using Colossal.IO.AssetDatabase;
     using Game;
@@ -6,7 +10,9 @@
     using Game.Modding;
     using Game.Settings;
     using Game.Tools;
-    using Recolor.Systems;
+    using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.SelectedInfoPanel;
+    using Recolor.Systems.SingleInstance;
     using Unity.Entities;
 
     /// <summary>
@@ -188,7 +194,7 @@
         {
             set
             {
-                SelectedInfoPanelColorFieldsSystem selectedInfoPanelColorFieldsSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
+                SIPColorFieldsSystem selectedInfoPanelColorFieldsSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
                 selectedInfoPanelColorFieldsSystem.DeleteAllModsDataFiles();
             }
         }
@@ -207,7 +213,7 @@
                 resetCustomMeshColorSystem.Enabled = true;
                 CustomColorVariationSystem customColorVariationSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<CustomColorVariationSystem>();
                 customColorVariationSystem.ResetAllCustomColorVariations();
-                SelectedInfoPanelColorFieldsSystem selectedInfoPanelColorFieldsSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
+                SIPColorFieldsSystem selectedInfoPanelColorFieldsSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
                 selectedInfoPanelColorFieldsSystem.DeleteAllModsDataFiles();
             }
         }

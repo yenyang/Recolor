@@ -2,15 +2,15 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-namespace Recolor.Systems
+namespace Recolor.Systems.Tools
 {
     using Colossal.Logging;
-    using Game.Input;
     using Game.Rendering;
     using Game.Tools;
+    using Recolor;
     using Recolor.Domain;
     using Recolor.Extensions;
-    using Recolor.Settings;
+    using Recolor.Systems.SelectedInfoPanel;
 
     /// <summary>
     /// A UI System for the Color Painter Tool.
@@ -20,7 +20,7 @@ namespace Recolor.Systems
         private ColorPainterToolSystem m_ColorPainterToolSystem;
         private ILog m_Log;
         private ValueBindingHelper<RecolorSet> m_PainterColorSet;
-        private SelectedInfoPanelColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
+        private SIPColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
         private DefaultToolSystem m_DefaultToolSystem;
         private ToolSystem m_ToolSystem;
         private ValueBindingHelper<int> m_SelectionType;
@@ -146,7 +146,7 @@ namespace Recolor.Systems
             m_Log.Info($"{nameof(ColorPainterUISystem)}.{nameof(OnCreate)}");
             m_DefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
             m_ColorPainterToolSystem = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
-            m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
+            m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_ToolSystem.EventToolChanged += OnToolChanged;
 

@@ -3,7 +3,7 @@
 // </copyright>
 
 #define BURST
-namespace Recolor.Systems
+namespace Recolor.Systems.SingleInstance
 {
     using Colossal.Entities;
     using Colossal.Logging;
