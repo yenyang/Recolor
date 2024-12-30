@@ -142,7 +142,7 @@ namespace Recolor.Systems.SingleInstance
 
             if (!m_CustomMeshColorAndSubObjectsQuery.IsEmptyIgnoreFilter)
             {
-                BatchesUpdateForSubObjectsJob batchesUpdateForSubObjectsJob = new BatchesUpdateForSubObjectsJob()
+                BatchesUpdateForSubObjectsJob batchesUpdateForSubObjectsJob = new ()
                 {
                     buffer = buffer,
                     m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
@@ -156,7 +156,7 @@ namespace Recolor.Systems.SingleInstance
 
             if (!m_CustomMeshColorAndSubLanesQuery.IsEmptyIgnoreFilter)
             {
-                BatchesUpdateForSubLanesJob batchesUpdateForSubLanesJob = new BatchesUpdateForSubLanesJob()
+                BatchesUpdateForSubLanesJob batchesUpdateForSubLanesJob = new ()
                 {
                     buffer = buffer,
                     m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),

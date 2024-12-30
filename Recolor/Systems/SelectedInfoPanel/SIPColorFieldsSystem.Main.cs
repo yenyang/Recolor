@@ -203,7 +203,7 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             m_CurrentEntity = selectedEntity;
             m_CurrentPrefabEntity = selectedPrefab;
-            if (!m_PrefabSystem.TryGetPrefab(selectedPrefab, out PrefabBase currentPrefabBase))
+            if (!m_PrefabSystem.TryGetPrefab(selectedPrefab, out PrefabBase _))
             {
                 visible = false;
                 return;
@@ -214,7 +214,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 && EntityManager.TryGetBuffer(selectedEntity, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerBuffer)
                 && ownerBuffer.Length == 1
                 && EntityManager.TryGetComponent(ownerBuffer[0].m_SubLane, out PrefabRef prefabRef)
-                && m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out currentPrefabBase)
+                && m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase currentPrefabBase)
                 && m_PrefabSystem.TryGetEntity(currentPrefabBase, out m_CurrentPrefabEntity))
             {
                 m_CurrentEntity = ownerBuffer[0].m_SubLane;

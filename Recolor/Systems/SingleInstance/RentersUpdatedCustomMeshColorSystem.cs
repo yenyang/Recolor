@@ -44,7 +44,7 @@ namespace Recolor.Systems.SingleInstance
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            GatherEntitiesFromRentersUpdatedEventsJob gatherEntitiesFromRentersUpdatedEventsJob = new GatherEntitiesFromRentersUpdatedEventsJob()
+            GatherEntitiesFromRentersUpdatedEventsJob gatherEntitiesFromRentersUpdatedEventsJob = new ()
             {
                 m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
                 m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),

@@ -32,6 +32,7 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Unity.Entities;
     using Unity.Jobs;
     using UnityEngine;
+    using static Game.Rendering.OverlayRenderSystem;
 
     /// <summary>
     ///  Adds color fields to selected info panel for changing colors of buildings, vehicles, props, etc.
@@ -131,6 +132,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                     m_TimeColorLastChanged = UnityEngine.Time.time;
                     m_PreviouslySelectedEntity = Entity.Null;
                     buffer.AddComponent<BatchesUpdated>(m_CurrentEntity);
+                    AddBatchesUpdatedToSubElements(m_CurrentEntity, buffer);
                     colorSet = customMeshColor.m_ColorSet;
                 }
 
@@ -176,6 +178,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                     m_TimeColorLastChanged = UnityEngine.Time.time;
                     m_PreviouslySelectedEntity = Entity.Null;
                     buffer.AddComponent<BatchesUpdated>(m_CurrentEntity);
+                    AddBatchesUpdatedToSubElements(m_CurrentEntity, buffer);
                 }
 
                 GenerateOrUpdateCustomColorVariationEntity();
@@ -304,6 +307,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) && currentSubMeshBuffer[0].m_SubMesh == subMeshBuffer[0].m_SubMesh)
                 {
                     buffer.AddComponent<BatchesUpdated>(e);
+                    AddBatchesUpdatedToSubElements(e, buffer);
                 }
             }
         }
@@ -409,6 +413,8 @@ namespace Recolor.Systems.SelectedInfoPanel
                 buffer.RemoveComponent<CustomMeshColor>(m_CurrentEntity);
                 buffer.AddComponent<BatchesUpdated>(m_CurrentEntity);
 
+                AddBatchesUpdatedToSubElements(m_CurrentEntity, buffer);
+
                 m_PreviouslySelectedEntity = Entity.Null;
                 return;
             }
@@ -439,15 +445,12 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             if (matches.Length >= 3 && matches[0] && matches[1] && matches[2])
             {
-
+                ColorRefresh();
             }
             else
             {
                 GenerateOrUpdateCustomColorVariationEntity();
-                return;
             }
-
-            ColorRefresh();
         }
 
         /// <summary>
@@ -589,10 +592,78 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) && currentSubMeshBuffer[0].m_SubMesh == subMeshBuffer[0].m_SubMesh)
                 {
                     buffer.AddComponent<BatchesUpdated>(e);
+
+                    AddBatchesUpdatedToSubElements(e, buffer);
                 }
             }
 
             m_NeedsColorRefresh = false;
+        }
+
+        private void AddBatchesUpdatedToSubElements(Entity e, EntityCommandBuffer buffer)
+        {
+            // Add batches updated to subobjects that have mesh color.
+            if (EntityManager.TryGetBuffer(e, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subObjects))
+            {
+                foreach (Game.Objects.SubObject subObject in subObjects)
+                {
+                    if (EntityManager.HasBuffer<MeshColor>(subObject.m_SubObject))
+                    {
+                        buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+                    }
+
+                    if (!EntityManager.TryGetBuffer(subObject.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subObjects2))
+                    {
+                        continue;
+                    }
+
+                    foreach (Game.Objects.SubObject subObject2 in subObjects2)
+                    {
+                        if (EntityManager.HasBuffer<MeshColor>(subObject2.m_SubObject))
+                        {
+                            buffer.AddComponent<BatchesUpdated>(subObject2.m_SubObject);
+                        }
+
+                        if (!EntityManager.TryGetBuffer(subObject2.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subObjects3))
+                        {
+                            continue;
+                        }
+
+                        foreach (Game.Objects.SubObject subObject3 in subObjects3)
+                        {
+                            if (EntityManager.HasBuffer<MeshColor>(subObject3.m_SubObject))
+                            {
+                                buffer.AddComponent<BatchesUpdated>(subObject3.m_SubObject);
+                            }
+
+                            if (!EntityManager.TryGetBuffer(subObject3.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subObjects4))
+                            {
+                                continue;
+                            }
+
+                            foreach (Game.Objects.SubObject subObject4 in subObjects4)
+                            {
+                                if (EntityManager.HasBuffer<MeshColor>(subObject4.m_SubObject))
+                                {
+                                    buffer.AddComponent<BatchesUpdated>(subObject4.m_SubObject);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Add batches updated to sublanes that have mesh color.
+            if (EntityManager.TryGetBuffer(e, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> subLanes))
+            {
+                foreach (Game.Net.SubLane subLane in subLanes)
+                {
+                    if (EntityManager.HasBuffer<MeshColor>(subLane.m_SubLane))
+                    {
+                        buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
+                    }
+                }
+            }
         }
 
         private void ReloadSavedColorSetsFromDisk()
@@ -681,6 +752,8 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) && prefabsNeedingUpdates.Contains(currentSubMeshBuffer[0].m_SubMesh))
                 {
                     buffer.AddComponent<BatchesUpdated>(e);
+
+                    AddBatchesUpdatedToSubElements(e, buffer);
                 }
             }
         }
