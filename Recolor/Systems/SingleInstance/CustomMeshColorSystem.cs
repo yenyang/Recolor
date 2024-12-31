@@ -168,21 +168,50 @@ namespace Recolor.Systems.SingleInstance
             }
         }
 
+        /// <summary>
+        /// Adds batches update for subobjects.
+        /// </summary>
 #if BURST
         [BurstCompile]
 #endif
-        private struct BatchesUpdateForSubObjectsJob : IJobChunk
+        public struct BatchesUpdateForSubObjectsJob : IJobChunk
         {
+            /// <summary>
+            /// System API buffer type handle for subobjects.
+            /// </summary>
             [ReadOnly]
             public BufferTypeHandle<Game.Objects.SubObject> m_SubObjectType;
+
+            /// <summary>
+            /// SystemAPI buffer lookup for Mesh color.
+            /// </summary>
             [ReadOnly]
             public BufferLookup<MeshColor> m_MeshColorLookup;
+
+            /// <summary>
+            /// SystemAPI buffer lookup for CustomMeshColor.
+            /// </summary>
             [ReadOnly]
             public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;
+
+            /// <summary>
+            /// SystemAPI buffer lookup for subobjects.
+            /// </summary>
             [ReadOnly]
             public BufferLookup<Game.Objects.SubObject> m_SubObjectLookup;
+
+            /// <summary>
+            /// Entity command buffer for appropriate system update phase.
+            /// </summary>
             public EntityCommandBuffer buffer;
 
+            /// <summary>
+            /// Main job functionality.
+            /// </summary>
+            /// <param name="chunk">ECS chunks.</param>
+            /// <param name="unfilteredChunkIndex">Use for parrallel jobs.</param>
+            /// <param name="useEnabledMask">Not being used.</param>
+            /// <param name="chunkEnabledMask">Not used either.</param>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 BufferAccessor<Game.Objects.SubObject> subObjectBufferAccessor = chunk.GetBufferAccessor(ref m_SubObjectType);
@@ -251,19 +280,44 @@ namespace Recolor.Systems.SingleInstance
             }
         }
 
+        /// <summary>
+        /// Adds batches update for sublanes.
+        /// </summary>
 #if BURST
         [BurstCompile]
 #endif
-        private struct BatchesUpdateForSubLanesJob : IJobChunk
+        public struct BatchesUpdateForSubLanesJob : IJobChunk
         {
+            /// <summary>
+            /// System API for buffer type handle sublanes.
+            /// </summary>
             [ReadOnly]
             public BufferTypeHandle<Game.Net.SubLane> m_SubLaneType;
+
+            /// <summary>
+            /// SystemAPI buffer look up mesh color.
+            /// </summary>
             [ReadOnly]
             public BufferLookup<MeshColor> m_MeshColorLookup;
+
+            /// <summary>
+            /// SystemAPI buffer lookup cusotm mesh color.
+            /// </summary>
             [ReadOnly]
             public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;
+
+            /// <summary>
+            /// entity command buffer for appropriate system update phase.
+            /// </summary>
             public EntityCommandBuffer buffer;
 
+            /// <summary>
+            /// Main job functionality.
+            /// </summary>
+            /// <param name="chunk">ECS chunks.</param>
+            /// <param name="unfilteredChunkIndex">Use for parrallel jobs.</param>
+            /// <param name="useEnabledMask">Not being used.</param>
+            /// <param name="chunkEnabledMask">Not used either.</param>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 BufferAccessor<Game.Net.SubLane> subLaneBufferAccessor = chunk.GetBufferAccessor(ref m_SubLaneType);

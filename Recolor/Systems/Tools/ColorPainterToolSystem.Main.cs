@@ -19,6 +19,7 @@ namespace Recolor.Systems.Tools
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;
     using Recolor.Systems.SelectedInfoPanel;
+    using Recolor.Systems.SingleInstance;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -342,6 +343,10 @@ namespace Recolor.Systems.Tools
                     m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
                     m_ApplyColorSet = m_ColorPainterUISystem.ColorSet,
                     buffer = m_Barrier.CreateCommandBuffer(),
+                    m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
+                    m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
+                    m_SubLaneLookup = SystemAPI.GetBufferLookup<Game.Net.SubLane>(isReadOnly: true),
+                    m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
                 };
 
                 if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
@@ -370,6 +375,9 @@ namespace Recolor.Systems.Tools
                         m_InterpolatedTransformType = SystemAPI.GetComponentTypeHandle<InterpolatedTransform>(isReadOnly: true),
                         m_ApplyColorSet = m_ColorPainterUISystem.ColorSet,
                         buffer = m_Barrier.CreateCommandBuffer(),
+                        m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
+                        m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
+                        m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
                     };
                     inputDeps = JobChunkExtensions.Schedule(changeVehicleMeshColorWithinRadiusJob, m_VehicleMeshColorQuery, inputDeps);
                     m_Barrier.AddJobHandleForProducer(inputDeps);
@@ -382,6 +390,7 @@ namespace Recolor.Systems.Tools
                 {
                     buffer.RemoveComponent<CustomMeshColor>(currentRaycastEntity);
                     buffer.AddComponent<BatchesUpdated>(currentRaycastEntity);
+                    m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(currentRaycastEntity, buffer);
                 }
                 else if (!m_SelectedInfoPanelColorFieldsSystem.SingleInstance && m_SelectedInfoPanelColorFieldsSystem.TryGetAssetSeasonIdentifier(currentRaycastEntity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet _) && m_SelectedInfoPanelColorFieldsSystem.TryGetVanillaColorSet(assetSeasonIdentifier, out ColorSet VanillaColorSet))
                 {
@@ -399,7 +408,11 @@ namespace Recolor.Systems.Tools
                     m_Radius = radius,
                     m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
                     buffer = m_Barrier.CreateCommandBuffer(),
+                    m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
+                    m_SubLaneLookup = SystemAPI.GetBufferLookup<Game.Net.SubLane>(isReadOnly: true),
+                    m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
                 };
+
 
                 if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
                 {
@@ -426,6 +439,8 @@ namespace Recolor.Systems.Tools
                         m_Radius = radius,
                         m_InterpolatedTransformType = SystemAPI.GetComponentTypeHandle<InterpolatedTransform>(isReadOnly: true),
                         buffer = m_Barrier.CreateCommandBuffer(),
+                        m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
+                        m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
                     };
                     inputDeps = JobChunkExtensions.Schedule(resetVehicleMeshColorWithinRadiusJob, m_VehicleCustomMeshColorQuery, inputDeps);
                     m_Barrier.AddJobHandleForProducer(inputDeps);

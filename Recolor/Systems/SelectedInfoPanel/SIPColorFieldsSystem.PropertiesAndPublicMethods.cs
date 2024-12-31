@@ -322,5 +322,77 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
             }
         }
+
+        /// <summary>
+        /// Adds batches updated to subelements.
+        /// </summary>
+        /// <param name="e">owner Entity.</param>
+        /// <param name="buffer">Entity command buffer for appropriate phase.</param>
+        public void AddBatchesUpdatedToSubElements(Entity e, EntityCommandBuffer buffer)
+        {
+            // Add batches updated to subobjects that have mesh color.
+            if (EntityManager.TryGetBuffer(e, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subObjects))
+            {
+                foreach (Game.Objects.SubObject subObject in subObjects)
+                {
+                    if (EntityManager.HasBuffer<MeshColor>(subObject.m_SubObject))
+                    {
+                        buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+                    }
+
+                    if (!EntityManager.TryGetBuffer(subObject.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subObjects2))
+                    {
+                        continue;
+                    }
+
+                    foreach (Game.Objects.SubObject subObject2 in subObjects2)
+                    {
+                        if (EntityManager.HasBuffer<MeshColor>(subObject2.m_SubObject))
+                        {
+                            buffer.AddComponent<BatchesUpdated>(subObject2.m_SubObject);
+                        }
+
+                        if (!EntityManager.TryGetBuffer(subObject2.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subObjects3))
+                        {
+                            continue;
+                        }
+
+                        foreach (Game.Objects.SubObject subObject3 in subObjects3)
+                        {
+                            if (EntityManager.HasBuffer<MeshColor>(subObject3.m_SubObject))
+                            {
+                                buffer.AddComponent<BatchesUpdated>(subObject3.m_SubObject);
+                            }
+
+                            if (!EntityManager.TryGetBuffer(subObject3.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subObjects4))
+                            {
+                                continue;
+                            }
+
+                            foreach (Game.Objects.SubObject subObject4 in subObjects4)
+                            {
+                                if (EntityManager.HasBuffer<MeshColor>(subObject4.m_SubObject))
+                                {
+                                    buffer.AddComponent<BatchesUpdated>(subObject4.m_SubObject);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Add batches updated to sublanes that have mesh color.
+            if (EntityManager.TryGetBuffer(e, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> subLanes))
+            {
+                foreach (Game.Net.SubLane subLane in subLanes)
+                {
+                    if (EntityManager.HasBuffer<MeshColor>(subLane.m_SubLane))
+                    {
+                        buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
+                    }
+                }
+            }
+        }
+
     }
 }

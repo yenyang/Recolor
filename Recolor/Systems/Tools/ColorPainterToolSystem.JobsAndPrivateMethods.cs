@@ -64,6 +64,7 @@ namespace Recolor.Systems.Tools
                     customMeshColor.m_ColorSet = colorSet;
                     customMeshColorBuffer[i] = customMeshColor;
                     buffer.AddComponent<BatchesUpdated>(entity);
+                    m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(entity, buffer);
                 }
             }
         }
@@ -94,6 +95,7 @@ namespace Recolor.Systems.Tools
                     colorVariation.m_ColorSet = colorSet;
                     colorVariationBuffer[assetSeasonIdentifier.m_Index] = colorVariation;
                     buffer.AddComponent<BatchesUpdated>(entity);
+                    m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(entity, buffer);
                 }
 
                 return;
@@ -149,6 +151,7 @@ namespace Recolor.Systems.Tools
                 if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) && currentSubMeshBuffer[0].m_SubMesh == subMeshBuffer[0].m_SubMesh)
                 {
                     buffer.AddComponent<BatchesUpdated>(e);
+                    m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(e, buffer);
                 }
             }
         }
@@ -195,6 +198,7 @@ namespace Recolor.Systems.Tools
                 if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) && currentSubMeshBuffer[0].m_SubMesh == subMeshBuffer[0].m_SubMesh)
                 {
                     buffer.AddComponent<BatchesUpdated>(e);
+                    m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(e, buffer);
                 }
             }
         }
@@ -225,6 +229,14 @@ namespace Recolor.Systems.Tools
             public EntityTypeHandle m_EntityType;
             [ReadOnly]
             public ComponentTypeHandle<Game.Objects.Transform> m_TransformType;
+            [ReadOnly]
+            public BufferLookup<Game.Objects.SubObject> m_SubObjectLookup;
+            [ReadOnly]
+            public BufferLookup<Game.Net.SubLane> m_SubLaneLookup;
+            [ReadOnly]
+            public BufferLookup<MeshColor> m_MeshColorLookup;
+            [ReadOnly]
+            public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;
             public ColorSet m_ApplyColorSet;
             public EntityCommandBuffer buffer;
             public float m_Radius;
@@ -251,9 +263,77 @@ namespace Recolor.Systems.Tools
                         meshColorBuffer.Add(new MeshColor() { m_ColorSet = m_ApplyColorSet });
                         DynamicBuffer<CustomMeshColor> customMeshColors = buffer.AddBuffer<CustomMeshColor>(currentEntity);
                         customMeshColors.Add(new CustomMeshColor() { m_ColorSet = m_ApplyColorSet });
-
                         buffer.AddComponent<BatchesUpdated>(currentEntity);
+
+                        // Add batches updated to subobjects.
+                        if (m_SubObjectLookup.TryGetBuffer(currentEntity, out DynamicBuffer<Game.Objects.SubObject> subObjectBuffer))
+                        {
+                            foreach (Game.Objects.SubObject subObject in subObjectBuffer)
+                            {
+                                ProcessSubObject(subObject);
+
+                                if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
+                                {
+                                    continue;
+                                }
+
+                                foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
+                                {
+                                    ProcessSubObject(deepSubObject);
+
+                                    if (!m_SubObjectLookup.TryGetBuffer(deepSubObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer2))
+                                    {
+                                        continue;
+                                    }
+
+                                    foreach (Game.Objects.SubObject deepSubObject2 in deepSubObjectBuffer2)
+                                    {
+                                        ProcessSubObject(deepSubObject2);
+
+                                        if (!m_SubObjectLookup.TryGetBuffer(deepSubObject2.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer3))
+                                        {
+                                            continue;
+                                        }
+
+                                        foreach (Game.Objects.SubObject deepSubObject3 in deepSubObjectBuffer3)
+                                        {
+                                            ProcessSubObject(deepSubObject3);
+
+                                            if (!m_SubObjectLookup.TryGetBuffer(deepSubObject3.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer4))
+                                            {
+                                                continue;
+                                            }
+
+                                            foreach (Game.Objects.SubObject deepSubObject4 in deepSubObjectBuffer4)
+                                            {
+                                                ProcessSubObject(deepSubObject4);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Add batches updated to sublanes.
+                        if (m_SubLaneLookup.TryGetBuffer(currentEntity, out DynamicBuffer<Game.Net.SubLane> subLaneBuffer))
+                        {
+                            foreach (Game.Net.SubLane subLane in subLaneBuffer)
+                            {
+                                if (m_MeshColorLookup.HasBuffer(subLane.m_SubLane) && !m_CustomMeshColorLookup.HasBuffer(subLane.m_SubLane))
+                                {
+                                    buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
+                                }
+                            }
+                        }
                     }
+                }
+            }
+
+            private void ProcessSubObject(Game.Objects.SubObject subObject)
+            {
+                if (m_MeshColorLookup.HasBuffer(subObject.m_SubObject) && !m_CustomMeshColorLookup.HasBuffer(subObject.m_SubObject))
+                {
+                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
                 }
             }
 
@@ -290,6 +370,12 @@ namespace Recolor.Systems.Tools
             public EntityCommandBuffer buffer;
             public float m_Radius;
             public float3 m_Position;
+            [ReadOnly]
+            public BufferLookup<Game.Objects.SubObject> m_SubObjectLookup;
+            [ReadOnly]
+            public BufferLookup<MeshColor> m_MeshColorLookup;
+            [ReadOnly]
+            public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;
 
             /// <summary>
             /// Executes job which will change state or prefab for trees within a radius.
@@ -314,7 +400,64 @@ namespace Recolor.Systems.Tools
                         customMeshColors.Add(new CustomMeshColor() { m_ColorSet = m_ApplyColorSet });
 
                         buffer.AddComponent<BatchesUpdated>(currentEntity);
+
+                        // Add batches updated to subobjects.
+                        if (m_SubObjectLookup.TryGetBuffer(currentEntity, out DynamicBuffer<Game.Objects.SubObject> subObjectBuffer))
+                        {
+                            foreach (Game.Objects.SubObject subObject in subObjectBuffer)
+                            {
+                                ProcessSubObject(subObject);
+
+                                if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
+                                {
+                                    continue;
+                                }
+
+                                foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
+                                {
+                                    ProcessSubObject(deepSubObject);
+
+                                    if (!m_SubObjectLookup.TryGetBuffer(deepSubObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer2))
+                                    {
+                                        continue;
+                                    }
+
+                                    foreach (Game.Objects.SubObject deepSubObject2 in deepSubObjectBuffer2)
+                                    {
+                                        ProcessSubObject(deepSubObject2);
+
+                                        if (!m_SubObjectLookup.TryGetBuffer(deepSubObject2.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer3))
+                                        {
+                                            continue;
+                                        }
+
+                                        foreach (Game.Objects.SubObject deepSubObject3 in deepSubObjectBuffer3)
+                                        {
+                                            ProcessSubObject(deepSubObject3);
+
+                                            if (!m_SubObjectLookup.TryGetBuffer(deepSubObject3.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer4))
+                                            {
+                                                continue;
+                                            }
+
+                                            foreach (Game.Objects.SubObject deepSubObject4 in deepSubObjectBuffer4)
+                                            {
+                                                ProcessSubObject(deepSubObject4);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
+                }
+            }
+
+            private void ProcessSubObject(Game.Objects.SubObject subObject)
+            {
+                if (m_MeshColorLookup.HasBuffer(subObject.m_SubObject) && !m_CustomMeshColorLookup.HasBuffer(subObject.m_SubObject))
+                {
+                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
                 }
             }
 
@@ -348,6 +491,12 @@ namespace Recolor.Systems.Tools
             [ReadOnly]
             public ComponentTypeHandle<Game.Objects.Transform> m_TransformType;
             public EntityCommandBuffer buffer;
+            [ReadOnly]
+            public BufferLookup<Game.Objects.SubObject> m_SubObjectLookup;
+            [ReadOnly]
+            public BufferLookup<Game.Net.SubLane> m_SubLaneLookup;
+            [ReadOnly]
+            public BufferLookup<MeshColor> m_MeshColorLookup;
             public float m_Radius;
             public float3 m_Position;
 
@@ -369,7 +518,77 @@ namespace Recolor.Systems.Tools
                         Entity currentEntity = entityNativeArray[i];
                         buffer.RemoveComponent<CustomMeshColor>(currentEntity);
                         buffer.AddComponent<BatchesUpdated>(currentEntity);
+
+                        // Add batches updated to subobjects.
+                        if (m_SubObjectLookup.TryGetBuffer(currentEntity, out DynamicBuffer<Game.Objects.SubObject> subObjectBuffer))
+                        {
+                            foreach (Game.Objects.SubObject subObject in subObjectBuffer)
+                            {
+                                ProcessSubObject(subObject);
+
+                                if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
+                                {
+                                    continue;
+                                }
+
+                                foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
+                                {
+                                    ProcessSubObject(deepSubObject);
+
+                                    if (!m_SubObjectLookup.TryGetBuffer(deepSubObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer2))
+                                    {
+                                        continue;
+                                    }
+
+                                    foreach (Game.Objects.SubObject deepSubObject2 in deepSubObjectBuffer2)
+                                    {
+                                        ProcessSubObject(deepSubObject2);
+
+                                        if (!m_SubObjectLookup.TryGetBuffer(deepSubObject2.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer3))
+                                        {
+                                            continue;
+                                        }
+
+                                        foreach (Game.Objects.SubObject deepSubObject3 in deepSubObjectBuffer3)
+                                        {
+                                            ProcessSubObject(deepSubObject3);
+
+                                            if (!m_SubObjectLookup.TryGetBuffer(deepSubObject3.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer4))
+                                            {
+                                                continue;
+                                            }
+
+                                            foreach (Game.Objects.SubObject deepSubObject4 in deepSubObjectBuffer4)
+                                            {
+                                                ProcessSubObject(deepSubObject4);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Add batches updated to sublanes.
+                        if (m_SubLaneLookup.TryGetBuffer(currentEntity, out DynamicBuffer<Game.Net.SubLane> subLaneBuffer))
+                        {
+                            foreach (Game.Net.SubLane subLane in subLaneBuffer)
+                            {
+                                if (m_MeshColorLookup.HasBuffer(subLane.m_SubLane))
+                                {
+                                    buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
+                                }
+                            }
+                        }
                     }
+                }
+            }
+
+
+            private void ProcessSubObject(Game.Objects.SubObject subObject)
+            {
+                if (m_MeshColorLookup.HasBuffer(subObject.m_SubObject))
+                {
+                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
                 }
             }
 
@@ -405,6 +624,10 @@ namespace Recolor.Systems.Tools
             public EntityCommandBuffer buffer;
             public float m_Radius;
             public float3 m_Position;
+            [ReadOnly]
+            public BufferLookup<Game.Objects.SubObject> m_SubObjectLookup;
+            [ReadOnly]
+            public BufferLookup<MeshColor> m_MeshColorLookup;
 
             /// <summary>
             /// Executes job which will change state or prefab for trees within a radius.
@@ -424,7 +647,65 @@ namespace Recolor.Systems.Tools
                         Entity currentEntity = entityNativeArray[i];
                         buffer.RemoveComponent<CustomMeshColor>(currentEntity);
                         buffer.AddComponent<BatchesUpdated>(currentEntity);
+
+
+                        // Add batches updated to subobjects.
+                        if (m_SubObjectLookup.TryGetBuffer(currentEntity, out DynamicBuffer<Game.Objects.SubObject> subObjectBuffer))
+                        {
+                            foreach (Game.Objects.SubObject subObject in subObjectBuffer)
+                            {
+                                ProcessSubObject(subObject);
+
+                                if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
+                                {
+                                    continue;
+                                }
+
+                                foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
+                                {
+                                    ProcessSubObject(deepSubObject);
+
+                                    if (!m_SubObjectLookup.TryGetBuffer(deepSubObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer2))
+                                    {
+                                        continue;
+                                    }
+
+                                    foreach (Game.Objects.SubObject deepSubObject2 in deepSubObjectBuffer2)
+                                    {
+                                        ProcessSubObject(deepSubObject2);
+
+                                        if (!m_SubObjectLookup.TryGetBuffer(deepSubObject2.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer3))
+                                        {
+                                            continue;
+                                        }
+
+                                        foreach (Game.Objects.SubObject deepSubObject3 in deepSubObjectBuffer3)
+                                        {
+                                            ProcessSubObject(deepSubObject3);
+
+                                            if (!m_SubObjectLookup.TryGetBuffer(deepSubObject3.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer4))
+                                            {
+                                                continue;
+                                            }
+
+                                            foreach (Game.Objects.SubObject deepSubObject4 in deepSubObjectBuffer4)
+                                            {
+                                                ProcessSubObject(deepSubObject4);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
+                }
+            }
+
+            private void ProcessSubObject(Game.Objects.SubObject subObject)
+            {
+                if (m_MeshColorLookup.HasBuffer(subObject.m_SubObject))
+                {
+                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
                 }
             }
 
