@@ -24,6 +24,8 @@ namespace Recolor
     using System.Linq;
     using Newtonsoft.Json;
     using Colossal;
+    using Game.UI.InGame;
+    using Unity.Entities;
 #endif
 
     /// <summary>
@@ -116,7 +118,7 @@ namespace Recolor
             }
 #endif
             Log.Info($"{nameof(OnLoad)} Initalizing systems");
-            updateSystem.UpdateAt<SIPColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
+            World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
             updateSystem.UpdateAt<TempCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAfter<CustomMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<ColorPickerToolSystem>(SystemUpdatePhase.ToolUpdate);
