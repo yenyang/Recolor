@@ -58,7 +58,13 @@ export const ColorPainterFieldComponent = (props : { channel : number }) => {
             <div className={styles.columnGroup}>
                 <div className={styles.rowGroup}>
                     {PainterColorSet.States[props.channel]? (
-                        <VanillaComponentResolver.instance.ColorField className={classNames(ColorFieldTheme.colorField,styles.rcColorField)} value={PainterColorSet.Channels[props.channel]} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(props.channel, e); }}/>
+                        <VanillaComponentResolver.instance.ColorField 
+                            className={classNames(ColorFieldTheme.colorField,styles.rcColorField)} 
+                            value={PainterColorSet.Channels[props.channel]} 
+                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} 
+                            onChange={(e) => {changeColor(props.channel, e); }}
+                            alpha={1}
+                        />
                     ):(
                         <span className={styles.rcColorField}></span>
                     )

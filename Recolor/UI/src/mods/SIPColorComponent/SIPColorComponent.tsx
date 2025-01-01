@@ -53,7 +53,13 @@ export const SIPColorComponent = (props : { channel : number }) => {
     return (
         <div className={styles.columnGroup}>
             <div className={styles.rowGroup}>
-                <VanillaComponentResolver.instance.ColorField className={classNames(ColorFieldTheme.colorField, styles.rcColorField)} value={CurrentColorSet.Channels[props.channel]} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} onChange={(e) => {changeColor(props.channel, e);}}/>
+                <VanillaComponentResolver.instance.ColorField 
+                    className={classNames(ColorFieldTheme.colorField, styles.rcColorField)} 
+                    value={CurrentColorSet.Channels[props.channel]} 
+                    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} 
+                    onChange={(e) => {changeColor(props.channel, e);}}
+                    alpha={1}
+                />
             </div>
             <div className={styles.rowGroup}>
                 <VanillaComponentResolver.instance.ToolButton
