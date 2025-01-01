@@ -33,7 +33,6 @@ namespace Recolor
     /// </summary>
     public class Mod : IMod
     {
-
         /// <summary>
         /// Fake keybind action for apply.
         /// </summary>
@@ -118,7 +117,7 @@ namespace Recolor
             }
 #endif
             Log.Info($"{nameof(OnLoad)} Initalizing systems");
-            World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
+            updateSystem.UpdateAt<SIPColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<TempCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAfter<CustomMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<ColorPickerToolSystem>(SystemUpdatePhase.ToolUpdate);

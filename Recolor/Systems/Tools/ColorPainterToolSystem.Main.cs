@@ -303,6 +303,14 @@ namespace Recolor.Systems.Tools
                 m_PreviousRaycastedEntity = currentRaycastEntity;
             }
 
+            if ((m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint ||
+               m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset) &&
+               m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius &&
+               (!raycastResult || (hit.m_HitPosition.x == 0 && hit.m_HitPosition.y == 0 && hit.m_HitPosition.z == 0)))
+            {
+                return inputDeps;
+            }
+
             float radius = m_ColorPainterUISystem.Radius;
             if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius && m_ColorPainterUISystem.ToolMode != ColorPainterUISystem.PainterToolMode.Picker)
             {
@@ -325,11 +333,11 @@ namespace Recolor.Systems.Tools
             {
                 if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
                 {
-                    ChangeInstanceColorSet(m_ColorPainterUISystem.ColorSet, ref buffer, currentRaycastEntity);
+                    ChangeInstanceColorSet(m_ColorPainterUISystem.RecolorSet, ref buffer, currentRaycastEntity);
                 }
                 else if (!m_SelectedInfoPanelColorFieldsSystem.SingleInstance && m_SelectedInfoPanelColorFieldsSystem.TryGetAssetSeasonIdentifier(currentRaycastEntity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet _))
                 {
-                    ChangeColorVariation(m_ColorPainterUISystem.ColorSet, ref buffer, currentRaycastEntity, assetSeasonIdentifier);
+                    ChangeColorVariation(m_ColorPainterUISystem.RecolorSet, ref buffer, currentRaycastEntity, assetSeasonIdentifier);
                     GenerateOrUpdateCustomColorVariationEntity(currentRaycastEntity, ref buffer, assetSeasonIdentifier);
                 }
             }
@@ -342,6 +350,7 @@ namespace Recolor.Systems.Tools
                     m_Radius = radius,
                     m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
                     m_ApplyColorSet = m_ColorPainterUISystem.ColorSet,
+                    m_ChannelToggles = m_ColorPainterUISystem.ChannelToggles,
                     buffer = m_Barrier.CreateCommandBuffer(),
                     m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
                     m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
@@ -374,6 +383,7 @@ namespace Recolor.Systems.Tools
                         m_Radius = radius,
                         m_InterpolatedTransformType = SystemAPI.GetComponentTypeHandle<InterpolatedTransform>(isReadOnly: true),
                         m_ApplyColorSet = m_ColorPainterUISystem.ColorSet,
+                        m_ChannelToggles = m_ColorPainterUISystem.ChannelToggles,
                         buffer = m_Barrier.CreateCommandBuffer(),
                         m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
                         m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
@@ -394,7 +404,7 @@ namespace Recolor.Systems.Tools
                 }
                 else if (!m_SelectedInfoPanelColorFieldsSystem.SingleInstance && m_SelectedInfoPanelColorFieldsSystem.TryGetAssetSeasonIdentifier(currentRaycastEntity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet _) && m_SelectedInfoPanelColorFieldsSystem.TryGetVanillaColorSet(assetSeasonIdentifier, out ColorSet VanillaColorSet))
                 {
-                    ChangeColorVariation(VanillaColorSet, ref buffer, currentRaycastEntity, assetSeasonIdentifier);
+                    ChangeColorVariation(new RecolorSet(VanillaColorSet), ref buffer, currentRaycastEntity, assetSeasonIdentifier);
                     DeleteCustomColorVariationEntity(currentRaycastEntity, ref buffer, assetSeasonIdentifier);
                 }
             }

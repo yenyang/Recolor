@@ -101,6 +101,7 @@ namespace Recolor.Settings
                 { MouseTooltipKey("SingleInstancePlantWarning"), "Single instance color changes for plants is not currently supported." },
                 { MouseTooltipKey("HasCustomMeshColorWarning"),  "Cannot change color variation on this because it has custom instance colors." },
                 { MouseTooltipKey("SelectANetLaneFence"), "Select a NetLane Fence or Hedge." },
+                { TooltipDescriptionKey("ToggleChannel"), "Toggles the channel on or off." },
             };
         }
 

@@ -5,6 +5,7 @@
 namespace Recolor.Domain
 {
     using Game.Rendering;
+    using Unity.Mathematics;
     using UnityEngine;
 
     /// <summary>
@@ -12,9 +13,15 @@ namespace Recolor.Domain
     /// </summary>
     public class RecolorSet
     {
-        public Color Channel0;
-        public Color Channel1;
-        public Color Channel2;
+        /// <summary>
+        /// First color channel.
+        /// </summary>
+        public Color[] Channels;
+
+        /// <summary>
+        /// True for on, false for off.
+        /// </summary>
+        public bool[] States;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RecolorSet"/> class.
@@ -22,9 +29,8 @@ namespace Recolor.Domain
         /// <param name="colorSet">Game.Rendering colorset.</param>
         public RecolorSet(ColorSet colorSet)
         {
-            Channel0 = colorSet.m_Channel0;
-            Channel1 = colorSet.m_Channel1;
-            Channel2 = colorSet.m_Channel2;
+            Channels = new Color[] { colorSet.m_Channel0, colorSet.m_Channel1, colorSet.m_Channel2 };
+            States = new bool[3] { true, true, true };
         }
 
         /// <summary>
@@ -35,9 +41,8 @@ namespace Recolor.Domain
         /// <param name="color2">3rd color.</param>
         public RecolorSet(Color color0, Color color1, Color color2)
         {
-            Channel0 = color0;
-            Channel1 = color1;
-            Channel2 = color2;
+            Channels = new Color[] { color0, color1, color2 };
+            States = new bool[3] { true, true, true };
         }
 
         /// <summary>
@@ -48,11 +53,48 @@ namespace Recolor.Domain
         {
             ColorSet colorSet = new ()
             {
-                m_Channel0 = Channel0,
-                m_Channel1 = Channel1,
-                m_Channel2 = Channel2,
+                m_Channel0 = Channels[0],
+                m_Channel1 = Channels[1],
+                m_Channel2 = Channels[2],
             };
             return colorSet;
+        }
+
+        /// <summary>
+        /// Sets the color set.
+        /// </summary>
+        /// <param name="colorSet">Game.Rendering.ColorSet.</param>
+        public void SetColorSet(ColorSet colorSet)
+        {
+            Channels = new Color[] { colorSet.m_Channel0, colorSet.m_Channel1, colorSet.m_Channel2 };
+        }
+
+        /// <summary>
+        /// If valid channel is supplied, toggles state of that channel to opposite.
+        /// </summary>
+        /// <param name="channel">0, 1 or 2.</param>
+        public void ToggleChannel(uint channel)
+        {
+            if (channel < States.Length)
+            {
+                States[channel] = !States[channel];
+            }
+        }
+
+        /// <summary>
+        /// Gets a bool3 of the channel toggles.
+        /// </summary>
+        /// <returns>Bool3 for channel toggles.</returns>
+        public bool3 GetChannelToggles()
+        {
+            if (States.Length >= 3)
+            {
+                return new bool3(States[0], States[1], States[2]);
+            }
+            else
+            {
+                return new bool3(true, true, true);
+            }
         }
     }
 }

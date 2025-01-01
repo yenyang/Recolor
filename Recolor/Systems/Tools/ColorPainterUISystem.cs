@@ -11,6 +11,7 @@ namespace Recolor.Systems.Tools
     using Recolor.Domain;
     using Recolor.Extensions;
     using Recolor.Systems.SelectedInfoPanel;
+    using Unity.Mathematics;
 
     /// <summary>
     /// A UI System for the Color Painter Tool.
@@ -109,9 +110,25 @@ namespace Recolor.Systems.Tools
 
             set
             {
-                m_PainterColorSet.Value = new RecolorSet(value);
+                m_PainterColorSet.Value.SetColorSet(value);
                 m_PainterColorSet.Binding.TriggerUpdate();
             }
+        }
+
+        /// <summary>
+        /// Gets the recolor set which includes the color set and toggles. 
+        /// </summary>
+        public RecolorSet RecolorSet
+        {
+            get { return m_PainterColorSet.Value; }
+        }
+
+        /// <summary>
+        /// Gets the channel toggles as a bool3.
+        /// </summary>
+        public bool3 ChannelToggles
+        {
+            get { return m_PainterColorSet.Value.GetChannelToggles(); }
         }
 
         /// <summary>
@@ -160,11 +177,11 @@ namespace Recolor.Systems.Tools
             m_ToolMode = CreateBinding("PainterToolMode", PainterToolMode.Paint);
 
             // These are event triggers from actions in UI.
-            CreateTrigger<int, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
+            CreateTrigger<uint, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
             CreateTrigger("ColorPainterSingleSelection", () => m_SelectionType.Value = (int)SelectionType.Single);
             CreateTrigger("ColorPainterRadiusSelection", () => m_SelectionType.Value = (int)SelectionType.Radius);
             CreateTrigger("CopyColor", (UnityEngine.Color color) => m_CopiedColor.Value = color);
-            CreateTrigger("ColorPainterPasteColor", (int value) => ChangePainterColor(value, m_SelectedInfoPanelColorFieldsSystem.CopiedColor));
+            CreateTrigger("ColorPainterPasteColor", (uint value) => ChangePainterColor(value, m_SelectedInfoPanelColorFieldsSystem.CopiedColor));
             CreateTrigger("ColorPainterPasteColorSet", () =>
             {
                 m_PainterColorSet.Value = new RecolorSet(m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet);
@@ -182,27 +199,23 @@ namespace Recolor.Systems.Tools
             CreateTrigger("PropFilter", () => m_Filter.Value = (int)FilterType.Props);
             CreateTrigger("VehicleFilter", () => m_Filter.Value = (int)FilterType.Vehicles);
             CreateTrigger("ChangeToolMode", (int toolMode) => m_ToolMode.Value = (PainterToolMode)toolMode);
+            CreateTrigger("ToggleChannel", (uint channel) =>
+            {
+                m_PainterColorSet.Value.ToggleChannel(channel);
+                m_PainterColorSet.Binding.TriggerUpdate();
+            });
 
             Enabled = false;
         }
 
-        private void ChangePainterColor(int channel, UnityEngine.Color color)
+        private void ChangePainterColor(uint channel, UnityEngine.Color color)
         {
-            m_Log.Debug(color);
-            if (channel == 0)
+            m_Log.Debug($"{nameof(ColorPainterUISystem)}.{nameof(ChangePainterColor)} new color {color} for channel {channel}");
+            if (channel < m_PainterColorSet.Value.Channels.Length)
             {
-                m_PainterColorSet.Value.Channel0 = color;
+                m_PainterColorSet.Value.Channels[channel] = color;
+                m_PainterColorSet.Binding.TriggerUpdate();
             }
-            else if (channel == 1)
-            {
-                m_PainterColorSet.Value.Channel1 = color;
-            }
-            else if (channel == 2)
-            {
-                m_PainterColorSet.Value.Channel2 = color;
-            }
-
-            m_PainterColorSet.Binding.TriggerUpdate();
         }
 
         private void OnToolChanged(ToolBaseSystem tool)

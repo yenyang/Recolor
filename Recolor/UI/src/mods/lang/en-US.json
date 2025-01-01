@@ -71,5 +71,6 @@
   "Options.WARNING[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Reset Recolor mod Keybindings?",
   "Recolor.MOUSE_TOOLTIP[SingleInstancePlantWarning]": "Single instance color changes for plants is not currently supported.",
   "Recolor.MOUSE_TOOLTIP[HasCustomMeshColorWarning]": "Cannot change color variation on this because it has custom instance colors.",
-  "Recolor.MOUSE_TOOLTIP[SelectANetLaneFence]": "Select a NetLane Fence or Hedge."
+  "Recolor.MOUSE_TOOLTIP[SelectANetLaneFence]": "Select a NetLane Fence or Hedge.",
+  "Recolor.TOOLTIP_DESCRIPTION[ToggleChannel]": "Toggles the channel on or off."
 }

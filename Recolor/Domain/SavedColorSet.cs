@@ -9,7 +9,7 @@ namespace Recolor.Domain
     using Recolor.Systems.SelectedInfoPanel;
 
     /// <summary>
-    /// A class to use for XML Serialization and deserialization of custom foliage color sets.
+    /// A class to use for XML Serialization and deserialization of custom color sets.
     /// </summary>
     public class SavedColorSet
     {

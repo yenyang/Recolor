@@ -1,4 +1,4 @@
-﻿// <copyright file="ColorPainterToolSystem.JobsAndPrivateMethods.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="ColorPainterToolSystem.Jobs.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
@@ -34,175 +34,6 @@ namespace Recolor.Systems.Tools
     /// </summary>
     public partial class ColorPainterToolSystem : ToolBaseSystem
     {
-        private void ChangeInstanceColorSet(ColorSet colorSet, ref EntityCommandBuffer buffer, Entity entity)
-        {
-            if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance && !EntityManager.HasComponent<Game.Objects.Plant>(entity) && EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
-            {
-                if (!EntityManager.HasBuffer<CustomMeshColor>(entity))
-                {
-                    DynamicBuffer<CustomMeshColor> newBuffer = EntityManager.AddBuffer<CustomMeshColor>(entity);
-                    foreach (MeshColor meshColor in meshColorBuffer)
-                    {
-                        newBuffer.Add(new CustomMeshColor(meshColor));
-                    }
-                }
-
-                if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer))
-                {
-                    return;
-                }
-
-                int length = meshColorBuffer.Length;
-                if (EntityManager.HasComponent<Tree>(entity))
-                {
-                    length = Math.Min(4, meshColorBuffer.Length);
-                }
-
-                for (int i = 0; i < length; i++)
-                {
-                    CustomMeshColor customMeshColor = customMeshColorBuffer[i];
-                    customMeshColor.m_ColorSet = colorSet;
-                    customMeshColorBuffer[i] = customMeshColor;
-                    buffer.AddComponent<BatchesUpdated>(entity);
-                    m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(entity, buffer);
-                }
-            }
-        }
-
-        private void ChangeColorVariation(ColorSet colorSet, ref EntityCommandBuffer buffer, Entity entity, AssetSeasonIdentifier assetSeasonIdentifier)
-        {
-            if (!EntityManager.HasBuffer<CustomMeshColor>(entity))
-            {
-                if (!EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) || !EntityManager.TryGetBuffer(prefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
-                {
-                    return;
-                }
-
-                int length = subMeshBuffer.Length;
-                if (EntityManager.HasComponent<Tree>(entity))
-                {
-                    length = Math.Min(4, subMeshBuffer.Length);
-                }
-
-                for (int i = 0; i < length; i++)
-                {
-                    if (!EntityManager.TryGetBuffer(subMeshBuffer[i].m_SubMesh, isReadOnly: false, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < assetSeasonIdentifier.m_Index)
-                    {
-                        continue;
-                    }
-
-                    ColorVariation colorVariation = colorVariationBuffer[assetSeasonIdentifier.m_Index];
-                    colorVariation.m_ColorSet = colorSet;
-                    colorVariationBuffer[assetSeasonIdentifier.m_Index] = colorVariation;
-                    buffer.AddComponent<BatchesUpdated>(entity);
-                    m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(entity, buffer);
-                }
-
-                return;
-            }
-        }
-
-        private void GenerateOrUpdateCustomColorVariationEntity(Entity instanceEntity, ref EntityCommandBuffer buffer, AssetSeasonIdentifier assetSeasonIdentifier)
-        {
-            if (!EntityManager.TryGetComponent(instanceEntity, out PrefabRef prefabRef) || !EntityManager.TryGetBuffer(prefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
-            {
-                return;
-            }
-
-            if (!EntityManager.TryGetBuffer(subMeshBuffer[0].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < assetSeasonIdentifier.m_Index)
-            {
-                return;
-            }
-
-            ColorSet colorSet = colorVariationBuffer[assetSeasonIdentifier.m_Index].m_ColorSet;
-            if (!EntityManager.HasComponent<Game.Objects.Tree>(instanceEntity))
-            {
-                m_CustomColorVariationSystem.CreateOrUpdateCustomColorVariationEntity(buffer, subMeshBuffer[0].m_SubMesh, colorSet, assetSeasonIdentifier.m_Index);
-            }
-            else
-            {
-                int length = Math.Min(4, subMeshBuffer.Length);
-                for (int i = 0; i < length; i++)
-                {
-                    if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[i].m_SubMesh, out PrefabBase prefabBase))
-                    {
-                        continue;
-                    }
-
-                    AssetSeasonIdentifier currentAssetSeasonIdentifier = new ()
-                    {
-                        m_Index = assetSeasonIdentifier.m_Index,
-                        m_PrefabID = prefabBase.GetPrefabID(),
-                        m_Season = assetSeasonIdentifier.m_Season,
-                    };
-
-                    m_CustomColorVariationSystem.CreateOrUpdateCustomColorVariationEntity(buffer, subMeshBuffer[i].m_SubMesh, colorSet, currentAssetSeasonIdentifier.m_Index);
-                }
-            }
-
-            EntityQuery prefabRefQuery = SystemAPI.QueryBuilder()
-                .WithAll<PrefabRef>()
-                .WithNone<Deleted, Game.Common.Overridden, Game.Tools.Temp>()
-                .Build();
-
-            NativeArray<Entity> entities = prefabRefQuery.ToEntityArray(Allocator.Temp);
-            foreach (Entity e in entities)
-            {
-                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) && currentSubMeshBuffer[0].m_SubMesh == subMeshBuffer[0].m_SubMesh)
-                {
-                    buffer.AddComponent<BatchesUpdated>(e);
-                    m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(e, buffer);
-                }
-            }
-        }
-
-        private void DeleteCustomColorVariationEntity(Entity instanceEntity, ref EntityCommandBuffer buffer, AssetSeasonIdentifier assetSeasonIdentifier)
-        {
-            if (!EntityManager.TryGetComponent(instanceEntity, out PrefabRef prefabRef) || !EntityManager.TryGetBuffer(prefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
-            {
-                return;
-            }
-
-
-            if (!EntityManager.TryGetBuffer(subMeshBuffer[0].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < assetSeasonIdentifier.m_Index)
-            {
-                return;
-            }
-
-            if (!EntityManager.HasComponent<Game.Objects.Tree>(instanceEntity))
-            {
-                m_CustomColorVariationSystem.DeleteCustomColorVariationEntity(buffer, subMeshBuffer[0].m_SubMesh);
-            }
-            else
-            {
-                int length = Math.Min(4, subMeshBuffer.Length);
-                for (int i = 0; i < length; i++)
-                {
-                    if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[i].m_SubMesh, out PrefabBase _))
-                    {
-                        continue;
-                    }
-
-                    m_CustomColorVariationSystem.DeleteCustomColorVariationEntity(buffer, subMeshBuffer[i].m_SubMesh);
-                }
-            }
-
-            EntityQuery prefabRefQuery = SystemAPI.QueryBuilder()
-                .WithAll<PrefabRef>()
-                .WithNone<Deleted, Game.Common.Overridden, Game.Tools.Temp>()
-                .Build();
-
-            NativeArray<Entity> entities = prefabRefQuery.ToEntityArray(Allocator.Temp);
-            foreach (Entity e in entities)
-            {
-                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) && currentSubMeshBuffer[0].m_SubMesh == subMeshBuffer[0].m_SubMesh)
-                {
-                    buffer.AddComponent<BatchesUpdated>(e);
-                    m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(e, buffer);
-                }
-            }
-        }
-
 #if BURST
         [BurstCompile]
 #endif
@@ -238,6 +69,7 @@ namespace Recolor.Systems.Tools
             [ReadOnly]
             public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;
             public ColorSet m_ApplyColorSet;
+            public bool3 m_ChannelToggles;
             public EntityCommandBuffer buffer;
             public float m_Radius;
             public float3 m_Position;
@@ -259,10 +91,19 @@ namespace Recolor.Systems.Tools
                     {
                         Entity currentEntity = entityNativeArray[i];
 
+                        if (!m_MeshColorLookup.TryGetBuffer(currentEntity, out DynamicBuffer<MeshColor> originalMeshColors))
+                        {
+                            continue;
+                        }
+
                         DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(currentEntity);
-                        meshColorBuffer.Add(new MeshColor() { m_ColorSet = m_ApplyColorSet });
                         DynamicBuffer<CustomMeshColor> customMeshColors = buffer.AddBuffer<CustomMeshColor>(currentEntity);
-                        customMeshColors.Add(new CustomMeshColor() { m_ColorSet = m_ApplyColorSet });
+                        for (int j = 0; j < originalMeshColors.Length; j++)
+                        {
+                            meshColorBuffer.Add(new MeshColor() { m_ColorSet = CompileColorSet(m_ApplyColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
+                            customMeshColors.Add(new CustomMeshColor() { m_ColorSet = CompileColorSet(m_ApplyColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
+                        }
+
                         buffer.AddComponent<BatchesUpdated>(currentEntity);
 
                         // Add batches updated to subobjects.
@@ -337,6 +178,27 @@ namespace Recolor.Systems.Tools
                 }
             }
 
+            private ColorSet CompileColorSet(ColorSet applyColorSet, bool3 channelToggles, ColorSet originalColors)
+            {
+                ColorSet colorSet = originalColors;
+                if (channelToggles[0])
+                {
+                    colorSet.m_Channel0 = applyColorSet.m_Channel0;
+                }
+
+                if (channelToggles[1])
+                {
+                    colorSet.m_Channel1 = applyColorSet.m_Channel1;
+                }
+
+                if (channelToggles[2])
+                {
+                    colorSet.m_Channel2 = applyColorSet.m_Channel2;
+                }
+
+                return colorSet;
+            }
+
             /// <summary>
             /// Checks the radius and position and returns true if tree is there.
             /// </summary>
@@ -367,6 +229,7 @@ namespace Recolor.Systems.Tools
             [ReadOnly]
             public ComponentTypeHandle<InterpolatedTransform> m_InterpolatedTransformType;
             public ColorSet m_ApplyColorSet;
+            public bool3 m_ChannelToggles;
             public EntityCommandBuffer buffer;
             public float m_Radius;
             public float3 m_Position;
@@ -394,10 +257,18 @@ namespace Recolor.Systems.Tools
                     {
                         Entity currentEntity = entityNativeArray[i];
 
+                        if (!m_MeshColorLookup.TryGetBuffer(currentEntity, out DynamicBuffer<MeshColor> originalMeshColors))
+                        {
+                            continue;
+                        }
+
                         DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(currentEntity);
-                        meshColorBuffer.Add(new MeshColor() { m_ColorSet = m_ApplyColorSet });
                         DynamicBuffer<CustomMeshColor> customMeshColors = buffer.AddBuffer<CustomMeshColor>(currentEntity);
-                        customMeshColors.Add(new CustomMeshColor() { m_ColorSet = m_ApplyColorSet });
+                        for (int j = 0; j < originalMeshColors.Length; j++)
+                        {
+                            meshColorBuffer.Add(new MeshColor() { m_ColorSet = CompileColorSet(m_ApplyColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
+                            customMeshColors.Add(new CustomMeshColor() { m_ColorSet = CompileColorSet(m_ApplyColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
+                        }
 
                         buffer.AddComponent<BatchesUpdated>(currentEntity);
 
@@ -459,6 +330,27 @@ namespace Recolor.Systems.Tools
                 {
                     buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
                 }
+            }
+
+            private ColorSet CompileColorSet(ColorSet applyColorSet, bool3 channelToggles, ColorSet originalColors)
+            {
+                ColorSet colorSet = originalColors;
+                if (channelToggles[0])
+                {
+                    colorSet.m_Channel0 = applyColorSet.m_Channel0;
+                }
+
+                if (channelToggles[1])
+                {
+                    colorSet.m_Channel1 = applyColorSet.m_Channel1;
+                }
+
+                if (channelToggles[2])
+                {
+                    colorSet.m_Channel2 = applyColorSet.m_Channel2;
+                }
+
+                return colorSet;
             }
 
             /// <summary>
