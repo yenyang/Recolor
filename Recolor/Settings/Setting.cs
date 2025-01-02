@@ -136,6 +136,12 @@ namespace Recolor.Settings
         [SettingsUIHidden]
         public ProxyBinding SelectNetLaneFencesToolApplyMimic { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to show hexadecimals.
+        /// </summary>
+        [SettingsUIHidden]
+        public bool ShowHexaDecimals { get; set; }
+
 
         /// <summary>
         /// Sets a value indicating whether: a button for Resetting the settings for keybinds.
@@ -228,6 +234,7 @@ namespace Recolor.Settings
         public override void SetDefaults()
         {
             ColorPainterAutomaticCopyColor = true;
+            ShowHexaDecimals = false;
         }
 
         private bool IsNotGame()

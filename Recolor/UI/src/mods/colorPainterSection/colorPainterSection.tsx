@@ -7,6 +7,8 @@ import mod from "../../../mod.json";
 import locale from "../lang/en-US.json";
 import { PainterToolMode } from "mods/Domain/PainterToolMode";
 import { ColorPainterFieldComponent } from "mods/colorPainterFieldComponent/ColorPainterFieldComponent";
+import classNames from "classnames";
+import styles from "../Domain/ColorFields.module.scss";
 
 // These contain the coui paths to Unified Icon Library svg assets
 const uilStandard =                          "coui://uil/Standard/";
@@ -29,9 +31,10 @@ const colorPaletteSrc =                 uilColored + "ColorPalette.svg";
 const ColorPainterSelectionType$ = bindValue<number>(mod.id, "ColorPainterSelectionType");
 const SingleInstance$ = bindValue<boolean>(mod.id, 'SingleInstance');
 const CanPasteColorSet$ = bindValue<boolean>(mod.id, "CanPasteColorSet");
-const Radius$ = bindValue<Number>(mod.id, "Radius");
-const Filter$ = bindValue<Number>(mod.id, "Filter");
+const Radius$ = bindValue<number>(mod.id, "Radius");
+const Filter$ = bindValue<number>(mod.id, "Filter");
 const ToolMode$ = bindValue<PainterToolMode>(mod.id, "PainterToolMode");
+const ShowHexaDecimals$ = bindValue<boolean>(mod.id, "ShowHexaDecimals");
 
 
 const arrowDownSrc =         uilStandard +  "ArrowDownThickStroke.svg";
@@ -72,6 +75,7 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
         const Radius = useValue(Radius$);
         const Filter = useValue(Filter$);
         const ToolMode = useValue(ToolMode$);
+        const ShowHexaDecimals = useValue(ShowHexaDecimals$);
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
         const { translate } = useLocalization();
 
@@ -158,6 +162,16 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                                         onSelect={() => { handleClick("ColorPainterPasteColorSet");}}
                                     />
                                 )}
+                                <VanillaComponentResolver.instance.ToolButton
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            multiSelect = {false}   // I haven't tested any other value here
+                                            disabled = {false}     
+                                            selected={ShowHexaDecimals}
+                                            children={<div className={styles.buttonWithText}>#</div>} 
+                                            tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ShowHexaDecimals]", locale["Recolor.TOOLTIP_DESCRIPTION[ShowHexaDecimals]"])}
+                                            className = {classNames(VanillaComponentResolver.instance.toolButtonTheme.button)}
+                                            onSelect={() => handleClick("ToggleShowHexaDecimals")}
+                                />
                             </>
                         </VanillaComponentResolver.instance.Section>
                     )}

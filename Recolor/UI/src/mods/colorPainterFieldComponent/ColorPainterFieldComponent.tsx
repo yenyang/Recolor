@@ -9,6 +9,9 @@ import { RecolorSet } from "mods/Domain/RecolorSet";
 import mod from "../../../mod.json";
 import locale from "../lang/en-US.json";
 import { VanillaComponentResolver } from "../VanillaComponentResolver/VanillaComponentResolver";
+import { convertColorToHexaDecimal, convertHexaDecimalToColor, StringInputField, StringInputFieldStyle } from "mods/SIPColorComponent/SIPColorComponent";
+import { useState } from "react";
+import { FocusDisabled } from "cs2/input";
 
 const uilStandard =                          "coui://uil/Standard/";
 const copySrc =                         uilStandard + "RectangleCopy.svg";
@@ -18,6 +21,7 @@ const onSrc =                           uilStandard + "On.svg";
 
 const PainterColorSet$ = bindValue<RecolorSet>(mod.id, "PainterColorSet");
 const CanPasteColor$ = bindValue<boolean>(mod.id, "CanPasteColor");
+const ShowHexaDecimals$ = bindValue<boolean>(mod.id, 'ShowHexaDecimals');
 
 const toggleChannelEvent =              "ToggleChannel";
 
@@ -42,16 +46,35 @@ function handleChannelClick(eventName : string, channel : number) {
 }
 
 export const ColorPainterFieldComponent = (props : { channel : number }) => {
-    
-
     const PainterColorSet = useValue(PainterColorSet$);    
     const CanPasteColor = useValue(CanPasteColor$);    
+    const ShowHexaDecimals = useValue(ShowHexaDecimals$);
         
     const ChannelToggleValue : number = (PainterColorSet.States[0]? 1:0) + (PainterColorSet.States[1]? 1:0) + (PainterColorSet.States[2]? 1:0)
 
-
     // translation handling. Translates using locale keys that are defined in C# or fallback string here.
     const { translate } = useLocalization();
+
+    let [textInput, setTextInput] = useState(convertColorToHexaDecimal(PainterColorSet.Channels[props.channel]));
+    let [validInput, setValidInput] = useState(true);
+
+    function HandleTextInput () {
+        if (textInput.length == 9 &&  /^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(textInput)) 
+        { 
+            changeColor(props.channel, convertHexaDecimalToColor(textInput));
+            setValidInput(true)
+        }
+        else if (textInput.length == 7 && /^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(textInput+"ff")) 
+        {
+            changeColor(props.channel, convertHexaDecimalToColor(textInput+"ff"));      
+            setTextInput(textInput+"ff");      
+            setValidInput(true);
+        } else 
+        {
+            setValidInput(false);          
+        } 
+    }
+
 
     return (
         <>
@@ -108,6 +131,21 @@ export const ColorPainterFieldComponent = (props : { channel : number }) => {
                         </>
                     )}
                 </div>
+                { ShowHexaDecimals && (
+                    <FocusDisabled disabled={true}>
+                        <div className={styles.rowGroup}>
+                            <StringInputField
+                                value={textInput.replace(/[\r\n]+/gm, '')}
+                                disabled ={false}
+                                onChange={ (e : string) => { setTextInput(e); }}
+                                onChangeEnd={HandleTextInput}
+                                className={validInput?  classNames(StringInputFieldStyle.textInput, styles.rcColorFieldInput, styles.painterFieldInputTextSize) : classNames(StringInputFieldStyle.textInput, styles.rcColorFieldInput, styles.invalidFieldInput, styles.painterFieldInputTextSize)}
+                                multiline={false}
+                                maxLength={9}
+                            />
+                        </div>
+                    </FocusDisabled>
+                )}
             </div>
         </>
     );

@@ -61,6 +61,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private ValueBindingHelper<bool> m_CanPasteColor;
         private ValueBindingHelper<bool> m_CanPasteColorSet;
         private ValueBindingHelper<bool> m_Minimized;
+        private ValueBindingHelper<bool> m_ShowHexaDecimals;
         private Dictionary<AssetSeasonIdentifier, Game.Rendering.ColorSet> m_VanillaColorSets;
         private ValueBindingHelper<bool> m_MatchesSavedOnDisk;
         private ColorPickerToolSystem m_ColorPickerTool;
@@ -136,6 +137,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_DisableSingleInstance = CreateBinding("DisableSingleInstance", false);
             m_DisableMatching = CreateBinding("DisableMatching", false);
             m_MatchesSavedOnDisk = CreateBinding("MatchesSavedOnDisk", false);
+            m_ShowHexaDecimals = CreateBinding("ShowHexaDecimals", Mod.Instance.Settings.ShowHexaDecimals);
 
             // These handle actions triggered by UI.
             CreateTrigger<int, UnityEngine.Color>("ChangeColor", ChangeColorAction);
@@ -167,6 +169,12 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 m_SingleInstance.Value = false;
                 m_PreviouslySelectedEntity = Entity.Null;
+            });
+            CreateTrigger("ToggleShowHexaDecimals", () =>
+            {
+                m_ShowHexaDecimals.Value = !m_ShowHexaDecimals.Value;
+                Mod.Instance.Settings.ShowHexaDecimals = m_ShowHexaDecimals.Value;
+                Mod.Instance.Settings.ApplyAndSave();
             });
 
             m_VanillaColorSets = new ();

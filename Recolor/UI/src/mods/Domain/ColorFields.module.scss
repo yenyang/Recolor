@@ -24,3 +24,27 @@
     width: 90rem !important;
     padding-right: 1.5rem;
 }
+
+.rcColorFieldInput {
+    height: 25rem !important; 
+    width: 90rem !important;
+}
+
+.invalidFieldInput {
+    color: red !important;
+}
+
+.buttonWithText {
+    position: absolute;
+    width: 24rem;
+    height: 24rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 18rem;
+    color: #f4f4f4;
+}
+
+.painterFieldInputTextSize {
+    font-size: 14rem !important;
+}

@@ -102,6 +102,7 @@ namespace Recolor.Settings
                 { MouseTooltipKey("HasCustomMeshColorWarning"),  "Cannot change color variation on this because it has custom instance colors." },
                 { MouseTooltipKey("SelectANetLaneFence"), "Select a NetLane Fence or Hedge." },
                 { TooltipDescriptionKey("ToggleChannel"), "Toggles the channel on or off." },
+                { TooltipDescriptionKey("ShowHexaDecimals"), "Toggles whether Hexadecimal input fields are shown or not." },
             };
         }
 

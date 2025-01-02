@@ -6,6 +6,9 @@ import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaC
 import mod from "../../../mod.json";
 import locale from "../lang/en-US.json";
 import { SIPColorComponent } from "mods/SIPColorComponent/SIPColorComponent";
+import styles from "../Domain/ColorFields.module.scss";
+import classNames from "classnames";
+
 interface InfoSectionComponent {
 	group: string;
 	tooltipKeys: Array<string>;
@@ -32,6 +35,7 @@ const MatchesVanillaColorSet$ = bindValue<boolean[]>(mod.id, 'MatchesVanillaColo
 const CanPasteColorSet$ = bindValue<boolean>(mod.id, "CanPasteColorSet");
 const Minimized$ = bindValue<boolean>(mod.id, "Minimized");
 const MatchesSavedtoDisk$ = bindValue<boolean>(mod.id, "MatchesSavedOnDisk");
+const ShowHexaDecimals$ = bindValue<boolean>(mod.id, "ShowHexaDecimals");
 
 const InfoSectionTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-section/info-section.module.scss",
@@ -41,11 +45,6 @@ const InfoSectionTheme: Theme | any = getModule(
 const InfoRowTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss",
 	"classes"
-)
-
-const ColorFieldTheme: Theme | any = getModule(
-    "game-ui/common/input/color-picker/color-field/color-field.module.scss",
-    "classes"
 )
 
 const InfoSection: any = getModule( 
@@ -61,16 +60,6 @@ const InfoRow: any = getModule(
 function handleClick(eventName : string) {
     // This triggers an event on C# side and C# designates the method to implement.
     trigger(mod.id, eventName);
-}
-
-function changeColor(channel : number, newColor : Color) {
-    // This triggers an event on C# side and C# designates the method to implement.
-    trigger(mod.id, "ChangeColor", channel, newColor);
-}
-
-function copyColor(color : Color) {
-    // This triggers an event on C# side and C# designates the method to implement.
-    trigger(mod.id, "CopyColor", color);
 }
 
 function handleChannelClick(eventName : string, channel : number) {
@@ -102,6 +91,7 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
         const CanPasteColorSet = useValue(CanPasteColorSet$);
         const Minimized = useValue(Minimized$);
         const MatchesSavedToDisk = useValue(MatchesSavedtoDisk$);
+        const ShowHexaDecimals = useValue(ShowHexaDecimals$);
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string from en-US.json.
         const { translate } = useLocalization();
@@ -194,6 +184,16 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                             tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ColorPainter]", locale["Recolor.TOOLTIP_DESCRIPTION[ColorPainter]"])}
                                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                             onSelect={() => handleClick("ActivateColorPainter")}
+                                        />
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            multiSelect = {false}   // I haven't tested any other value here
+                                            disabled = {false}     
+                                            selected={ShowHexaDecimals}
+                                            children={<div className={styles.buttonWithText}>#</div>} 
+                                            tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ShowHexaDecimals]", locale["Recolor.TOOLTIP_DESCRIPTION[ShowHexaDecimals]"])}
+                                            className = {classNames(VanillaComponentResolver.instance.toolButtonTheme.button)}
+                                            onSelect={() => handleClick("ToggleShowHexaDecimals")}
                                         />
                                     </>
                                     )}
