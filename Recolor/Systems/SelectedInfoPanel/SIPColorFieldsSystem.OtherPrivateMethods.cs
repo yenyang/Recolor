@@ -89,7 +89,10 @@ namespace Recolor.Systems.SelectedInfoPanel
         private ColorSet ChangeColor(int channel, UnityEngine.Color color)
         {
             EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
-            if ((m_SingleInstance.Value || m_DisableMatching.Value) && !m_DisableSingleInstance && !EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity) && EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            if ((m_SingleInstance.Value || m_DisableMatching.Value) &&
+                !m_DisableSingleInstance &&
+                !EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity) &&
+                EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
                 if (!EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity))
                 {
@@ -132,10 +135,11 @@ namespace Recolor.Systems.SelectedInfoPanel
                     customMeshColorBuffer[i] = customMeshColor;
                     m_TimeColorLastChanged = UnityEngine.Time.time;
                     m_PreviouslySelectedEntity = Entity.Null;
-                    buffer.AddComponent<BatchesUpdated>(m_CurrentEntity);
-                    AddBatchesUpdatedToSubElements(m_CurrentEntity, buffer);
                     colorSet = customMeshColor.m_ColorSet;
                 }
+
+                buffer.AddComponent<BatchesUpdated>(m_CurrentEntity);
+                AddBatchesUpdatedToSubElements(m_CurrentEntity, buffer);
 
                 return colorSet;
             }
@@ -169,9 +173,10 @@ namespace Recolor.Systems.SelectedInfoPanel
                     colorVariationBuffer[m_CurrentAssetSeasonIdentifier.m_Index] = colorVariation;
                     m_TimeColorLastChanged = UnityEngine.Time.time;
                     m_PreviouslySelectedEntity = Entity.Null;
-                    buffer.AddComponent<BatchesUpdated>(m_CurrentEntity);
-                    AddBatchesUpdatedToSubElements(m_CurrentEntity, buffer);
                 }
+
+                buffer.AddComponent<BatchesUpdated>(m_CurrentEntity);
+                AddBatchesUpdatedToSubElements(m_CurrentEntity, buffer);
 
                 GenerateOrUpdateCustomColorVariationEntity();
                 m_NeedsColorRefresh = true;

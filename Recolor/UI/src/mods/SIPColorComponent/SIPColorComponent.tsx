@@ -19,8 +19,7 @@ const resetSrc =                     uilStandard + "Reset.svg";
 
 const CurrentColorSet$ = bindValue<RecolorSet>(mod.id, "CurrentColorSet");
 const CanPasteColor$ = bindValue<boolean>(mod.id, "CanPasteColor");
-const SingleInstance$ = bindValue<boolean>(mod.id, 'SingleInstance');
-const DisableSingleInstance$ = bindValue<boolean>(mod.id, 'DisableSingleInstance');
+const CanResetSingleChannels$ = bindValue<boolean>(mod.id, "CanResetSingleChannels");
 const MatchesVanillaColorSet$ = bindValue<boolean[]>(mod.id, 'MatchesVanillaColorSet');
 const ShowHexaDecimals$ = bindValue<boolean>(mod.id, 'ShowHexaDecimals');
 
@@ -83,10 +82,9 @@ export const SIPColorComponent = (props : { channel : number }) => {
 
     const CurrentColorSet = useValue(CurrentColorSet$);   
     const CanPasteColor = useValue(CanPasteColor$);    
-    const SingleInstance = useValue(SingleInstance$);
-    const DisableSingleInstance = useValue(DisableSingleInstance$);
     const MatchesVanillaColorSet : boolean[] = useValue(MatchesVanillaColorSet$);
     const ShowHexaDecimals = useValue(ShowHexaDecimals$);
+    const CanResetSingleChannels = useValue(CanResetSingleChannels$);
     
     let [textInput, setTextInput] = useState(convertColorToHexaDecimal(CurrentColorSet.Channels[props.channel]));
     let [validInput, setValidInput] = useState(true);
@@ -140,7 +138,7 @@ export const SIPColorComponent = (props : { channel : number }) => {
                         onSelect={() => handleChannelClick("PasteColor", props.channel)}
                     />
                 )}
-                { !MatchesVanillaColorSet[props.channel] && (
+                { !MatchesVanillaColorSet[props.channel] && CanResetSingleChannels && (
                     <VanillaComponentResolver.instance.ToolButton
                         src={resetSrc}
                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}

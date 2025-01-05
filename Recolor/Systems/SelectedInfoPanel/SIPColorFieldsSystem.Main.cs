@@ -307,6 +307,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 };
 
                 m_CurrentColorSet.Value = new RecolorSet(colorSet);
+                m_CanResetSingleChannels.Value = true;
 
                 m_PreviouslySelectedEntity = m_CurrentEntity;
 
@@ -314,6 +315,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 m_MatchesSavedOnDisk.Value = MatchesSavedOnDiskColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
             }
 
+            // Single Instance
             if (m_PreviouslySelectedEntity != m_CurrentEntity
                 && (m_SingleInstance || EntityManager.HasComponent<CustomMeshColor>(m_CurrentEntity))
                 && meshColorBuffer.Length > 0)
@@ -325,10 +327,12 @@ namespace Recolor.Systems.SelectedInfoPanel
                     meshColorBuffer.Length <= m_SubMeshIndex.Value)
                 {
                     m_MatchesVanillaColorSet.Value = EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity) ? new bool[] { false, false, false } : new bool[] { true, true, true };
+                    m_CanResetSingleChannels.Value = false;
                 }
                 else
                 {
                     m_MatchesVanillaColorSet.Value = MatchesVanillaColorSet(meshColorRecordBuffer[m_SubMeshIndex.Value], meshColorBuffer[m_SubMeshIndex.Value].m_ColorSet);
+                    m_CanResetSingleChannels.Value = true;
                 }
 
                 visible = true;

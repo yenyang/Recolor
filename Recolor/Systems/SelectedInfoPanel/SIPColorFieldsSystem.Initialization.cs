@@ -64,6 +64,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private ValueBindingHelper<bool> m_ShowHexaDecimals;
         private Dictionary<AssetSeasonIdentifier, Game.Rendering.ColorSet> m_VanillaColorSets;
         private ValueBindingHelper<bool> m_MatchesSavedOnDisk;
+        private ValueBindingHelper<bool> m_CanResetSingleChannels;
         private ColorPickerToolSystem m_ColorPickerTool;
         private ColorPainterToolSystem m_ColorPainterTool;
         private ColorPainterUISystem m_ColorPainterUISystem;
@@ -139,6 +140,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_MatchesSavedOnDisk = CreateBinding("MatchesSavedOnDisk", false);
             m_ShowHexaDecimals = CreateBinding("ShowHexaDecimals", Mod.Instance.Settings.ShowHexaDecimals);
             m_SubMeshIndex = CreateBinding("SubMeshIndex", 0);
+            m_CanResetSingleChannels = CreateBinding("CanResetSingleChannels", false);
 
             // These handle actions triggered by UI.
             CreateTrigger<int, UnityEngine.Color>("ChangeColor", ChangeColorAction);
