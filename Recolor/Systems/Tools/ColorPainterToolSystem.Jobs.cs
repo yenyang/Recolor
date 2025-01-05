@@ -68,6 +68,9 @@ namespace Recolor.Systems.Tools
             public BufferLookup<MeshColor> m_MeshColorLookup;
             [ReadOnly]
             public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;
+            [ReadOnly]
+            public BufferLookup<MeshColorRecord> m_MeshColorRecordLookup;
+            public bool m_ResettingColorsToRecord;
             public ColorSet m_ApplyColorSet;
             public bool3 m_ChannelToggles;
             public EntityCommandBuffer buffer;
@@ -90,18 +93,69 @@ namespace Recolor.Systems.Tools
                     if (CheckForWithinRadius(m_Position, transformNativeArray[i].m_Position, m_Radius))
                     {
                         Entity currentEntity = entityNativeArray[i];
+                        ColorSet currentColorSet = m_ApplyColorSet;
+                        bool completeReset = false;
 
                         if (!m_MeshColorLookup.TryGetBuffer(currentEntity, out DynamicBuffer<MeshColor> originalMeshColors))
                         {
                             continue;
                         }
 
-                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(currentEntity);
-                        DynamicBuffer<CustomMeshColor> customMeshColors = buffer.AddBuffer<CustomMeshColor>(currentEntity);
-                        for (int j = 0; j < originalMeshColors.Length; j++)
+                        if (m_ResettingColorsToRecord &&
+                           !m_MeshColorRecordLookup.HasBuffer(currentEntity))
                         {
-                            meshColorBuffer.Add(new MeshColor() { m_ColorSet = CompileColorSet(m_ApplyColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
-                            customMeshColors.Add(new CustomMeshColor() { m_ColorSet = CompileColorSet(m_ApplyColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
+                            buffer.RemoveComponent<CustomMeshColor>(currentEntity);
+                            buffer.AddComponent<BatchesUpdated>(currentEntity);
+                            completeReset = true;
+                        }
+                        else if (m_ResettingColorsToRecord &&
+                                 m_MeshColorRecordLookup.TryGetBuffer(currentEntity, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer))
+                        {
+                            bool matchesVanillaColorSet = true;
+                            for (int j = 0; j < 3; j++)
+                            {
+                                if (m_ChannelToggles[j])
+                                {
+                                    currentColorSet[j] = meshColorRecordBuffer[0].m_ColorSet[j];
+                                }
+
+                                if (currentColorSet[j] != meshColorRecordBuffer[0].m_ColorSet[j])
+                                {
+                                    matchesVanillaColorSet = false;
+                                }
+                            }
+
+                            if (matchesVanillaColorSet)
+                            {
+                                buffer.RemoveComponent<CustomMeshColor>(currentEntity);
+                                buffer.RemoveComponent<MeshColorRecord>(currentEntity);
+                                buffer.AddComponent<BatchesUpdated>(currentEntity);
+                                completeReset = true;
+                            }
+                        }
+                        else if (m_ResettingColorsToRecord)
+                        {
+                            continue;
+                        }
+
+                        if (!completeReset)
+                        {
+                            if (!m_MeshColorRecordLookup.HasBuffer(currentEntity))
+                            {
+                                DynamicBuffer<MeshColorRecord> meshColorRecords = buffer.AddBuffer<MeshColorRecord>(currentEntity);
+                                for (int j = 0; j < originalMeshColors.Length; j++)
+                                {
+                                    meshColorRecords.Add(new MeshColorRecord() { m_ColorSet = originalMeshColors[j].m_ColorSet });
+                                }
+                            }
+
+                            DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(currentEntity);
+                            DynamicBuffer<CustomMeshColor> customMeshColors = buffer.AddBuffer<CustomMeshColor>(currentEntity);
+                            for (int j = 0; j < originalMeshColors.Length; j++)
+                            {
+                                meshColorBuffer.Add(new MeshColor() { m_ColorSet = CompileColorSet(currentColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
+                                customMeshColors.Add(new CustomMeshColor() { m_ColorSet = CompileColorSet(currentColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
+                            }
                         }
 
                         buffer.AddComponent<BatchesUpdated>(currentEntity);
@@ -239,6 +293,9 @@ namespace Recolor.Systems.Tools
             public BufferLookup<MeshColor> m_MeshColorLookup;
             [ReadOnly]
             public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;
+            [ReadOnly]
+            public BufferLookup<MeshColorRecord> m_MeshColorRecordLookup;
+            public bool m_ResettingColorsToRecord;
 
             /// <summary>
             /// Executes job which will change state or prefab for trees within a radius.
@@ -257,17 +314,69 @@ namespace Recolor.Systems.Tools
                     {
                         Entity currentEntity = entityNativeArray[i];
 
+                        ColorSet currentColorSet = m_ApplyColorSet;
+                        bool completeReset = false;
+
                         if (!m_MeshColorLookup.TryGetBuffer(currentEntity, out DynamicBuffer<MeshColor> originalMeshColors))
                         {
                             continue;
                         }
 
-                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(currentEntity);
-                        DynamicBuffer<CustomMeshColor> customMeshColors = buffer.AddBuffer<CustomMeshColor>(currentEntity);
-                        for (int j = 0; j < originalMeshColors.Length; j++)
+                        if (m_ResettingColorsToRecord &&
+                           !m_MeshColorRecordLookup.HasBuffer(currentEntity))
                         {
-                            meshColorBuffer.Add(new MeshColor() { m_ColorSet = CompileColorSet(m_ApplyColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
-                            customMeshColors.Add(new CustomMeshColor() { m_ColorSet = CompileColorSet(m_ApplyColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
+                            buffer.RemoveComponent<CustomMeshColor>(currentEntity);
+                            buffer.AddComponent<BatchesUpdated>(currentEntity);
+                            completeReset = true;
+                        }
+                        else if (m_ResettingColorsToRecord &&
+                                 m_MeshColorRecordLookup.TryGetBuffer(currentEntity, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer))
+                        {
+                            bool matchesVanillaColorSet = true;
+                            for (int j = 0; j < 3; j++)
+                            {
+                                if (m_ChannelToggles[j])
+                                {
+                                    currentColorSet[j] = meshColorRecordBuffer[0].m_ColorSet[j];
+                                }
+
+                                if (currentColorSet[j] != meshColorRecordBuffer[0].m_ColorSet[j])
+                                {
+                                    matchesVanillaColorSet = false;
+                                }
+                            }
+
+                            if (matchesVanillaColorSet)
+                            {
+                                buffer.RemoveComponent<CustomMeshColor>(currentEntity);
+                                buffer.RemoveComponent<MeshColorRecord>(currentEntity);
+                                buffer.AddComponent<BatchesUpdated>(currentEntity);
+                                completeReset = true;
+                            }
+                        }
+                        else if (m_ResettingColorsToRecord)
+                        {
+                            continue;
+                        }
+
+                        if (!completeReset)
+                        {
+                            if (!m_MeshColorRecordLookup.HasBuffer(currentEntity))
+                            {
+                                DynamicBuffer<MeshColorRecord> meshColorRecords = buffer.AddBuffer<MeshColorRecord>(currentEntity);
+                                for (int j = 0; j < originalMeshColors.Length; j++)
+                                {
+                                    meshColorRecords.Add(new MeshColorRecord() { m_ColorSet = originalMeshColors[j].m_ColorSet });
+                                }
+                            }
+
+                            DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(currentEntity);
+                            DynamicBuffer<CustomMeshColor> customMeshColors = buffer.AddBuffer<CustomMeshColor>(currentEntity);
+                            for (int j = 0; j < originalMeshColors.Length; j++)
+                            {
+                                meshColorBuffer.Add(new MeshColor() { m_ColorSet = CompileColorSet(currentColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
+                                customMeshColors.Add(new CustomMeshColor() { m_ColorSet = CompileColorSet(currentColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
+                            }
                         }
 
                         buffer.AddComponent<BatchesUpdated>(currentEntity);

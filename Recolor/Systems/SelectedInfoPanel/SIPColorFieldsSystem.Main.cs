@@ -209,7 +209,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 return;
             }
 
-
+            // If an editor container is selected and it has a netLane sublane then select the sublane.
             if (EntityManager.HasComponent<Game.Tools.EditorContainer>(selectedEntity)
                 && EntityManager.TryGetBuffer(selectedEntity, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerBuffer)
                 && ownerBuffer.Length == 1
@@ -226,7 +226,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 return;
             }
 
-            ColorSet originalMeshColor = meshColorBuffer[0].m_ColorSet;
+            ColorSet originalMeshColor = meshColorBuffer[m_SubMeshIndex.Value].m_ColorSet;
             if (EntityManager.TryGetComponent(m_CurrentEntity, out Game.Objects.Tree tree))
             {
                 if (tree.m_State == Game.Objects.TreeState.Dead || tree.m_State == Game.Objects.TreeState.Collected || tree.m_State == Game.Objects.TreeState.Stump)
@@ -237,6 +237,7 @@ namespace Recolor.Systems.SelectedInfoPanel
 
                 if ((int)tree.m_State > 0)
                 {
+                    m_SubMeshIndex.Value = 0;
                     originalMeshColor = meshColorBuffer[(int)Math.Log((int)tree.m_State, 2) + 1].m_ColorSet;
                 }
             }
@@ -267,7 +268,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 && !EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity)
                 && foundClimatePrefab
                 && EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer)
-                && EntityManager.TryGetBuffer(subMeshBuffer[0].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer)
+                && EntityManager.TryGetBuffer(subMeshBuffer[m_SubMeshIndex.Value].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer)
                 && colorVariationBuffer.Length > 0)
             {
                 Season currentSeason = GetSeasonFromSeasonID(m_ClimatePrefab.FindSeasonByTime(m_ClimateSystem.currentDate).Item1.m_NameID);
@@ -291,7 +292,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                     }
                 }
 
-                if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[0].m_SubMesh, out PrefabBase prefabBase))
+                if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[m_SubMeshIndex.Value].m_SubMesh, out PrefabBase prefabBase))
                 {
                     visible = false;
                     return;
@@ -317,9 +318,18 @@ namespace Recolor.Systems.SelectedInfoPanel
                 && (m_SingleInstance || EntityManager.HasComponent<CustomMeshColor>(m_CurrentEntity))
                 && meshColorBuffer.Length > 0)
             {
-                m_CurrentColorSet.Value = new RecolorSet(meshColorBuffer[0].m_ColorSet);
+                m_CurrentColorSet.Value = new RecolorSet(meshColorBuffer[m_SubMeshIndex.Value].m_ColorSet);
                 m_PreviouslySelectedEntity = m_CurrentEntity;
-                m_MatchesVanillaColorSet.Value = EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity) ? new bool[] { false, false, false } : new bool[] { true, true, true };
+                if (!EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer) ||
+                    meshColorRecordBuffer.Length <= m_SubMeshIndex.Value ||
+                    meshColorBuffer.Length <= m_SubMeshIndex.Value)
+                {
+                    m_MatchesVanillaColorSet.Value = EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity) ? new bool[] { false, false, false } : new bool[] { true, true, true };
+                }
+                else
+                {
+                    m_MatchesVanillaColorSet.Value = MatchesVanillaColorSet(meshColorRecordBuffer[m_SubMeshIndex.Value], meshColorBuffer[m_SubMeshIndex.Value].m_ColorSet);
+                }
 
                 visible = true;
             }

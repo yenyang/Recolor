@@ -140,7 +140,7 @@ export const SIPColorComponent = (props : { channel : number }) => {
                         onSelect={() => handleChannelClick("PasteColor", props.channel)}
                     />
                 )}
-                { !MatchesVanillaColorSet[2] && (!SingleInstance || DisableSingleInstance) && (
+                { !MatchesVanillaColorSet[props.channel] && (
                     <VanillaComponentResolver.instance.ToolButton
                         src={resetSrc}
                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}

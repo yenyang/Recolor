@@ -18,7 +18,6 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Game.Common;
     using Game.Input;
     using Game.Objects;
-    using Game.Prefabs;
     using Game.Prefabs.Climate;
     using Game.Rendering;
     using Game.Simulation;
@@ -55,6 +54,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private ClimateSystem m_ClimateSystem;
         private ValueBindingHelper<RecolorSet> m_CurrentColorSet;
         private ValueBindingHelper<bool[]> m_MatchesVanillaColorSet;
+        private ValueBindingHelper<int> m_SubMeshIndex;
         private ValueBindingHelper<bool> m_SingleInstance;
         private ValueBindingHelper<bool> m_DisableSingleInstance;
         private ValueBindingHelper<bool> m_DisableMatching;
@@ -138,6 +138,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_DisableMatching = CreateBinding("DisableMatching", false);
             m_MatchesSavedOnDisk = CreateBinding("MatchesSavedOnDisk", false);
             m_ShowHexaDecimals = CreateBinding("ShowHexaDecimals", Mod.Instance.Settings.ShowHexaDecimals);
+            m_SubMeshIndex = CreateBinding("SubMeshIndex", 0);
 
             // These handle actions triggered by UI.
             CreateTrigger<int, UnityEngine.Color>("ChangeColor", ChangeColorAction);
@@ -181,10 +182,8 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_ContentFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, "SavedColorSet", "Custom");
             System.IO.Directory.CreateDirectory(m_ContentFolder);
             m_EndFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
-            m_SubMeshQuery = SystemAPI.QueryBuilder()
-                .WithAll<Game.Prefabs.SubMesh>()
-                .WithNone<PlaceholderObjectElement>()
-                .Build();
+
+            m_SubMeshQuery = SystemAPI.QueryBuilder().WithAll<Game.Prefabs.SubMesh>().WithNone<Game.Prefabs.PlaceholderObjectElement, Game.Common.Deleted>().Build();
 
             RequireForUpdate(m_SubMeshQuery);
             Enabled = false;
@@ -203,7 +202,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             /// <summary>
             /// The id for the prefab.
             /// </summary>
-            public PrefabID m_PrefabID;
+            public Game.Prefabs.PrefabID m_PrefabID;
 
             /// <summary>
             /// The season or none.

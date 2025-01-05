@@ -12,6 +12,7 @@ namespace Recolor.Systems.SingleInstance
     using Game.Buildings;
     using Game.Common;
     using Game.Objects;
+    using Game.Prefabs;
     using Game.Rendering;
     using Game.Routes;
     using Recolor.Domain;
@@ -33,6 +34,7 @@ namespace Recolor.Systems.SingleInstance
         private MeshColorSystem m_MeshColorSystem;
         private EntityQuery m_CustomMeshColorAndSubObjectsQuery;
         private EntityQuery m_CustomMeshColorAndSubLanesQuery;
+        private PrefabSystem m_PrefabSystem;
 
         /// <inheritdoc/>
         protected override void OnCreate()
@@ -41,6 +43,7 @@ namespace Recolor.Systems.SingleInstance
             m_Log = Mod.Instance.Log;
             m_Log.Info($"{nameof(CustomMeshColorSystem)}.{nameof(OnCreate)}");
             m_MeshColorSystem = World.GetOrCreateSystemManaged<MeshColorSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_CustomMeshColorQuery = SystemAPI.QueryBuilder()
                    .WithAllRW<MeshColor>()
                    .WithAll<BatchesUpdated, CustomMeshColor>()
@@ -119,22 +122,28 @@ namespace Recolor.Systems.SingleInstance
 
             foreach (Entity entity in entities)
             {
-                if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<MeshColor> meshColorBuffer) || meshColorBuffer.Length == 0)
+                if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<MeshColor> meshColorBuffer) ||
+                    meshColorBuffer.Length == 0 ||
+                    !EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) ||
+                    customMeshColorBuffer.Length == 0 ||
+                    !EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) ||
+                    !EntityManager.TryGetBuffer(prefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
                 {
                     continue;
                 }
 
-                if (!EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) || customMeshColorBuffer.Length == 0)
+                for (int i = 0; i < subMeshBuffer.Length; i++)
                 {
-                    continue;
-                }
-
-                for (int i = 0; i < meshColorBuffer.Length; i++)
-                {
-                    MeshColor meshColor = new ()
+                    MeshColor meshColor = new ();
+                    if (customMeshColorBuffer.Length > i)
                     {
-                        m_ColorSet = customMeshColorBuffer[i].m_ColorSet,
-                    };
+                        meshColor.m_ColorSet = customMeshColorBuffer[i].m_ColorSet;
+                    }
+                    else
+                    {
+                        meshColor.m_ColorSet = meshColorBuffer[0].m_ColorSet;
+                        customMeshColorBuffer[i] = new CustomMeshColor(meshColorBuffer[0].m_ColorSet);
+                    }
 
                     meshColorBuffer[i] = meshColor;
                 }

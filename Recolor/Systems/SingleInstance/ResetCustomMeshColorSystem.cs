@@ -24,6 +24,7 @@ namespace Recolor.Systems.SingleInstance
     {
         private ILog m_Log;
         private EntityQuery m_CustomMeshColorQuery;
+        private EntityQuery m_MeshColorRecordQuery;
         private EntityQuery m_CustomMeshColorAndSubObjectsQuery;
         private EntityQuery m_CustomMeshColorAndSubLanesQuery;
         private EndFrameBarrier m_Barrier;
@@ -50,6 +51,11 @@ namespace Recolor.Systems.SingleInstance
             m_CustomMeshColorAndSubLanesQuery = SystemAPI.QueryBuilder()
                   .WithAll<CustomMeshColor, Game.Net.SubLane>()
                   .WithNone<Deleted, Plant>()
+                  .Build();
+
+            m_MeshColorRecordQuery = SystemAPI.QueryBuilder()
+                  .WithAllRW<MeshColorRecord>()
+                  .WithNone<Deleted>()
                   .Build();
 
             Enabled = false;
@@ -85,6 +91,7 @@ namespace Recolor.Systems.SingleInstance
 
                 buffer.AddComponent<BatchesUpdated>(m_CustomMeshColorQuery, EntityQueryCaptureMode.AtPlayback);
                 buffer.RemoveComponent<CustomMeshColor>(m_CustomMeshColorQuery, EntityQueryCaptureMode.AtPlayback);
+                buffer.RemoveComponent<MeshColorRecord>(m_MeshColorRecordQuery, EntityQueryCaptureMode.AtPlayback);
             }
 
             Enabled = false;

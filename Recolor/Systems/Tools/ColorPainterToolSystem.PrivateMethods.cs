@@ -55,9 +55,60 @@ namespace Recolor.Systems.Tools
             return colorSet;
         }
 
+        private void ResetInstanceColors(RecolorSet recolorSet, ref EntityCommandBuffer buffer, Entity entity)
+        {
+            if (EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer) &&
+                EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer) &&
+                EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) &&
+                meshColorRecordBuffer.Length > 0 &&
+                customMeshColorBuffer.Length > 0 &&
+                meshColorBuffer.Length > 0)
+            {
+                bool matchesVanillaColorSet = true;
+                RecolorSet newRecolorSet = new (customMeshColorBuffer[0].m_ColorSet);
+                for (int i = 0; i < 3; i++)
+                {
+                    if (recolorSet.States[i])
+                    {
+                        newRecolorSet.Channels[i] = meshColorRecordBuffer[0].m_ColorSet[i];
+                    }
+                    else
+                    {
+                        newRecolorSet.ToggleChannel((uint)i);
+                    }
+
+                    if (newRecolorSet.Channels[i] != meshColorRecordBuffer[0].m_ColorSet[i])
+                    {
+                        matchesVanillaColorSet = false;
+                    }
+                }
+
+                if (matchesVanillaColorSet)
+                {
+                    buffer.RemoveComponent<CustomMeshColor>(entity);
+                    buffer.RemoveComponent<MeshColorRecord>(entity);
+                    buffer.AddComponent<BatchesUpdated>(entity);
+                    m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(entity, buffer);
+                }
+                else
+                {
+                    ChangeInstanceColorSet(newRecolorSet, ref buffer, entity);
+                }
+            }
+            else
+            {
+                buffer.RemoveComponent<CustomMeshColor>(entity);
+                buffer.RemoveComponent<MeshColorRecord>(entity);
+                buffer.AddComponent<BatchesUpdated>(entity);
+                m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(entity, buffer);
+            }
+        }
+
         private void ChangeInstanceColorSet(RecolorSet recolorSet, ref EntityCommandBuffer buffer, Entity entity)
         {
-            if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance && !EntityManager.HasComponent<Game.Objects.Plant>(entity) && EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance &&
+                !EntityManager.HasComponent<Game.Objects.Plant>(entity) &&
+                EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
                 if (!EntityManager.HasBuffer<CustomMeshColor>(entity))
                 {
@@ -65,6 +116,15 @@ namespace Recolor.Systems.Tools
                     foreach (MeshColor meshColor in meshColorBuffer)
                     {
                         newBuffer.Add(new CustomMeshColor(meshColor));
+                    }
+
+                    if (!EntityManager.HasBuffer<MeshColorRecord>(entity))
+                    {
+                        DynamicBuffer<MeshColorRecord> meshColorRecordBuffer = EntityManager.AddBuffer<MeshColorRecord>(entity);
+                        foreach (MeshColor meshColor in meshColorBuffer)
+                        {
+                            meshColorRecordBuffer.Add(new MeshColorRecord(meshColor));
+                        }
                     }
                 }
 
@@ -84,9 +144,10 @@ namespace Recolor.Systems.Tools
                     CustomMeshColor customMeshColor = customMeshColorBuffer[i];
                     customMeshColor.m_ColorSet = CompileColorSet(recolorSet, meshColorBuffer[0].m_ColorSet);
                     customMeshColorBuffer[i] = customMeshColor;
-                    buffer.AddComponent<BatchesUpdated>(entity);
-                    m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(entity, buffer);
                 }
+
+                buffer.AddComponent<BatchesUpdated>(entity);
+                m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(entity, buffer);
             }
         }
 
@@ -115,9 +176,10 @@ namespace Recolor.Systems.Tools
                     ColorVariation colorVariation = colorVariationBuffer[assetSeasonIdentifier.m_Index];
                     colorVariation.m_ColorSet = CompileColorSet(recolorSet, colorVariationBuffer[i].m_ColorSet);
                     colorVariationBuffer[assetSeasonIdentifier.m_Index] = colorVariation;
-                    buffer.AddComponent<BatchesUpdated>(entity);
-                    m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(entity, buffer);
                 }
+
+                buffer.AddComponent<BatchesUpdated>(entity);
+                m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(entity, buffer);
 
                 return;
             }
