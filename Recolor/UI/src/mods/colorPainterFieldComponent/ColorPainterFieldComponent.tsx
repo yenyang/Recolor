@@ -56,7 +56,8 @@ export const ColorPainterFieldComponent = (props : { channel : number }) => {
     const { translate } = useLocalization();
 
     let [textInput, setTextInput] = useState(convertColorToHexaDecimal(PainterColorSet.Channels[props.channel]));
-    let [validInput, setValidInput] = useState(true);
+    let [validInput, setValidInput] = useState(true);    
+    let [updateHexaDecimal, setUpdateHexaDecimal] = useState(PainterColorSet.Channels[props.channel]);
 
     function HandleTextInput () {
         if (textInput.length == 9 &&  /^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(textInput)) 
@@ -75,6 +76,12 @@ export const ColorPainterFieldComponent = (props : { channel : number }) => {
         } 
     }
 
+    if (PainterColorSet.Channels[props.channel] !== updateHexaDecimal) 
+    {
+        setTextInput(convertColorToHexaDecimal(PainterColorSet.Channels[props.channel]));
+        setUpdateHexaDecimal(PainterColorSet.Channels[props.channel]);
+        setValidInput(true);
+    }
 
     return (
         <>
@@ -125,26 +132,33 @@ export const ColorPainterFieldComponent = (props : { channel : number }) => {
                                     disabled = {false}      
                                     tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PasteColor]",locale["Recolor.TOOLTIP_DESCRIPTION[PasteColor]"])}
                                     className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                    onSelect={() => { handleChannelClick("ColorPainterPasteColor", props.channel);} }
+                                    onSelect={() => { handleChannelClick("ColorPainterPasteColor", props.channel); setUpdateHexaDecimal(PainterColorSet.Channels[props.channel])} }
                                 />
                             )}
                         </>
                     )}
                 </div>
                 { ShowHexaDecimals && (
-                    <FocusDisabled disabled={true}>
-                        <div className={styles.rowGroup}>
-                            <StringInputField
-                                value={textInput.replace(/[\r\n]+/gm, '')}
-                                disabled ={false}
-                                onChange={ (e : string) => { setTextInput(e); }}
-                                onChangeEnd={HandleTextInput}
-                                className={validInput?  classNames(StringInputFieldStyle.textInput, styles.rcColorFieldInput, styles.painterFieldInputTextSize) : classNames(StringInputFieldStyle.textInput, styles.rcColorFieldInput, styles.invalidFieldInput, styles.painterFieldInputTextSize)}
-                                multiline={false}
-                                maxLength={9}
-                            />
-                        </div>
-                    </FocusDisabled>
+                    <>
+                        {PainterColorSet.States[props.channel]? (
+                            <FocusDisabled disabled={true}>
+                                <div className={styles.rowGroup}>
+                                    <StringInputField
+                                        value={textInput.replace(/[\r\n]+/gm, '')}
+                                        disabled ={false}
+                                        onChange={ (e : string) => { setTextInput(e); }}
+                                        onChangeEnd={HandleTextInput}
+                                        className={validInput?  classNames(StringInputFieldStyle.textInput, styles.rcColorFieldInput, styles.painterFieldInputTextSize) : classNames(StringInputFieldStyle.textInput, styles.rcColorFieldInput, styles.invalidFieldInput, styles.painterFieldInputTextSize)}
+                                        multiline={false}
+                                        maxLength={9}
+                                    />
+                                </div>
+                            </FocusDisabled>
+                        ): 
+                        (
+                            <span className={styles.rcColorFieldInput}></span>
+                        )}
+                    </>
                 )}
             </div>
         </>

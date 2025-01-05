@@ -88,6 +88,7 @@ export const SIPColorComponent = (props : { channel : number }) => {
     
     let [textInput, setTextInput] = useState(convertColorToHexaDecimal(CurrentColorSet.Channels[props.channel]));
     let [validInput, setValidInput] = useState(true);
+    let [updateHexaDecimal, setUpdateHexaDecimal] = useState(CurrentColorSet.Channels[props.channel]);
 
     function HandleTextInput () {
         if (textInput.length == 9 &&  /^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(textInput)) 
@@ -104,6 +105,13 @@ export const SIPColorComponent = (props : { channel : number }) => {
         {
             setValidInput(false);          
         } 
+    }
+
+    if (CurrentColorSet.Channels[props.channel] !== updateHexaDecimal) 
+    {
+        setTextInput(convertColorToHexaDecimal(CurrentColorSet.Channels[props.channel]));
+        setUpdateHexaDecimal(CurrentColorSet.Channels[props.channel]);
+        setValidInput(true);
     }
 
     return (
@@ -135,7 +143,7 @@ export const SIPColorComponent = (props : { channel : number }) => {
                         disabled = {false}      
                         tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PasteColor]",locale["Recolor.TOOLTIP_DESCRIPTION[PasteColor]"])}
                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                        onSelect={() => handleChannelClick("PasteColor", props.channel)}
+                        onSelect={() => {handleChannelClick("PasteColor", props.channel); setUpdateHexaDecimal(CurrentColorSet.Channels[props.channel]);}}
                     />
                 )}
                 { !MatchesVanillaColorSet[props.channel] && CanResetSingleChannels && (
@@ -146,7 +154,7 @@ export const SIPColorComponent = (props : { channel : number }) => {
                         disabled = {false}      
                         tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ResetColor]",locale["Recolor.TOOLTIP_DESCRIPTION[ResetColor]"])}
                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                        onSelect={() => handleChannelClick("ResetColor", props.channel)}
+                        onSelect={() => {handleChannelClick("ResetColor", props.channel); setUpdateHexaDecimal(CurrentColorSet.Channels[props.channel]);}}
                     />
                 )}
             </div>
