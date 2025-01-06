@@ -103,6 +103,7 @@ namespace Recolor.Settings
                 { MouseTooltipKey("SelectANetLaneFence"), "Select a NetLane Fence or Hedge." },
                 { TooltipDescriptionKey("ToggleChannel"), "Toggles the channel on or off." },
                 { TooltipDescriptionKey("ShowHexaDecimals"), "Toggles whether Hexadecimal input fields are shown or not." },
+                { TooltipDescriptionKey("SwapColors"), "Swaps colors between two channels." },
             };
         }
 

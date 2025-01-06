@@ -73,5 +73,6 @@
   "Recolor.MOUSE_TOOLTIP[HasCustomMeshColorWarning]": "Cannot change color variation on this because it has custom instance colors.",
   "Recolor.MOUSE_TOOLTIP[SelectANetLaneFence]": "Select a NetLane Fence or Hedge.",
   "Recolor.TOOLTIP_DESCRIPTION[ToggleChannel]": "Toggles the channel on or off.",
-  "Recolor.TOOLTIP_DESCRIPTION[ShowHexaDecimals]": "Toggles whether Hexadecimal input fields are shown or not."
+  "Recolor.TOOLTIP_DESCRIPTION[ShowHexaDecimals]": "Toggles whether Hexadecimal input fields are shown or not.",
+  "Recolor.TOOLTIP_DESCRIPTION[SwapColors]": "Swaps colors between two channels."
 }

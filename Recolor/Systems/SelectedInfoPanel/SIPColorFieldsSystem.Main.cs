@@ -329,10 +329,16 @@ namespace Recolor.Systems.SelectedInfoPanel
                     m_MatchesVanillaColorSet.Value = EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity) ? new bool[] { false, false, false } : new bool[] { true, true, true };
                     m_CanResetSingleChannels.Value = false;
                 }
-                else
+                else if (!MatchesEntireVanillaColorSet(meshColorRecordBuffer[m_SubMeshIndex.Value], meshColorBuffer[m_SubMeshIndex.Value].m_ColorSet))
                 {
                     m_MatchesVanillaColorSet.Value = MatchesVanillaColorSet(meshColorRecordBuffer[m_SubMeshIndex.Value], meshColorBuffer[m_SubMeshIndex.Value].m_ColorSet);
                     m_CanResetSingleChannels.Value = true;
+                }
+                else
+                {
+                    EntityManager.RemoveComponent<CustomMeshColor>(m_CurrentEntity);
+                    EntityManager.RemoveComponent<MeshColorRecord>(m_CurrentEntity);
+                    m_PreviouslySelectedEntity = Entity.Null;
                 }
 
                 visible = true;

@@ -3,7 +3,8 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    padding-left: 10rem;
+    padding-right: 3rem;
+    padding-left: 3rem;
 }
 
 .rowGroup {
@@ -28,6 +29,18 @@
 .rcColorFieldInput {
     height: 25rem !important; 
     width: 90rem !important;
+}
+
+.belowSwapButton {
+    height: 37.5rem; 
+}
+
+.swapButtonWidth {
+    width: 34rem; 
+}
+
+.inputHeight {
+    height: 30rem; 
 }
 
 .invalidFieldInput {

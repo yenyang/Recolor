@@ -1,7 +1,7 @@
 import { useLocalization } from "cs2/l10n";
 import {ModuleRegistryExtend, getModule} from "cs2/modding";
 import { bindValue, trigger, useValue } from "cs2/api";
-import { tool } from "cs2/bindings";
+import { Color, tool } from "cs2/bindings";
 import { VanillaComponentResolver } from "../VanillaComponentResolver/VanillaComponentResolver";
 import mod from "../../../mod.json";
 import locale from "../lang/en-US.json";
@@ -9,6 +9,7 @@ import { PainterToolMode } from "mods/Domain/PainterToolMode";
 import { ColorPainterFieldComponent } from "mods/colorPainterFieldComponent/ColorPainterFieldComponent";
 import classNames from "classnames";
 import styles from "../Domain/ColorFields.module.scss";
+import { RecolorSet } from "mods/Domain/RecolorSet";
 
 // These contain the coui paths to Unified Icon Library svg assets
 const uilStandard =                          "coui://uil/Standard/";
@@ -22,7 +23,7 @@ const pasteSrc =                        uilStandard + "RectanglePaste.svg";
 const buildingSrc =                     uilStandard + "House.svg";
 const vehiclesSrc =                     uilStandard + "GenericVehicle.svg";
 const propsSrc =                        uilStandard + "BenchAndLampProps.svg";
-
+const swapSrc =                         uilStandard + "ArrowsMoveLeftRight.svg";
 
 const resetSrc =                     uilStandard + "Reset.svg";
 const colorPickerSrc =                  uilStandard + "PickerPipette.svg";
@@ -35,7 +36,7 @@ const Radius$ = bindValue<number>(mod.id, "Radius");
 const Filter$ = bindValue<number>(mod.id, "Filter");
 const ToolMode$ = bindValue<PainterToolMode>(mod.id, "PainterToolMode");
 const ShowHexaDecimals$ = bindValue<boolean>(mod.id, "ShowHexaDecimals");
-
+const PainterColorSet$ = bindValue<RecolorSet>(mod.id, "PainterColorSet");
 
 const arrowDownSrc =         uilStandard +  "ArrowDownThickStroke.svg";
 const arrowUpSrc =           uilStandard +  "ArrowUpThickStroke.svg";
@@ -50,6 +51,10 @@ function changeToolMode(toolMode: PainterToolMode) {
     trigger(mod.id, "ChangeToolMode", toolMode as number);
 }
 
+function changeColor(channel : number, newColor : Color) {
+    // This triggers an event on C# side and C# designates the method to implement.
+    trigger(mod.id, "ChangePainterColor", channel, newColor);
+}
 
 const descriptionToolTipStyle = getModule("game-ui/common/tooltip/description-tooltip/description-tooltip.module.scss", "classes");
     
@@ -73,7 +78,8 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
         const SingleInstance = useValue(SingleInstance$);   
         const CanPasteColorSet = useValue(CanPasteColorSet$);
         const Radius = useValue(Radius$);
-        const Filter = useValue(Filter$);
+        const Filter = useValue(Filter$);        
+        const PainterColorSet = useValue(PainterColorSet$);    
         const ToolMode = useValue(ToolMode$);
         const ShowHexaDecimals = useValue(ShowHexaDecimals$);
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
@@ -244,7 +250,55 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                         <VanillaComponentResolver.instance.Section title={""/*translate("Recolor.SECTION_TITLE[ColorSet]", locale["Recolor.SECTION_TITLE[ColorSet]"])*/}>
                            <>
                                 <ColorPainterFieldComponent channel={0}></ColorPainterFieldComponent>
+                                { (PainterColorSet.States[0] && PainterColorSet.States[1])? (
+                                    <div className={styles.columnGroup}>
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={swapSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            multiSelect = {false}   // I haven't tested any other value here
+                                            disabled = {false}      
+                                            tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SwapColors]", locale["Recolor.TOOLTIP_DESCRIPTION[SwapColors]"])}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => 
+                                            {
+                                                let channel0 : Color = PainterColorSet.Channels[0];
+                                                changeColor(0, PainterColorSet.Channels[1]);
+                                                changeColor(1, channel0);
+                                            }}
+                                        />                                              
+                                        <span className={styles.belowSwapButton}></span>  
+                                        {ShowHexaDecimals && (
+                                            <span className={styles.inputHeight}></span>
+                                        )}
+                                    </div>
+                                ):(
+                                    <span className={styles.swapButtonWidth}></span>
+                                )}
                                 <ColorPainterFieldComponent channel={1}></ColorPainterFieldComponent>
+                                { (PainterColorSet.States[1] && PainterColorSet.States[2])? (
+                                    <div className={styles.columnGroup}>
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={swapSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            multiSelect = {false}   // I haven't tested any other value here
+                                            disabled = {false}      
+                                            tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SwapColors]", locale["Recolor.TOOLTIP_DESCRIPTION[SwapColors]"])}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => 
+                                            {
+                                                let channel1 : Color = PainterColorSet.Channels[1];
+                                                changeColor(1, PainterColorSet.Channels[2]);
+                                                changeColor(2, channel1);
+                                            }}
+                                        />                                              
+                                        <span className={styles.belowSwapButton}></span>  
+                                        {ShowHexaDecimals && (
+                                            <span className={styles.inputHeight}></span>
+                                        )}
+                                    </div>
+                                ):(
+                                    <span className={styles.swapButtonWidth}></span>
+                                )}
                                 <ColorPainterFieldComponent channel={2}></ColorPainterFieldComponent>
                            </>
                         </VanillaComponentResolver.instance.Section> 

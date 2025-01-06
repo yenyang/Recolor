@@ -8,6 +8,7 @@ import locale from "../lang/en-US.json";
 import { SIPColorComponent } from "mods/SIPColorComponent/SIPColorComponent";
 import styles from "../Domain/ColorFields.module.scss";
 import classNames from "classnames";
+import { RecolorSet } from "mods/Domain/RecolorSet";
 
 interface InfoSectionComponent {
 	group: string;
@@ -27,6 +28,7 @@ const colorPaleteSrc =                 uilColored + "ColorPalette.svg";
 const minimizeSrc =                     uilStandard + "ArrowsMinimize.svg";
 const expandSrc =                       uilStandard + "ArrowsExpand.svg";
 const saveToDiskSrc =                   uilStandard + "DiskSave.svg";
+const swapSrc =                         uilStandard + "ArrowsMoveLeftRight.svg";
 
 const SingleInstance$ = bindValue<boolean>(mod.id, 'SingleInstance');
 const DisableSingleInstance$ = bindValue<boolean>(mod.id, 'DisableSingleInstance');
@@ -36,11 +38,7 @@ const CanPasteColorSet$ = bindValue<boolean>(mod.id, "CanPasteColorSet");
 const Minimized$ = bindValue<boolean>(mod.id, "Minimized");
 const MatchesSavedtoDisk$ = bindValue<boolean>(mod.id, "MatchesSavedOnDisk");
 const ShowHexaDecimals$ = bindValue<boolean>(mod.id, "ShowHexaDecimals");
-
-const InfoSectionTheme: Theme | any = getModule(
-	"game-ui/game/components/selected-info-panel/shared-components/info-section/info-section.module.scss",
-	"classes"
-);
+const CurrentColorSet$ = bindValue<RecolorSet>(mod.id, "CurrentColorSet");
 
 const InfoRowTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss",
@@ -62,10 +60,11 @@ function handleClick(eventName : string) {
     trigger(mod.id, eventName);
 }
 
-function handleChannelClick(eventName : string, channel : number) {
+function changeColor(channel : number, newColor : Color) {
     // This triggers an event on C# side and C# designates the method to implement.
-    trigger(mod.id, eventName, channel);
+    trigger(mod.id, "ChangeColor", channel, newColor);
 }
+
 
 const descriptionToolTipStyle = getModule("game-ui/common/tooltip/description-tooltip/description-tooltip.module.scss", "classes");
     
@@ -84,6 +83,8 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
     // I believe you should not put anything here.
 	componentList["Recolor.Systems.SelectedInfoPanel.SIPColorFieldsSystem"] = (e: InfoSectionComponent) => {
         // These get the value of the bindings.
+        
+        const CurrentColorSet = useValue(CurrentColorSet$);   
         const SingleInstance = useValue(SingleInstance$);
         const DisableSingleInstance = useValue(DisableSingleInstance$);
         const DisableMatching = useValue(DisableMatching$);
@@ -96,7 +97,7 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
         // translation handling. Translates using locale keys that are defined in C# or fallback string from en-US.json.
         const { translate } = useLocalization();
 
-        return 	<InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} className={InfoSectionTheme.infoSection}>
+        return 	<InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
                         <InfoRow 
                             left={translate("Recolor.SECTION_TITLE[InfoRowTitle]",locale["Recolor.SECTION_TITLE[InfoRowTitle]"])}
                             right=
@@ -105,27 +106,29 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                     {!Minimized && (
                                     <>
                                         {!DisableSingleInstance && (                             
-                                        <VanillaComponentResolver.instance.ToolButton
-                                            src={singleSrc}
-                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                            selected = {(SingleInstance || DisableMatching) && !DisableSingleInstance}
-                                            multiSelect = {false}   // I haven't tested any other value here
-                                            disabled = {DisableSingleInstance}      
-                                            tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[SingleInstance]",locale["Recolor.TOOLTIP_TITLE[SingleInstance]"]), translate("Recolor.TOOLTIP_DESCRIPTION[SingleInstance]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SingleInstance]"]))}
-                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                            onSelect={() => handleClick("SingleInstance")}
-                                        />)} 
+                                            <VanillaComponentResolver.instance.ToolButton
+                                                src={singleSrc}
+                                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                selected = {(SingleInstance || DisableMatching) && !DisableSingleInstance}
+                                                multiSelect = {false}   // I haven't tested any other value here
+                                                disabled = {DisableSingleInstance}      
+                                                tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[SingleInstance]",locale["Recolor.TOOLTIP_TITLE[SingleInstance]"]), translate("Recolor.TOOLTIP_DESCRIPTION[SingleInstance]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SingleInstance]"]))}
+                                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                onSelect={() => handleClick("SingleInstance")}
+                                            />
+                                        )} 
                                         {!DisableMatching && (   
-                                        <VanillaComponentResolver.instance.ToolButton
-                                            src={matchingSrc}
-                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                            selected = {(!SingleInstance || DisableSingleInstance) && !DisableMatching}
-                                            multiSelect = {false}   // I haven't tested any other value here
-                                            disabled = {DisableMatching}     
-                                            tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[Matching]",locale["Recolor.TOOLTIP_TITLE[Matching]"]), translate("Recolor.TOOLTIP_DESCRIPTION[Matching]" ,locale["Recolor.TOOLTIP_DESCRIPTION[Matching]"]))}
-                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                            onSelect={() => handleClick("Matching")}
-                                        />)}
+                                            <VanillaComponentResolver.instance.ToolButton
+                                                src={matchingSrc}
+                                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                selected = {(!SingleInstance || DisableSingleInstance) && !DisableMatching}
+                                                multiSelect = {false}   // I haven't tested any other value here
+                                                disabled = {DisableMatching}     
+                                                tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[Matching]",locale["Recolor.TOOLTIP_TITLE[Matching]"]), translate("Recolor.TOOLTIP_DESCRIPTION[Matching]" ,locale["Recolor.TOOLTIP_DESCRIPTION[Matching]"]))}
+                                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                onSelect={() => handleClick("Matching")}
+                                            />
+                                        )}
                                         <VanillaComponentResolver.instance.ToolButton
                                             src={copySrc}
                                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
@@ -147,26 +150,28 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                             />  
                                         )}
                                         { (!MatchesVanillaColorSet[0] || !MatchesVanillaColorSet[1] || !MatchesVanillaColorSet[2]) && (        
-                                        <VanillaComponentResolver.instance.ToolButton
-                                            src={resetSrc}
-                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                            multiSelect = {false}   // I haven't tested any other value here
-                                            disabled = {false}      
-                                            tooltip = {DisableMatching? translate("Recolor.TOOLTIP_DESCRIPTION[ResetInstanceColor]" ,locale["Recolor.TOOLTIP_DESCRIPTION[ResetInstanceColor]"]) : translate("Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]",locale["Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]"])}
-                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                            onSelect={() => handleClick("ResetColorSet")}
-                                        />)}
+                                            <VanillaComponentResolver.instance.ToolButton
+                                                src={resetSrc}
+                                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                multiSelect = {false}   // I haven't tested any other value here
+                                                disabled = {false}      
+                                                tooltip = {DisableMatching? translate("Recolor.TOOLTIP_DESCRIPTION[ResetInstanceColor]" ,locale["Recolor.TOOLTIP_DESCRIPTION[ResetInstanceColor]"]) : translate("Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]",locale["Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]"])}
+                                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                onSelect={() => handleClick("ResetColorSet")}
+                                            />
+                                        )}
                                         { (!MatchesVanillaColorSet[0] || !MatchesVanillaColorSet[1] || !MatchesVanillaColorSet[2]) && !DisableMatching && (!SingleInstance || DisableSingleInstance) &&(        
-                                        <VanillaComponentResolver.instance.ToolButton
-                                            src={saveToDiskSrc}
-                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                            selected={MatchesSavedToDisk}
-                                            multiSelect = {false}   // I haven't tested any other value here
-                                            disabled = {false}      
-                                            tooltip = {MatchesSavedToDisk?  translate("Recolor.TOOLTIP_DESCRIPTION[RemoveFromDisk]" ,locale["Recolor.TOOLTIP_DESCRIPTION[RemoveFromDisk]"]) : translate("Recolor.TOOLTIP_DESCRIPTION[SaveToDisk]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SaveToDisk]"])}
-                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                            onSelect={() => handleClick(MatchesSavedToDisk? "RemoveFromDisk" : "SaveToDisk")}
-                                        />)}
+                                            <VanillaComponentResolver.instance.ToolButton
+                                                src={saveToDiskSrc}
+                                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                selected={MatchesSavedToDisk}
+                                                multiSelect = {false}   // I haven't tested any other value here
+                                                disabled = {false}      
+                                                tooltip = {MatchesSavedToDisk?  translate("Recolor.TOOLTIP_DESCRIPTION[RemoveFromDisk]" ,locale["Recolor.TOOLTIP_DESCRIPTION[RemoveFromDisk]"]) : translate("Recolor.TOOLTIP_DESCRIPTION[SaveToDisk]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SaveToDisk]"])}
+                                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                onSelect={() => handleClick(MatchesSavedToDisk? "RemoveFromDisk" : "SaveToDisk")}
+                                            />
+                                        )}
                                         <VanillaComponentResolver.instance.ToolButton
                                             src={colorPickerSrc}
                                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
@@ -221,7 +226,47 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                 {
                                     <>
                                         <SIPColorComponent channel={0}></SIPColorComponent>
+                                        <div className={styles.columnGroup}>
+                                            <VanillaComponentResolver.instance.ToolButton
+                                                src={swapSrc}
+                                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                multiSelect = {false}   // I haven't tested any other value here
+                                                disabled = {false}      
+                                                tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SwapColors]", locale["Recolor.TOOLTIP_DESCRIPTION[SwapColors]"])}
+                                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                onSelect={() => 
+                                                {
+                                                    let channel0 : Color = CurrentColorSet.Channels[0];
+                                                    changeColor(0, CurrentColorSet.Channels[1]);
+                                                    changeColor(1, channel0);
+                                                }}
+                                            />
+                                            <span className={styles.belowSwapButton}></span>  
+                                            {ShowHexaDecimals && (
+                                                <span className={styles.inputHeight}></span>
+                                            )}
+                                        </div>
                                         <SIPColorComponent channel={1}></SIPColorComponent>
+                                        <div className={styles.columnGroup}>
+                                            <VanillaComponentResolver.instance.ToolButton
+                                                src={swapSrc}
+                                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                multiSelect = {false}   // I haven't tested any other value here
+                                                disabled = {false}      
+                                                tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SwapColors]", locale["Recolor.TOOLTIP_DESCRIPTION[SwapColors]"])}
+                                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                onSelect={() => 
+                                                {
+                                                    let channel1 : Color = CurrentColorSet.Channels[1];
+                                                    changeColor(1, CurrentColorSet.Channels[2]);
+                                                    changeColor(2, channel1);
+                                                }}
+                                            />                                              
+                                            <span className={styles.belowSwapButton}></span>  
+                                            {ShowHexaDecimals && (
+                                                <span className={styles.inputHeight}></span>
+                                            )}
+                                        </div>
                                         <SIPColorComponent channel={2}></SIPColorComponent>
                                     </>
                                 }

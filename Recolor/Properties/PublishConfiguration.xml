@@ -75,7 +75,7 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/recolor.1694303/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.0.100" />
+  <ModVersion Value="1.0.101" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.2.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -87,8 +87,10 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * Color picker and painter can select Netlane fences and hedges.
 * When changing colors, SubObject and SubLanes colors will update immediately.
 * Color painter can toggle channels.
-* Alpha transparancy sliders added.
-* Optional Hexadecimal input fields.</ChangeLog>
+* Alpha transparency sliders added. (May not effect every asset the same way.)
+* Optional Hexadecimal input fields.
+* Individual resets for single selection. (Does not currently work on instances changed with previous versions.)
+* Added swap color buttons between channels.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=2FX0UDSThmQ" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
