@@ -40,20 +40,13 @@ namespace Recolor.Systems.SelectedInfoPanel
     public partial class SIPColorFieldsSystem : ExtendedInfoSectionBase
     {
         /// <summary>
-        /// Gets a value indicating whether to Disable Matching.
-        /// </summary>
-        public bool DisableMatching
-        {
-            get { return m_DisableMatching.Value; }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether to change single instance or not.
+        /// Gets a value indicating whether single instance is selected.
         /// </summary>
         public bool SingleInstance
         {
-            get { return m_SingleInstance.Value; }
+            get { return (m_SingleInstance.Value & ButtonState.On) == ButtonState.On; }
         }
+
 
         /// <summary>
         /// Gets or sets the copied color set.
@@ -200,7 +193,9 @@ namespace Recolor.Systems.SelectedInfoPanel
             Season season = Season.None;
             for (int i = 0; i < colorVariationBuffer.Length; i++)
             {
-                if ((TryGetSeasonFromColorGroupID(colorVariationBuffer[i].m_GroupID, out Season checkSeason) && checkSeason == currentSeason) || checkSeason == Season.None)
+                if ((TryGetSeasonFromColorGroupID(colorVariationBuffer[i].m_GroupID, out Season checkSeason) &&
+                     checkSeason == currentSeason) ||
+                     checkSeason == Season.None)
                 {
                     float currentCummulativeDifference = CalculateCummulativeDifference(originalMeshColor, colorVariationBuffer[i].m_ColorSet);
                     if (currentCummulativeDifference < cummulativeDifference)
@@ -288,7 +283,8 @@ namespace Recolor.Systems.SelectedInfoPanel
                         m_Index = j,
                     };
 
-                    if (!m_CustomColorVariationSystem.TryGetCustomColorVariation(e, j, out CustomColorVariations customColorVariation) && TryGetVanillaColorSet(assetSeasonIdentifier, out currentColorVariation.m_ColorSet))
+                    if (!m_CustomColorVariationSystem.TryGetCustomColorVariation(e, j, out CustomColorVariations customColorVariation) &&
+                        TryGetVanillaColorSet(assetSeasonIdentifier, out currentColorVariation.m_ColorSet))
                     {
                         colorVariationBuffer[j] = currentColorVariation;
                         if (!prefabsNeedingUpdates.Contains(e))
@@ -316,7 +312,9 @@ namespace Recolor.Systems.SelectedInfoPanel
             NativeArray<Entity> entities = prefabRefQuery.ToEntityArray(Allocator.Temp);
             foreach (Entity e in entities)
             {
-                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) && prefabsNeedingUpdates.Contains(currentSubMeshBuffer[0].m_SubMesh))
+                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) &&
+                    EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) &&
+                    prefabsNeedingUpdates.Contains(currentSubMeshBuffer[0].m_SubMesh))
                 {
                     buffer.AddComponent<BatchesUpdated>(e);
                 }

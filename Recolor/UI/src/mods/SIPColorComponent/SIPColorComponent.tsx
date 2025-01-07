@@ -10,6 +10,7 @@ import {getModule} from "cs2/modding";
 import classNames from "classnames";
 import { useState } from "react";
 import { FocusDisabled } from "cs2/input";
+import { Scope } from "mods/Domain/Scope";
 
 // These contain the coui paths to Unified Icon Library svg assets
 const uilStandard =                          "coui://uil/Standard/";

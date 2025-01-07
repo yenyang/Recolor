@@ -10,6 +10,8 @@ import { ColorPainterFieldComponent } from "mods/colorPainterFieldComponent/Colo
 import classNames from "classnames";
 import styles from "../Domain/ColorFields.module.scss";
 import { RecolorSet } from "mods/Domain/RecolorSet";
+import { ButtonState } from "mods/Domain/ButtonState";
+import { Scope } from "mods/Domain/Scope";
 
 // These contain the coui paths to Unified Icon Library svg assets
 const uilStandard =                          "coui://uil/Standard/";
@@ -30,7 +32,8 @@ const colorPickerSrc =                  uilStandard + "PickerPipette.svg";
 const colorPaletteSrc =                 uilColored + "ColorPalette.svg";
 
 const ColorPainterSelectionType$ = bindValue<number>(mod.id, "ColorPainterSelectionType");
-const SingleInstance$ = bindValue<boolean>(mod.id, 'SingleInstance');
+const SingleInstance$ = bindValue<ButtonState>(mod.id, 'SingleInstance');
+const Matching$ = bindValue<ButtonState>(mod.id, 'Matching');
 const CanPasteColorSet$ = bindValue<boolean>(mod.id, "CanPasteColorSet");
 const Radius$ = bindValue<number>(mod.id, "Radius");
 const Filter$ = bindValue<number>(mod.id, "Filter");
@@ -56,6 +59,10 @@ function changeColor(channel : number, newColor : Color) {
     trigger(mod.id, "ChangePainterColor", channel, newColor);
 }
 
+function changeScope(newScope : Scope) {
+    trigger(mod.id, "ChangeScope", newScope);
+}
+
 const descriptionToolTipStyle = getModule("game-ui/common/tooltip/description-tooltip/description-tooltip.module.scss", "classes");
     
 // This is working, but it's possible a better solution is possible.
@@ -76,6 +83,7 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
         const toolActive = useValue(tool.activeTool$).id == "ColorPainterTool";        
         const ColorPainterSelectionType = useValue(ColorPainterSelectionType$);
         const SingleInstance = useValue(SingleInstance$);   
+        const Matching = useValue(Matching$);
         const CanPasteColorSet = useValue(CanPasteColorSet$);
         const Radius = useValue(Radius$);
         const Filter = useValue(Filter$);        
@@ -132,21 +140,21 @@ export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : a
                                 <VanillaComponentResolver.instance.ToolButton
                                     src={singleSrc}
                                     focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                    selected = {SingleInstance || ColorPainterSelectionType == 1}
+                                    selected = {SingleInstance == ButtonState.On || ColorPainterSelectionType == 1}
                                     multiSelect = {false}   // I haven't tested any other value here 
                                     tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[SingleInstance]",locale["Recolor.TOOLTIP_TITLE[SingleInstance]"]), translate("Recolor.TOOLTIP_DESCRIPTION[SingleInstance]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SingleInstance]"]))}
                                     className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                    onSelect={() => handleClick("SingleInstance")}
+                                    onSelect={() => changeScope(Scope.SingleInstance)}
                                 />
                                 { ColorPainterSelectionType == 0 && (
                                 <VanillaComponentResolver.instance.ToolButton
                                     src={matchingSrc}
                                     focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                    selected = {!SingleInstance}
+                                    selected = {Matching == ButtonState.On}
                                     multiSelect = {false}   // I haven't tested any other value here
                                     tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[Matching]",locale["Recolor.TOOLTIP_TITLE[Matching]"]), translate("Recolor.TOOLTIP_DESCRIPTION[Matching]" ,locale["Recolor.TOOLTIP_DESCRIPTION[Matching]"]))}
                                     className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                    onSelect={() => handleClick("Matching")}
+                                    onSelect={() => changeScope(Scope.Matching)}
                                 />)}
                                 { ToolMode == PainterToolMode.Paint && (
                                     <VanillaComponentResolver.instance.ToolButton

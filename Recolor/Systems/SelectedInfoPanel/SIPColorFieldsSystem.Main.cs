@@ -144,6 +144,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 m_ActivateColorPainter = false;
                 m_ToolSystem.activeTool = m_ColorPainterTool;
+                HandleScopeAndButtonStates();
             }
 
             if (m_ActivateColorPainterAction.WasPerformedThisFrame())
@@ -171,16 +172,6 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             if (selectedEntity == Entity.Null)
             {
-                if (m_DisableMatching.Value)
-                {
-                    m_DisableMatching.Value = false;
-                }
-
-                if (m_DisableSingleInstance.Value)
-                {
-                    m_DisableSingleInstance.Value = false;
-                }
-
                 visible = false;
                 return;
             }
@@ -242,29 +233,13 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
             }
 
-            if (EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity) && !m_DisableMatching)
-            {
-                m_DisableMatching.Value = true;
-            }
-            else if (!EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity) && m_DisableMatching)
-            {
-                m_DisableMatching.Value = false;
-            }
-
-            if (EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity) && !m_DisableSingleInstance)
-            {
-                m_DisableSingleInstance.Value = true;
-            }
-            else if (!EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity) && m_DisableSingleInstance)
-            {
-                m_DisableSingleInstance.Value = false;
-            }
+            HandleScopeAndButtonStates();
 
             // Colors Variation
             if (m_PreviouslySelectedEntity != m_CurrentEntity
                 && m_CurrentEntity != Entity.Null
                 && m_CurrentPrefabEntity != Entity.Null
-                && (!m_SingleInstance.Value || EntityManager.HasComponent<Plant>(m_CurrentEntity))
+                && ((m_Matching.Value & ButtonState.On) == ButtonState.On || EntityManager.HasComponent<Plant>(m_CurrentEntity))
                 && !EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity)
                 && foundClimatePrefab
                 && EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer)
@@ -316,9 +291,10 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             // Single Instance
-            if (m_PreviouslySelectedEntity != m_CurrentEntity
-                && (m_SingleInstance || EntityManager.HasComponent<CustomMeshColor>(m_CurrentEntity))
-                && meshColorBuffer.Length > 0)
+            if (m_PreviouslySelectedEntity != m_CurrentEntity &&
+              ((m_SingleInstance & ButtonState.On) == ButtonState.On ||
+                EntityManager.HasComponent<CustomMeshColor>(m_CurrentEntity)) &&
+                meshColorBuffer.Length > 0)
             {
                 m_CurrentColorSet.Value = new RecolorSet(meshColorBuffer[m_SubMeshIndex.Value].m_ColorSet);
                 m_PreviouslySelectedEntity = m_CurrentEntity;
@@ -345,7 +321,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             if (m_PreviouslySelectedEntity == m_CurrentEntity &&
-                (!m_SingleInstance.Value || EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity)) &&
+                ((m_Matching.Value & ButtonState.On) == ButtonState.On || EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity)) &&
                 !EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity) &&
                 m_NeedsColorRefresh == true &&
                 UnityEngine.Time.time > m_TimeColorLastChanged + 0.5f)

@@ -55,9 +55,9 @@ namespace Recolor.Systems.SelectedInfoPanel
         private ValueBindingHelper<RecolorSet> m_CurrentColorSet;
         private ValueBindingHelper<bool[]> m_MatchesVanillaColorSet;
         private ValueBindingHelper<int> m_SubMeshIndex;
-        private ValueBindingHelper<bool> m_SingleInstance;
-        private ValueBindingHelper<bool> m_DisableSingleInstance;
-        private ValueBindingHelper<bool> m_DisableMatching;
+        private ValueBindingHelper<ButtonState> m_SingleInstance;
+        private ValueBindingHelper<ButtonState> m_Matching;
+        private ValueBindingHelper<ButtonState> m_ServiceVehicles;
         private ValueBindingHelper<bool> m_CanPasteColor;
         private ValueBindingHelper<bool> m_CanPasteColorSet;
         private ValueBindingHelper<bool> m_Minimized;
@@ -65,9 +65,10 @@ namespace Recolor.Systems.SelectedInfoPanel
         private Dictionary<AssetSeasonIdentifier, Game.Rendering.ColorSet> m_VanillaColorSets;
         private ValueBindingHelper<bool> m_MatchesSavedOnDisk;
         private ValueBindingHelper<bool> m_CanResetSingleChannels;
-        private ValueBindingHelper<bool> m_OwnedServiceVehicle;
+        private Scope m_PreferredScope;
         private ColorPickerToolSystem m_ColorPickerTool;
         private ColorPainterToolSystem m_ColorPainterTool;
+        private DefaultToolSystem m_DefaultToolSystem;
         private ColorPainterUISystem m_ColorPainterUISystem;
         private CustomColorVariationSystem m_CustomColorVariationSystem;
         private EntityQuery m_SubMeshQuery;
@@ -115,6 +116,48 @@ namespace Recolor.Systems.SelectedInfoPanel
             Winter,
         }
 
+        /// <summary>
+        /// An enum to handle whether a button is selected and/or hidden.
+        /// </summary>
+        public enum ButtonState
+        {
+            /// <summary>
+            /// Not selected.
+            /// </summary>
+            Off = 0,
+
+            /// <summary>
+            /// Selected.
+            /// </summary>
+            On = 1,
+
+            /// <summary>
+            /// Not shown.
+            /// </summary>
+            Hidden = 2,
+        }
+
+        /// <summary>
+        /// This is the preferred group of entities to change. Others will be selected be default when applicable.
+        /// </summary>
+        public enum Scope
+        {
+            /// <summary>
+            /// Single instance entity.
+            /// </summary>
+            SingleInstance = 0,
+
+            /// <summary>
+            /// All matching meshes.
+            /// </summary>
+            Matching = 1,
+
+            /// <summary>
+            /// All service vehicles from same service building.
+            /// </summary>
+            ServiceVehicles = 2,
+        }
+
         /// <inheritdoc/>
         protected override void OnCreate()
         {
@@ -128,21 +171,24 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_ColorPainterUISystem = World.GetOrCreateSystemManaged<ColorPainterUISystem>();
             m_ColorPickerTool = World.GetOrCreateSystemManaged<ColorPickerToolSystem>();
             m_CustomColorVariationSystem = World.GetOrCreateSystemManaged<CustomColorVariationSystem>();
+            m_DefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
 
             // These establish bindings to communicate between UI and C#.
             m_CurrentColorSet = CreateBinding("CurrentColorSet", new RecolorSet(default, default, default));
             m_MatchesVanillaColorSet = CreateBinding("MatchesVanillaColorSet", new bool[] { true, true, true });
             m_CanPasteColor = CreateBinding("CanPasteColor", false);
             m_CanPasteColorSet = CreateBinding("CanPasteColorSet", false);
-            m_SingleInstance = CreateBinding("SingleInstance", true);
             m_Minimized = CreateBinding("Minimized", false);
-            m_DisableSingleInstance = CreateBinding("DisableSingleInstance", false);
-            m_DisableMatching = CreateBinding("DisableMatching", false);
             m_MatchesSavedOnDisk = CreateBinding("MatchesSavedOnDisk", false);
             m_ShowHexaDecimals = CreateBinding("ShowHexaDecimals", Mod.Instance.Settings.ShowHexaDecimals);
             m_SubMeshIndex = CreateBinding("SubMeshIndex", 0);
             m_CanResetSingleChannels = CreateBinding("CanResetSingleChannels", false);
-            m_OwnedServiceVehicle = CreateBinding("OwnedServiceBuilding", false);
+
+            // These bindings are closely related.
+            m_PreferredScope = Scope.SingleInstance;
+            m_SingleInstance = CreateBinding("SingleInstance", ButtonState.On);
+            m_ServiceVehicles = CreateBinding("ServiceVehicles", ButtonState.Off | ButtonState.Hidden);
+            m_Matching = CreateBinding("Matching", ButtonState.Off);
 
             // These handle actions triggered by UI.
             CreateTrigger<int, UnityEngine.Color>("ChangeColor", ChangeColorAction);
@@ -164,15 +210,10 @@ namespace Recolor.Systems.SelectedInfoPanel
                     m_ColorPainterUISystem.ColorSet = m_CurrentColorSet.Value.GetColorSet();
                 }
             });
-            CreateTrigger("Minimize", () => m_Minimized.Value = !m_Minimized.Value);
-            CreateTrigger("SingleInstance", () =>
+            CreateTrigger("ChangeScope", (int newScope) =>
             {
-                m_SingleInstance.Value = true;
-                m_PreviouslySelectedEntity = Entity.Null;
-            });
-            CreateTrigger("Matching", () =>
-            {
-                m_SingleInstance.Value = false;
+                m_PreferredScope = (Scope)newScope;
+                HandleScopeAndButtonStates();
                 m_PreviouslySelectedEntity = Entity.Null;
             });
             CreateTrigger("ToggleShowHexaDecimals", () =>

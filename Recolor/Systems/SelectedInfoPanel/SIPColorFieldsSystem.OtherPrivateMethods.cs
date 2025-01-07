@@ -86,11 +86,97 @@ namespace Recolor.Systems.SelectedInfoPanel
             ChangeColor(channel, color);
         }
 
+        private void HandleScopeAndButtonStates()
+        {
+            ButtonState singleInstance = ButtonState.Off;
+            ButtonState matching = ButtonState.Off;
+            ButtonState serviceVehicles = ButtonState.Off;
+
+            if (m_ToolSystem.activeTool == m_DefaultToolSystem)
+            {
+                if (EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity))
+                {
+                    matching |= ButtonState.Hidden;
+                }
+
+                if (EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity))
+                {
+                    singleInstance |= ButtonState.Hidden;
+                }
+
+                if (!EntityManager.TryGetComponent(m_CurrentEntity, out Game.Common.Owner owner) ||
+                    owner.m_Owner == Entity.Null ||
+                    ((EntityManager.HasComponent<Game.Vehicles.Ambulance>(m_CurrentEntity) ||
+                     EntityManager.HasComponent<Game.Vehicles.FireEngine>(m_CurrentEntity) ||
+                     EntityManager.HasComponent<Game.Vehicles.PoliceCar>(m_CurrentEntity) ||
+                     EntityManager.HasComponent<Game.Vehicles.GarbageTruck>(m_CurrentEntity) ||
+                     EntityManager.HasComponent<Game.Vehicles.Hearse>(m_CurrentEntity) ||
+                     EntityManager.HasComponent<Game.Vehicles.MaintenanceVehicle>(m_CurrentEntity) ||
+                     EntityManager.HasComponent<Game.Vehicles.PostVan>(m_CurrentEntity) ||
+                     EntityManager.HasComponent<Game.Vehicles.RoadMaintenanceVehicle>(m_CurrentEntity) ||
+                     EntityManager.HasComponent<Game.Vehicles.Taxi>(m_CurrentEntity) ||
+                     EntityManager.HasComponent<Game.Vehicles.ParkMaintenanceVehicle>(m_CurrentEntity)) != true))
+                {
+                    serviceVehicles |= ButtonState.Hidden;
+                }
+            }
+            else if (m_ToolSystem.activeTool == m_ColorPainterTool)
+            {
+                serviceVehicles |= ButtonState.Hidden;
+            }
+
+            if ((singleInstance & ButtonState.Hidden) != ButtonState.Hidden &&
+                (m_PreferredScope == Scope.SingleInstance ||
+                (m_PreferredScope == Scope.ServiceVehicles &&
+                (serviceVehicles & ButtonState.Hidden) == ButtonState.Hidden) ||
+                (m_PreferredScope == Scope.Matching &&
+                (matching & ButtonState.Hidden) == ButtonState.Hidden)))
+            {
+                singleInstance = ButtonState.On;
+            }
+            else if ((matching & ButtonState.Hidden) != ButtonState.Hidden &&
+                     (m_PreferredScope == Scope.Matching ||
+                     (m_PreferredScope == Scope.SingleInstance &&
+                     (singleInstance & ButtonState.Hidden) == ButtonState.Hidden) ||
+                     (m_PreferredScope == Scope.ServiceVehicles &&
+                     (serviceVehicles & ButtonState.Hidden) == ButtonState.Hidden)))
+            {
+                matching = ButtonState.On;
+            }
+            else if ((serviceVehicles & ButtonState.Hidden) != ButtonState.Hidden &&
+                       (m_PreferredScope == Scope.ServiceVehicles ||
+                       (m_PreferredScope == Scope.SingleInstance &&
+                       (singleInstance & ButtonState.Hidden) == ButtonState.Hidden) ||
+                       (m_PreferredScope == Scope.Matching &&
+                       (matching & ButtonState.Hidden) == ButtonState.Hidden)))
+            {
+                serviceVehicles = ButtonState.On;
+            }
+            else
+            {
+                m_Log.Info($"{nameof(SIPColorFieldsSystem)}.{nameof(HandleScopeAndButtonStates)} No valid scope.");
+            }
+
+            if (m_SingleInstance.Value != singleInstance)
+            {
+                m_SingleInstance.Value = singleInstance;
+            }
+
+            if (m_Matching.Value != matching)
+            {
+                m_Matching.Value = matching;
+            }
+
+            if (m_ServiceVehicles.Value != serviceVehicles)
+            {
+                m_ServiceVehicles.Value = serviceVehicles;
+            }
+        }
+
         private ColorSet ChangeColor(int channel, UnityEngine.Color color)
         {
             EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
-            if ((m_SingleInstance.Value || m_DisableMatching.Value) &&
-                !m_DisableSingleInstance &&
+            if ((m_SingleInstance.Value & ButtonState.On) == ButtonState.On &&
                 !EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity) &&
                 EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
@@ -143,7 +229,8 @@ namespace Recolor.Systems.SelectedInfoPanel
 
                 return colorSet;
             }
-            else if (!m_DisableMatching && !EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity))
+            else if ((m_Matching.Value & ButtonState.On) == ButtonState.On &&
+                     !EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity))
             {
                 if (!EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
                 {
@@ -159,7 +246,8 @@ namespace Recolor.Systems.SelectedInfoPanel
 
                 for (int i = 0; i < length; i++)
                 {
-                    if (!EntityManager.TryGetBuffer(subMeshBuffer[i].m_SubMesh, isReadOnly: false, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
+                    if (!EntityManager.TryGetBuffer(subMeshBuffer[i].m_SubMesh, isReadOnly: false, out DynamicBuffer<ColorVariation> colorVariationBuffer) ||
+                         colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
                     {
                         continue;
                     }
