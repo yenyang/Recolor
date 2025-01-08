@@ -55,6 +55,12 @@ namespace Recolor.Systems.Tools
             return colorSet;
         }
 
+        /// <summary>
+        /// Resets custom mesh colors of an entity.
+        /// </summary>
+        /// <param name="recolorSet">Colorset and toggles.</param>
+        /// <param name="buffer">ECB from appropriate system update phase.</param>
+        /// <param name="entity">Subject entity.</param>
         private void ResetInstanceColors(RecolorSet recolorSet, ref EntityCommandBuffer buffer, Entity entity)
         {
             if (EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer) &&
@@ -65,7 +71,7 @@ namespace Recolor.Systems.Tools
                 meshColorBuffer.Length > 0)
             {
                 bool matchesVanillaColorSet = true;
-                RecolorSet newRecolorSet = new (customMeshColorBuffer[0].m_ColorSet);
+                RecolorSet newRecolorSet = new(customMeshColorBuffer[0].m_ColorSet);
                 for (int i = 0; i < 3; i++)
                 {
                     if (recolorSet.States[i])
@@ -104,10 +110,15 @@ namespace Recolor.Systems.Tools
             }
         }
 
+        /// <summary>
+        /// Changes the instance color of an entity.
+        /// </summary>
+        /// <param name="recolorSet">Color set and states.</param>
+        /// <param name="buffer">ECB from appropriate system update phase.</param>
+        /// <param name="entity">Subject entity.</param>
         private void ChangeInstanceColorSet(RecolorSet recolorSet, ref EntityCommandBuffer buffer, Entity entity)
         {
-            if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance &&
-                !EntityManager.HasComponent<Game.Objects.Plant>(entity) &&
+            if (!EntityManager.HasComponent<Game.Objects.Plant>(entity) &&
                 EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
                 if (!EntityManager.HasBuffer<CustomMeshColor>(entity))
@@ -151,6 +162,13 @@ namespace Recolor.Systems.Tools
             }
         }
 
+        /// <summary>
+        /// Changes color variation of a prefab.
+        /// </summary>
+        /// <param name="recolorSet">Colors and states.</param>
+        /// <param name="buffer">ECB from approrpiate system update phase.</param>
+        /// <param name="entity">Instance Entity</param>
+        /// <param name="assetSeasonIdentifier">Asset Season identifier.</param>
         private void ChangeColorVariation(RecolorSet recolorSet, ref EntityCommandBuffer buffer, Entity entity, AssetSeasonIdentifier assetSeasonIdentifier)
         {
             if (!EntityManager.HasBuffer<CustomMeshColor>(entity))

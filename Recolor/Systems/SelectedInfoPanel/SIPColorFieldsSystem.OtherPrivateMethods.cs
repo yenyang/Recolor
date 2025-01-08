@@ -23,6 +23,7 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Game.Rendering;
     using Game.Simulation;
     using Game.Tools;
+    using Game.Vehicles;
     using Recolor.Domain;
     using Recolor.Extensions;
     using Recolor.Settings;
@@ -99,13 +100,16 @@ namespace Recolor.Systems.SelectedInfoPanel
                     matching |= ButtonState.Hidden;
                 }
 
-                if (EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity))
+                if (EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity) ||
+                   (EntityManager.TryGetComponent(m_CurrentEntity, out Game.Common.Owner owner) &&
+                    owner.m_Owner != Entity.Null &&
+                    EntityManager.HasBuffer<ServiceVehicleColor>(owner.m_Owner)))
                 {
                     singleInstance |= ButtonState.Hidden;
                 }
 
-                if (!EntityManager.TryGetComponent(m_CurrentEntity, out Game.Common.Owner owner) ||
-                    owner.m_Owner == Entity.Null ||
+                if (!EntityManager.TryGetComponent(m_CurrentEntity, out Game.Common.Owner owner1) ||
+                    owner1.m_Owner == Entity.Null ||
                     ((EntityManager.HasComponent<Game.Vehicles.Ambulance>(m_CurrentEntity) ||
                      EntityManager.HasComponent<Game.Vehicles.FireEngine>(m_CurrentEntity) ||
                      EntityManager.HasComponent<Game.Vehicles.PoliceCar>(m_CurrentEntity) ||
@@ -176,61 +180,18 @@ namespace Recolor.Systems.SelectedInfoPanel
         private ColorSet ChangeColor(int channel, UnityEngine.Color color)
         {
             EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
-            if ((m_SingleInstance.Value & ButtonState.On) == ButtonState.On &&
-                !EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity) &&
-                EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+
+            // Single Instance
+            if (m_SingleInstance.Value == ButtonState.On &&
+               !EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity) &&
+                EntityManager.HasBuffer<MeshColor>(m_CurrentEntity))
             {
-                if (!EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity))
-                {
-                    DynamicBuffer<CustomMeshColor> newBuffer = EntityManager.AddBuffer<CustomMeshColor>(m_CurrentEntity);
-                    foreach (MeshColor meshColor in meshColorBuffer)
-                    {
-                        newBuffer.Add(new CustomMeshColor(meshColor));
-                    }
-
-                    if (!EntityManager.HasBuffer<MeshColorRecord>(m_CurrentEntity))
-                    {
-                        DynamicBuffer<MeshColorRecord> meshColorRecordBuffer = EntityManager.AddBuffer<MeshColorRecord>(m_CurrentEntity);
-                        foreach (MeshColor meshColor in meshColorBuffer)
-                        {
-                            meshColorRecordBuffer.Add(new MeshColorRecord(meshColor));
-                        }
-                    }
-                }
-
-                if (!EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer))
-                {
-                    return default;
-                }
-
-                ColorSet colorSet = default;
-                int length = meshColorBuffer.Length;
-                if (EntityManager.HasComponent<Tree>(m_CurrentEntity))
-                {
-                    length = Math.Min(4, meshColorBuffer.Length);
-                }
-
-                for (int i = 0; i < length; i++)
-                {
-                    CustomMeshColor customMeshColor = customMeshColorBuffer[i];
-                    if (channel >= 0 && channel < 3)
-                    {
-                        customMeshColor.m_ColorSet[channel] = color;
-                    }
-
-                    customMeshColorBuffer[i] = customMeshColor;
-                    m_TimeColorLastChanged = UnityEngine.Time.time;
-                    m_PreviouslySelectedEntity = Entity.Null;
-                    colorSet = customMeshColor.m_ColorSet;
-                }
-
-                buffer.AddComponent<BatchesUpdated>(m_CurrentEntity);
-                AddBatchesUpdatedToSubElements(m_CurrentEntity, buffer);
-
-                return colorSet;
+                return ChangeSingleInstanceColorChannel(channel, color, m_CurrentEntity, buffer);
             }
-            else if ((m_Matching.Value & ButtonState.On) == ButtonState.On &&
-                     !EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity))
+
+            // Color Variations
+            else if (m_Matching.Value == ButtonState.On &&
+                    !EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity))
             {
                 if (!EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
                 {
@@ -272,7 +233,103 @@ namespace Recolor.Systems.SelectedInfoPanel
                 return colorVariation.m_ColorSet;
             }
 
+            // Service Vehicles
+            else if (m_ServiceVehicles.Value == ButtonState.On &&
+                     EntityManager.TryGetComponent(m_CurrentEntity, out Owner owner) &&
+                     owner.m_Owner != Entity.Null &&
+                    !EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity) &&
+                     EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer1) &&
+                     EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<OwnedVehicle> ownedVehicleBuffer))
+            {
+                if (!EntityManager.HasBuffer<ServiceVehicleColor>(owner.m_Owner))
+                {
+                    DynamicBuffer<ServiceVehicleColor> newBuffer = EntityManager.AddBuffer<ServiceVehicleColor>(owner.m_Owner);
+                    foreach (MeshColor meshColor in meshColorBuffer1)
+                    {
+                        newBuffer.Add(new ServiceVehicleColor(meshColor.m_ColorSet, meshColor.m_ColorSet));
+                    }
+                }
+
+                if (!EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: false, out DynamicBuffer<ServiceVehicleColor> serviceVehicleColorBuffer))
+                {
+                    return default;
+                }
+
+                ColorSet colorSet = default;
+                int length = meshColorBuffer1.Length;
+
+                for (int i = 0; i < length; i++)
+                {
+                    ServiceVehicleColor serviceVehicleColor = serviceVehicleColorBuffer[i];
+                    if (channel >= 0 && channel < 3)
+                    {
+                        serviceVehicleColor.m_ColorSet[channel] = color;
+                    }
+
+                    serviceVehicleColorBuffer[i] = serviceVehicleColor;
+                    m_PreviouslySelectedEntity = Entity.Null;
+                    colorSet = serviceVehicleColor.m_ColorSet;
+                }
+
+                foreach (OwnedVehicle ownedVehicle in ownedVehicleBuffer)
+                {
+                    colorSet = ChangeSingleInstanceColorChannel(channel, color, ownedVehicle.m_Vehicle, buffer);
+                }
+
+                return colorSet;
+            }
+
             return default;
+        }
+
+        private ColorSet ChangeSingleInstanceColorChannel(int channel, UnityEngine.Color color, Entity entity, EntityCommandBuffer buffer)
+        {
+            if (!EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            {
+                return default;
+            }
+
+            if (!EntityManager.HasBuffer<CustomMeshColor>(entity))
+            {
+                DynamicBuffer<CustomMeshColor> newBuffer = EntityManager.AddBuffer<CustomMeshColor>(entity);
+                foreach (MeshColor meshColor in meshColorBuffer)
+                {
+                    newBuffer.Add(new CustomMeshColor(meshColor));
+                }
+
+                if (!EntityManager.HasBuffer<MeshColorRecord>(entity))
+                {
+                    DynamicBuffer<MeshColorRecord> meshColorRecordBuffer = EntityManager.AddBuffer<MeshColorRecord>(entity);
+                    foreach (MeshColor meshColor in meshColorBuffer)
+                    {
+                        meshColorRecordBuffer.Add(new MeshColorRecord(meshColor));
+                    }
+                }
+            }
+
+            if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer))
+            {
+                return default;
+            }
+
+            ColorSet colorSet = default;
+
+            for (int i = 0; i < meshColorBuffer.Length; i++)
+            {
+                CustomMeshColor customMeshColor = customMeshColorBuffer[i];
+                if (channel >= 0 && channel < 3)
+                {
+                    customMeshColor.m_ColorSet[channel] = color;
+                }
+
+                customMeshColorBuffer[i] = customMeshColor;
+                m_PreviouslySelectedEntity = Entity.Null;
+                colorSet = customMeshColor.m_ColorSet;
+            }
+
+            buffer.AddComponent<BatchesUpdated>(entity);
+            AddBatchesUpdatedToSubElements(entity, buffer);
+            return colorSet;
         }
 
         private void ResetColorSet()
@@ -282,12 +339,12 @@ namespace Recolor.Systems.SelectedInfoPanel
             ResetColor(2);
         }
 
-        private bool[] MatchesVanillaColorSet(MeshColorRecord meshColorRecord, ColorSet colorSet)
+        private bool[] MatchesVanillaColorSet(ColorSet record, ColorSet colorSet)
         {
             bool[] matches = new bool[3] { false, false, false };
             for (int i = 0; i < 3; i++)
             {
-                if (meshColorRecord.m_ColorSet[i] == colorSet[i])
+                if (record[i] == colorSet[i])
                 {
                     matches[i] = true;
                 }
@@ -296,9 +353,9 @@ namespace Recolor.Systems.SelectedInfoPanel
             return matches;
         }
 
-        private bool MatchesEntireVanillaColorSet(MeshColorRecord meshColorRecord, ColorSet meshColor)
+        private bool MatchesEntireVanillaColorSet(ColorSet record, ColorSet meshColor)
         {
-            bool[] matches = MatchesVanillaColorSet(meshColorRecord, meshColor);
+            bool[] matches = MatchesVanillaColorSet(record, meshColor);
             if (matches[0] == false || matches[1] == false || matches[2] == false)
             {
                 return false;
@@ -323,7 +380,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                     customMeshColor.m_ColorSet[channel] = meshColorRecordBuffer[m_SubMeshIndex.Value].m_ColorSet[channel];
                     customMeshColorBuffer[m_SubMeshIndex.Value] = customMeshColor;
 
-                    if (MatchesEntireVanillaColorSet(meshColorRecordBuffer[m_SubMeshIndex.Value], customMeshColor.m_ColorSet))
+                    if (MatchesEntireVanillaColorSet(meshColorRecordBuffer[m_SubMeshIndex.Value].m_ColorSet, customMeshColor.m_ColorSet))
                     {
                         buffer.RemoveComponent<CustomMeshColor>(m_CurrentEntity);
                         buffer.RemoveComponent<MeshColorRecord>(m_CurrentEntity);

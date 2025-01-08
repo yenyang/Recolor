@@ -116,7 +116,6 @@
 
 	<ItemGroup>
 	  <Folder Include="lang\" />
-	  <Folder Include="Utilities\" />
 	  <Folder Include="UI\src\mods\lang\" />
 	  <Folder Include="UI\" />
 	</ItemGroup>

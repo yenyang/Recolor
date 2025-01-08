@@ -21,21 +21,29 @@ namespace Recolor.Domain
         public ColorSet m_ColorSet;
 
         /// <summary>
+        /// The record of color before changing to allow for single channel resets.
+        /// </summary>
+        public ColorSet m_ColorSetRecord;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ServiceVehicleColor"/> struct.
         /// </summary>
         /// <param name="colorSet">set of three colors.</param>
-        public ServiceVehicleColor(ColorSet colorSet)
+        /// <param name="record">record of original colors.</param>
+        public ServiceVehicleColor(ColorSet colorSet, ColorSet record)
         {
             m_ColorSet = colorSet;
+            m_ColorSetRecord = record;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceVehicleColor"/> struct.
         /// </summary>
         /// <param name="meshColor">original mesh color.</param>
-        public ServiceVehicleColor(MeshColor meshColor)
+        public ServiceVehicleColor(MeshColor meshColor, MeshColorRecord record)
         {
             m_ColorSet = meshColor.m_ColorSet;
+            m_ColorSetRecord = record.m_ColorSet;
         }
 
         /// <summary>
@@ -70,6 +78,16 @@ namespace Recolor.Domain
                 m_Channel1 = color1,
                 m_Channel2 = color2,
             };
+
+            reader.Read(out Color recordColor0);
+            reader.Read(out Color recordColor1);
+            reader.Read(out Color recordColor2);
+            m_ColorSetRecord = new ColorSet
+            {
+                m_Channel0 = recordColor0,
+                m_Channel1 = recordColor1,
+                m_Channel2 = recordColor2,
+            };
         }
 
         /// <inheritdoc/>
@@ -80,6 +98,9 @@ namespace Recolor.Domain
             writer.Write(m_ColorSet.m_Channel0);
             writer.Write(m_ColorSet.m_Channel1);
             writer.Write(m_ColorSet.m_Channel2);
+            writer.Write(m_ColorSetRecord.m_Channel0);
+            writer.Write(m_ColorSetRecord.m_Channel1);
+            writer.Write(m_ColorSetRecord.m_Channel2);
         }
     }
 }
