@@ -252,15 +252,17 @@ namespace Recolor.Systems.SelectedInfoPanel
                     m_MatchesVanillaColorSet.Value = EntityManager.HasBuffer<ServiceVehicleColor>(owner.m_Owner) ? new bool[] { false, false, false } : new bool[] { true, true, true };
                     m_CanResetSingleChannels.Value = false;
                 }
-                else if (!MatchesEntireVanillaColorSet(serviceVehicleColorBuffer[m_SubMeshIndex.Value].m_ColorSetRecord, meshColorBuffer[m_SubMeshIndex.Value].m_ColorSet))
+                else if (EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer) &&
+                        !MatchesEntireVanillaColorSet(meshColorRecordBuffer[m_SubMeshIndex.Value].m_ColorSet, meshColorBuffer[m_SubMeshIndex.Value].m_ColorSet))
                 {
-                    m_MatchesVanillaColorSet.Value = MatchesVanillaColorSet(serviceVehicleColorBuffer[m_SubMeshIndex.Value].m_ColorSet, meshColorBuffer[m_SubMeshIndex.Value].m_ColorSet);
+                    m_MatchesVanillaColorSet.Value = MatchesVanillaColorSet(serviceVehicleColorBuffer[m_SubMeshIndex.Value].m_ColorSetRecord, meshColorBuffer[m_SubMeshIndex.Value].m_ColorSet);
                     m_CanResetSingleChannels.Value = true;
                 }
                 else
                 {
                     EntityManager.RemoveComponent<ServiceVehicleColor>(owner.m_Owner);
                     EntityManager.RemoveComponent<CustomMeshColor>(m_CurrentEntity);
+                    EntityManager.RemoveComponent<MeshColorRecord>(m_CurrentEntity);
                     m_PreviouslySelectedEntity = Entity.Null;
                 }
 

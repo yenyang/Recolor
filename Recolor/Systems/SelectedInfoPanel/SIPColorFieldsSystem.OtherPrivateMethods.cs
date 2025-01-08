@@ -368,38 +368,31 @@ namespace Recolor.Systems.SelectedInfoPanel
         {
             EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
 
-            if (EntityManager.HasComponent<CustomMeshColor>(m_CurrentEntity))
+            // Service Vehicles
+            if (EntityManager.TryGetComponent(m_CurrentEntity, out Owner owner) &&
+                owner.m_Owner != Entity.Null &&
+                EntityManager.HasBuffer<ServiceVehicleColor>(owner.m_Owner) &&
+                EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<OwnedVehicle> ownedVehicleBuffer))
             {
-                if (EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer) &&
-                    EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) &&
-                    meshColorRecordBuffer.Length > m_SubMeshIndex.Value &&
-                    customMeshColorBuffer.Length > m_SubMeshIndex.Value &&
-                    channel >= 0 && channel <= 2)
+                foreach (OwnedVehicle ownedVehicle in ownedVehicleBuffer)
                 {
-                    CustomMeshColor customMeshColor = customMeshColorBuffer[m_SubMeshIndex.Value];
-                    customMeshColor.m_ColorSet[channel] = meshColorRecordBuffer[m_SubMeshIndex.Value].m_ColorSet[channel];
-                    customMeshColorBuffer[m_SubMeshIndex.Value] = customMeshColor;
-
-                    if (MatchesEntireVanillaColorSet(meshColorRecordBuffer[m_SubMeshIndex.Value].m_ColorSet, customMeshColor.m_ColorSet))
-                    {
-                        buffer.RemoveComponent<CustomMeshColor>(m_CurrentEntity);
-                        buffer.RemoveComponent<MeshColorRecord>(m_CurrentEntity);
-                    }
+                    ResetSingleInstanceByChannel(channel, ownedVehicle.m_Vehicle, buffer);
                 }
-                else
-                {
-                    buffer.RemoveComponent<CustomMeshColor>(m_CurrentEntity);
-                    buffer.RemoveComponent<MeshColorRecord>(m_CurrentEntity);
-                }
-
-                buffer.AddComponent<BatchesUpdated>(m_CurrentEntity);
-
-                AddBatchesUpdatedToSubElements(m_CurrentEntity, buffer);
 
                 m_PreviouslySelectedEntity = Entity.Null;
                 return;
             }
 
+
+            // Single Instance
+            if (EntityManager.HasComponent<CustomMeshColor>(m_CurrentEntity))
+            {
+                ResetSingleInstanceByChannel(channel, m_CurrentEntity, buffer);
+                m_PreviouslySelectedEntity = Entity.Null;
+                return;
+            }
+
+            // Color Variations
             if (!TryGetVanillaColorSet(m_CurrentAssetSeasonIdentifier, out ColorSet vanillaColorSet))
             {
                 m_Log.Info($"{nameof(SIPColorFieldsSystem)}.{nameof(ResetColor)} Could not find vanilla color set for {m_CurrentAssetSeasonIdentifier.m_PrefabID} {m_CurrentAssetSeasonIdentifier.m_Season} {m_CurrentAssetSeasonIdentifier.m_Index}");
@@ -424,6 +417,35 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 GenerateOrUpdateCustomColorVariationEntity();
             }
+        }
+
+        private void ResetSingleInstanceByChannel(int channel, Entity entity, EntityCommandBuffer buffer)
+        {
+            if (EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer) &&
+                    EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) &&
+                    meshColorRecordBuffer.Length > m_SubMeshIndex.Value &&
+                    customMeshColorBuffer.Length > m_SubMeshIndex.Value &&
+                    channel >= 0 && channel <= 2)
+            {
+                CustomMeshColor customMeshColor = customMeshColorBuffer[m_SubMeshIndex.Value];
+                customMeshColor.m_ColorSet[channel] = meshColorRecordBuffer[m_SubMeshIndex.Value].m_ColorSet[channel];
+                customMeshColorBuffer[m_SubMeshIndex.Value] = customMeshColor;
+
+                if (MatchesEntireVanillaColorSet(meshColorRecordBuffer[m_SubMeshIndex.Value].m_ColorSet, customMeshColor.m_ColorSet))
+                {
+                    buffer.RemoveComponent<CustomMeshColor>(entity);
+                    buffer.RemoveComponent<MeshColorRecord>(entity);
+                }
+            }
+            else
+            {
+                buffer.RemoveComponent<CustomMeshColor>(entity);
+                buffer.RemoveComponent<MeshColorRecord>(entity);
+            }
+
+            buffer.AddComponent<BatchesUpdated>(entity);
+
+            AddBatchesUpdatedToSubElements(entity, buffer);
         }
     }
 }
