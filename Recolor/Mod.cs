@@ -26,6 +26,7 @@ namespace Recolor
     using Colossal;
     using Game.UI.InGame;
     using Unity.Entities;
+    using Recolor.Systems.ServiceVehicles;
 #endif
 
     /// <summary>
@@ -128,6 +129,7 @@ namespace Recolor
             updateSystem.UpdateAt<RentersUpdatedCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<ResetCustomMeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<SelectNetLaneFencesToolSystem>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAfter<CreatedServiceVehicleCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             Log.Info($"{nameof(OnLoad)} complete.");
         }
 

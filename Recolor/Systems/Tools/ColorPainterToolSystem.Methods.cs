@@ -1,4 +1,4 @@
-﻿// <copyright file="ColorPainterToolSystem.PrivateMethods.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="ColorPainterToolSystem.Methods.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
@@ -34,6 +34,58 @@ namespace Recolor.Systems.Tools
     /// </summary>
     public partial class ColorPainterToolSystem : ToolBaseSystem
     {
+        /// <summary>
+        /// Changes the instance color of an entity.
+        /// </summary>
+        /// <param name="recolorSet">Color set and states.</param>
+        /// <param name="buffer">ECB from appropriate system update phase.</param>
+        /// <param name="entity">Subject entity.</param>
+        public void ChangeInstanceColorSet(RecolorSet recolorSet, ref EntityCommandBuffer buffer, Entity entity)
+        {
+            if (!EntityManager.HasComponent<Game.Objects.Plant>(entity) &&
+                EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            {
+                if (!EntityManager.HasBuffer<CustomMeshColor>(entity))
+                {
+                    DynamicBuffer<CustomMeshColor> newBuffer = EntityManager.AddBuffer<CustomMeshColor>(entity);
+                    foreach (MeshColor meshColor in meshColorBuffer)
+                    {
+                        newBuffer.Add(new CustomMeshColor(meshColor));
+                    }
+
+                    if (!EntityManager.HasBuffer<MeshColorRecord>(entity))
+                    {
+                        DynamicBuffer<MeshColorRecord> meshColorRecordBuffer = EntityManager.AddBuffer<MeshColorRecord>(entity);
+                        foreach (MeshColor meshColor in meshColorBuffer)
+                        {
+                            meshColorRecordBuffer.Add(new MeshColorRecord(meshColor));
+                        }
+                    }
+                }
+
+                if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer))
+                {
+                    return;
+                }
+
+                int length = meshColorBuffer.Length;
+                if (EntityManager.HasComponent<Tree>(entity))
+                {
+                    length = Math.Min(4, meshColorBuffer.Length);
+                }
+
+                for (int i = 0; i < length; i++)
+                {
+                    CustomMeshColor customMeshColor = customMeshColorBuffer[i];
+                    customMeshColor.m_ColorSet = CompileColorSet(recolorSet, meshColorBuffer[0].m_ColorSet);
+                    customMeshColorBuffer[i] = customMeshColor;
+                }
+
+                buffer.AddComponent<BatchesUpdated>(entity);
+                m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(entity, buffer);
+            }
+        }
+
         private ColorSet CompileColorSet(RecolorSet recolorSet, ColorSet originalColors)
         {
             ColorSet colorSet = originalColors;
@@ -105,58 +157,6 @@ namespace Recolor.Systems.Tools
             {
                 buffer.RemoveComponent<CustomMeshColor>(entity);
                 buffer.RemoveComponent<MeshColorRecord>(entity);
-                buffer.AddComponent<BatchesUpdated>(entity);
-                m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(entity, buffer);
-            }
-        }
-
-        /// <summary>
-        /// Changes the instance color of an entity.
-        /// </summary>
-        /// <param name="recolorSet">Color set and states.</param>
-        /// <param name="buffer">ECB from appropriate system update phase.</param>
-        /// <param name="entity">Subject entity.</param>
-        private void ChangeInstanceColorSet(RecolorSet recolorSet, ref EntityCommandBuffer buffer, Entity entity)
-        {
-            if (!EntityManager.HasComponent<Game.Objects.Plant>(entity) &&
-                EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
-            {
-                if (!EntityManager.HasBuffer<CustomMeshColor>(entity))
-                {
-                    DynamicBuffer<CustomMeshColor> newBuffer = EntityManager.AddBuffer<CustomMeshColor>(entity);
-                    foreach (MeshColor meshColor in meshColorBuffer)
-                    {
-                        newBuffer.Add(new CustomMeshColor(meshColor));
-                    }
-
-                    if (!EntityManager.HasBuffer<MeshColorRecord>(entity))
-                    {
-                        DynamicBuffer<MeshColorRecord> meshColorRecordBuffer = EntityManager.AddBuffer<MeshColorRecord>(entity);
-                        foreach (MeshColor meshColor in meshColorBuffer)
-                        {
-                            meshColorRecordBuffer.Add(new MeshColorRecord(meshColor));
-                        }
-                    }
-                }
-
-                if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer))
-                {
-                    return;
-                }
-
-                int length = meshColorBuffer.Length;
-                if (EntityManager.HasComponent<Tree>(entity))
-                {
-                    length = Math.Min(4, meshColorBuffer.Length);
-                }
-
-                for (int i = 0; i < length; i++)
-                {
-                    CustomMeshColor customMeshColor = customMeshColorBuffer[i];
-                    customMeshColor.m_ColorSet = CompileColorSet(recolorSet, meshColorBuffer[0].m_ColorSet);
-                    customMeshColorBuffer[i] = customMeshColor;
-                }
-
                 buffer.AddComponent<BatchesUpdated>(entity);
                 m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(entity, buffer);
             }
