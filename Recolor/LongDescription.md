@@ -7,8 +7,6 @@ CloverPie has produced a colorful video demonstration with a pre-release version
 ## Dependencies
 Unified Icon Library
 
-I18n Everywhere (Soft dependency required for loading languages other than English.)
-
 ## Donations
 If you want to say thank you with a donation you can do so on Paypal.
 
@@ -17,7 +15,7 @@ I am looking for volunteers to help translate the mod into the other languages. 
 The mod is fully or partially available in the following languages: French, Polish, Brazilian Portuguese, Russian, Spanish, German, Chinese Simplified, and European Portuguese.
 
 ## Supplemental Mods
-European Portuguese Localization (Only needed for European Portuguese Translations)
+European Portuguese Localization and I18N Everywhere (Only needed for European Portuguese Translations)
   
 # Detailed Description
 ## Recolor Panel Section

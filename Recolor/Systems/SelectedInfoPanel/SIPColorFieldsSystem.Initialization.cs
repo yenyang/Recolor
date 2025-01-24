@@ -210,6 +210,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                     m_ColorPainterUISystem.ColorSet = m_CurrentColorSet.Value.GetColorSet();
                 }
             });
+            CreateTrigger("Minimize", () => m_Minimized.Value = !m_Minimized.Value);
             CreateTrigger("ChangeScope", (int newScope) =>
             {
                 m_PreferredScope = (Scope)newScope;
@@ -232,7 +233,6 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             RequireForUpdate(m_SubMeshQuery);
             Enabled = false;
-
 
             // For the keybinds
             m_ActivateColorPainterAction = Mod.Instance.Settings.GetAction(Setting.ActivateColorPainterActionName);

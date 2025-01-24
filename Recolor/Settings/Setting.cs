@@ -20,10 +20,6 @@ namespace Recolor.Settings
     /// </summary>
     [FileLocation("ModsSettings/" + nameof(Recolor) + "/" + nameof(Recolor))]
     [SettingsUIGroupOrder(General, Keybinds, Remove, About)]
-    [SettingsUIMouseAction(Mod.PickerApplyMimicAction, "ColorPickerActions")]
-    [SettingsUIMouseAction(Mod.PainterApplyMimicAction, "ColorPainterActions")]
-    [SettingsUIMouseAction(Mod.PainterSecondaryApplyMimicAction, "ColorPainterActions")]
-    [SettingsUIMouseAction(Mod.SelectNetLaneFencesToolApplyMimicAction, "SelectNetLaneFencesToolApplyMimic")]
     public class Setting : ModSetting
     {
         /// <summary>
@@ -103,38 +99,6 @@ namespace Recolor.Settings
         [SettingsUIKeyboardBinding(BindingKeyboard.F, actionName: FenceSelectorModeActionName, alt: true)]
         public ProxyBinding FenceSelectorMode { get; set; }
 
-        /// <summary>
-        /// Gets or sets hidden keybinding for Picker apply action
-        /// </summary>
-        [SettingsUIMouseBinding(Mod.PickerApplyMimicAction)]
-        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
-        [SettingsUIHidden]
-        public ProxyBinding PickerApplyMimic { get; set; }
-
-        /// <summary>
-        /// Gets or sets hidden keybinding for Painter Apply Action.
-        /// </summary>
-        [SettingsUIMouseBinding(Mod.PainterApplyMimicAction)]
-        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
-        [SettingsUIHidden]
-        public ProxyBinding PainterApplyMimic { get; set; }
-
-        /// <summary>
-        /// Gets or sets hidden keybinding for Painter secondary apply action.
-        /// </summary>
-        [SettingsUIMouseBinding(Mod.PainterSecondaryApplyMimicAction)]
-        [SettingsUIBindingMimic(InputManager.kToolMap, "Secondary Apply")]
-        [SettingsUIHidden]
-        public ProxyBinding PainterSecondaryApplyMimic { get; set; }
-
-
-        /// <summary>
-        /// Gets or sets hidden keybinding for default tool apply action.
-        /// </summary>
-        [SettingsUIMouseBinding(Mod.SelectNetLaneFencesToolApplyMimicAction)]
-        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
-        [SettingsUIHidden]
-        public ProxyBinding SelectNetLaneFencesToolApplyMimic { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to show hexadecimals.

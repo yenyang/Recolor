@@ -57,6 +57,7 @@ namespace Recolor.Systems.ServiceVehicles
                     ComponentType.ReadOnly<Game.Vehicles.Taxi>(),
                     ComponentType.ReadOnly<Game.Vehicles.ParkMaintenanceVehicle>(),
                     ComponentType.ReadOnly<Game.Vehicles.PostVan>(),
+                    ComponentType.ReadOnly<Game.Vehicles.WorkVehicle>(),
                 },
                 None = new ComponentType[]
                 {

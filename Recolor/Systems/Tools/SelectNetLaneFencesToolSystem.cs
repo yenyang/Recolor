@@ -21,7 +21,6 @@ namespace Recolor.Systems.Tools
     /// </summary>
     public partial class SelectNetLaneFencesToolSystem : ToolBaseSystem
     {
-        private ProxyAction m_ApplyAction;
         private ToolOutputBarrier m_ToolOutputBarrier;
         private ILog m_Log;
         private Entity m_PreviousRaycastedEntity;
@@ -93,14 +92,14 @@ namespace Recolor.Systems.Tools
 
             m_ActivateAction.shouldBeEnabled = true;
 
-            m_ApplyAction = Mod.Instance.Settings.GetAction(Mod.SelectNetLaneFencesToolApplyMimicAction);
             m_ActivateAction.onInteraction += (_, _) => m_ToolSystem.activeTool = this;
         }
 
         /// <inheritdoc/>
         protected override void OnStartRunning()
         {
-            m_ApplyAction.shouldBeEnabled = true;
+            base.OnStartRunning();
+            applyAction.enabled = true;
             m_Log.Debug($"{nameof(SelectNetLaneFencesToolSystem)}.{nameof(OnStartRunning)}");
             m_TooltipSystem.RegisterTooltip("SelectANetLaneFence", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.MouseTooltipKey("SelectANetLaneFence"), "Select a NetLane Fence.");
         }
@@ -108,12 +107,11 @@ namespace Recolor.Systems.Tools
         /// <inheritdoc/>
         protected override void OnStopRunning()
         {
-            m_ApplyAction.shouldBeEnabled = false;
+            base.OnStopRunning();
             EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
             EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
             m_PreviousRaycastedEntity = Entity.Null;
             m_TooltipSystem.ClearTooltips();
-            base.OnStopRunning();
         }
 
         /// <inheritdoc/>
@@ -149,7 +147,7 @@ namespace Recolor.Systems.Tools
                 buffer.AddComponent<BatchesUpdated>(currentRaycastEntity);
             }
 
-            if (m_ApplyAction.WasPressedThisFrame())
+            if (applyAction.WasPressedThisFrame())
             {
                 m_ToolSystem.selected = currentRaycastEntity;
             }

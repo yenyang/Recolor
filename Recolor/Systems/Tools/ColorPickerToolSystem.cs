@@ -27,7 +27,6 @@ namespace Recolor.Systems.Tools
     /// </summary>
     public partial class ColorPickerToolSystem : ToolBaseSystem
     {
-        private ProxyAction m_ApplyAction;
         private ILog m_Log;
         private Entity m_PreviousRaycastedEntity;
         private Entity m_PreviousSelectedEntity;
@@ -86,15 +85,13 @@ namespace Recolor.Systems.Tools
                 .WithNone<Deleted, Temp, Overridden>()
                 .Build();
             m_GenericTooltipSystem = World.GetOrCreateSystemManaged<GenericTooltipSystem>();
-
-            m_ApplyAction = Mod.Instance.Settings.GetAction(Mod.PickerApplyMimicAction);
         }
 
         /// <inheritdoc/>
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            m_ApplyAction.shouldBeEnabled = true;
+            applyAction.enabled = true;
             m_Log.Debug($"{nameof(ColorPickerToolSystem)}.{nameof(OnStartRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
         }
@@ -103,7 +100,6 @@ namespace Recolor.Systems.Tools
         protected override void OnStopRunning()
         {
             base.OnStopRunning();
-            m_ApplyAction.shouldBeEnabled = false;
             EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
             EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
             m_PreviousRaycastedEntity = Entity.Null;
@@ -141,7 +137,7 @@ namespace Recolor.Systems.Tools
                 m_PreviousRaycastedEntity = currentRaycastEntity;
             }
 
-            if (!m_ApplyAction.WasPerformedThisFrame() || m_ToolSystem.selected == Entity.Null)
+            if (!applyAction.WasReleasedThisFrame() || m_ToolSystem.selected == Entity.Null)
             {
                 return inputDeps;
             }

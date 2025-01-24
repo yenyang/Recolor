@@ -152,6 +152,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <EmbeddedResource Include="l10n\de-DE.json" />
+	  <EmbeddedResource Include="l10n\es-ES.json" />
+	  <EmbeddedResource Include="l10n\fr-FR.json" />
+	  <EmbeddedResource Include="l10n\ko-KR.json" />
+	  <EmbeddedResource Include="l10n\pl-PL.json" />
+	  <EmbeddedResource Include="l10n\pt-BR.json" />
+	  <EmbeddedResource Include="l10n\ru-RU.json" />
+	  <EmbeddedResource Include="l10n\zh-HANS.json" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Update="LICENSE.txt">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>

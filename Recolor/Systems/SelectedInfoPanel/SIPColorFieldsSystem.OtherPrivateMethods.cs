@@ -120,6 +120,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                      EntityManager.HasComponent<Game.Vehicles.RoadMaintenanceVehicle>(m_CurrentEntity) ||
                      EntityManager.HasComponent<Game.Vehicles.Taxi>(m_CurrentEntity) ||
                      EntityManager.HasComponent<Game.Vehicles.ParkMaintenanceVehicle>(m_CurrentEntity) ||
+                     EntityManager.HasComponent<Game.Vehicles.WorkVehicle>(m_CurrentEntity) ||
                      EntityManager.HasComponent<Game.Vehicles.PostVan>(m_CurrentEntity)) != true))
                 {
                     serviceVehicles |= ButtonState.Hidden;

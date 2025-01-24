@@ -27,6 +27,8 @@ namespace Recolor
     using Game.UI.InGame;
     using Unity.Entities;
     using Recolor.Systems.ServiceVehicles;
+    using Colossal.Localization;
+    using UnityEngine;
 #endif
 
     /// <summary>
@@ -34,26 +36,6 @@ namespace Recolor
     /// </summary>
     public class Mod : IMod
     {
-        /// <summary>
-        /// Fake keybind action for apply.
-        /// </summary>
-        public const string PickerApplyMimicAction = "PickerApplyMimic";
-
-        /// <summary>
-        /// Fake keybind action for apply.
-        /// </summary>
-        public const string PainterApplyMimicAction = "PainterApplyMimic";
-
-        /// <summary>
-        /// Fake keybind action for secondary apply.
-        /// </summary>
-        public const string PainterSecondaryApplyMimicAction = "PainterSecondaryApplyMimic";
-
-        /// <summary>
-        /// Fake keybind action for apply.
-        /// </summary>
-        public const string SelectNetLaneFencesToolApplyMimicAction = "SelectNetLaneFencesToolApplyMimic";
-
         /// <summary>
         /// An id used for bindings between UI and C#.
         /// </summary>
@@ -104,6 +86,8 @@ namespace Recolor
             AssetDatabase.global.LoadSettings(nameof(Recolor), Settings, new Setting(this));
             Log.Info($"{nameof(OnLoad)} Initalizing en-US localization.");
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Settings));
+            Log.Info($"[{nameof(Mod)}] {nameof(OnLoad)} Initalizing localization for other languages.");
+            LoadNonEnglishLocalizations();
 #if DEBUG
             Log.Info($"{nameof(Mod)}.{nameof(OnLoad)} Exporting localization");
             var localeDict = new LocaleEN(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
@@ -141,6 +125,52 @@ namespace Recolor
             {
                 Settings.UnregisterInOptionsUI();
                 Settings = null;
+            }
+        }
+
+        private void LoadNonEnglishLocalizations()
+        {
+            Assembly thisAssembly = Assembly.GetExecutingAssembly();
+            string[] resourceNames = thisAssembly.GetManifestResourceNames();
+
+            try
+            {
+                Log.Debug($"Reading localizations");
+
+                foreach (string localeID in GameManager.instance.localizationManager.GetSupportedLocales())
+                {
+                    string resourceName = $"{thisAssembly.GetName().Name}.l10n.{localeID}.json";
+                    if (resourceNames.Contains(resourceName))
+                    {
+                        Log.Debug($"Found localization file {resourceName}");
+                        try
+                        {
+                            Log.Debug($"Reading embedded translation file {resourceName}");
+
+                            // Read embedded file.
+                            using StreamReader reader = new (thisAssembly.GetManifestResourceStream(resourceName));
+                            {
+                                string entireFile = reader.ReadToEnd();
+                                Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
+                                Dictionary<string, string> translations = varient.Make<Dictionary<string, string>>();
+                                GameManager.instance.localizationManager.AddSource(localeID, new MemorySource(translations));
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            // Don't let a single failure stop us.
+                            Log.Error(e, $"Exception reading localization from embedded file {resourceName}");
+                        }
+                    }
+                    else
+                    {
+                        Log.Debug($"Did not find localization file {resourceName}");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Exception reading embedded settings localization files");
             }
         }
     }
