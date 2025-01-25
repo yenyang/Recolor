@@ -9,3 +9,5 @@
 * Added swap color buttons between channels.
 * Added ability to set color set for all service vehicles from a service building instance. This includes any future ones that spawn from the building.
 * Added ability to set color set for all vehicles on a route. This includes any futures ones that spawn or are assigned to that route.
+* Removed I18N Everywhere dependency.
+* Translations for officially supported languages are handled internally with embedded resource files.
