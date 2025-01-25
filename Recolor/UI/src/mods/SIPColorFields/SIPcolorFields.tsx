@@ -32,6 +32,7 @@ const expandSrc =                       uilStandard + "ArrowsExpand.svg";
 const saveToDiskSrc =                   uilStandard + "DiskSave.svg";
 const swapSrc =                         uilStandard + "ArrowsMoveLeftRight.svg";
 const serviceVehiclesSrc =              uilStandard + "ServiceVehicles.svg";
+const routeSrc =                        uilStandard + "BusShelter.svg";
 
 const SingleInstance$ = bindValue<ButtonState>(mod.id, 'SingleInstance');
 const Matching$ = bindValue<ButtonState>(mod.id, 'Matching');
@@ -42,6 +43,7 @@ const Minimized$ = bindValue<boolean>(mod.id, "Minimized");
 const MatchesSavedtoDisk$ = bindValue<boolean>(mod.id, "MatchesSavedOnDisk");
 const ShowHexaDecimals$ = bindValue<boolean>(mod.id, "ShowHexaDecimals");
 const CurrentColorSet$ = bindValue<RecolorSet>(mod.id, "CurrentColorSet");
+const Route$ = bindValue<ButtonState>(mod.id, 'Route');
 
 const InfoRowTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss",
@@ -100,6 +102,7 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
         const Minimized = useValue(Minimized$);
         const MatchesSavedToDisk = useValue(MatchesSavedtoDisk$);
         const ShowHexaDecimals = useValue(ShowHexaDecimals$);
+        const Route = useValue(Route$);
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string from en-US.json.
         const { translate } = useLocalization();
@@ -142,6 +145,17 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                                 onSelect={() => changeScope(Scope.ServiceVehicles)}
                                             />
                                         )}
+                                        {(Route & ButtonState.Hidden) != ButtonState.Hidden && (   
+                                            <VanillaComponentResolver.instance.ToolButton
+                                                src={routeSrc}
+                                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                selected = {Route == ButtonState.On} 
+                                                tooltip = {"Route"}
+                                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                onSelect={() => changeScope(Scope.Route)}
+                                            />
+                                        )}
+
                                         <VanillaComponentResolver.instance.ToolButton
                                             src={copySrc}
                                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} 

@@ -58,6 +58,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private ValueBindingHelper<ButtonState> m_SingleInstance;
         private ValueBindingHelper<ButtonState> m_Matching;
         private ValueBindingHelper<ButtonState> m_ServiceVehicles;
+        private ValueBindingHelper<ButtonState> m_Route;
         private ValueBindingHelper<bool> m_CanPasteColor;
         private ValueBindingHelper<bool> m_CanPasteColorSet;
         private ValueBindingHelper<bool> m_Minimized;
@@ -84,6 +85,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private bool m_ActivateColorPainter;
         private Entity m_CurrentEntity;
         private Entity m_CurrentPrefabEntity;
+        private int m_RouteColorChannel = -1;
 
         /// <summary>
         /// An enum to handle seasons.
@@ -156,6 +158,11 @@ namespace Recolor.Systems.SelectedInfoPanel
             /// All service vehicles from same service building.
             /// </summary>
             ServiceVehicles = 2,
+
+            /// <summary>
+            /// All vehicles on the same route.
+            /// </summary>
+            Route = 3,
         }
 
         /// <inheritdoc/>
@@ -189,6 +196,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_SingleInstance = CreateBinding("SingleInstance", ButtonState.On);
             m_ServiceVehicles = CreateBinding("ServiceVehicles", ButtonState.Off | ButtonState.Hidden);
             m_Matching = CreateBinding("Matching", ButtonState.Off);
+            m_Route = CreateBinding("Route", ButtonState.Off | ButtonState.Hidden);
 
             // These handle actions triggered by UI.
             CreateTrigger<int, UnityEngine.Color>("ChangeColor", ChangeColorAction);

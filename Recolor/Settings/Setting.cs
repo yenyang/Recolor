@@ -135,6 +135,7 @@ namespace Recolor.Settings
             {
                 ResetCustomMeshColorSystem resetCustomMeshColorSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ResetCustomMeshColorSystem>();
                 resetCustomMeshColorSystem.Enabled = true;
+                
             }
         }
 

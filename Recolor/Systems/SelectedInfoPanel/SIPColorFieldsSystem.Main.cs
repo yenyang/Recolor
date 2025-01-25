@@ -269,6 +269,43 @@ namespace Recolor.Systems.SelectedInfoPanel
                 visible = true;
             }
 
+            // Routes
+            else if (m_PreviouslySelectedEntity != m_CurrentEntity &&
+                     m_CurrentEntity != Entity.Null &&
+                     m_CurrentPrefabEntity != Entity.Null &&
+                     m_Route.Value == ButtonState.On &&
+                     EntityManager.TryGetComponent(m_CurrentEntity, out Game.Routes.CurrentRoute currentRoute) &&
+                     currentRoute.m_Route != Entity.Null)
+            {
+                m_CurrentColorSet.Value = new RecolorSet(meshColorBuffer[m_SubMeshIndex.Value].m_ColorSet);
+                m_PreviouslySelectedEntity = m_CurrentEntity;
+
+                if (!EntityManager.TryGetBuffer(currentRoute.m_Route, isReadOnly: true, out DynamicBuffer<RouteVehicleColor> routeVehicleColorBuffer) ||
+                     routeVehicleColorBuffer.Length <= m_SubMeshIndex.Value ||
+                     meshColorBuffer.Length <= m_SubMeshIndex.Value)
+                {
+                    m_MatchesVanillaColorSet.Value = EntityManager.HasBuffer<RouteVehicleColor>(currentRoute.m_Route) ? new bool[] { false, false, false } : new bool[] { true, true, true };
+                    m_CanResetSingleChannels.Value = false;
+                }
+                else if (EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer) &&
+                        !MatchesEntireVanillaColorSet(meshColorRecordBuffer[m_SubMeshIndex.Value].m_ColorSet, meshColorBuffer[m_SubMeshIndex.Value].m_ColorSet))
+                {
+                    m_MatchesVanillaColorSet.Value = MatchesVanillaColorSet(routeVehicleColorBuffer[m_SubMeshIndex.Value].m_ColorSetRecord, meshColorBuffer[m_SubMeshIndex.Value].m_ColorSet);
+                    m_CanResetSingleChannels.Value = true;
+                }
+                else
+                {
+                    EntityManager.RemoveComponent<RouteVehicleColor>(currentRoute.m_Route);
+                    EntityManager.RemoveComponent<CustomMeshColor>(m_CurrentEntity);
+                    EntityManager.RemoveComponent<MeshColorRecord>(m_CurrentEntity);
+                    m_PreviouslySelectedEntity = Entity.Null;
+                }
+
+                m_RouteColorChannel = GetRouteColorChannel(m_CurrentPrefabEntity);
+
+                visible = true;
+            }
+
             // Colors Variation
             else if (m_PreviouslySelectedEntity != m_CurrentEntity &&
                      m_CurrentEntity != Entity.Null &&

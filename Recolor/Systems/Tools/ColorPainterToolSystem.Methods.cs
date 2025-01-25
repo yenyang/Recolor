@@ -52,7 +52,7 @@ namespace Recolor.Systems.Tools
                     {
                         newBuffer.Add(new CustomMeshColor(meshColor));
                     }
-                    
+
                     if (!EntityManager.HasBuffer<MeshColorRecord>(entity))
                     {
                         DynamicBuffer<MeshColorRecord> meshColorRecordBuffer = EntityManager.AddBuffer<MeshColorRecord>(entity);

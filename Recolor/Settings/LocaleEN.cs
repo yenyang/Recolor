@@ -104,6 +104,10 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("ToggleChannel"), "Toggles the channel on or off." },
                 { TooltipDescriptionKey("ShowHexaDecimals"), "Toggles whether Hexadecimal input fields are shown or not." },
                 { TooltipDescriptionKey("SwapColors"), "Swaps colors between two channels." },
+                { TooltipTitleKey("ServiceVehicles"), "Service Vehicles" },
+                { TooltipDescriptionKey("ServiceVehicles"), "Changes the colors of all service vehicles owned by the same service building. Newly created service vehicles owned by the same building will also have the same color set." },
+                { TooltipTitleKey("RouteVehicles"), "Route Vehicles" },
+                { TooltipDescriptionKey("RouteVehicles"), "Changes the colors of all vehicles assigned to a route. Newly created vehicles on the route will also have the same color set." },
             };
         }
 

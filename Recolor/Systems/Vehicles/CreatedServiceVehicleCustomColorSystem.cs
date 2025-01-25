@@ -2,7 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-namespace Recolor.Systems.ServiceVehicles
+namespace Recolor.Systems.Vehicles
 {
     using Colossal.Entities;
     using Colossal.Logging;

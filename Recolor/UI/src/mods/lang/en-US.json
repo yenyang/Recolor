@@ -74,5 +74,9 @@
   "Recolor.MOUSE_TOOLTIP[SelectANetLaneFence]": "Select a NetLane Fence or Hedge.",
   "Recolor.TOOLTIP_DESCRIPTION[ToggleChannel]": "Toggles the channel on or off.",
   "Recolor.TOOLTIP_DESCRIPTION[ShowHexaDecimals]": "Toggles whether Hexadecimal input fields are shown or not.",
-  "Recolor.TOOLTIP_DESCRIPTION[SwapColors]": "Swaps colors between two channels."
+  "Recolor.TOOLTIP_DESCRIPTION[SwapColors]": "Swaps colors between two channels.",
+  "Recolor.TOOLTIP_TITLE[ServiceVehicles]": "Service Vehicles",
+  "Recolor.TOOLTIP_DESCRIPTION[ServiceVehicles]": "Changes the colors of all service vehicles owned by the same service building. Newly created service vehicles owned by the same building will also have the same color set.",
+  "Recolor.TOOLTIP_TITLE[RouteVehicles]": "Route Vehicles",
+  "Recolor.TOOLTIP_DESCRIPTION[RouteVehicles]": "Changes the colors of all vehicles assigned to a route. Newly created vehicles on the route will also have the same color set."
 }

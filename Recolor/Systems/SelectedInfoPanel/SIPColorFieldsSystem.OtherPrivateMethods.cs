@@ -21,6 +21,7 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Game.Prefabs;
     using Game.Prefabs.Climate;
     using Game.Rendering;
+    using Game.Routes;
     using Game.Simulation;
     using Game.Tools;
     using Game.Vehicles;
@@ -92,6 +93,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             ButtonState singleInstance = ButtonState.Off;
             ButtonState matching = ButtonState.Off;
             ButtonState serviceVehicles = ButtonState.Off;
+            ButtonState route = ButtonState.Off;
 
             if (m_ToolSystem.activeTool == m_DefaultToolSystem)
             {
@@ -103,7 +105,14 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity) ||
                    (EntityManager.TryGetComponent(m_CurrentEntity, out Game.Common.Owner owner) &&
                     owner.m_Owner != Entity.Null &&
-                    EntityManager.HasBuffer<ServiceVehicleColor>(owner.m_Owner)))
+                    EntityManager.HasBuffer<ServiceVehicleColor>(owner.m_Owner)) ||
+                   (EntityManager.TryGetComponent(m_CurrentEntity, out Game.Routes.CurrentRoute currentRoute) &&
+                    currentRoute.m_Route != Entity.Null &&
+                    EntityManager.HasBuffer<RouteVehicleColor>(currentRoute.m_Route)) ||
+                   (EntityManager.TryGetComponent(m_CurrentEntity, out Game.Vehicles.Controller controller) &&
+                    EntityManager.TryGetComponent(controller.m_Controller, out Game.Routes.CurrentRoute controllerRoute) &&
+                    controllerRoute.m_Route != Entity.Null &&
+                    EntityManager.HasBuffer<RouteVehicleColor>(controllerRoute.m_Route)))
                 {
                     singleInstance |= ButtonState.Hidden;
                 }
@@ -125,38 +134,42 @@ namespace Recolor.Systems.SelectedInfoPanel
                 {
                     serviceVehicles |= ButtonState.Hidden;
                 }
+
+                if (!EntityManager.TryGetComponent(m_CurrentEntity, out Game.Routes.CurrentRoute currentRoute1) ||
+                    currentRoute1.m_Route == Entity.Null)
+                {
+                    route |= ButtonState.Hidden;
+                }
             }
             else if (m_ToolSystem.activeTool == m_ColorPainterTool)
             {
                 serviceVehicles |= ButtonState.Hidden;
+                route |= ButtonState.Hidden;
             }
 
             if ((singleInstance & ButtonState.Hidden) != ButtonState.Hidden &&
                 (m_PreferredScope == Scope.SingleInstance ||
-                (m_PreferredScope == Scope.ServiceVehicles &&
-                (serviceVehicles & ButtonState.Hidden) == ButtonState.Hidden) ||
-                (m_PreferredScope == Scope.Matching &&
-                (matching & ButtonState.Hidden) == ButtonState.Hidden)))
+                IsPreferredScopeHidden()))
             {
                 singleInstance = ButtonState.On;
             }
             else if ((matching & ButtonState.Hidden) != ButtonState.Hidden &&
                      (m_PreferredScope == Scope.Matching ||
-                     (m_PreferredScope == Scope.SingleInstance &&
-                     (singleInstance & ButtonState.Hidden) == ButtonState.Hidden) ||
-                     (m_PreferredScope == Scope.ServiceVehicles &&
-                     (serviceVehicles & ButtonState.Hidden) == ButtonState.Hidden)))
+                     IsPreferredScopeHidden()))
             {
                 matching = ButtonState.On;
             }
             else if ((serviceVehicles & ButtonState.Hidden) != ButtonState.Hidden &&
-                       (m_PreferredScope == Scope.ServiceVehicles ||
-                       (m_PreferredScope == Scope.SingleInstance &&
-                       (singleInstance & ButtonState.Hidden) == ButtonState.Hidden) ||
-                       (m_PreferredScope == Scope.Matching &&
-                       (matching & ButtonState.Hidden) == ButtonState.Hidden)))
+                     (m_PreferredScope == Scope.ServiceVehicles ||
+                     IsPreferredScopeHidden()))
             {
                 serviceVehicles = ButtonState.On;
+            }
+            else if ((route & ButtonState.Hidden) != ButtonState.Hidden &&
+                      (m_PreferredScope == Scope.Route ||
+                      IsPreferredScopeHidden()))
+            {
+                route = ButtonState.On;
             }
             else
             {
@@ -177,6 +190,62 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 m_ServiceVehicles.Value = serviceVehicles;
             }
+
+            if (m_Route.Value != route)
+            {
+                m_Route.Value = route;
+            }
+        }
+
+        private bool IsPreferredScopeHidden()
+        {
+            if (m_PreferredScope == Scope.SingleInstance &&
+                (m_SingleInstance.Value & ButtonState.Hidden) == ButtonState.Hidden)
+            {
+                return true;
+            }
+
+            if (m_PreferredScope == Scope.Matching &&
+                (m_Matching.Value & ButtonState.Hidden) == ButtonState.Hidden)
+            {
+                return true;
+            }
+
+            if (m_PreferredScope == Scope.ServiceVehicles &&
+                (m_ServiceVehicles.Value & ButtonState.Hidden) == ButtonState.Hidden)
+            {
+                return true;
+            }
+
+            if (m_PreferredScope == Scope.Route &&
+                (m_Route.Value & ButtonState.Hidden) == ButtonState.Hidden)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private int GetRouteColorChannel(Entity prefabEntity)
+        {
+            if (!EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer) ||
+                subMeshBuffer.Length == 0 ||
+               !m_PrefabSystem.TryGetPrefab(subMeshBuffer[0].m_SubMesh, out PrefabBase prefabBase) ||
+                prefabBase is null ||
+               !prefabBase.TryGet(out Game.Prefabs.ColorProperties colorProperties))
+            {
+                return -1;
+            }
+
+            for (int i = 0; i < colorProperties.m_ChannelsBinding.Count; i++)
+            {
+                if (colorProperties.m_ChannelsBinding[i].m_CanBeModifiedByExternal)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         private ColorSet ChangeColor(int channel, UnityEngine.Color color)
@@ -276,6 +345,71 @@ namespace Recolor.Systems.SelectedInfoPanel
                 foreach (OwnedVehicle ownedVehicle in ownedVehicleBuffer)
                 {
                     colorSet = ChangeSingleInstanceColorChannel(channel, color, ownedVehicle.m_Vehicle, buffer);
+                }
+
+                return colorSet;
+            }
+
+            // Routes
+            else if (m_Route.Value == ButtonState.On &&
+                     EntityManager.TryGetComponent(m_CurrentEntity, out Game.Routes.CurrentRoute currentRoute) &&
+                     currentRoute.m_Route != Entity.Null &&
+                    !EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity) &&
+                     EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<MeshColor> routeMeshColorBuffer) &&
+                     EntityManager.TryGetBuffer(currentRoute.m_Route, isReadOnly: true, out DynamicBuffer<Game.Routes.RouteVehicle> routeVehicleBuffer) &&
+                     EntityManager.TryGetComponent(currentRoute.m_Route, out Game.Routes.Color routeColor))
+            {
+                if (!EntityManager.HasBuffer<RouteVehicleColor>(currentRoute.m_Route))
+                {
+                    DynamicBuffer<RouteVehicleColor> newBuffer = EntityManager.AddBuffer<RouteVehicleColor>(currentRoute.m_Route);
+                    foreach (MeshColor meshColor in routeMeshColorBuffer)
+                    {
+                        newBuffer.Add(new RouteVehicleColor(meshColor.m_ColorSet, meshColor.m_ColorSet));
+                    }
+                }
+
+                if (!EntityManager.TryGetBuffer(currentRoute.m_Route, isReadOnly: false, out DynamicBuffer<RouteVehicleColor> routeVehicleColorBuffer))
+                {
+                    return default;
+                }
+
+                ColorSet colorSet = default;
+                int length = routeMeshColorBuffer.Length;
+
+                for (int i = 0; i < length; i++)
+                {
+                    RouteVehicleColor routeVehicleColor = routeVehicleColorBuffer[i];
+                    if (channel >= 0 && channel < 3)
+                    {
+                        routeVehicleColor.m_ColorSet[channel] = color;
+                    }
+
+                    routeVehicleColorBuffer[i] = routeVehicleColor;
+                    m_PreviouslySelectedEntity = Entity.Null;
+                    colorSet = routeVehicleColor.m_ColorSet;
+                }
+
+                foreach (RouteVehicle routeVehicle in routeVehicleBuffer)
+                {
+                    if (EntityManager.TryGetBuffer(routeVehicle.m_Vehicle, isReadOnly: true, out DynamicBuffer<LayoutElement> layoutElementBuffer) &&
+                        layoutElementBuffer.Length > 0)
+                    {
+                        foreach (Game.Vehicles.LayoutElement layoutElement in layoutElementBuffer)
+                        {
+                            ChangeSingleInstanceColorChannel(channel, color, layoutElement.m_Vehicle, buffer);
+                        }
+                    }
+                    else
+                    {
+                        ChangeSingleInstanceColorChannel(channel, color, routeVehicle.m_Vehicle, buffer);
+                    }
+                }
+
+                if (m_RouteColorChannel == channel)
+                {
+                    routeColor.m_Color = color;
+                    EntityManager.SetComponentData(currentRoute.m_Route, routeColor);
+                    EntityManager.AddComponent<Game.Routes.ColorUpdated>(currentRoute.m_Route);
                 }
 
                 return colorSet;
