@@ -211,6 +211,14 @@ namespace Recolor.Systems.SelectedInfoPanel
                 m_CurrentEntity = ownerBuffer[0].m_SubLane;
             }
 
+            if (EntityManager.TryGetComponent(selectedEntity, out Game.Vehicles.Controller controller) &&
+                EntityManager.TryGetComponent(controller.m_Controller, out Game.Routes.CurrentRoute controllerRoute) &&
+                controllerRoute.m_Route != Entity.Null &&
+                m_Route.Value == ButtonState.On)
+            {
+                m_CurrentEntity = controller.m_Controller;
+            }
+
             if (!EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
                 visible = false;

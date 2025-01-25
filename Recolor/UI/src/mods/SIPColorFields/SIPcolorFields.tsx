@@ -140,7 +140,7 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                                 src={serviceVehiclesSrc}
                                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                                 selected = {ServiceVehicles == ButtonState.On} 
-                                                tooltip = {"Service Vehicles"}
+                                                tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[ServiceVehicles]" ,locale["Recolor.TOOLTIP_TITLE[ServiceVehicles]"]), translate("Recolor.TOOLTIP_DESCRIPTION[ServiceVehicles]" , locale["Recolor.TOOLTIP_DESCRIPTION[ServiceVehicles]"]))}
                                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                                 onSelect={() => changeScope(Scope.ServiceVehicles)}
                                             />
@@ -150,7 +150,7 @@ export const SIPcolorFieldsComponent = (componentList: any): any => {
                                                 src={routeSrc}
                                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                                 selected = {Route == ButtonState.On} 
-                                                tooltip = {"Route"}
+                                                tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[RouteVehicles]" ,locale["Recolor.TOOLTIP_TITLE[RouteVehicles]"]), translate("Recolor.TOOLTIP_DESCRIPTION[RouteVehicles]", locale["Recolor.TOOLTIP_DESCRIPTION[RouteVehicles]"]))}
                                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                                 onSelect={() => changeScope(Scope.Route)}
                                             />

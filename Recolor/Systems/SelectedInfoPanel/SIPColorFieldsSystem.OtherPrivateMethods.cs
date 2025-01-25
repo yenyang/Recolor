@@ -108,35 +108,41 @@ namespace Recolor.Systems.SelectedInfoPanel
                     EntityManager.HasBuffer<ServiceVehicleColor>(owner.m_Owner)) ||
                    (EntityManager.TryGetComponent(m_CurrentEntity, out Game.Routes.CurrentRoute currentRoute) &&
                     currentRoute.m_Route != Entity.Null &&
-                    EntityManager.HasBuffer<RouteVehicleColor>(currentRoute.m_Route)) ||
-                   (EntityManager.TryGetComponent(m_CurrentEntity, out Game.Vehicles.Controller controller) &&
-                    EntityManager.TryGetComponent(controller.m_Controller, out Game.Routes.CurrentRoute controllerRoute) &&
-                    controllerRoute.m_Route != Entity.Null &&
-                    EntityManager.HasBuffer<RouteVehicleColor>(controllerRoute.m_Route)))
+                    EntityManager.HasBuffer<RouteVehicleColor>(currentRoute.m_Route)))
                 {
                     singleInstance |= ButtonState.Hidden;
                 }
 
                 if (!EntityManager.TryGetComponent(m_CurrentEntity, out Game.Common.Owner owner1) ||
-                    owner1.m_Owner == Entity.Null ||
-                    ((EntityManager.HasComponent<Game.Vehicles.Ambulance>(m_CurrentEntity) ||
-                     EntityManager.HasComponent<Game.Vehicles.FireEngine>(m_CurrentEntity) ||
-                     EntityManager.HasComponent<Game.Vehicles.PoliceCar>(m_CurrentEntity) ||
-                     EntityManager.HasComponent<Game.Vehicles.GarbageTruck>(m_CurrentEntity) ||
-                     EntityManager.HasComponent<Game.Vehicles.Hearse>(m_CurrentEntity) ||
-                     EntityManager.HasComponent<Game.Vehicles.MaintenanceVehicle>(m_CurrentEntity) ||
-                     EntityManager.HasComponent<Game.Vehicles.PostVan>(m_CurrentEntity) ||
-                     EntityManager.HasComponent<Game.Vehicles.RoadMaintenanceVehicle>(m_CurrentEntity) ||
-                     EntityManager.HasComponent<Game.Vehicles.Taxi>(m_CurrentEntity) ||
-                     EntityManager.HasComponent<Game.Vehicles.ParkMaintenanceVehicle>(m_CurrentEntity) ||
-                     EntityManager.HasComponent<Game.Vehicles.WorkVehicle>(m_CurrentEntity) ||
-                     EntityManager.HasComponent<Game.Vehicles.PostVan>(m_CurrentEntity)) != true))
+                          owner1.m_Owner == Entity.Null ||
+                        ((EntityManager.HasComponent<Game.Vehicles.Ambulance>(m_CurrentEntity) ||
+                          EntityManager.HasComponent<Game.Vehicles.FireEngine>(m_CurrentEntity) ||
+                          EntityManager.HasComponent<Game.Vehicles.PoliceCar>(m_CurrentEntity) ||
+                          EntityManager.HasComponent<Game.Vehicles.GarbageTruck>(m_CurrentEntity) ||
+                          EntityManager.HasComponent<Game.Vehicles.Hearse>(m_CurrentEntity) ||
+                          EntityManager.HasComponent<Game.Vehicles.MaintenanceVehicle>(m_CurrentEntity) ||
+                          EntityManager.HasComponent<Game.Vehicles.PostVan>(m_CurrentEntity) ||
+                          EntityManager.HasComponent<Game.Vehicles.RoadMaintenanceVehicle>(m_CurrentEntity) ||
+                          EntityManager.HasComponent<Game.Vehicles.Taxi>(m_CurrentEntity) ||
+                          EntityManager.HasComponent<Game.Vehicles.ParkMaintenanceVehicle>(m_CurrentEntity) ||
+                          EntityManager.HasComponent<Game.Vehicles.WorkVehicle>(m_CurrentEntity) ||
+                          EntityManager.HasComponent<Game.Vehicles.PostVan>(m_CurrentEntity)) != true))
                 {
                     serviceVehicles |= ButtonState.Hidden;
                 }
 
-                if (!EntityManager.TryGetComponent(m_CurrentEntity, out Game.Routes.CurrentRoute currentRoute1) ||
-                    currentRoute1.m_Route == Entity.Null)
+                if (EntityManager.TryGetComponent(m_CurrentEntity, out Game.Vehicles.Controller controller) &&
+                    EntityManager.TryGetComponent(controller.m_Controller, out Game.Routes.CurrentRoute controllerRoute) &&
+                    controllerRoute.m_Route != Entity.Null &&
+                    EntityManager.HasBuffer<RouteVehicleColor>(controllerRoute.m_Route))
+                {
+                    singleInstance |= ButtonState.Hidden;
+                }
+                else if ((!EntityManager.TryGetComponent(m_CurrentEntity, out Game.Routes.CurrentRoute currentRoute1) ||
+                           currentRoute1.m_Route == Entity.Null) &&
+                         (!EntityManager.TryGetComponent(m_CurrentEntity, out Game.Vehicles.Controller controller1) ||
+                          !EntityManager.TryGetComponent(controller.m_Controller, out Game.Routes.CurrentRoute controllerRoute1) ||
+                           controllerRoute1.m_Route == Entity.Null))
                 {
                     route |= ButtonState.Hidden;
                 }
