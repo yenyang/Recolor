@@ -390,6 +390,11 @@ namespace Recolor.Systems.SelectedInfoPanel
                         routeVehicleColor.m_ColorSet[channel] = color;
                     }
 
+                    if (m_RouteColorChannel == channel)
+                    {
+                        routeVehicleColor.m_ColorSetRecord[channel] = color;
+                    }
+
                     routeVehicleColorBuffer[i] = routeVehicleColor;
                     m_PreviouslySelectedEntity = Entity.Null;
                     colorSet = routeVehicleColor.m_ColorSet;
@@ -519,6 +524,31 @@ namespace Recolor.Systems.SelectedInfoPanel
                 foreach (OwnedVehicle ownedVehicle in ownedVehicleBuffer)
                 {
                     ResetSingleInstanceByChannel(channel, ownedVehicle.m_Vehicle, buffer);
+                }
+
+                m_PreviouslySelectedEntity = Entity.Null;
+                return;
+            }
+
+            // Route vehicles
+            if (EntityManager.TryGetComponent(m_CurrentEntity, out Game.Routes.CurrentRoute currentRoute) &&
+                currentRoute.m_Route != Entity.Null &&
+                EntityManager.HasBuffer<Domain.RouteVehicleColor>(currentRoute.m_Route) &&
+                EntityManager.TryGetBuffer(currentRoute.m_Route, isReadOnly: true, out DynamicBuffer<Game.Routes.RouteVehicle> routeVehicleBuffer))
+            {
+                foreach (RouteVehicle routeVehicle in routeVehicleBuffer)
+                {
+                    if (!EntityManager.TryGetBuffer(routeVehicle.m_Vehicle, isReadOnly: true, out DynamicBuffer<LayoutElement> layoutElementBuffer))
+                    {
+                        ResetSingleInstanceByChannel(channel, routeVehicle.m_Vehicle, buffer);
+                    }
+                    else
+                    {
+                        foreach (LayoutElement layoutElement in layoutElementBuffer)
+                        {
+                            ResetSingleInstanceByChannel(channel, layoutElement.m_Vehicle, buffer);
+                        }
+                    }
                 }
 
                 m_PreviouslySelectedEntity = Entity.Null;
