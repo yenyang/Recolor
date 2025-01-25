@@ -4,8 +4,13 @@
 
 namespace Recolor
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
     using System.Reflection;
     using Colossal.IO.AssetDatabase;
+    using Colossal.Localization;
     using Colossal.Logging;
     using Game;
     using Game.Modding;
@@ -16,18 +21,13 @@ namespace Recolor
     using Recolor.Systems.SelectedInfoPanel;
     using Recolor.Systems.SingleInstance;
     using Recolor.Systems.Tools;
+    using Recolor.Systems.Vehicles;
 
 #if DEBUG
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
     using Newtonsoft.Json;
     using Colossal;
     using Game.UI.InGame;
     using Unity.Entities;
-    using Recolor.Systems.Vehicles;
-    using Colossal.Localization;
     using UnityEngine;
 #endif
 
