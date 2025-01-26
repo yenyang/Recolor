@@ -11,3 +11,4 @@
 * Added ability to set color set for all vehicles on a route. This includes any futures ones that spawn or are assigned to that route.
 * Removed I18N Everywhere dependency.
 * Translations for officially supported languages are handled internally with embedded resource files.
+* Recolor works in the editor.

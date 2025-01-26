@@ -5,6 +5,8 @@
 namespace Recolor.Systems.Tools
 {
     using Colossal.Logging;
+    using Colossal.Serialization.Entities;
+    using Game;
     using Game.Rendering;
     using Game.Tools;
     using Recolor;
@@ -30,6 +32,7 @@ namespace Recolor.Systems.Tools
         private ValueBindingHelper<int> m_Radius;
         private ValueBindingHelper<int> m_Filter;
         private ValueBindingHelper<PainterToolMode> m_ToolMode;
+        private ValueBindingHelper<bool> m_EditorVisible;
 
         /// <summary>
         /// Used for determining the mode of the painter tool.
@@ -175,6 +178,7 @@ namespace Recolor.Systems.Tools
             m_Radius = CreateBinding("Radius", 30);
             m_Filter = CreateBinding("Filter", (int)FilterType.Building);
             m_ToolMode = CreateBinding("PainterToolMode", PainterToolMode.Paint);
+            m_EditorVisible = CreateBinding("EditorPainterToolOptions", false);
 
             // These are event triggers from actions in UI.
             CreateTrigger<uint, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
@@ -208,6 +212,13 @@ namespace Recolor.Systems.Tools
             Enabled = false;
         }
 
+        /// <inheritdoc/>
+        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
+        {
+            base.OnGameLoadingComplete(purpose, mode);
+            m_EditorVisible.Value = false;
+        }
+
         private void ChangePainterColor(uint channel, UnityEngine.Color color)
         {
             m_Log.Debug($"{nameof(ColorPainterUISystem)}.{nameof(ChangePainterColor)} new color {color} for channel {channel}");
@@ -224,6 +235,16 @@ namespace Recolor.Systems.Tools
             {
                 m_CopiedColorSet.Value = new RecolorSet(m_SelectedInfoPanelColorFieldsSystem.CopiedColorSet);
                 m_CopiedColor.Value = m_SelectedInfoPanelColorFieldsSystem.CopiedColor;
+
+                if (m_ToolSystem.actionMode.IsEditor())
+                {
+                    m_EditorVisible.Value = true;
+                }
+            }
+            else if (m_ToolSystem.actionMode.IsEditor() &&
+                     m_EditorVisible.Value)
+            {
+                m_EditorVisible.Value = false;
             }
         }
 

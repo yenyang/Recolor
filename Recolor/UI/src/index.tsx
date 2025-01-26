@@ -1,9 +1,10 @@
 import { ModRegistrar } from "cs2/modding";
 import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaComponentResolver";
 import mod from "../mod.json";
-import { SIPcolorFieldsComponent } from "mods/SIPColorFields/SIPcolorFields";
+import { RecolorSelectedInfoPanelComponent } from "mods/RecolorSelectedInfoPanel/SIPcolorFields";
 import { ToolOptionsVisibility } from "mods/ToolOptionsVisible/toolOptionsVisible";
 import { ColorPainterSectionComponent } from "mods/colorPainterSection/colorPainterSection";
+import { RecolorEditorPanel } from "mods/RecolorEditorPanel/RecolorEditorPanel";
 
 const register: ModRegistrar = (moduleRegistry) => {
       // console.log('mr', moduleRegistry);
@@ -16,9 +17,12 @@ const register: ModRegistrar = (moduleRegistry) => {
      moduleRegistry.extend("game-ui/game/components/tool-options/mouse-tool-options/mouse-tool-options.tsx", 'MouseToolOptions', ColorPainterSectionComponent);
      //
      
-     moduleRegistry.extend("game-ui/game/components/selected-info-panel/selected-info-sections/selected-info-sections.tsx", 'selectedInfoSectionComponents', SIPcolorFieldsComponent);
+     moduleRegistry.extend("game-ui/game/components/selected-info-panel/selected-info-sections/selected-info-sections.tsx", 'selectedInfoSectionComponents', RecolorSelectedInfoPanelComponent);
 
      moduleRegistry.extend("game-ui/game/components/tool-options/tool-options-panel.tsx", 'useToolOptionsVisible', ToolOptionsVisibility);
+
+     // This appends the editor ui to include a recolor panel.
+     moduleRegistry.append('Editor', RecolorEditorPanel);
      
      // This is just to verify using UI console that all the component registriations was completed.
      console.log(mod.id + " UI module registrations completed.");

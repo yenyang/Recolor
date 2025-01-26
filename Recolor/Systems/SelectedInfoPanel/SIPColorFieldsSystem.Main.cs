@@ -57,11 +57,18 @@ namespace Recolor.Systems.SelectedInfoPanel
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
             base.OnGameLoadingComplete(purpose, mode);
-            if (mode.IsGame())
+            m_EditorVisible.Value = false;
+
+            if (mode.IsGameOrEditor())
             {
                 GetClimatePrefab();
                 Enabled = true;
                 m_ReloadInXFrames = 30;
+
+                if (mode.IsEditor())
+                {
+                    m_Minimized.Value = true;
+                }
             }
             else
             {
@@ -139,8 +146,23 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
             }
 
+            if (m_ToolSystem.actionMode.IsEditor())
+            {
+                m_CurrentEntity = m_ToolSystem.selected;
+                if (EntityManager.TryGetComponent(m_CurrentEntity, out PrefabRef selectedPrefabRef))
+                {
+                    m_CurrentPrefabEntity = selectedPrefabRef.m_Prefab;
+                }
+            }
+            else if (m_ToolSystem.actionMode.IsGame())
+            {
+                m_CurrentEntity = selectedEntity;
+                m_CurrentPrefabEntity = selectedPrefab;
+            }
+
             // This was how I resolved an issue where I wanted to unselect an entity before activating a tool.
-            if (selectedEntity == Entity.Null && m_ActivateColorPainter)
+            if (m_CurrentEntity == Entity.Null &&
+                m_ActivateColorPainter)
             {
                 m_ActivateColorPainter = false;
                 m_ToolSystem.activeTool = m_ColorPainterTool;
@@ -150,7 +172,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             if (m_ActivateColorPainterAction.WasPerformedThisFrame())
             {
                 m_ActivateColorPainter = true;
-                if (selectedEntity != Entity.Null)
+                if (m_CurrentEntity != Entity.Null)
                 {
                     m_ToolSystem.selected = Entity.Null;
                     if (Mod.Instance.Settings.ColorPainterAutomaticCopyColor)
@@ -165,23 +187,33 @@ namespace Recolor.Systems.SelectedInfoPanel
                 return;
             }
 
-            if (selectedEntity == Entity.Null && m_PreviouslySelectedEntity != Entity.Null)
+            if (m_CurrentEntity == Entity.Null &&
+                m_PreviouslySelectedEntity != Entity.Null)
             {
                 m_PreviouslySelectedEntity = Entity.Null;
             }
 
-            if (selectedEntity == Entity.Null)
+            if (m_CurrentEntity == Entity.Null)
             {
                 visible = false;
+                if (m_ToolSystem.actionMode.IsEditor())
+                {
+                    m_EditorVisible.Value = false;
+                }
+
                 return;
             }
 
             if (m_PreviouslySelectedEntity == Entity.Null)
             {
                 visible = false;
+                if (m_ToolSystem.actionMode.IsEditor())
+                {
+                    m_EditorVisible.Value = false;
+                }
             }
 
-            if (m_PreviouslySelectedEntity != selectedEntity)
+            if (m_PreviouslySelectedEntity != m_CurrentEntity)
             {
                 m_PreviouslySelectedEntity = Entity.Null;
             }
@@ -192,11 +224,14 @@ namespace Recolor.Systems.SelectedInfoPanel
                 foundClimatePrefab = GetClimatePrefab();
             }
 
-            m_CurrentEntity = selectedEntity;
-            m_CurrentPrefabEntity = selectedPrefab;
-            if (!m_PrefabSystem.TryGetPrefab(selectedPrefab, out PrefabBase _))
+            if (!m_PrefabSystem.TryGetPrefab(m_CurrentPrefabEntity, out PrefabBase _))
             {
                 visible = false;
+                if (m_ToolSystem.actionMode.IsEditor())
+                {
+                    m_EditorVisible.Value = false;
+                }
+
                 return;
             }
 
@@ -222,6 +257,11 @@ namespace Recolor.Systems.SelectedInfoPanel
             if (!EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
                 visible = false;
+                if (m_ToolSystem.actionMode.IsEditor())
+                {
+                    m_EditorVisible.Value = false;
+                }
+
                 return;
             }
 
@@ -231,6 +271,11 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (tree.m_State == Game.Objects.TreeState.Dead || tree.m_State == Game.Objects.TreeState.Collected || tree.m_State == Game.Objects.TreeState.Stump)
                 {
                     visible = false;
+                    if (m_ToolSystem.actionMode.IsEditor())
+                    {
+                        m_EditorVisible.Value = false;
+                    }
+
                     return;
                 }
 
@@ -275,6 +320,10 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
 
                 visible = true;
+                if (m_ToolSystem.actionMode.IsEditor())
+                {
+                    m_EditorVisible.Value = true;
+                }
             }
 
             // Routes
@@ -312,6 +361,10 @@ namespace Recolor.Systems.SelectedInfoPanel
                 m_RouteColorChannel = GetRouteColorChannel(m_CurrentPrefabEntity);
 
                 visible = true;
+                if (m_ToolSystem.actionMode.IsEditor())
+                {
+                    m_EditorVisible.Value = true;
+                }
             }
 
             // Colors Variation
@@ -348,6 +401,11 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[m_SubMeshIndex.Value].m_SubMesh, out PrefabBase prefabBase))
                 {
                     visible = false;
+                    if (m_ToolSystem.actionMode.IsEditor())
+                    {
+                        m_EditorVisible.Value = false;
+                    }
+
                     return;
                 }
 
@@ -394,6 +452,10 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
 
                 visible = true;
+                if (m_ToolSystem.actionMode.IsEditor())
+                {
+                    m_EditorVisible.Value = true;
+                }
             }
 
             if (m_PreviouslySelectedEntity == m_CurrentEntity &&

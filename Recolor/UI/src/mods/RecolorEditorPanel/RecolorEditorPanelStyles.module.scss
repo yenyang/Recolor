@@ -1,0 +1,21 @@
+.panel {
+    position: absolute;
+    left: 10rem;
+    bottom: 75rem;
+}
+
+.panelSection {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.toolOptions {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding-right: 3rem;
+    padding-left: 3rem;
+}

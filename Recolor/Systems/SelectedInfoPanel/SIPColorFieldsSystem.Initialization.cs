@@ -66,6 +66,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private Dictionary<AssetSeasonIdentifier, Game.Rendering.ColorSet> m_VanillaColorSets;
         private ValueBindingHelper<bool> m_MatchesSavedOnDisk;
         private ValueBindingHelper<bool> m_CanResetSingleChannels;
+        private ValueBindingHelper<bool> m_EditorVisible;
         private Scope m_PreferredScope;
         private ColorPickerToolSystem m_ColorPickerTool;
         private ColorPainterToolSystem m_ColorPainterTool;
@@ -166,6 +167,9 @@ namespace Recolor.Systems.SelectedInfoPanel
         }
 
         /// <inheritdoc/>
+        public override GameMode gameMode => GameMode.GameOrEditor;
+
+        /// <inheritdoc/>
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -190,6 +194,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_ShowHexaDecimals = CreateBinding("ShowHexaDecimals", Mod.Instance.Settings.ShowHexaDecimals);
             m_SubMeshIndex = CreateBinding("SubMeshIndex", 0);
             m_CanResetSingleChannels = CreateBinding("CanResetSingleChannels", false);
+            m_EditorVisible = CreateBinding("EditorVisible", false);
 
             // These bindings are closely related.
             m_PreferredScope = Scope.SingleInstance;
@@ -208,7 +213,14 @@ namespace Recolor.Systems.SelectedInfoPanel
             CreateTrigger("ResetColorSet", ResetColorSet);
             CreateTrigger("SaveToDisk", SaveColorSetToDisk);
             CreateTrigger("RemoveFromDisk", RemoveFromDisk);
-            CreateTrigger("ActivateColorPicker", () => m_ToolSystem.activeTool = m_ToolSystem.activeTool = m_ColorPickerTool);
+            CreateTrigger("ActivateColorPicker", () =>
+            {
+                m_ToolSystem.activeTool = m_ToolSystem.activeTool = m_ColorPickerTool;
+                if (m_ToolSystem.actionMode.IsEditor())
+                {
+                    m_EditorVisible.Value = false;
+                }
+            });
             CreateTrigger("ActivateColorPainter", () =>
             {
                 m_ToolSystem.selected = Entity.Null;
