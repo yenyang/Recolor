@@ -594,15 +594,15 @@ namespace Recolor.Systems.SelectedInfoPanel
         {
             if (EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer) &&
                     EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) &&
-                    meshColorRecordBuffer.Length > m_SubMeshIndex.Value &&
-                    customMeshColorBuffer.Length > m_SubMeshIndex.Value &&
+                    meshColorRecordBuffer.Length > m_SubMeshData.Value.SubMeshIndex &&
+                    customMeshColorBuffer.Length > m_SubMeshData.Value.SubMeshIndex &&
                     channel >= 0 && channel <= 2)
             {
-                CustomMeshColor customMeshColor = customMeshColorBuffer[m_SubMeshIndex.Value];
-                customMeshColor.m_ColorSet[channel] = meshColorRecordBuffer[m_SubMeshIndex.Value].m_ColorSet[channel];
-                customMeshColorBuffer[m_SubMeshIndex.Value] = customMeshColor;
+                CustomMeshColor customMeshColor = customMeshColorBuffer[m_SubMeshData.Value.SubMeshIndex];
+                customMeshColor.m_ColorSet[channel] = meshColorRecordBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet[channel];
+                customMeshColorBuffer[m_SubMeshData.Value.SubMeshIndex] = customMeshColor;
 
-                if (MatchesEntireVanillaColorSet(meshColorRecordBuffer[m_SubMeshIndex.Value].m_ColorSet, customMeshColor.m_ColorSet))
+                if (MatchesEntireVanillaColorSet(meshColorRecordBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet, customMeshColor.m_ColorSet))
                 {
                     buffer.RemoveComponent<CustomMeshColor>(entity);
                     buffer.RemoveComponent<MeshColorRecord>(entity);

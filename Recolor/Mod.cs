@@ -2,6 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
+// #define DUMP_VANILLA_LOCALIZATION
 namespace Recolor
 {
     using System;
@@ -100,6 +101,17 @@ namespace Recolor
             {
                 Log.Error(ex.ToString());
             }
+#endif
+#if DUMP_VANILLA_LOCALIZATION
+            var strings = GameManager.instance.localizationManager.activeDictionary.entries
+                .OrderBy(kv => kv.Key)
+                .ToDictionary(kv => kv.Key, kv => kv.Value);
+
+            var json = Colossal.Json.JSON.Dump(strings);
+
+            var filePath = Path.Combine(Application.persistentDataPath, "locale-dictionary.json");
+
+            File.WriteAllText(filePath, json);
 #endif
             Log.Info($"{nameof(OnLoad)} Initalizing systems");
             updateSystem.UpdateAt<SIPColorFieldsSystem>(SystemUpdatePhase.UIUpdate);

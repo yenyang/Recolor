@@ -54,7 +54,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private ClimateSystem m_ClimateSystem;
         private ValueBindingHelper<RecolorSet> m_CurrentColorSet;
         private ValueBindingHelper<bool[]> m_MatchesVanillaColorSet;
-        private ValueBindingHelper<int> m_SubMeshIndex;
+        private ValueBindingHelper<SubMeshData> m_SubMeshData;
         private ValueBindingHelper<ButtonState> m_SingleInstance;
         private ValueBindingHelper<ButtonState> m_Matching;
         private ValueBindingHelper<ButtonState> m_ServiceVehicles;
@@ -192,7 +192,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_Minimized = CreateBinding("Minimized", false);
             m_MatchesSavedOnDisk = CreateBinding("MatchesSavedOnDisk", false);
             m_ShowHexaDecimals = CreateBinding("ShowHexaDecimals", Mod.Instance.Settings.ShowHexaDecimals);
-            m_SubMeshIndex = CreateBinding("SubMeshIndex", 0);
+            m_SubMeshData = CreateBinding("SubMeshData", new SubMeshData(0, 1, string.Empty, SubMeshData.SubMeshScopes.All, ButtonState.Off, ButtonState.Off, ButtonState.On));
             m_CanResetSingleChannels = CreateBinding("CanResetSingleChannels", false);
             m_EditorVisible = CreateBinding("EditorVisible", false);
 
@@ -242,6 +242,17 @@ namespace Recolor.Systems.SelectedInfoPanel
                 m_ShowHexaDecimals.Value = !m_ShowHexaDecimals.Value;
                 Mod.Instance.Settings.ShowHexaDecimals = m_ShowHexaDecimals.Value;
                 Mod.Instance.Settings.ApplyAndSave();
+            });
+            CreateTrigger("ReduceSubMeshIndex", () =>
+            {
+                m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex - 1, 0, m_SubMeshData.Value.SubMeshLength - 1);
+                m_PreviouslySelectedEntity = Entity.Null;
+            });
+
+            CreateTrigger("IncreaseSubMeshIndex", () =>
+            {
+                m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex + 1, 0, m_SubMeshData.Value.SubMeshLength - 1);
+                m_PreviouslySelectedEntity = Entity.Null;
             });
 
             m_VanillaColorSets = new ();

@@ -455,7 +455,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private void ColorRefresh()
         {
             if (!EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer) ||
-                m_SubMeshIndex.Value >= subMeshBuffer.Length)
+                m_SubMeshData.Value.SubMeshIndex >= subMeshBuffer.Length)
             {
                 return;
             }

@@ -12,6 +12,8 @@ import { RecolorSet } from "mods/Domain/RecolorSet";
 import { ButtonState } from "mods/Domain/ButtonState";
 import { Scope } from "mods/Domain/Scope";
 import { tool } from "cs2/bindings";
+import { Button } from "cs2/ui";
+import { SubMeshData } from "mods/Domain/SubMeshData";
 
 const uilStandard =                          "coui://uil/Standard/";
 const uilColored =                           "coui://uil/Colored/";
@@ -28,6 +30,8 @@ const saveToDiskSrc =                   uilStandard + "DiskSave.svg";
 const swapSrc =                         uilStandard + "ArrowsMoveLeftRight.svg";
 const serviceVehiclesSrc =              uilStandard + "ServiceVehicles.svg";
 const routeSrc =                        uilStandard + "BusShelter.svg";
+const arrowLeftSrc =           uilStandard +  "ArrowLeftThickStroke.svg";
+const arrowRightSrc =           uilStandard +  "ArrowRightThickStroke.svg";
 
 const SingleInstance$ = bindValue<ButtonState>(mod.id, 'SingleInstance');
 const Matching$ = bindValue<ButtonState>(mod.id, 'Matching');
@@ -40,6 +44,7 @@ const ShowHexaDecimals$ = bindValue<boolean>(mod.id, "ShowHexaDecimals");
 const CurrentColorSet$ = bindValue<RecolorSet>(mod.id, "CurrentColorSet");
 const Route$ = bindValue<ButtonState>(mod.id, 'Route');
 const EditorVisible$ = bindValue<boolean>(mod.id, "EditorVisible");
+const SubMeshData$ = bindValue<SubMeshData>(mod.id, "SubMeshData");
 
 const InfoRowTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss",
@@ -73,6 +78,7 @@ function changeColor(channel : number, newColor : Color) {
 
 const descriptionToolTipStyle = getModule("game-ui/common/tooltip/description-tooltip/description-tooltip.module.scss", "classes");
     
+const roundButtonHighlightStyle = getModule("game-ui/common/input/button/themes/round-highlight-button.module.scss", "classes");
 
 // This is working, but it's possible a better solution is possible.
 function DescriptionTooltip(tooltipTitle: string | null, tooltipDescription: string | null) : JSX.Element {
@@ -97,6 +103,7 @@ export const RecolorMainPanelComponent = () => {
     const Route = useValue(Route$);
     const IsEditor = useValue(tool.isEditor$);
     const EditorVisible = useValue(EditorVisible$);
+    const SubMeshData = useValue(SubMeshData$);
     
     // translation handling. Translates using locale keys that are defined in C# or fallback string from en-US.json.
     const { translate } = useLocalization();
@@ -227,6 +234,32 @@ export const RecolorMainPanelComponent = () => {
                         subRow={false}
                         className={InfoRowTheme.infoRow}
                     ></InfoRow>
+                    { SubMeshData.SubMeshLength > 1 && (
+                        <InfoRow
+                            left="SubMesh"
+                            right= 
+                            {
+                                <>
+                                    { SubMeshData.SubMeshIndex > 0? (
+                                        <Button className={roundButtonHighlightStyle.button} variant="icon" onSelect={() => {handleClick("ReduceSubMeshIndex");} } focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}>
+                                            <img src={arrowLeftSrc}></img>
+                                        </Button>
+                                    ) : <span className={styles.subMeshButtonWidth}></span>}
+                                    <div className={styles.subMeshText}>{SubMeshData.SubMeshName} : {SubMeshData.SubMeshIndex+1} /{SubMeshData.SubMeshLength}</div>
+                                    { SubMeshData.SubMeshIndex < SubMeshData.SubMeshLength-1? (
+                                        <Button className={roundButtonHighlightStyle.button} variant="icon" onSelect={() => {handleClick("IncreaseSubMeshIndex");} } focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}>
+                                            <img src={arrowRightSrc}></img>
+                                        </Button>
+                                    ) : <span className={styles.subMeshButtonWidth}></span>}
+                                </>
+                            }
+                            uppercase={false}
+                            disableFocus={true}
+                            subRow={true}
+                            className={InfoRowTheme.infoRow}
+                        ></InfoRow>
+                    )}
+
                     { !Minimized && (
                         <InfoRow 
                             left={translate("Recolor.SECTION_TITLE[ColorSet]" ,locale["Recolor.SECTION_TITLE[ColorSet]"])}

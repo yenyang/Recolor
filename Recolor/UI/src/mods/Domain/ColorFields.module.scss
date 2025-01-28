@@ -15,6 +15,20 @@
     padding-bottom: 5rem;
 }
 
+.subMeshText {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 5rem;
+    color: white !important;
+    width: 250rem !important;
+}
+
+.subMeshButtonWidth {
+    width: 24rem;
+}
+
 .rcColorField {
     height: 30rem !important; 
     width: 90rem !important;
