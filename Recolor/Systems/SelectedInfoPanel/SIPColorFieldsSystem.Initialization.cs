@@ -18,6 +18,7 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Game.Common;
     using Game.Input;
     using Game.Objects;
+    using Game.Prefabs;
     using Game.Prefabs.Climate;
     using Game.Rendering;
     using Game.Simulation;
@@ -87,6 +88,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private Entity m_CurrentEntity;
         private Entity m_CurrentPrefabEntity;
         private int m_RouteColorChannel = -1;
+        private List<int> m_SubMeshIndexes = new List<int>();
 
         /// <summary>
         /// An enum to handle seasons.
@@ -245,13 +247,86 @@ namespace Recolor.Systems.SelectedInfoPanel
             });
             CreateTrigger("ReduceSubMeshIndex", () =>
             {
-                m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex - 1, 0, m_SubMeshData.Value.SubMeshLength - 1);
+                if (m_SubMeshData.Value.SingleSubMesh == ButtonState.On &&
+                    m_SubMeshData.Value.SubMeshIndex > 0)
+                {
+                    m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex - 1, 0, m_SubMeshData.Value.SubMeshLength - 1);
+                }
+                else if (m_SubMeshData.Value.SingleSubMesh == ButtonState.On &&
+                         m_SubMeshData.Value.SubMeshIndex <= 0)
+                {
+                    m_SubMeshData.Value.SubMeshIndex = m_SubMeshData.Value.SubMeshLength - 1;
+                }
+                else if (m_SubMeshData.Value.MatchingSubMeshes == ButtonState.On &&
+                         EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> submeshes))
+                {
+                    int attempts = 0;
+                    int index = m_SubMeshData.Value.SubMeshIndex;
+                    while (attempts < submeshes.Length)
+                    {
+                        index--;
+                        if (index < 0)
+                        {
+                            index = submeshes.Length - 1;
+                        }
+
+                        if (m_PrefabSystem.GetPrefabName(submeshes[index].m_SubMesh) != m_SubMeshData.Value.SubMeshName) 
+                        {
+                            m_SubMeshData.Value.SubMeshIndex = index;
+                            break;
+                        }
+
+                        attempts++;
+                    }
+                }
+
+                m_SubMeshData.Binding.TriggerUpdate();
                 m_PreviouslySelectedEntity = Entity.Null;
             });
 
             CreateTrigger("IncreaseSubMeshIndex", () =>
             {
-                m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex + 1, 0, m_SubMeshData.Value.SubMeshLength - 1);
+                if (m_SubMeshData.Value.SubMeshScope == SubMeshData.SubMeshScopes.SingleInstance &&
+                    m_SubMeshData.Value.SubMeshIndex < m_SubMeshData.Value.SubMeshLength - 1)
+                {
+                    m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex + 1, 0, m_SubMeshData.Value.SubMeshLength - 1);
+                }
+                else if (m_SubMeshData.Value.SubMeshScope == SubMeshData.SubMeshScopes.SingleInstance &&
+                         m_SubMeshData.Value.SubMeshIndex >= m_SubMeshData.Value.SubMeshLength - 1)
+                {
+                    m_SubMeshData.Value.SubMeshIndex = 0;
+                }
+                else if (m_SubMeshData.Value.MatchingSubMeshes == ButtonState.On &&
+                         EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> submeshes))
+                {
+                    int attempts = 0;
+                    int index = m_SubMeshData.Value.SubMeshIndex;
+                    while (attempts < submeshes.Length)
+                    {
+                        index++;
+                        if (index >= submeshes.Length)
+                        {
+                            index = 0;
+                        }
+
+                        if (m_PrefabSystem.GetPrefabName(submeshes[index].m_SubMesh) != m_SubMeshData.Value.SubMeshName)
+                        {
+                            m_SubMeshData.Value.SubMeshIndex = index;
+                            break;
+                        }
+
+                        attempts++;
+                    }
+                }
+
+                m_SubMeshData.Binding.TriggerUpdate();
+                m_PreviouslySelectedEntity = Entity.Null;
+            });
+
+            CreateTrigger("ChangeSubMeshScope", (int newScope) =>
+            {
+                m_SubMeshData.Value.SubMeshScope = (SubMeshData.SubMeshScopes)newScope;
+                HandleSubMeshScopes();
                 m_PreviouslySelectedEntity = Entity.Null;
             });
 

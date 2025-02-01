@@ -108,6 +108,13 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("ServiceVehicles"), "Changes the colors of all service vehicles owned by the same service building. Newly created service vehicles owned by the same building will also have the same color set." },
                 { TooltipTitleKey("RouteVehicles"), "Route Vehicles" },
                 { TooltipDescriptionKey("RouteVehicles"), "Changes the colors of all vehicles assigned to a route. Newly created vehicles on the route will also have the same color set." },
+                { TooltipTitleKey("SingleSubMesh"), "Single Submesh" },
+                { TooltipDescriptionKey("SingleSubMesh"), "Changes the colors of the individual submesh selected." },
+                { TooltipTitleKey("MatchingSubmeshes"), "Matching Submeshes" },
+                { TooltipDescriptionKey("MatchingSubmeshes"), "Changes the colors of submeshes with matching names." },
+                { TooltipTitleKey("AllSubmeshes"), "All Submeshes" },
+                { TooltipDescriptionKey("AllSubmeshes"), "Changes the colors of all submeshes." },
+                { SectionLabel("SubMeshes"), "SubMeshes" },
             };
         }
 

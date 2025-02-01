@@ -287,7 +287,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex, 0, subMeshBuffer1.Length - 1);
                 m_SubMeshData.Value.SubMeshLength = subMeshBuffer1.Length;
                 m_SubMeshData.Value.SubMeshName = m_PrefabSystem.GetPrefabName(subMeshBuffer1[m_SubMeshData.Value.SubMeshIndex].m_SubMesh);
-                m_SubMeshData.Binding.TriggerUpdate();
+                HandleSubMeshScopes();
             }
             else
             {
@@ -323,6 +323,8 @@ namespace Recolor.Systems.SelectedInfoPanel
                 {
                     originalMeshColor = meshColorBuffer[0].m_ColorSet;
                 }
+
+                m_SubMeshIndexes = new List<int>() { 0, 1, 2, 3 };
             }
             else
             {

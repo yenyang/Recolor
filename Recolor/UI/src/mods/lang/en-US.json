@@ -78,5 +78,12 @@
   "Recolor.TOOLTIP_TITLE[ServiceVehicles]": "Service Vehicles",
   "Recolor.TOOLTIP_DESCRIPTION[ServiceVehicles]": "Changes the colors of all service vehicles owned by the same service building. Newly created service vehicles owned by the same building will also have the same color set.",
   "Recolor.TOOLTIP_TITLE[RouteVehicles]": "Route Vehicles",
-  "Recolor.TOOLTIP_DESCRIPTION[RouteVehicles]": "Changes the colors of all vehicles assigned to a route. Newly created vehicles on the route will also have the same color set."
+  "Recolor.TOOLTIP_DESCRIPTION[RouteVehicles]": "Changes the colors of all vehicles assigned to a route. Newly created vehicles on the route will also have the same color set.",
+  "Recolor.TOOLTIP_TITLE[SingleSubMesh]": "Single Submesh",
+  "Recolor.TOOLTIP_DESCRIPTION[SingleSubMesh]": "Changes the colors of the individual submesh selected.",
+  "Recolor.TOOLTIP_TITLE[MatchingSubmeshes]": "Matching Submeshes",
+  "Recolor.TOOLTIP_DESCRIPTION[MatchingSubmeshes]": "Changes the colors of submeshes with matching names.",
+  "Recolor.TOOLTIP_TITLE[AllSubmeshes]": "All Submeshes",
+  "Recolor.TOOLTIP_DESCRIPTION[AllSubmeshes]": "Changes the colors of all submeshes.",
+  "Recolor.SECTION_TITLE[SubMeshes]": "SubMeshes"
 }

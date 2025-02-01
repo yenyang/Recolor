@@ -13,13 +13,14 @@ import { ButtonState } from "mods/Domain/ButtonState";
 import { Scope } from "mods/Domain/Scope";
 import { tool } from "cs2/bindings";
 import { Button } from "cs2/ui";
-import { SubMeshData } from "mods/Domain/SubMeshData";
+import { SubMeshData, SubMeshScopes } from "mods/Domain/SubMeshData";
 
 const uilStandard =                          "coui://uil/Standard/";
 const uilColored =                           "coui://uil/Colored/";
 const resetSrc =                        uilStandard + "Reset.svg";
 const singleSrc =                        uilStandard + "SingleRhombus.svg";
 const matchingSrc =                     uilStandard + "SameRhombus.svg";
+const allSrc =                          uilStandard + "StarAll.svg";
 const copySrc =                         uilStandard + "RectangleCopy.svg";
 const pasteSrc =                        uilStandard + "RectanglePaste.svg";
 const colorPickerSrc =                  uilStandard + "PickerPipette.svg";
@@ -63,6 +64,10 @@ const InfoRow: any = getModule(
 
 function changeScope(newScope : Scope) {
     trigger(mod.id, "ChangeScope", newScope);
+}
+
+function changeSubMeshScope(newSubMeshScope : SubMeshScopes) {
+    trigger(mod.id, "ChangeSubMeshScope", newSubMeshScope);
 }
 
 function handleClick(eventName : string) {
@@ -234,24 +239,68 @@ export const RecolorMainPanelComponent = () => {
                         subRow={false}
                         className={InfoRowTheme.infoRow}
                     ></InfoRow>
-                    { SubMeshData.SubMeshLength > 1 && (
+                    { SubMeshData.SubMeshLength > 1 && !Minimized && (
                         <InfoRow
-                            left="SubMesh"
+                            left={translate("Recolor.SECTION_TITLE[SubMeshes]" ,locale["Recolor.SECTION_TITLE[SubMeshes]"])}
                             right= 
                             {
-                                <>
-                                    { SubMeshData.SubMeshIndex > 0? (
-                                        <Button className={roundButtonHighlightStyle.button} variant="icon" onSelect={() => {handleClick("ReduceSubMeshIndex");} } focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}>
-                                            <img src={arrowLeftSrc}></img>
-                                        </Button>
-                                    ) : <span className={styles.subMeshButtonWidth}></span>}
-                                    <div className={styles.subMeshText}>{SubMeshData.SubMeshName} : {SubMeshData.SubMeshIndex+1} /{SubMeshData.SubMeshLength}</div>
-                                    { SubMeshData.SubMeshIndex < SubMeshData.SubMeshLength-1? (
-                                        <Button className={roundButtonHighlightStyle.button} variant="icon" onSelect={() => {handleClick("IncreaseSubMeshIndex");} } focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}>
-                                            <img src={arrowRightSrc}></img>
-                                        </Button>
-                                    ) : <span className={styles.subMeshButtonWidth}></span>}
-                                </>
+                                <div className={styles.columnGroup}>
+                                    <>
+                                        {SubMeshData.AllSubMeshes != ButtonState.On? 
+                                            <div className={styles.rowGroup}>
+                                                <Button className={roundButtonHighlightStyle.button} variant="icon" onSelect={() => {handleClick("ReduceSubMeshIndex");} } focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}>
+                                                    <img src={arrowLeftSrc}></img>
+                                                </Button>
+                                                { SubMeshData.MatchingSubMeshes == ButtonState.On? 
+                                                    <div className={styles.subMeshText}>{SubMeshData.SubMeshName}</div> :
+                                                    <div className={styles.subMeshText}>{SubMeshData.SubMeshName} : {SubMeshData.SubMeshIndex+1} /{SubMeshData.SubMeshLength}</div>
+                                                }
+                                                <Button className={roundButtonHighlightStyle.button} variant="icon" onSelect={() => {handleClick("IncreaseSubMeshIndex");} } focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}>
+                                                    <img src={arrowRightSrc}></img>
+                                                </Button>
+                                            </div>
+                                            : <div className={styles.rowGroup}>
+                                                    <span className={styles.subMeshButtonWidth}></span>
+                                                    <span className={styles.subMeshText}></span>
+                                                    <span className={styles.subMeshButtonWidth}></span>
+                                              </div>
+                                        }
+                                        <div className={styles.rowGroup}>
+                                            <>
+                                                {(SubMeshData.SingleSubMesh & ButtonState.Hidden) != ButtonState.Hidden  && (
+                                                    <VanillaComponentResolver.instance.ToolButton
+                                                        src={singleSrc}
+                                                        focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                        selected = {SubMeshData.SingleSubMesh == ButtonState.On}
+                                                        tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[SingleSubMesh]", locale["Recolor.TOOLTIP_TITLE[SingleSubMesh]"]), translate("Recolor.TOOLTIP_DESCRIPTION[SingleSubMesh]", locale["Recolor.TOOLTIP_DESCRIPTION[SingleSubMesh]"]))}
+                                                        className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                        onSelect={() => { changeSubMeshScope(SubMeshScopes.SingleInstance)}}
+                                                    />
+                                                )}
+                                                {(SubMeshData.MatchingSubMeshes & ButtonState.Hidden) != ButtonState.Hidden  && (
+                                                    <VanillaComponentResolver.instance.ToolButton
+                                                        src={matchingSrc}
+                                                        focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                        selected = {SubMeshData.MatchingSubMeshes == ButtonState.On}
+                                                        tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[MatchingSubmeshes]", locale["Recolor.TOOLTIP_TITLE[MatchingSubmeshes]"]), translate("Recolor.TOOLTIP_DESCRIPTION[MatchingSubmeshes]", locale["Recolor.TOOLTIP_DESCRIPTION[MatchingSubmeshes]"]))}
+                                                        className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                        onSelect={() => { changeSubMeshScope(SubMeshScopes.Matching)}}
+                                                    />
+                                                )}
+                                                {(SubMeshData.AllSubMeshes & ButtonState.Hidden) != ButtonState.Hidden  && (
+                                                    <VanillaComponentResolver.instance.ToolButton
+                                                        src={allSrc}
+                                                        focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                        selected = {SubMeshData.AllSubMeshes == ButtonState.On}
+                                                        tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[AllSubmeshes]", locale["Recolor.TOOLTIP_TITLE[AllSubmeshes]"]), translate("Recolor.TOOLTIP_DESCRIPTION[AllSubmeshes]", locale["Recolor.TOOLTIP_DESCRIPTION[AllSubmeshes]"]))}
+                                                        className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                        onSelect={() => { changeSubMeshScope(SubMeshScopes.All)}}
+                                                    />
+                                                )}
+                                            </>
+                                        </div>
+                                    </>
+                                </div>
                             }
                             uppercase={false}
                             disableFocus={true}

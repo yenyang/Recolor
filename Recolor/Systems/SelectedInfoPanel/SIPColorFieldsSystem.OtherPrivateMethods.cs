@@ -232,6 +232,76 @@ namespace Recolor.Systems.SelectedInfoPanel
             return false;
         }
 
+        private void HandleSubMeshScopes()
+        {
+            SubMeshData subMeshData = m_SubMeshData.Value;
+            m_SubMeshIndexes.Clear();
+            List<int> allIndexes = new List<int>();
+
+            if (subMeshData.SubMeshScope == SubMeshData.SubMeshScopes.All)
+            {
+                subMeshData.AllSubMeshes = ButtonState.On;
+                subMeshData.SingleSubMesh = ButtonState.Off;
+            }
+            else if (subMeshData.SubMeshScope == SubMeshData.SubMeshScopes.SingleInstance)
+            {
+                subMeshData.AllSubMeshes = ButtonState.Off;
+                subMeshData.SingleSubMesh = ButtonState.On;
+                m_SubMeshIndexes.Add(subMeshData.SubMeshIndex);
+            }
+            else
+            {
+                subMeshData.AllSubMeshes = ButtonState.Off;
+                subMeshData.SingleSubMesh = ButtonState.Off;
+            }
+
+            subMeshData.MatchingSubMeshes = ButtonState.Hidden;
+            if (EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshes))
+            {
+                for (int i = 0; i < subMeshes.Length; i++)
+                {
+                    if (m_PrefabSystem.GetPrefabName(subMeshes[i].m_SubMesh) == subMeshData.SubMeshName)
+                    {
+                        if (subMeshData.SubMeshScope == SubMeshData.SubMeshScopes.Matching)
+                        {
+                            if (i != subMeshData.SubMeshIndex)
+                            {
+                                subMeshData.MatchingSubMeshes = ButtonState.On;
+                            }
+
+                            m_SubMeshIndexes.Add(i);
+                        }
+                        else if (subMeshData.SubMeshScope == SubMeshData.SubMeshScopes.SingleInstance &&
+                                i != subMeshData.SubMeshIndex)
+                        {
+                            subMeshData.MatchingSubMeshes = ButtonState.Off;
+                            break;
+                        }
+                        else if (i != subMeshData.SubMeshIndex)
+                        {
+                            subMeshData.MatchingSubMeshes = ButtonState.Off;
+                        }
+                    }
+
+                    allIndexes.Add(i);
+                }
+            }
+
+            if (subMeshData.SubMeshScope == SubMeshData.SubMeshScopes.Matching &&
+                subMeshData.MatchingSubMeshes == ButtonState.Hidden)
+            {
+                subMeshData.AllSubMeshes = ButtonState.On;
+            }
+
+            if (subMeshData.AllSubMeshes == ButtonState.On)
+            {
+                m_SubMeshIndexes = allIndexes;
+            }
+
+            m_SubMeshData.Value = subMeshData;
+            m_SubMeshData.Binding.TriggerUpdate();
+        }
+
         private int GetRouteColorChannel(Entity prefabEntity)
         {
             if (!EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer) ||
@@ -463,6 +533,11 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             for (int i = 0; i < meshColorBuffer.Length; i++)
             {
+                if (!m_SubMeshIndexes.Contains(i))
+                {
+                    continue;
+                }
+
                 CustomMeshColor customMeshColor = customMeshColorBuffer[i];
                 if (channel >= 0 && channel < 3)
                 {
