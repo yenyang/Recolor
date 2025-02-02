@@ -287,7 +287,6 @@ namespace Recolor.Systems.SelectedInfoPanel
                 m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex, 0, subMeshBuffer1.Length - 1);
                 m_SubMeshData.Value.SubMeshLength = subMeshBuffer1.Length;
                 m_SubMeshData.Value.SubMeshName = m_PrefabSystem.GetPrefabName(subMeshBuffer1[m_SubMeshData.Value.SubMeshIndex].m_SubMesh);
-                m_CanResetOtherSubMeshes.Value = false;
                 HandleSubMeshScopes();
             }
             else
@@ -370,6 +369,8 @@ namespace Recolor.Systems.SelectedInfoPanel
                 {
                     m_EditorVisible.Value = true;
                 }
+
+                m_CanResetOtherSubMeshes.Value = false;
             }
 
             // Routes
@@ -411,6 +412,8 @@ namespace Recolor.Systems.SelectedInfoPanel
                 {
                     m_EditorVisible.Value = true;
                 }
+
+                m_CanResetOtherSubMeshes.Value = false;
             }
 
             // Colors Variation
@@ -469,7 +472,16 @@ namespace Recolor.Systems.SelectedInfoPanel
                 m_PreviouslySelectedEntity = m_CurrentEntity;
 
                 m_MatchesVanillaColorSet.Value = MatchesVanillaColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
+                if (m_CustomColorVariationSystem.TryGetCustomColorVariation(subMeshBuffer[m_SubMeshData.Value.SubMeshIndex].m_SubMesh, m_CurrentAssetSeasonIdentifier.m_Index, out _) &&
+                    m_MatchesVanillaColorSet.Value[0] &&
+                    m_MatchesVanillaColorSet.Value[1] &&
+                    m_MatchesVanillaColorSet.Value[2])
+                {
+                    DeleteCustomColorVariationEntity();
+                }
+
                 m_MatchesSavedOnDisk.Value = MatchesSavedOnDiskColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
+                m_CanResetOtherSubMeshes.Value = false;
             }
 
             // Single Instance

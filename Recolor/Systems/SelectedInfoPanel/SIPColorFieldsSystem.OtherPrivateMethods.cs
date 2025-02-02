@@ -238,6 +238,26 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_SubMeshIndexes.Clear();
             List<int> allIndexes = new List<int>();
 
+            if (m_Matching.Value == ButtonState.On &&
+               !EntityManager.HasComponent<TreeData>(m_CurrentPrefabEntity))
+            {
+                subMeshData.AllSubMeshes = ButtonState.Hidden;
+                subMeshData.MatchingSubMeshes = ButtonState.On;
+                subMeshData.SingleSubMesh = ButtonState.Hidden;
+                m_SubMeshData.Value = subMeshData;
+                m_SubMeshData.Binding.TriggerUpdate();
+                return;
+            }
+            else if (EntityManager.HasComponent<TreeData>(m_CurrentPrefabEntity) ||
+                     m_Route.Value == ButtonState.On ||
+                     m_ServiceVehicles.Value == ButtonState.On)
+            {
+                m_SubMeshData.Value.SubMeshIndex = 0;
+                m_SubMeshData.Value.SubMeshLength = 1;
+                m_SubMeshData.Binding.TriggerUpdate();
+                return;
+            }
+
             if (subMeshData.SubMeshScope == SubMeshData.SubMeshScopes.All)
             {
                 subMeshData.AllSubMeshes = ButtonState.On;
@@ -657,6 +677,7 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             if (matches.Length >= 3 && matches[0] && matches[1] && matches[2])
             {
+                DeleteCustomColorVariationEntity();
                 ColorRefresh();
             }
             else

@@ -47,7 +47,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 return;
             }
 
-            if (!EntityManager.TryGetBuffer(subMeshBuffer[0].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
+            if (!EntityManager.TryGetBuffer(subMeshBuffer[m_SubMeshData.Value.SubMeshIndex].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
             {
                 return;
             }
@@ -55,7 +55,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             ColorSet colorSet = colorVariationBuffer[m_CurrentAssetSeasonIdentifier.m_Index].m_ColorSet;
             if (!EntityManager.HasComponent<Game.Objects.Tree>(m_CurrentEntity))
             {
-                m_CustomColorVariationSystem.CreateOrUpdateCustomColorVariationEntity(buffer, subMeshBuffer[0].m_SubMesh, colorSet, m_CurrentAssetSeasonIdentifier.m_Index);
+                m_CustomColorVariationSystem.CreateOrUpdateCustomColorVariationEntity(buffer, subMeshBuffer[m_SubMeshData.Value.SubMeshIndex].m_SubMesh, colorSet, m_CurrentAssetSeasonIdentifier.m_Index);
             }
             else
             {
@@ -80,14 +80,15 @@ namespace Recolor.Systems.SelectedInfoPanel
                 return;
             }
 
-            if (!EntityManager.TryGetBuffer(subMeshBuffer[0].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
+            if (!EntityManager.TryGetBuffer(subMeshBuffer[m_SubMeshData.Value.SubMeshIndex].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) ||
+                colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
             {
                 return;
             }
 
             if (!EntityManager.HasComponent<Game.Objects.Tree>(m_CurrentEntity))
             {
-                m_CustomColorVariationSystem.DeleteCustomColorVariationEntity(buffer, subMeshBuffer[0].m_SubMesh);
+                m_CustomColorVariationSystem.DeleteCustomColorVariationEntity(buffer, subMeshBuffer[m_SubMeshData.Value.SubMeshIndex].m_SubMesh);
             }
             else
             {
@@ -111,7 +112,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 return;
             }
 
-            if (!EntityManager.TryGetBuffer(subMeshBuffer[0].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
+            if (!EntityManager.TryGetBuffer(subMeshBuffer[m_SubMeshData.Value.SubMeshIndex].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
             {
                 return;
             }
@@ -153,10 +154,17 @@ namespace Recolor.Systems.SelectedInfoPanel
             NativeArray<Entity> entities = prefabRefQuery.ToEntityArray(Allocator.Temp);
             foreach (Entity e in entities)
             {
-                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) && currentSubMeshBuffer[0].m_SubMesh == subMeshBuffer[0].m_SubMesh)
+                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) )
                 {
-                    buffer.AddComponent<BatchesUpdated>(e);
-                    AddBatchesUpdatedToSubElements(e, buffer);
+                    for (int i = 0; i < currentSubMeshBuffer.Length; i++)
+                    {
+                        if (currentSubMeshBuffer[i].m_SubMesh == subMeshBuffer[m_SubMeshData.Value.SubMeshIndex].m_SubMesh)
+                        {
+                            buffer.AddComponent<BatchesUpdated>(e);
+                            AddBatchesUpdatedToSubElements(e, buffer);
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -262,7 +270,9 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 ColorSet savedColorSet = customColorSet.ColorSet;
 
-                if (savedColorSet.m_Channel0 == colorSet.m_Channel0 && savedColorSet.m_Channel1 == colorSet.m_Channel1 && savedColorSet.m_Channel2 == colorSet.m_Channel2)
+                if (savedColorSet.m_Channel0 == colorSet.m_Channel0 &&
+                    savedColorSet.m_Channel1 == colorSet.m_Channel1 &&
+                    savedColorSet.m_Channel2 == colorSet.m_Channel2)
                 {
                     return true;
                 }
@@ -443,11 +453,18 @@ namespace Recolor.Systems.SelectedInfoPanel
             NativeArray<Entity> entities = prefabRefQuery.ToEntityArray(Allocator.Temp);
             foreach (Entity e in entities)
             {
-                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) && prefabsNeedingUpdates.Contains(currentSubMeshBuffer[0].m_SubMesh))
+                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) &&
+                    EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer))
                 {
-                    buffer.AddComponent<BatchesUpdated>(e);
-
-                    AddBatchesUpdatedToSubElements(e, buffer);
+                    for (int i = 0; i < currentSubMeshBuffer.Length; i++)
+                    {
+                        if (prefabsNeedingUpdates.Contains(currentSubMeshBuffer[0].m_SubMesh))
+                        {
+                            buffer.AddComponent<BatchesUpdated>(e);
+                            AddBatchesUpdatedToSubElements(e, buffer);
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -460,7 +477,8 @@ namespace Recolor.Systems.SelectedInfoPanel
                 return;
             }
 
-            if (!EntityManager.TryGetBuffer(subMeshBuffer[0].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) || colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
+            if (!EntityManager.TryGetBuffer(subMeshBuffer[m_SubMeshData.Value.SubMeshIndex].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) ||
+                 colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
             {
                 return;
             }
@@ -476,12 +494,17 @@ namespace Recolor.Systems.SelectedInfoPanel
             foreach (Entity e in entities)
             {
                 if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && 
-                    EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) &&
-                    currentSubMeshBuffer[0].m_SubMesh == subMeshBuffer[0].m_SubMesh)
+                    EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer))
                 {
-                    buffer.AddComponent<BatchesUpdated>(e);
-
-                    AddBatchesUpdatedToSubElements(e, buffer);
+                    for (int i = 0; i < currentSubMeshBuffer.Length; i++)
+                    {
+                        if (currentSubMeshBuffer[i].m_SubMesh == subMeshBuffer[m_SubMeshData.Value.SubMeshIndex].m_SubMesh)
+                        {
+                            buffer.AddComponent<BatchesUpdated>(e);
+                            AddBatchesUpdatedToSubElements(e, buffer);
+                            break;
+                        }
+                    }
                 }
             }
 

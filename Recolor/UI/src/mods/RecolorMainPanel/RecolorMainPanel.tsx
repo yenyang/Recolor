@@ -46,6 +46,7 @@ const CurrentColorSet$ = bindValue<RecolorSet>(mod.id, "CurrentColorSet");
 const Route$ = bindValue<ButtonState>(mod.id, 'Route');
 const EditorVisible$ = bindValue<boolean>(mod.id, "EditorVisible");
 const SubMeshData$ = bindValue<SubMeshData>(mod.id, "SubMeshData");
+const CanResetOtherSubMeshes$ = bindValue<boolean>(mod.id, "CanResetOtherSubMeshes");
 
 const InfoRowTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss",
@@ -109,6 +110,7 @@ export const RecolorMainPanelComponent = () => {
     const IsEditor = useValue(tool.isEditor$);
     const EditorVisible = useValue(EditorVisible$);
     const SubMeshData = useValue(SubMeshData$);
+    const CanResetOtherSubMeshes = useValue(CanResetOtherSubMeshes$);
     
     // translation handling. Translates using locale keys that are defined in C# or fallback string from en-US.json.
     const { translate } = useLocalization();
@@ -181,7 +183,7 @@ export const RecolorMainPanelComponent = () => {
                                             onSelect={() => handleClick("PasteColorSet")}
                                         />  
                                     )}
-                                    { (!MatchesVanillaColorSet[0] || !MatchesVanillaColorSet[1] || !MatchesVanillaColorSet[2]) && (        
+                                    { (!MatchesVanillaColorSet[0] || !MatchesVanillaColorSet[1] || !MatchesVanillaColorSet[2] || CanResetOtherSubMeshes) && (        
                                         <VanillaComponentResolver.instance.ToolButton
                                             src={resetSrc}
                                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}

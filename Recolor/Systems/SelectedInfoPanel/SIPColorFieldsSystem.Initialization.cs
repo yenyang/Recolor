@@ -272,7 +272,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                             index = submeshes.Length - 1;
                         }
 
-                        if (m_PrefabSystem.GetPrefabName(submeshes[index].m_SubMesh) != m_SubMeshData.Value.SubMeshName) 
+                        if (m_PrefabSystem.GetPrefabName(submeshes[index].m_SubMesh) != m_SubMeshData.Value.SubMeshName)
                         {
                             m_SubMeshData.Value.SubMeshIndex = index;
                             break;
@@ -288,12 +288,12 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             CreateTrigger("IncreaseSubMeshIndex", () =>
             {
-                if (m_SubMeshData.Value.SubMeshScope == SubMeshData.SubMeshScopes.SingleInstance &&
+                if (m_SubMeshData.Value.SingleSubMesh == ButtonState.On &&
                     m_SubMeshData.Value.SubMeshIndex < m_SubMeshData.Value.SubMeshLength - 1)
                 {
                     m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex + 1, 0, m_SubMeshData.Value.SubMeshLength - 1);
                 }
-                else if (m_SubMeshData.Value.SubMeshScope == SubMeshData.SubMeshScopes.SingleInstance &&
+                else if (m_SubMeshData.Value.SingleSubMesh == ButtonState.On &&
                          m_SubMeshData.Value.SubMeshIndex >= m_SubMeshData.Value.SubMeshLength - 1)
                 {
                     m_SubMeshData.Value.SubMeshIndex = 0;
