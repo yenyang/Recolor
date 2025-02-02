@@ -154,7 +154,8 @@ namespace Recolor.Systems.SelectedInfoPanel
             NativeArray<Entity> entities = prefabRefQuery.ToEntityArray(Allocator.Temp);
             foreach (Entity e in entities)
             {
-                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) && EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer) )
+                if (EntityManager.TryGetComponent(e, out PrefabRef currentPrefabRef) &&
+                    EntityManager.TryGetBuffer(currentPrefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> currentSubMeshBuffer))
                 {
                     for (int i = 0; i < currentSubMeshBuffer.Length; i++)
                     {

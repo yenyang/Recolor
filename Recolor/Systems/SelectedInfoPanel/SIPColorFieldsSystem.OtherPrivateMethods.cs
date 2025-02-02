@@ -246,7 +246,6 @@ namespace Recolor.Systems.SelectedInfoPanel
                 subMeshData.SingleSubMesh = ButtonState.Hidden;
                 m_SubMeshData.Value = subMeshData;
                 m_SubMeshData.Binding.TriggerUpdate();
-                return;
             }
             else if (EntityManager.HasComponent<TreeData>(m_CurrentPrefabEntity) ||
                      m_Route.Value == ButtonState.On ||
@@ -257,32 +256,37 @@ namespace Recolor.Systems.SelectedInfoPanel
                 m_SubMeshData.Binding.TriggerUpdate();
                 return;
             }
-
-            if (subMeshData.SubMeshScope == SubMeshData.SubMeshScopes.All)
-            {
-                subMeshData.AllSubMeshes = ButtonState.On;
-                subMeshData.SingleSubMesh = ButtonState.Off;
-            }
-            else if (subMeshData.SubMeshScope == SubMeshData.SubMeshScopes.SingleInstance)
-            {
-                subMeshData.AllSubMeshes = ButtonState.Off;
-                subMeshData.SingleSubMesh = ButtonState.On;
-                m_SubMeshIndexes.Add(subMeshData.SubMeshIndex);
-            }
             else
             {
-                subMeshData.AllSubMeshes = ButtonState.Off;
-                subMeshData.SingleSubMesh = ButtonState.Off;
+                if (subMeshData.SubMeshScope == SubMeshData.SubMeshScopes.All)
+                {
+                    subMeshData.AllSubMeshes = ButtonState.On;
+                    subMeshData.SingleSubMesh = ButtonState.Off;
+                }
+                else if (subMeshData.SubMeshScope == SubMeshData.SubMeshScopes.SingleInstance)
+                {
+                    subMeshData.AllSubMeshes = ButtonState.Off;
+                    subMeshData.SingleSubMesh = ButtonState.On;
+                    m_SubMeshIndexes.Add(subMeshData.SubMeshIndex);
+                }
+                else
+                {
+                    subMeshData.AllSubMeshes = ButtonState.Off;
+                    subMeshData.SingleSubMesh = ButtonState.Off;
+                }
+
+                subMeshData.MatchingSubMeshes = ButtonState.Hidden;
             }
 
-            subMeshData.MatchingSubMeshes = ButtonState.Hidden;
             if (EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshes))
             {
                 for (int i = 0; i < subMeshes.Length; i++)
                 {
                     if (m_PrefabSystem.GetPrefabName(subMeshes[i].m_SubMesh) == subMeshData.SubMeshName)
                     {
-                        if (subMeshData.SubMeshScope == SubMeshData.SubMeshScopes.Matching)
+                        if (subMeshData.SubMeshScope == SubMeshData.SubMeshScopes.Matching ||
+                           (m_Matching.Value == ButtonState.On &&
+                           !EntityManager.HasComponent<TreeData>(m_CurrentPrefabEntity)))
                         {
                             if (i != subMeshData.SubMeshIndex)
                             {
@@ -375,7 +379,8 @@ namespace Recolor.Systems.SelectedInfoPanel
                 for (int i = 0; i < length; i++)
                 {
                     if (!EntityManager.TryGetBuffer(subMeshBuffer[i].m_SubMesh, isReadOnly: false, out DynamicBuffer<ColorVariation> colorVariationBuffer) ||
-                         colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index)
+                         colorVariationBuffer.Length < m_CurrentAssetSeasonIdentifier.m_Index ||
+                        !m_SubMeshIndexes.Contains(i))
                     {
                         continue;
                     }
@@ -604,6 +609,84 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             return true;
+        }
+
+        private void IncreaseSubMeshIndex()
+        {
+            if (m_SubMeshData.Value.SingleSubMesh == ButtonState.On &&
+                    m_SubMeshData.Value.SubMeshIndex < m_SubMeshData.Value.SubMeshLength - 1)
+            {
+                m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex + 1, 0, m_SubMeshData.Value.SubMeshLength - 1);
+            }
+            else if (m_SubMeshData.Value.SingleSubMesh == ButtonState.On &&
+                     m_SubMeshData.Value.SubMeshIndex >= m_SubMeshData.Value.SubMeshLength - 1)
+            {
+                m_SubMeshData.Value.SubMeshIndex = 0;
+            }
+            else if (m_SubMeshData.Value.MatchingSubMeshes == ButtonState.On &&
+                     EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> submeshes))
+            {
+                int attempts = 0;
+                int index = m_SubMeshData.Value.SubMeshIndex;
+                while (attempts < submeshes.Length)
+                {
+                    index++;
+                    if (index >= submeshes.Length)
+                    {
+                        index = 0;
+                    }
+
+                    if (m_PrefabSystem.GetPrefabName(submeshes[index].m_SubMesh) != m_SubMeshData.Value.SubMeshName)
+                    {
+                        m_SubMeshData.Value.SubMeshIndex = index;
+                        break;
+                    }
+
+                    attempts++;
+                }
+            }
+
+            m_SubMeshData.Binding.TriggerUpdate();
+            m_PreviouslySelectedEntity = Entity.Null;
+        }
+
+        private void ReduceSubMeshIndex()
+        {
+            if (m_SubMeshData.Value.SingleSubMesh == ButtonState.On &&
+                m_SubMeshData.Value.SubMeshIndex > 0)
+            {
+                m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex - 1, 0, m_SubMeshData.Value.SubMeshLength - 1);
+            }
+            else if (m_SubMeshData.Value.SingleSubMesh == ButtonState.On &&
+                     m_SubMeshData.Value.SubMeshIndex <= 0)
+            {
+                m_SubMeshData.Value.SubMeshIndex = m_SubMeshData.Value.SubMeshLength - 1;
+            }
+            else if (m_SubMeshData.Value.MatchingSubMeshes == ButtonState.On &&
+                     EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> submeshes))
+            {
+                int attempts = 0;
+                int index = m_SubMeshData.Value.SubMeshIndex;
+                while (attempts < submeshes.Length)
+                {
+                    index--;
+                    if (index < 0)
+                    {
+                        index = submeshes.Length - 1;
+                    }
+
+                    if (m_PrefabSystem.GetPrefabName(submeshes[index].m_SubMesh) != m_SubMeshData.Value.SubMeshName)
+                    {
+                        m_SubMeshData.Value.SubMeshIndex = index;
+                        break;
+                    }
+
+                    attempts++;
+                }
+            }
+
+            m_SubMeshData.Binding.TriggerUpdate();
+            m_PreviouslySelectedEntity = Entity.Null;
         }
 
         private void ResetColor(int channel)

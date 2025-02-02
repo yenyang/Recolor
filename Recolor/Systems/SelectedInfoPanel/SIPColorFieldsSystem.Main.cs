@@ -472,13 +472,6 @@ namespace Recolor.Systems.SelectedInfoPanel
                 m_PreviouslySelectedEntity = m_CurrentEntity;
 
                 m_MatchesVanillaColorSet.Value = MatchesVanillaColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
-                if (m_CustomColorVariationSystem.TryGetCustomColorVariation(subMeshBuffer[m_SubMeshData.Value.SubMeshIndex].m_SubMesh, m_CurrentAssetSeasonIdentifier.m_Index, out _) &&
-                    m_MatchesVanillaColorSet.Value[0] &&
-                    m_MatchesVanillaColorSet.Value[1] &&
-                    m_MatchesVanillaColorSet.Value[2])
-                {
-                    DeleteCustomColorVariationEntity();
-                }
 
                 m_MatchesSavedOnDisk.Value = MatchesSavedOnDiskColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
                 m_CanResetOtherSubMeshes.Value = false;
@@ -497,8 +490,6 @@ namespace Recolor.Systems.SelectedInfoPanel
                     m_MatchesVanillaColorSet.Value = EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity) ? new bool[] { false, false, false } : new bool[] { true, true, true };
                     m_CanResetSingleChannels.Value = false;
                 }
-
-                // Here's the bug
                 else if (EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer))
                 {
                     bool removeComponents = true;

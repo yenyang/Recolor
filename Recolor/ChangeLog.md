@@ -12,3 +12,6 @@
 * Removed I18N Everywhere dependency.
 * Translations for officially supported languages are handled internally with embedded resource files.
 * Recolor works in the editor.
+* Fixed random colors when hovering over assets with multiple meshes and custom colors.
+* While changing Single Instance colors on a prefab with Multiple Meshes, you can limit color changes to individual submeshes, matching submeshes, or all submeshes.
+* While changing Matching Color Variations on a prefab with Multiple Meshes, you are limited to only matching submeshes and it will not change all submeshes. You can pick which type of submesh to change. 
