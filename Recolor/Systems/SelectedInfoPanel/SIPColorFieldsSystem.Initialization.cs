@@ -89,6 +89,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private Entity m_CurrentPrefabEntity;
         private int m_RouteColorChannel = -1;
         private List<int> m_SubMeshIndexes = new List<int>();
+        private ValueBindingHelper<bool> m_CanResetOtherSubMeshes;
 
         /// <summary>
         /// An enum to handle seasons.
@@ -196,6 +197,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_ShowHexaDecimals = CreateBinding("ShowHexaDecimals", Mod.Instance.Settings.ShowHexaDecimals);
             m_SubMeshData = CreateBinding("SubMeshData", new SubMeshData(0, 1, string.Empty, SubMeshData.SubMeshScopes.All, ButtonState.Off, ButtonState.Off, ButtonState.On));
             m_CanResetSingleChannels = CreateBinding("CanResetSingleChannels", false);
+            m_CanResetOtherSubMeshes = CreateBinding("CanResetOtherSubMeshes", false);
             m_EditorVisible = CreateBinding("EditorVisible", false);
 
             // These bindings are closely related.

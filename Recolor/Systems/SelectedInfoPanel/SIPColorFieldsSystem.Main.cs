@@ -287,6 +287,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex, 0, subMeshBuffer1.Length - 1);
                 m_SubMeshData.Value.SubMeshLength = subMeshBuffer1.Length;
                 m_SubMeshData.Value.SubMeshName = m_PrefabSystem.GetPrefabName(subMeshBuffer1[m_SubMeshData.Value.SubMeshIndex].m_SubMesh);
+                m_CanResetOtherSubMeshes.Value = false;
                 HandleSubMeshScopes();
             }
             else
@@ -484,16 +485,40 @@ namespace Recolor.Systems.SelectedInfoPanel
                     m_MatchesVanillaColorSet.Value = EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity) ? new bool[] { false, false, false } : new bool[] { true, true, true };
                     m_CanResetSingleChannels.Value = false;
                 }
-                else if (!MatchesEntireVanillaColorSet(meshColorRecordBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet, meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet))
+
+                // Here's the bug
+                else if (EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer))
                 {
-                    m_MatchesVanillaColorSet.Value = MatchesVanillaColorSet(meshColorRecordBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet, meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet);
-                    m_CanResetSingleChannels.Value = true;
-                }
-                else
-                {
-                    EntityManager.RemoveComponent<CustomMeshColor>(m_CurrentEntity);
-                    EntityManager.RemoveComponent<MeshColorRecord>(m_CurrentEntity);
-                    m_PreviouslySelectedEntity = Entity.Null;
+                    bool removeComponents = true;
+                    bool canResetOtherSubMeshes = false;
+                    for (int i = 0; i < m_SubMeshData.Value.SubMeshLength; i++)
+                    {
+                        if (!MatchesEntireVanillaColorSet(meshColorRecordBuffer[i].m_ColorSet, customMeshColorBuffer[i].m_ColorSet))
+                        {
+                            removeComponents = false;
+                            if (i != m_SubMeshData.Value.SubMeshIndex)
+                            {
+                                canResetOtherSubMeshes = true;
+                            }
+                        }
+                    }
+
+                    if (m_CanResetOtherSubMeshes.Value != canResetOtherSubMeshes)
+                    {
+                        m_CanResetOtherSubMeshes.Value = canResetOtherSubMeshes;
+                    }
+
+                    if (!removeComponents)
+                    {
+                        m_MatchesVanillaColorSet.Value = MatchesVanillaColorSet(meshColorRecordBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet, meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet);
+                        m_CanResetSingleChannels.Value = true;
+                    }
+                    else
+                    {
+                        EntityManager.RemoveComponent<CustomMeshColor>(m_CurrentEntity);
+                        EntityManager.RemoveComponent<MeshColorRecord>(m_CurrentEntity);
+                        m_PreviouslySelectedEntity = Entity.Null;
+                    }
                 }
 
                 visible = true;

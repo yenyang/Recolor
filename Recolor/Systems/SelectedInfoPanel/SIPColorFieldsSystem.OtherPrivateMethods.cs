@@ -667,23 +667,32 @@ namespace Recolor.Systems.SelectedInfoPanel
 
         private void ResetSingleInstanceByChannel(int channel, Entity entity, EntityCommandBuffer buffer)
         {
+            bool removeComponents = true;
             if (EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer) &&
-                    EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) &&
-                    meshColorRecordBuffer.Length > m_SubMeshData.Value.SubMeshIndex &&
-                    customMeshColorBuffer.Length > m_SubMeshData.Value.SubMeshIndex &&
-                    channel >= 0 && channel <= 2)
+                EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) &&
+                channel >= 0 && channel <= 2)
             {
-                CustomMeshColor customMeshColor = customMeshColorBuffer[m_SubMeshData.Value.SubMeshIndex];
-                customMeshColor.m_ColorSet[channel] = meshColorRecordBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet[channel];
-                customMeshColorBuffer[m_SubMeshData.Value.SubMeshIndex] = customMeshColor;
-
-                if (MatchesEntireVanillaColorSet(meshColorRecordBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet, customMeshColor.m_ColorSet))
+                for (int i = 0; i < m_SubMeshData.Value.SubMeshLength; i++)
                 {
-                    buffer.RemoveComponent<CustomMeshColor>(entity);
-                    buffer.RemoveComponent<MeshColorRecord>(entity);
+                    CustomMeshColor customMeshColor = customMeshColorBuffer[i];
+                    if (m_SubMeshIndexes.Contains(i))
+                    {
+                        customMeshColor.m_ColorSet[channel] = meshColorRecordBuffer[i].m_ColorSet[channel];
+                        customMeshColorBuffer[i] = customMeshColor;
+                    }
+
+                    if (!MatchesEntireVanillaColorSet(meshColorRecordBuffer[i].m_ColorSet, customMeshColor.m_ColorSet))
+                    {
+                        removeComponents = false;
+                    }
                 }
             }
             else
+            {
+                removeComponents = true;
+            }
+
+            if (removeComponents)
             {
                 buffer.RemoveComponent<CustomMeshColor>(entity);
                 buffer.RemoveComponent<MeshColorRecord>(entity);
