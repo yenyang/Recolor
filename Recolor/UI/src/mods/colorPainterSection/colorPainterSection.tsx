@@ -1,5 +1,5 @@
 import {ModuleRegistryExtend} from "cs2/modding";
-import { ColorPainterToolOptionsComponent } from "mods/ColorPainterToolOptionsComponet/ColorPainterToolOptionsComponent";
+import { ColorPainterToolOptionsComponent } from "mods/ColorPainterToolOptionsComponent/ColorPainterToolOptionsComponent";
 
 export const ColorPainterSectionComponent: ModuleRegistryExtend = (Component : any) => {
     // I believe you should not put anything here.

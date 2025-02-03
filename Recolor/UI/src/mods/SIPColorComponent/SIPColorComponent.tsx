@@ -23,7 +23,7 @@ const CanResetSingleChannels$ = bindValue<boolean>(mod.id, "CanResetSingleChanne
 const MatchesVanillaColorSet$ = bindValue<boolean[]>(mod.id, 'MatchesVanillaColorSet');
 const ShowHexaDecimals$ = bindValue<boolean>(mod.id, 'ShowHexaDecimals');
 
-function copyColor(color : Color) {
+export function copyColor(color : Color) {
     // This triggers an event on C# side and C# designates the method to implement.
     trigger(mod.id, "CopyColor", color);
 }
@@ -33,7 +33,7 @@ function handleChannelClick(eventName : string, channel : number) {
     trigger(mod.id, eventName, channel);
 }
 
-const ColorFieldTheme: Theme | any = getModule(
+export const ColorFieldTheme: Theme | any = getModule(
     "game-ui/common/input/color-picker/color-field/color-field.module.scss",
     "classes"
 )

@@ -1,7 +1,7 @@
 import { Panel, Portal } from "cs2/ui";
 import editorStyles from "./RecolorEditorPanelStyles.module.scss";
 import { RecolorMainPanelComponent } from "mods/RecolorMainPanel/RecolorMainPanel";
-import { ColorPainterToolOptionsComponent } from "mods/ColorPainterToolOptionsComponet/ColorPainterToolOptionsComponent";
+import { ColorPainterToolOptionsComponent } from "mods/ColorPainterToolOptionsComponent/ColorPainterToolOptionsComponent";
 import { getModule } from "cs2/modding";
 import { Theme, tool } from "cs2/bindings";
 import { useValue } from "cs2/api";

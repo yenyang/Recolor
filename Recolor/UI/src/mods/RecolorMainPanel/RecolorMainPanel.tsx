@@ -14,6 +14,7 @@ import { Scope } from "mods/Domain/Scope";
 import { tool } from "cs2/bindings";
 import { Button } from "cs2/ui";
 import { SubMeshData, SubMeshScopes } from "mods/Domain/SubMeshData";
+import paintSrc from "images/format_painter.svg";
 
 const uilStandard =                          "coui://uil/Standard/";
 const uilColored =                           "coui://uil/Colored/";
@@ -48,17 +49,17 @@ const EditorVisible$ = bindValue<boolean>(mod.id, "EditorVisible");
 const SubMeshData$ = bindValue<SubMeshData>(mod.id, "SubMeshData");
 const CanResetOtherSubMeshes$ = bindValue<boolean>(mod.id, "CanResetOtherSubMeshes");
 
-const InfoRowTheme: Theme | any = getModule(
+export const InfoRowTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss",
 	"classes"
 )
 
-const InfoSection: any = getModule( 
+export const InfoSection: any = getModule( 
     "game-ui/game/components/selected-info-panel/shared-components/info-section/info-section.tsx",
     "InfoSection"
 )
 
-const InfoRow: any = getModule(
+export const InfoRow: any = getModule(
     "game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.tsx",
     "InfoRow"
 )
@@ -82,9 +83,9 @@ function changeColor(channel : number, newColor : Color) {
 }
 
 
-const descriptionToolTipStyle = getModule("game-ui/common/tooltip/description-tooltip/description-tooltip.module.scss", "classes");
+export const descriptionToolTipStyle = getModule("game-ui/common/tooltip/description-tooltip/description-tooltip.module.scss", "classes");
     
-const roundButtonHighlightStyle = getModule("game-ui/common/input/button/themes/round-highlight-button.module.scss", "classes");
+export const roundButtonHighlightStyle = getModule("game-ui/common/input/button/themes/round-highlight-button.module.scss", "classes");
 
 // This is working, but it's possible a better solution is possible.
 function DescriptionTooltip(tooltipTitle: string | null, tooltipDescription: string | null) : JSX.Element {
@@ -203,6 +204,13 @@ export const RecolorMainPanelComponent = () => {
                                         />
                                     )}
                                     <VanillaComponentResolver.instance.ToolButton
+                                        src={colorPaleteSrc}
+                                        focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                        tooltip = {"Pallete Creation Menu"}
+                                        className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                        onSelect={() => handleClick("TogglePaletteCreationMenu")}
+                                    />
+                                    <VanillaComponentResolver.instance.ToolButton
                                         src={colorPickerSrc}
                                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} 
                                         tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ColorPicker]", locale["Recolor.TOOLTIP_DESCRIPTION[ColorPicker]"])}
@@ -210,7 +218,7 @@ export const RecolorMainPanelComponent = () => {
                                         onSelect={() => handleClick("ActivateColorPicker")}
                                     />
                                     <VanillaComponentResolver.instance.ToolButton
-                                        src={colorPaleteSrc}
+                                        src={paintSrc}
                                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                         tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ColorPainter]", locale["Recolor.TOOLTIP_DESCRIPTION[ColorPainter]"])}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}

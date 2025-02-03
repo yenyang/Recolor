@@ -15,6 +15,10 @@
     padding-bottom: 5rem;
 }
 
+.centered {
+    justify-content: center !important;
+}
+
 .subMeshText {
     display: flex;
     flex-direction: row;
@@ -42,6 +46,15 @@
 
 .rcColorFieldInput {
     height: 25rem !important; 
+    width: 90rem !important;
+}
+
+.nameFieldInput {
+    height: 30rem !important; 
+    width: 350rem !important;
+}
+
+.colorFieldWidth {
     width: 90rem !important;
 }
 
@@ -74,4 +87,15 @@
 
 .painterFieldInputTextSize {
     font-size: 14rem !important;
+}
+
+.SliderFieldWidth {
+    width: 300rem;
+}
+
+.SliderFieldWidth > div {
+    padding-top: 0!important;    
+    padding-left: 0!important;    
+    padding-right: 0!important;    
+    padding-bottom: 0!important;
 }

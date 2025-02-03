@@ -30,6 +30,7 @@ namespace Recolor
     using Game.UI.InGame;
     using Unity.Entities;
     using UnityEngine;
+    using Recolor.Systems.Palettes;
 #endif
 
     /// <summary>
@@ -127,6 +128,7 @@ namespace Recolor
             updateSystem.UpdateAt<SelectNetLaneFencesToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAfter<CreatedServiceVehicleCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAfter<AssignedRouteVehicleCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateAt<PalettesUISystem>(SystemUpdatePhase.UIUpdate);
             Log.Info($"{nameof(OnLoad)} complete.");
         }
 

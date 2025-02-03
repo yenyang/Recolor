@@ -163,6 +163,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Update="images\format_painter.svg">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </None>
 	  <None Update="LICENSE.txt">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
