@@ -56,25 +56,21 @@ namespace Recolor.Systems.Palettes
                 {
                     try
                     {
-                        /*
                         using StreamReader reader = new StreamReader(new FileStream(filePaths[i], FileMode.Open));
                         {
                             string entireFile = reader.ReadToEnd();
-                            Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
-                            Dictionary<string, string> translations = varient.Make<Dictionary<string, string>>();
-                            GameManager.instance.localizationManager.AddSource(localeID, new MemorySource(translations));
-                        }*/
-                        PalettePrefab palettePrefab = JsonConvert.DeserializeObject<PalettePrefab>(filePaths[i]);
-                        if (palettePrefab is not null &&
-                            !m_Prefabs.Contains(palettePrefab) &&
-                            m_PrefabSystem.AddPrefab(palettePrefab) &&
-                            m_PrefabSystem.TryGetEntity(palettePrefab, out Entity palettePrefabEntity))
-                        {
-                            palettePrefab.Initialize(EntityManager, palettePrefabEntity);
-                            m_Prefabs.Add(palettePrefab);
-                            m_Entities.Add(palettePrefab, palettePrefabEntity);
-                            m_Log.Info($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Sucessfully imported and partially initialized {nameof(PalettePrefab)}:{nameof(palettePrefab.name)}.");
-                            continue;
+                            PalettePrefab palettePrefab = JsonConvert.DeserializeObject<PalettePrefab>(entireFile);
+                            if (palettePrefab is not null &&
+                               !m_Prefabs.Contains(palettePrefab) &&
+                                m_PrefabSystem.AddPrefab(palettePrefab) &&
+                                m_PrefabSystem.TryGetEntity(palettePrefab, out Entity palettePrefabEntity))
+                            {
+                                palettePrefab.Initialize(EntityManager, palettePrefabEntity);
+                                m_Prefabs.Add(palettePrefab);
+                                m_Entities.Add(palettePrefab, palettePrefabEntity);
+                                m_Log.Info($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Sucessfully imported and partially initialized {nameof(PalettePrefab)}:{nameof(palettePrefab.name)}.");
+                                continue;
+                            }
                         }
                     }
                     catch (Exception ex)

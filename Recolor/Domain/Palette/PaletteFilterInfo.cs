@@ -31,5 +31,12 @@ namespace Recolor.Domain.Palette
             m_FilterPrefab = prefabBase;
             m_FilterType = filterType;
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PaletteFilterInfo"/> class.
+        /// </summary>
+        public PaletteFilterInfo()
+        {
+        }
     }
 }

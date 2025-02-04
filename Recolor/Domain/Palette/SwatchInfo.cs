@@ -44,5 +44,12 @@ namespace Recolor.Domain.Palette
             m_SwatchColor = swatchUIData.SwatchColor;
             m_ProbabilityWeight = swatchUIData.ProbabilityWeight;
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SwatchInfo"/> class.
+        /// </summary>
+        public SwatchInfo()
+        {
+        }
     }
 }
