@@ -4,19 +4,18 @@
 
 namespace Recolor.Systems.Palettes
 {
+    using System;
+    using System.IO;
     using Colossal.Logging;
+    using Colossal.PSI.Environment;
+    using Game.Prefabs;
+    using Newtonsoft.Json;
     using Recolor.Domain.Palette;
     using Recolor.Domain.Palette.Prefabs;
     using Recolor.Extensions;
-    using System.Collections.Generic;
+    using Recolor.Systems.SelectedInfoPanel;
     using Unity.Entities;
     using UnityEngine;
-    using System;
-    using Game.Prefabs;
-    using Colossal.PSI.Environment;
-    using System.IO;
-    using Colossal.Json;
-    using Newtonsoft.Json;
 
     /// <summary>
     /// A UI System for Palettes and Swatches.
@@ -24,11 +23,14 @@ namespace Recolor.Systems.Palettes
     public partial class PalettesUISystem : ExtendedUISystemBase
     {
         private PrefabSystem m_PrefabSystem;
+        private SIPColorFieldsSystem m_SIPColorFieldsSystem;
         private ValueBindingHelper<SwatchUIData[]> m_Swatches;
         private ValueBindingHelper<string> m_UniqueName;
-        private ValueBindingHelper<PaletteCategoryData.PaletteCategory> m_PaletteCategory;
+        private ValueBindingHelper<PaletteCategoryData.PaletteCategory> m_CurrentPaletteCategory;
+        private ValueBindingHelper<bool> m_ShowPaletteEditorPanel;
         private ILog m_Log;
         private string m_ContentFolder;
+        private Unity.Mathematics.Random m_Random;
 
         /// <summary>
         /// Gets the mods data folder for palette prefabs.
@@ -40,8 +42,11 @@ namespace Recolor.Systems.Palettes
         {
             base.OnCreate();
             m_Log = Mod.Instance.Log;
+            uint randomSeed = (uint)(DateTime.Now.Month + DateTime.Now.Day + DateTime.Now.Hour + DateTime.Now.Minute + DateTime.Now.Second);
+            m_Random = new (randomSeed);
 
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_SIPColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
 
             m_ContentFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, ".PalettePrefabs");
             System.IO.Directory.CreateDirectory(m_ContentFolder);
@@ -49,11 +54,19 @@ namespace Recolor.Systems.Palettes
             // Create bindings with the UI for transfering data to the UI.
             m_Swatches = CreateBinding("Swatches", new SwatchUIData[] { new SwatchUIData(UnityEngine.Color.white, 100, 0), new SwatchUIData(UnityEngine.Color.black, 100, 1) });
             m_UniqueName = CreateBinding("UniqueName", string.Empty);
-            m_PaletteCategory = CreateBinding("PaletteCategory", PaletteCategoryData.PaletteCategory.Any);
+            m_CurrentPaletteCategory = CreateBinding("PaletteCategory", PaletteCategoryData.PaletteCategory.Any);
+            m_ShowPaletteEditorPanel = CreateBinding("ShowPaletteEditorMenu", false);
 
             // Listen to trigger event that are sent from the UI to the C#.
             CreateTrigger("TrySavePalette", TrySavePalette);
             CreateTrigger<string>("ChangeUniqueName", (name) => m_UniqueName.Value = name);
+            CreateTrigger("TogglePaletteEditorMenu", () => m_ShowPaletteEditorPanel.Value = !m_ShowPaletteEditorPanel.Value);
+            CreateTrigger<int>("ToggleCategory", HandleCategoryClick);
+            CreateTrigger<int>("RemoveSwatch", RemoveSwatch);
+            CreateTrigger("PasteSwatchColor", (int swatch) => ChangeSwatchColor(swatch, m_SIPColorFieldsSystem.CopiedColor));
+            CreateTrigger<int, Color>("ChangeSwatchColor", ChangeSwatchColor);
+            CreateTrigger<int, int>("ChangeProbabilityWeight", ChangeProbabilityWeight);
+            CreateTrigger("AddASwatch", AddASwatch);
 
             m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)}");
             Enabled = false;
@@ -66,7 +79,7 @@ namespace Recolor.Systems.Palettes
                 PalettePrefab palettePrefabBase = ScriptableObject.CreateInstance<PalettePrefab>();
                 palettePrefabBase.active = true;
                 palettePrefabBase.name = m_UniqueName.Value;
-                palettePrefabBase.m_Category = m_PaletteCategory.Value;
+                palettePrefabBase.m_Category = m_CurrentPaletteCategory.Value;
                 palettePrefabBase.m_Swatches = GetSwatchInfos();
 
                 // Palette Filters are not implemented yet.
@@ -102,6 +115,87 @@ namespace Recolor.Systems.Palettes
             }
 
             return infos;
+        }
+
+        private void HandleCategoryClick(int category)
+        {
+            PaletteCategoryData.PaletteCategory toggledPaletteCategory = (PaletteCategoryData.PaletteCategory)category;
+            PaletteCategoryData.PaletteCategory currentPaletteCategory = m_CurrentPaletteCategory.Value;
+            if (toggledPaletteCategory == PaletteCategoryData.PaletteCategory.Any)
+            {
+                m_CurrentPaletteCategory.Value = PaletteCategoryData.PaletteCategory.Any;
+                return;
+            }
+            else if ((m_CurrentPaletteCategory.Value & toggledPaletteCategory) == toggledPaletteCategory)
+            {
+                currentPaletteCategory &= ~toggledPaletteCategory;
+            }
+            else
+            {
+                currentPaletteCategory |= toggledPaletteCategory;
+            }
+
+            if (currentPaletteCategory == (PaletteCategoryData.PaletteCategory.Vehicles | PaletteCategoryData.PaletteCategory.Buildings | PaletteCategoryData.PaletteCategory.Props))
+            {
+                m_CurrentPaletteCategory.Value = PaletteCategoryData.PaletteCategory.Any;
+            }
+            else
+            {
+                m_CurrentPaletteCategory.Value = currentPaletteCategory;
+            }
+        }
+
+        private void RemoveSwatch(int swatch)
+        {
+            if (m_Swatches.Value.Length > swatch &&
+                swatch > 0)
+            {
+                SwatchUIData[] swatchDatas = m_Swatches.Value;
+                SwatchUIData[] newSwatchDatas = new SwatchUIData[swatchDatas.Length - 1];
+                int j = 0;
+                for (int i = 0; i < swatchDatas.Length; i++)
+                {
+                    if (i != swatch)
+                    {
+                        newSwatchDatas[j] = swatchDatas[i];
+                        newSwatchDatas[j].Index = j++;
+                    }
+                }
+
+                m_Swatches.Value = newSwatchDatas;
+                m_Swatches.Binding.TriggerUpdate();
+            }
+        }
+
+        private void ChangeSwatchColor(int swatch, Color color)
+        {
+            if (m_Swatches.Value.Length > swatch &&
+                swatch >= 0)
+            {
+                m_Swatches.Value[swatch].SwatchColor = color;
+                m_Swatches.Binding.TriggerUpdate();
+            }
+        }
+
+        private void ChangeProbabilityWeight(int swatch, int weight)
+        {
+            if (m_Swatches.Value.Length > swatch &&
+                swatch >= 0)
+            {
+                m_Swatches.Value[swatch].ProbabilityWeight = weight;
+                m_Swatches.Binding.TriggerUpdate();
+            }
+        }
+
+        private void AddASwatch()
+        {
+            SwatchUIData[] swatchUIDatas = m_Swatches.Value;
+            SwatchUIData[] newSwatchUIDatas = new SwatchUIData[swatchUIDatas.Length + 1];
+
+            swatchUIDatas.CopyTo(newSwatchUIDatas, 0);
+            newSwatchUIDatas[swatchUIDatas.Length] = new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100, swatchUIDatas.Length);
+            m_Swatches.Value = newSwatchUIDatas;
+            m_Swatches.Binding.TriggerUpdate();
         }
     }
 }

@@ -90,6 +90,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private int m_RouteColorChannel = -1;
         private List<int> m_SubMeshIndexes = new List<int>();
         private ValueBindingHelper<bool> m_CanResetOtherSubMeshes;
+        private ValueBindingHelper<bool> m_ShowPaletteChoices;
 
         /// <summary>
         /// An enum to handle seasons.
@@ -199,6 +200,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_CanResetSingleChannels = CreateBinding("CanResetSingleChannels", false);
             m_CanResetOtherSubMeshes = CreateBinding("CanResetOtherSubMeshes", false);
             m_EditorVisible = CreateBinding("EditorVisible", false);
+            m_ShowPaletteChoices = CreateBinding("ShowPaletteChoices", false);
 
             // These bindings are closely related.
             m_PreferredScope = Scope.SingleInstance;
@@ -256,6 +258,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 HandleSubMeshScopes();
                 m_PreviouslySelectedEntity = Entity.Null;
             });
+            CreateTrigger("ToggleShowPaletteChoices", () => m_ShowPaletteChoices.Value = !m_ShowPaletteChoices.Value);
 
             m_VanillaColorSets = new ();
             m_ContentFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, "SavedColorSet", "Custom");

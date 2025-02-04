@@ -15,6 +15,7 @@ import { tool } from "cs2/bindings";
 import { Button } from "cs2/ui";
 import { SubMeshData, SubMeshScopes } from "mods/Domain/SubMeshData";
 import paintSrc from "images/format_painter.svg";
+import { PaletteBoxComponent } from "mods/PaletteBoxComponent/PaletteBoxComponent";
 
 const uilStandard =                          "coui://uil/Standard/";
 const uilColored =                           "coui://uil/Colored/";
@@ -34,6 +35,7 @@ const serviceVehiclesSrc =              uilStandard + "ServiceVehicles.svg";
 const routeSrc =                        uilStandard + "BusShelter.svg";
 const arrowLeftSrc =           uilStandard +  "ArrowLeftThickStroke.svg";
 const arrowRightSrc =           uilStandard +  "ArrowRightThickStroke.svg";
+const plusSrc =                         uilStandard + "Plus.svg";
 
 const SingleInstance$ = bindValue<ButtonState>(mod.id, 'SingleInstance');
 const Matching$ = bindValue<ButtonState>(mod.id, 'Matching');
@@ -48,6 +50,7 @@ const Route$ = bindValue<ButtonState>(mod.id, 'Route');
 const EditorVisible$ = bindValue<boolean>(mod.id, "EditorVisible");
 const SubMeshData$ = bindValue<SubMeshData>(mod.id, "SubMeshData");
 const CanResetOtherSubMeshes$ = bindValue<boolean>(mod.id, "CanResetOtherSubMeshes");
+const ShowPaletteChoices$ = bindValue<boolean>(mod.id,"ShowPaletteChoices");
 
 export const InfoRowTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss",
@@ -112,6 +115,7 @@ export const RecolorMainPanelComponent = () => {
     const EditorVisible = useValue(EditorVisible$);
     const SubMeshData = useValue(SubMeshData$);
     const CanResetOtherSubMeshes = useValue(CanResetOtherSubMeshes$);
+    const ShowPaletteChoices = useValue(ShowPaletteChoices$);
     
     // translation handling. Translates using locale keys that are defined in C# or fallback string from en-US.json.
     const { translate } = useLocalization();
@@ -207,8 +211,17 @@ export const RecolorMainPanelComponent = () => {
                                         src={colorPaleteSrc}
                                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                         tooltip = {"Toggle Palette Options"}
+                                        selected={ShowPaletteChoices}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                        onSelect={() => handleClick("TogglePaletteOptions")}
+                                        onSelect={() => handleClick("ToggleShowPaletteChoices")}
+                                    />
+                                    <VanillaComponentResolver.instance.ToolButton
+                                        focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                        selected={ShowHexaDecimals}
+                                        children={<div className={styles.buttonWithText}>#</div>} 
+                                        tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ShowHexaDecimals]", locale["Recolor.TOOLTIP_DESCRIPTION[ShowHexaDecimals]"])}
+                                        className = {classNames(VanillaComponentResolver.instance.toolButtonTheme.button)}
+                                        onSelect={() => handleClick("ToggleShowHexaDecimals")}
                                     />
                                     <VanillaComponentResolver.instance.ToolButton
                                         src={colorPickerSrc}
@@ -223,14 +236,6 @@ export const RecolorMainPanelComponent = () => {
                                         tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ColorPainter]", locale["Recolor.TOOLTIP_DESCRIPTION[ColorPainter]"])}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                         onSelect={() => handleClick("ActivateColorPainter")}
-                                    />
-                                    <VanillaComponentResolver.instance.ToolButton
-                                        focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                        selected={ShowHexaDecimals}
-                                        children={<div className={styles.buttonWithText}>#</div>} 
-                                        tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ShowHexaDecimals]", locale["Recolor.TOOLTIP_DESCRIPTION[ShowHexaDecimals]"])}
-                                        className = {classNames(VanillaComponentResolver.instance.toolButtonTheme.button)}
-                                        onSelect={() => handleClick("ToggleShowHexaDecimals")}
                                     />
                                 </>
                                 )}
@@ -364,6 +369,23 @@ export const RecolorMainPanelComponent = () => {
                                         )}
                                     </div>
                                     <SIPColorComponent channel={2}></SIPColorComponent>
+                                </>
+                            }
+                            uppercase={false}
+                            disableFocus={true}
+                            subRow={true}
+                            className={InfoRowTheme.infoRow}
+                        ></InfoRow>
+                    )}
+                    { !Minimized && ShowPaletteChoices && (
+                        <InfoRow
+                            left="Palette"
+                            right={
+                                <>
+                                    <div className={styles.rowGroup}>
+                                        <VanillaComponentResolver.instance.ToolButton src={plusSrc} onSelect={() => { handleClick("TogglePaletteEditorMenu") }}           className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                                                      tooltip = {"Show PaletteEditorPanel"}/>
+                                    </div>
                                 </>
                             }
                             uppercase={false}

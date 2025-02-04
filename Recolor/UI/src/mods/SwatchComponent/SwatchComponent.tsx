@@ -3,15 +3,15 @@ import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaC
 import classNames from "classnames";
 import { ColorFieldTheme, convertColorToHexaDecimal, convertHexaDecimalToColor, copyColor, StringInputField, StringInputFieldStyle } from "mods/SIPColorComponent/SIPColorComponent";
 import { bindValue, trigger, useValue } from "cs2/api";
-import mod from "../../../../mod.json";
+import mod from "../../../mod.json";
 import { Color } from "cs2/bindings";
-import styles from ".././ColorFields.module.scss";
+import styles from "../Domain/ColorFields.module.scss";
 import { useState } from "react";
 import { useLocalization } from "cs2/l10n";
-import locale from "../../lang/en-US.json";
+import locale from "../lang/en-US.json";
 import { FocusDisabled } from "cs2/input";
 import { getModule } from "cs2/modding";
-import { SwatchUIData } from "./SwatchUIData";
+import { SwatchUIData } from "../Domain/PaletteAndSwatches/SwatchUIData";
 
 const uilStandard =                          "coui://uil/Standard/";
 const copySrc =                         uilStandard + "RectangleCopy.svg";
@@ -24,10 +24,10 @@ const Swatches$ = bindValue<SwatchUIData[]>(mod.id, "Swatches");
 
 function changeColor(index : number, newColor : Color) {
     // This triggers an event on C# side and C# designates the method to implement.
-    trigger(mod.id, "ChangePaletteColor", index, newColor);
+    trigger(mod.id, "ChangeSwatchColor", index, newColor);
 }
 
-function handleChannelClick(eventName : string, index : number) {
+function handleSwatchClick(eventName : string, index : number) {
     // This triggers an event on C# side and C# designates the method to implement.
     trigger(mod.id, eventName, index);
 }
@@ -87,13 +87,13 @@ export const SwatchComponent = (props: {info: SwatchUIData}) => {
                         />
                     </div>
                     <div className={styles.rowGroup}>
-                        { Swatches.length > 1 && (
+                        { Swatches.length > 2 && (
                             <VanillaComponentResolver.instance.ToolButton
                                 src={minusSrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                 tooltip = {"Remove"}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                onSelect={() => {}}
+                                onSelect={() => {handleSwatchClick("RemoveSwatch", props.info.Index)}}
                             />
                         )}
                         <VanillaComponentResolver.instance.ToolButton
@@ -109,7 +109,7 @@ export const SwatchComponent = (props: {info: SwatchUIData}) => {
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                 tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PasteColor]",locale["Recolor.TOOLTIP_DESCRIPTION[PasteColor]"])}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                onSelect={() => {handleChannelClick("PasteSwatchColor", props.info.Index); setUpdateHexaDecimal(props.info.SwatchColor);}}
+                                onSelect={() => {handleSwatchClick("PasteSwatchColor", props.info.Index); setUpdateHexaDecimal(props.info.SwatchColor);}}
                             />
                         )}
                     </div>
@@ -131,9 +131,12 @@ export const SwatchComponent = (props: {info: SwatchUIData}) => {
                 </div>
                 <div className={styles.columnGroup}>
                     <div className={styles.SliderFieldWidth}>
-                        <SliderField value={props.info.ProbabilityWeight} min={1} max={200} fractionDigits={0} onChange={(e: number) => {changeValue("SetProbabilityWeight", props.info.Index ,e)}}></SliderField>
+                        <SliderField value={props.info.ProbabilityWeight} min={1} max={200} fractionDigits={0} onChange={(e: number) => {changeValue("ChangeProbabilityWeight", props.info.Index ,e)}}></SliderField>
                     </div> 
                     <span className={styles.belowSwapButton}></span>
+                    { ShowHexaDecimals && (
+                        <span className={styles.inputHeight}></span>
+                    )}
                 </div>
             </div>
         </>
