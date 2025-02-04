@@ -4,17 +4,20 @@
 
 namespace Recolor.Domain.Palette
 {
+    using Game.Prefabs;
+    using System.Collections.Generic;
+    using Unity.Entities;
     using UnityEngine;
 
     /// <summary>
     /// Class for swatch prefabs.
     /// </summary>
-    public class PaletteInfo
+    public class SwatchInfo
     {
         /// <summary>
         /// The set of 3 colors.
         /// </summary>
-        public Color m_Color;
+        public Color m_SwatchColor;
 
         /// <summary>
         /// The probability weight.
@@ -22,14 +25,24 @@ namespace Recolor.Domain.Palette
         public int m_ProbabilityWeight;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PaletteInfo"/> class.
+        /// Initializes a new instance of the <see cref="SwatchInfo"/> class.
         /// </summary>
         /// <param name="color">Color for the swatch.</param>
         /// <param name="probabilityWeight">Weight for likelyhood color will appear.</param>
-        public PaletteInfo(Color color, int probabilityWeight)
+        public SwatchInfo(Color color, int probabilityWeight)
         {
-            m_Color = color;
+            m_SwatchColor = color;
             m_ProbabilityWeight = probabilityWeight;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SwatchInfo"/> class.
+        /// </summary>
+        /// <param name="swatchUIData">Data for UI.</param>
+        public SwatchInfo(SwatchUIData swatchUIData)
+        {
+            m_SwatchColor = swatchUIData.SwatchColor;
+            m_ProbabilityWeight = swatchUIData.ProbabilityWeight;
         }
     }
 }

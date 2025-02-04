@@ -206,9 +206,9 @@ export const RecolorMainPanelComponent = () => {
                                     <VanillaComponentResolver.instance.ToolButton
                                         src={colorPaleteSrc}
                                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                        tooltip = {"Pallete Creation Menu"}
+                                        tooltip = {"Toggle Palette Options"}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                        onSelect={() => handleClick("TogglePaletteCreationMenu")}
+                                        onSelect={() => handleClick("TogglePaletteOptions")}
                                     />
                                     <VanillaComponentResolver.instance.ToolButton
                                         src={colorPickerSrc}

@@ -20,7 +20,7 @@ const minusSrc =            uilStandard + "Minus.svg";
 
 const CanPasteColor$ = bindValue<boolean>(mod.id, "CanPasteColor");
 const ShowHexaDecimals$ = bindValue<boolean>(mod.id, 'ShowHexaDecimals');
-const PaletteCreationMenuData$ = bindValue<SwatchUIData[]>(mod.id, "PaletteCreationMenuData");
+const Swatches$ = bindValue<SwatchUIData[]>(mod.id, "Swatches");
 
 function changeColor(index : number, newColor : Color) {
     // This triggers an event on C# side and C# designates the method to implement.
@@ -41,7 +41,7 @@ const SliderField : any = getModule("game-ui/editor/widgets/fields/number-slider
 export const SwatchComponent = (props: {info: SwatchUIData}) => {
     const CanPasteColor = useValue(CanPasteColor$);    
     const ShowHexaDecimals = useValue(ShowHexaDecimals$);
-    const PaletteCreationMenuData = useValue(PaletteCreationMenuData$);
+    const Swatches = useValue(Swatches$);
 
     let [textInput, setTextInput] = useState(convertColorToHexaDecimal(props.info.SwatchColor));
     let [validInput, setValidInput] = useState(true);
@@ -87,7 +87,7 @@ export const SwatchComponent = (props: {info: SwatchUIData}) => {
                         />
                     </div>
                     <div className={styles.rowGroup}>
-                        { PaletteCreationMenuData.length > 1 && (
+                        { Swatches.length > 1 && (
                             <VanillaComponentResolver.instance.ToolButton
                                 src={minusSrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}

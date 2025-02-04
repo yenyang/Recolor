@@ -15,7 +15,7 @@ namespace Recolor.Domain.Palette
         /// <summary>
         /// The set of 3 colors.
         /// </summary>
-        public Color m_Color;
+        public Color m_SwatchColor;
 
         /// <summary>
         /// The probability weight.
@@ -29,7 +29,7 @@ namespace Recolor.Domain.Palette
         /// <param name="probabilityWeight">Weight for likelyhood color will appear.</param>
         public SwatchData(Color color, int probabilityWeight)
         {
-            m_Color = color;
+            m_SwatchColor = color;
             m_ProbabilityWeight = probabilityWeight;
         }
 
@@ -37,9 +37,9 @@ namespace Recolor.Domain.Palette
         /// Initializes a new instance of the <see cref="SwatchData"/> struct.
         /// </summary>
         /// <param name="swatchInfo">Generate swatchData from swatch info.</param>
-        public SwatchData(PaletteInfo swatchInfo)
+        public SwatchData(SwatchInfo swatchInfo)
         {
-            m_Color = swatchInfo.m_Color;
+            m_SwatchColor = swatchInfo.m_SwatchColor;
             m_ProbabilityWeight = swatchInfo.m_ProbabilityWeight;
         }
     }

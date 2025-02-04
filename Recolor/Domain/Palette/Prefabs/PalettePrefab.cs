@@ -30,7 +30,7 @@ namespace Recolor.Domain.Palette.Prefabs
         /// Array of swatch info that stores swatches.
         /// </summary>
         [NotNull]
-        public PaletteInfo[] m_Swatches;
+        public SwatchInfo[] m_Swatches;
 
         /// <summary>
         /// Array of palette filters for controlling visibility.
@@ -41,6 +41,7 @@ namespace Recolor.Domain.Palette.Prefabs
         /// <inheritdoc/>
         public override void GetPrefabComponents(HashSet<ComponentType> components)
         {
+            base.GetPrefabComponents(components);
             components.Add(ComponentType.ReadWrite<SwatchData>());
             components.Add(ComponentType.ReadWrite<PaletteCategoryData>());
             if (m_PaletteFilter != null)
@@ -50,9 +51,16 @@ namespace Recolor.Domain.Palette.Prefabs
         }
 
         /// <inheritdoc/>
-        public override void LateInitialize(EntityManager entityManager, Entity entity)
+        public override void Initialize(EntityManager entityManager, Entity entity)
         {
-            base.LateInitialize(entityManager, entity);
+            base.Initialize(entityManager, entity);
+            HashSet<ComponentType> components = new HashSet<ComponentType>();
+            GetPrefabComponents(components);
+            foreach (ComponentType component in components)
+            {
+               entityManager.AddComponent(entity, component);
+            }
+
             DynamicBuffer<SwatchData> buffer = entityManager.GetBuffer<SwatchData>(entity);
             buffer.Clear();
 
@@ -60,7 +68,12 @@ namespace Recolor.Domain.Palette.Prefabs
             {
                 buffer.Add(new SwatchData(m_Swatches[i]));
             }
+        }
 
+        /// <inheritdoc/>
+        public override void LateInitialize(EntityManager entityManager, Entity entity)
+        {
+            base.LateInitialize(entityManager, entity);
             PrefabSystem prefabSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<PrefabSystem>();
 
             if (m_PaletteFilter != null)

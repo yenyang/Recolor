@@ -24,9 +24,10 @@ const vehiclesSrc =                     uilStandard + "GenericVehicle.svg";
 const propsSrc =                        uilStandard + "BenchAndLampProps.svg";
 const allSrc =                          uilStandard + "StarAll.svg";
 const plusSrc =                         uilStandard + "Plus.svg";
+const saveToDiskSrc =                   uilStandard + "DiskSave.svg";
 
-
-const Swatches$ = bindValue<SwatchUIData[]>(mod.id, "PaletteCreationMenuData");
+const Swatches$ = bindValue<SwatchUIData[]>(mod.id, "Swatches");
+const UniqueName$ = bindValue<string>(mod.id, "UniqueName");
 
 function handleClick(event: string) {
     trigger(mod.id, event);
@@ -38,10 +39,11 @@ export const PaletteMenuComponent = () => {
     const Swatches = useValue(Swatches$);
     const defaultTool = useValue(tool.activeTool$).id == tool.DEFAULT_TOOL;
     const activeSelection = useValue(selectedInfo.activeSelection$);
+    const UniqueName = useValue(UniqueName$);
     
     const { translate } = useLocalization();
 
-    let [textInput, setTextInput] = useState("");
+    let [uniqueNameInput, setTextInput] = useState(UniqueName);
     let [validInput, setValidInput] = useState(true);
     let [locales, setLocales] = useState(["en-US"]);
 
@@ -53,6 +55,8 @@ export const PaletteMenuComponent = () => {
 
     function HandleTextInput () {
        setValidInput(true);
+       trigger(mod.id, "ChangeUniqueName", uniqueNameInput);
+       console.log(uniqueNameInput);
     }
 
     return (
@@ -72,7 +76,7 @@ export const PaletteMenuComponent = () => {
                             <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
                                 <VanillaComponentResolver.instance.Section title={"Unique Name"}>
                                     <StringInputField 
-                                        value={textInput.replace(/[\r\n]+/gm, '')}
+                                        value={uniqueNameInput.replace(/[\r\n]+/gm, '')}
                                         disabled ={false}
                                         onChange={ (e : string) => { setTextInput(e); }}
                                         onChangeEnd={HandleTextInput}
@@ -97,7 +101,9 @@ export const PaletteMenuComponent = () => {
                                 <VanillaComponentResolver.instance.Section title={"Filter Type"}>
                                     <Dropdown 
                                         content={FilterTypes.map((type) => (
-                                            <DropdownItem value={type}></DropdownItem>
+                                            <DropdownItem value={type}>
+                                                <div>{type}</div>
+                                            </DropdownItem>
                                         ))}>
                                         
                                     </Dropdown>
@@ -124,7 +130,11 @@ export const PaletteMenuComponent = () => {
                                     <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {"Add Swatch"}   onSelect={() => {} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
                                 </VanillaComponentResolver.instance.Section>
                             </InfoSection>
-                            
+                            <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
+                                <VanillaComponentResolver.instance.Section title={"Save Palette"}>
+                                    <VanillaComponentResolver.instance.ToolButton src={saveToDiskSrc}          tooltip = {"Save Palette"}   onSelect={() => {handleClick("TrySavePalette")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                </VanillaComponentResolver.instance.Section>
+                            </InfoSection>
                         </>
                     </Panel>
                 </Portal>
