@@ -8,9 +8,11 @@ namespace Recolor.Systems.Palettes
     using System.Collections.Generic;
     using System.IO;
     using Colossal.Entities;
+    using Colossal.IO.AssetDatabase;
     using Colossal.Json;
     using Colossal.Localization;
     using Colossal.Logging;
+    using Colossal.PSI.Environment;
     using Game;
     using Game.Prefabs;
     using Game.SceneFlow;
@@ -31,6 +33,7 @@ namespace Recolor.Systems.Palettes
         private List<PrefabBase> m_Prefabs;
         private Dictionary<PrefabBase, Entity> m_Entities;
         private bool m_FullyInitialized;
+        private string m_StreamingDataRecolorFolder;
 
         /// <inheritdoc/>
         protected override void OnCreate()
@@ -40,6 +43,7 @@ namespace Recolor.Systems.Palettes
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_UISystem = World.GetOrCreateSystemManaged<PalettesUISystem>();
             m_ModInstallPath = Path.Combine(Mod.Instance.InstallPath, ".PalettePrefabs");
+            m_StreamingDataRecolorFolder = Path.Combine(EnvPath.kUserDataPath, "StreamingData~", Mod.Id);
             m_Prefabs = new List<PrefabBase>();
             m_Entities = new Dictionary<PrefabBase, Entity>();
         }
@@ -47,39 +51,66 @@ namespace Recolor.Systems.Palettes
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            string[] filePaths = Directory.GetFiles(m_UISystem.ModsDataFolder);
-            for (int i = 0; i < filePaths.Length; i++)
+            string[] directories = Directory.GetDirectories(m_StreamingDataRecolorFolder);
+            foreach (string directory in directories)
             {
-                string fileName = filePaths[i].Remove(0, m_UISystem.ModsDataFolder.Length);
-                m_Log.Debug($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Processing {fileName}.");
-                if (fileName.Contains(nameof(PalettePrefab)))
+                string[] filePaths = Directory.GetFiles(directory);
+                for (int i = 0; i < filePaths.Length; i++)
                 {
-                    try
+                    string fileName = filePaths[i].Remove(0, m_StreamingDataRecolorFolder.Length);
+                    m_Log.Debug($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Processing {fileName}.");
+                    if (fileName.Contains(PrefabAsset.kExtension + ".cid"))
                     {
-                        using StreamReader reader = new StreamReader(new FileStream(filePaths[i], FileMode.Open));
+                        try
                         {
-                            string entireFile = reader.ReadToEnd();
-                            PalettePrefab palettePrefab = JsonConvert.DeserializeObject<PalettePrefab>(entireFile);
-                            if (palettePrefab is not null &&
-                               !m_Prefabs.Contains(palettePrefab) &&
-                                m_PrefabSystem.AddPrefab(palettePrefab) &&
-                                m_PrefabSystem.TryGetEntity(palettePrefab, out Entity palettePrefabEntity))
+                            using StreamReader reader = new StreamReader(new FileStream(filePaths[i], FileMode.Open));
                             {
-                                palettePrefab.Initialize(EntityManager, palettePrefabEntity);
-                                m_Prefabs.Add(palettePrefab);
-                                m_Entities.Add(palettePrefab, palettePrefabEntity);
-                                m_Log.Info($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Sucessfully imported and partially initialized {nameof(PalettePrefab)}:{nameof(palettePrefab.name)}.");
-                                continue;
+                                string entireFile = reader.ReadToEnd();
+                                Colossal.Hash128 guid = Colossal.Hash128.Parse(entireFile);
+                                m_Log.Debug(guid.ToString());
+                                if (!AssetDatabase.user.TryGetAsset(guid, out IAssetData assetData))
+                                {
+                                    m_Log.Debug("not found in asset database.");
+                                    continue;
+                                }
+
+                                if (assetData as PrefabAsset is null)
+                                {
+                                    m_Log.Debug("Asset data is not prefab asset.");
+                                    continue;
+                                }
+
+                                m_Log.Debug("trying to get prefab asset and base.");
+                                PrefabAsset prefabAsset = assetData as PrefabAsset;
+                                PalettePrefab palettePrefab = prefabAsset.Load<PalettePrefab>();
+                                if (palettePrefab is null)
+                                {
+                                    m_Log.Debug("Palette prefab is null.");
+                                }
+
+                                if (palettePrefab is not null &&
+                                   !m_Prefabs.Contains(palettePrefab) &&
+                                    m_PrefabSystem.AddPrefab(palettePrefab) &&
+                                    m_PrefabSystem.TryGetEntity(palettePrefab, out Entity palettePrefabEntity))
+                                {
+                                    palettePrefab.Initialize(EntityManager, palettePrefabEntity);
+                                    m_Prefabs.Add(palettePrefab);
+                                    m_Entities.Add(palettePrefab, palettePrefabEntity);
+                                    m_Log.Info($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Sucessfully imported and partially initialized {nameof(PalettePrefab)}:{nameof(palettePrefab.name)}.");
+                                    continue;
+                                }
+
+                                m_Log.Debug("got this far but something went wrong.");
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            m_Log.Error($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Could not create or initialize prefab {nameof(PalettePrefab)}:{fileName}. Encountered Exception: {ex}.");
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        m_Log.Error($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Could not create or initialize prefab {nameof(PalettePrefab)}:{fileName}. Encountered Exception: {ex}.");
-                    }
-                }
 
-                // Also handle other prefab types.
+                    // Also handle other prefab types.
+                }
             }
 
             Enabled = false;
@@ -89,6 +120,12 @@ namespace Recolor.Systems.Palettes
         protected override void OnGameLoadingComplete(Colossal.Serialization.Entities.Purpose purpose, GameMode mode)
         {
             base.OnGameLoadingComplete(purpose, mode);
+
+            IEnumerable<IAssetData> assetData = AssetDatabase.user.AllAssets();
+            foreach (IAssetData assetData1 in assetData)
+            {
+                m_Log.Debug(assetData1.name +" "+ assetData1.guid);
+            }
 
             if (mode.IsGameOrEditor() &&
                !m_FullyInitialized)

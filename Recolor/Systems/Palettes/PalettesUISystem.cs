@@ -90,7 +90,7 @@ namespace Recolor.Systems.Palettes
                 // SubCategories are not implemented yet.
                 palettePrefabBase.m_SubCategoryPrefab = null;
 
-                AssetDataPath assetDataPath = AssetDataPath.Create("StreamingData~/" + palettePrefabBase.name, palettePrefabBase.name ?? string.Empty);
+                AssetDataPath assetDataPath = AssetDataPath.Create($"StreamingData~/{Mod.Id}/" + palettePrefabBase.name, palettePrefabBase.name ?? string.Empty);
                 Colossal.IO.AssetDatabase.PrefabAsset prefabAsset = new PrefabAsset()
                 {
                     guid = Guid.NewGuid(),
@@ -107,11 +107,6 @@ namespace Recolor.Systems.Palettes
                 {
                     palettePrefabBase.Initialize(EntityManager, prefabEntity);
                     palettePrefabBase.LateInitialize(EntityManager, prefabEntity);
-
-                    // (palettePrefabBase.asset ?? AssetDatabase.user.AddAsset(assetDataPath, palettePrefabBase)).Save();
-                    /*File.WriteAllText(
-                        Path.Combine(m_ContentFolder, $"{nameof(PalettePrefab)}-{palettePrefabBase.name}.json"),
-                        JsonConvert.SerializeObject(palettePrefabBase, Formatting.Indented, settings: new JsonSerializerSettings() { ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore }));*/
                     m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)} Sucessfully created, initialized, and saved prefab {nameof(PalettePrefab)}:{palettePrefabBase.name}!");
                 }
             }

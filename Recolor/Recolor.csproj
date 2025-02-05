@@ -116,7 +116,6 @@
 	<ItemGroup>
 		<None Include="$(ModPropsFile)" Link="Properties\Mod.props" />
 		<None Include="$(ModTargetsFile)" Link="Properties\Mod.targets" />
-		<None Include="Systems\Palettes\AddPalettePrefabsSystem.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -157,10 +156,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Systems\Palettes\AddPalettePrefabsSystem.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <EmbeddedResource Include="l10n\de-DE.json" />
 	  <EmbeddedResource Include="l10n\es-ES.json" />
 	  <EmbeddedResource Include="l10n\fr-FR.json" />
@@ -169,6 +164,12 @@
 	  <EmbeddedResource Include="l10n\pt-BR.json" />
 	  <EmbeddedResource Include="l10n\ru-RU.json" />
 	  <EmbeddedResource Include="l10n\zh-HANS.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Systems\Palettes\AddPalettePrefabsSystem.cs">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
