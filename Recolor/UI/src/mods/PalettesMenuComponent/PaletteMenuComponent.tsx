@@ -71,7 +71,7 @@ export const PaletteMenuComponent = () => {
         <>
             {ShowPaletteEditorPanel && !isPhotoMode && defaultTool && activeSelection && (
                 <Portal>
-                    <Panel
+                    <Panel 
                         className={panelStyles.panel}
                         header={(
                             <VanillaComponentResolver.instance.Section title={"Palette Editor Menu"}>
@@ -79,6 +79,15 @@ export const PaletteMenuComponent = () => {
                                     <img src={closeSrc}></img>
                                 </Button>
                             </VanillaComponentResolver.instance.Section>
+                        )}
+                        footer = {(
+                            <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
+                                <VanillaComponentResolver.instance.Section title={"Save Palette"}>
+                                    <PaletteBoxComponent Swatches={Swatches} totalWidth={80}></PaletteBoxComponent>
+                                    <span className={panelStyles.savePaletteSpacer}></span>
+                                    <VanillaComponentResolver.instance.ToolButton src={saveToDiskSrc}          tooltip = {"Save Palette"}   onSelect={() => {handleClick("TrySavePalette")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                </VanillaComponentResolver.instance.Section>
+                            </InfoSection>
                         )}>
                         <>
                             <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
@@ -126,6 +135,11 @@ export const PaletteMenuComponent = () => {
                                 </VanillaComponentResolver.instance.Section>
                             </InfoSection>
                             <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
+                                { Swatches.length < 8 && (
+                                    <VanillaComponentResolver.instance.Section title={"Add a Swatch"}>
+                                        <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {"Add Swatch"}   onSelect={() => {handleClick("AddASwatch")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                    </VanillaComponentResolver.instance.Section>
+                                )}
                                 <div className={classNames(styles.rowGroup, panelStyles.subtitleRow, styles.centered)}>
                                     <div className={classNames(panelStyles.centeredSubTitle, styles.colorFieldWidth)}>Color</div>
                                     <span className={panelStyles.sliderSpacerLeft}></span>
@@ -134,18 +148,15 @@ export const PaletteMenuComponent = () => {
                                 { Swatches.map((currentSwatch) => (
                                     <SwatchComponent info={currentSwatch}></SwatchComponent>
                                 ))}
-                                <VanillaComponentResolver.instance.Section title={"Add a Swatch"}>
-                                    <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {"Add Swatch"}   onSelect={() => {handleClick("AddASwatch")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
-                                </VanillaComponentResolver.instance.Section>
+                                { Swatches.length >= 8 && (
+                                    <VanillaComponentResolver.instance.Section title={"Add a Swatch"}>
+                                        <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {"Add Swatch"}   onSelect={() => {handleClick("AddASwatch")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                    </VanillaComponentResolver.instance.Section>
+                                )}
                             </InfoSection>
-                            <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
-                                <VanillaComponentResolver.instance.Section title={"Save Palette"}>
-                                    <PaletteBoxComponent Swatches={Swatches} totalWidth={80}></PaletteBoxComponent>
-                                    <span className={panelStyles.savePaletteSpacer}></span>
-                                    <VanillaComponentResolver.instance.ToolButton src={saveToDiskSrc}          tooltip = {"Save Palette"}   onSelect={() => {handleClick("TrySavePalette")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
-                                </VanillaComponentResolver.instance.Section>
-                            </InfoSection>
+                        
                         </>
+                        
                     </Panel>
                 </Portal>
             )}

@@ -386,6 +386,9 @@ export const RecolorMainPanelComponent = () => {
                                         <VanillaComponentResolver.instance.ToolButton src={plusSrc} onSelect={() => { handleClick("TogglePaletteEditorMenu") }}           className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                                                                       tooltip = {"Show PaletteEditorPanel"}/>
                                     </div>
+                                    <div className={styles.rowGroup}>
+                                        
+                                    </div>
                                 </>
                             }
                             uppercase={false}

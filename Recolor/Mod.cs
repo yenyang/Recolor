@@ -140,7 +140,7 @@ namespace Recolor
             updateSystem.UpdateAfter<CreatedServiceVehicleCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAfter<AssignedRouteVehicleCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<PalettesUISystem>(SystemUpdatePhase.UIUpdate);
-            updateSystem.UpdateAt<AddPalettePrefabsSystem>(SystemUpdatePhase.PrefabUpdate);
+            // updateSystem.UpdateAt<AddPalettePrefabsSystem>(SystemUpdatePhase.PrefabUpdate);
             Log.Info($"{nameof(OnLoad)} complete.");
         }
 

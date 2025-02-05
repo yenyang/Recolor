@@ -6,6 +6,7 @@ namespace Recolor.Systems.Palettes
 {
     using System;
     using System.IO;
+    using Colossal.IO.AssetDatabase;
     using Colossal.Logging;
     using Colossal.PSI.Environment;
     using Game.Prefabs;
@@ -52,7 +53,7 @@ namespace Recolor.Systems.Palettes
             System.IO.Directory.CreateDirectory(m_ContentFolder);
 
             // Create bindings with the UI for transfering data to the UI.
-            m_Swatches = CreateBinding("Swatches", new SwatchUIData[] { new SwatchUIData(UnityEngine.Color.white, 100, 0), new SwatchUIData(UnityEngine.Color.black, 100, 1) });
+            m_Swatches = CreateBinding("Swatches", new SwatchUIData[] { new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100, 0), new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100, 1) });
             m_UniqueName = CreateBinding("UniqueName", string.Empty);
             m_CurrentPaletteCategory = CreateBinding("PaletteCategory", PaletteCategoryData.PaletteCategory.Any);
             m_ShowPaletteEditorPanel = CreateBinding("ShowPaletteEditorMenu", false);
@@ -67,6 +68,7 @@ namespace Recolor.Systems.Palettes
             CreateTrigger<int, Color>("ChangeSwatchColor", ChangeSwatchColor);
             CreateTrigger<int, int>("ChangeProbabilityWeight", ChangeProbabilityWeight);
             CreateTrigger("AddASwatch", AddASwatch);
+            CreateTrigger("RandomizeSwatch", (int swatch) => ChangeSwatchColor(swatch, new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1)));
 
             m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)}");
             Enabled = false;
@@ -88,15 +90,28 @@ namespace Recolor.Systems.Palettes
                 // SubCategories are not implemented yet.
                 palettePrefabBase.m_SubCategoryPrefab = null;
 
+                AssetDataPath assetDataPath = AssetDataPath.Create("StreamingData~/" + palettePrefabBase.name, palettePrefabBase.name ?? string.Empty);
+                Colossal.IO.AssetDatabase.PrefabAsset prefabAsset = new PrefabAsset()
+                {
+                    guid = Guid.NewGuid(),
+                    database = AssetDatabase.user,
+                };
+
+                AssetDatabase.user.AddAsset<Colossal.IO.AssetDatabase.PrefabAsset>(assetDataPath, prefabAsset.guid);
+                palettePrefabBase.asset = prefabAsset;
+                prefabAsset.SetData(palettePrefabBase);
+                prefabAsset.Save(force: false);
+
                 if (m_PrefabSystem.AddPrefab(palettePrefabBase) &&
                     m_PrefabSystem.TryGetEntity(palettePrefabBase, out Entity prefabEntity))
                 {
                     palettePrefabBase.Initialize(EntityManager, prefabEntity);
                     palettePrefabBase.LateInitialize(EntityManager, prefabEntity);
 
-                    File.WriteAllText(
+                    // (palettePrefabBase.asset ?? AssetDatabase.user.AddAsset(assetDataPath, palettePrefabBase)).Save();
+                    /*File.WriteAllText(
                         Path.Combine(m_ContentFolder, $"{nameof(PalettePrefab)}-{palettePrefabBase.name}.json"),
-                        JsonConvert.SerializeObject(palettePrefabBase, Formatting.Indented, settings: new JsonSerializerSettings() { ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore }));
+                        JsonConvert.SerializeObject(palettePrefabBase, Formatting.Indented, settings: new JsonSerializerSettings() { ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore }));*/
                     m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)} Sucessfully created, initialized, and saved prefab {nameof(PalettePrefab)}:{palettePrefabBase.name}!");
                 }
             }
@@ -148,7 +163,7 @@ namespace Recolor.Systems.Palettes
         private void RemoveSwatch(int swatch)
         {
             if (m_Swatches.Value.Length > swatch &&
-                swatch > 0)
+                swatch >= 0)
             {
                 SwatchUIData[] swatchDatas = m_Swatches.Value;
                 SwatchUIData[] newSwatchDatas = new SwatchUIData[swatchDatas.Length - 1];
