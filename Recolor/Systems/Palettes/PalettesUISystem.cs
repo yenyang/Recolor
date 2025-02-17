@@ -6,7 +6,6 @@ namespace Recolor.Systems.Palettes
 {
     using System;
     using System.IO;
-    using Colossal.IO.AssetDatabase;
     using Colossal.Logging;
     using Colossal.PSI.Environment;
     using Game.Prefabs;
@@ -53,7 +52,7 @@ namespace Recolor.Systems.Palettes
             System.IO.Directory.CreateDirectory(m_ContentFolder);
 
             // Create bindings with the UI for transfering data to the UI.
-            m_Swatches = CreateBinding("Swatches", new SwatchUIData[] { new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100, 0), new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100, 1) });
+            m_Swatches = CreateBinding("Swatches", new SwatchUIData[] { new SwatchUIData(new UnityEngine.Color(0.25f, .35f, 0.58f, 1.0f), 100, 0), new SwatchUIData(new UnityEngine.Color(0.45f, .25f, 0.15f, 1.0f), 100, 1) });
             m_UniqueName = CreateBinding("UniqueName", string.Empty);
             m_CurrentPaletteCategory = CreateBinding("PaletteCategory", PaletteCategoryData.PaletteCategory.Any);
             m_ShowPaletteEditorPanel = CreateBinding("ShowPaletteEditorMenu", false);
@@ -150,7 +149,7 @@ namespace Recolor.Systems.Palettes
         private void RemoveSwatch(int swatch)
         {
             if (m_Swatches.Value.Length > swatch &&
-                swatch >= 0)
+                swatch > 0)
             {
                 SwatchUIData[] swatchDatas = m_Swatches.Value;
                 SwatchUIData[] newSwatchDatas = new SwatchUIData[swatchDatas.Length - 1];

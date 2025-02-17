@@ -39,7 +39,7 @@ namespace Recolor.Domain.Palette
         /// <param name="swatchInfo">Generate swatchData from swatch info.</param>
         public SwatchData(SwatchInfo swatchInfo)
         {
-            m_SwatchColor = swatchInfo.m_SwatchColor;
+            m_SwatchColor = swatchInfo.GetColor();
             m_ProbabilityWeight = swatchInfo.m_ProbabilityWeight;
         }
     }

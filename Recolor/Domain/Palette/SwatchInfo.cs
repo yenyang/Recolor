@@ -4,9 +4,6 @@
 
 namespace Recolor.Domain.Palette
 {
-    using Game.Prefabs;
-    using System.Collections.Generic;
-    using Unity.Entities;
     using UnityEngine;
 
     /// <summary>
@@ -14,10 +11,10 @@ namespace Recolor.Domain.Palette
     /// </summary>
     public class SwatchInfo
     {
-        /// <summary>
-        /// The set of 3 colors.
-        /// </summary>
-        public Color m_SwatchColor;
+        public float m_Red;
+        public float m_Green;
+        public float m_Blue;
+        public float m_Alpha;
 
         /// <summary>
         /// The probability weight.
@@ -31,8 +28,15 @@ namespace Recolor.Domain.Palette
         /// <param name="probabilityWeight">Weight for likelyhood color will appear.</param>
         public SwatchInfo(Color color, int probabilityWeight)
         {
-            m_SwatchColor = color;
+            AssignColorValues(color);
             m_ProbabilityWeight = probabilityWeight;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SwatchInfo"/> class.
+        /// </summary>
+        public SwatchInfo()
+        {
         }
 
         /// <summary>
@@ -41,15 +45,29 @@ namespace Recolor.Domain.Palette
         /// <param name="swatchUIData">Data for UI.</param>
         public SwatchInfo(SwatchUIData swatchUIData)
         {
-            m_SwatchColor = swatchUIData.SwatchColor;
+            AssignColorValues(swatchUIData.SwatchColor);
             m_ProbabilityWeight = swatchUIData.ProbabilityWeight;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SwatchInfo"/> class.
+        /// Assigns the color values from UnityEngine.Color
         /// </summary>
-        public SwatchInfo()
+        /// <param name="color">Color swatch color.</param>
+        public void AssignColorValues(Color color)
         {
+            m_Red = color.r;
+            m_Green = color.g;
+            m_Blue = color.b;
+            m_Alpha = color.a;
+        }
+
+        /// <summary>
+        /// Gets the UnityEngine.Color for swatch.
+        /// </summary>
+        /// <returns>UnityEngine.Color.</returns>
+        public Color GetColor()
+        {
+            return new UnityEngine.Color(m_Red, m_Blue, m_Green, m_Alpha);
         }
     }
 }
