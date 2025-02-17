@@ -17,6 +17,7 @@ const uilStandard =                          "coui://uil/Standard/";
 const copySrc =                         uilStandard + "RectangleCopy.svg";
 const pasteSrc =                        uilStandard + "RectanglePaste.svg";
 const minusSrc =            uilStandard + "Minus.svg";
+const randomSrc =           uilStandard + "Dice.svg";
 
 const CanPasteColor$ = bindValue<boolean>(mod.id, "CanPasteColor");
 const ShowHexaDecimals$ = bindValue<boolean>(mod.id, 'ShowHexaDecimals');
@@ -96,6 +97,13 @@ export const SwatchComponent = (props: {info: SwatchUIData}) => {
                                 onSelect={() => {handleSwatchClick("RemoveSwatch", props.info.Index)}}
                             />
                         )}
+                        <VanillaComponentResolver.instance.ToolButton
+                            src={randomSrc}
+                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
+                            tooltip = {"Randomize"}
+                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                            onSelect={() => handleSwatchClick("RandomizeSwatch", props.info.Index)}
+                        />
                         <VanillaComponentResolver.instance.ToolButton
                             src={copySrc}
                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    

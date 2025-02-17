@@ -265,7 +265,10 @@ namespace Recolor.Systems.SelectedInfoPanel
             System.IO.Directory.CreateDirectory(m_ContentFolder);
             m_EndFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
 
-            m_SubMeshQuery = SystemAPI.QueryBuilder().WithAll<Game.Prefabs.SubMesh>().WithNone<Game.Prefabs.PlaceholderObjectElement, Game.Common.Deleted>().Build();
+            m_SubMeshQuery = SystemAPI.QueryBuilder()
+                .WithAll<Game.Prefabs.SubMesh>()
+                .WithNone<Game.Prefabs.PlaceholderObjectElement, Game.Common.Deleted>()
+                .Build();
 
             RequireForUpdate(m_SubMeshQuery);
             Enabled = false;
