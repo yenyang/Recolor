@@ -438,7 +438,9 @@ export const RecolorMainPanelComponent = () => {
                         <InfoRow
                             right={
                                 <>
-                                    <PaletteChooserComponent></PaletteChooserComponent>
+                                    <PaletteChooserComponent channel={0}></PaletteChooserComponent>
+                                    <PaletteChooserComponent channel={1}></PaletteChooserComponent>
+                                    <PaletteChooserComponent channel={2}></PaletteChooserComponent>
                                 </>
                             }
                             uppercase={false}

@@ -165,8 +165,8 @@ export const PaletteMenuComponent = () => {
                                     <span className={panelStyles.sliderSpacerLeft}></span>
                                     <div className={classNames(panelStyles.probabilityWeightWidth, panelStyles.centeredSubTitle)}>Probability Weight</div>
                                 </div>
-                                { Swatches.map((currentSwatch) => (
-                                    <SwatchComponent info={currentSwatch}></SwatchComponent>
+                                { Swatches.map((currentSwatch, index:number) => (
+                                    <SwatchComponent info={currentSwatch} index={index}></SwatchComponent>
                                 ))}
                                 { Swatches.length >= 8 && (
                                     <VanillaComponentResolver.instance.Section title={"Add a Swatch"}>

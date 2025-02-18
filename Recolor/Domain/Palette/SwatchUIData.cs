@@ -7,13 +7,12 @@ namespace Recolor.Domain.Palette
     using UnityEngine;
 
     /// <summary>
-    /// Class for swatch prefabs.
+    /// Class for swatch data transfer with ui.
     /// </summary>
     public class SwatchUIData
     {
         private Color m_SwatchColor;
         private int m_ProbabilityWeight;
-        private int m_Index;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SwatchUIData"/> class.
@@ -28,11 +27,10 @@ namespace Recolor.Domain.Palette
         /// <param name="color">Color for the swatch.</param>
         /// <param name="probabilityWeight">Weight for likelyhood color will appear.</param>
         /// <param name="index">Index within buffer.</param>
-        public SwatchUIData(Color color, int probabilityWeight, int index)
+        public SwatchUIData(Color color, int probabilityWeight)
         {
             m_SwatchColor = color;
             m_ProbabilityWeight = probabilityWeight;
-            m_Index = index;
         }
 
         /// <summary>
@@ -40,11 +38,10 @@ namespace Recolor.Domain.Palette
         /// </summary>
         /// <param name="swatchData">Buffer component from prefab entity.</param>
         /// <param name="index">Index from the buffer.</param>
-        public SwatchUIData(SwatchData swatchData, int index)
+        public SwatchUIData(SwatchData swatchData)
         {
             m_SwatchColor = swatchData.m_SwatchColor;
             m_ProbabilityWeight = swatchData.m_ProbabilityWeight;
-            m_Index = index;
         }
 
         /// <summary>
@@ -63,15 +60,6 @@ namespace Recolor.Domain.Palette
         {
             get { return m_ProbabilityWeight; }
             set { m_ProbabilityWeight = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the index for the swatch.
-        /// </summary>
-        public int Index
-        {
-            get { return m_Index; }
-            set { m_Index = value; }
         }
     }
 }

@@ -5,16 +5,15 @@
 namespace Recolor.Systems.Palettes
 {
     using System;
-    using System.IO;
     using System.Collections.Generic;
+    using System.IO;
+    using Colossal.Entities;
     using Colossal.Logging;
     using Colossal.PSI.Environment;
     using Game.Common;
     using Game.Prefabs;
-    using Game.Rendering;
     using Game.Tools;
     using Newtonsoft.Json;
-    using Recolor.Domain;
     using Recolor.Domain.Palette;
     using Recolor.Domain.Palette.Prefabs;
     using Recolor.Extensions;
@@ -22,15 +21,14 @@ namespace Recolor.Systems.Palettes
     using Unity.Collections;
     using Unity.Entities;
     using UnityEngine;
-    using Colossal.Entities;
-    using Colossal.Serialization.Entities;
-    using Game;
 
     /// <summary>
     /// A UI System for Palettes and Swatches.
     /// </summary>
     public partial class PalettesUISystem : ExtendedUISystemBase
     {
+        private const string NoSubcategoryName = "No_Subcategory";
+
         private PrefabSystem m_PrefabSystem;
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
         private ValueBindingHelper<SwatchUIData[]> m_Swatches;
@@ -40,7 +38,7 @@ namespace Recolor.Systems.Palettes
         private ILog m_Log;
         private string m_ContentFolder;
         private Unity.Mathematics.Random m_Random;
-        private ValueBindingHelper<SwatchUIData[][]> m_Palettes;
+        private ValueBindingHelper<PaletteChooserUIData> m_PaletteChooserData;
         private EntityQuery m_PaletteQuery;
 
         /// <summary>
@@ -54,31 +52,38 @@ namespace Recolor.Systems.Palettes
         public void UpdatePalettes()
         {
             m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} starting");
-            NativeArray<Entity> palettePrefabs = m_PaletteQuery.ToEntityArray(Allocator.Temp);
+            NativeArray<Entity> palettePrefabEntities = m_PaletteQuery.ToEntityArray(Allocator.Temp);
 
-            List<SwatchUIData[]> paletteList = new List<SwatchUIData[]>();
-            m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} palettePrefabs.length = {palettePrefabs.Length}.");
-            foreach (Entity palettePrefab in palettePrefabs)
+            Dictionary<string, List<SwatchUIData[]>> paletteChooserBuilder = new Dictionary<string, List<SwatchUIData[]>>();
+            m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} palettePrefabs.length = {palettePrefabEntities.Length}.");
+            paletteChooserBuilder.Add(NoSubcategoryName, new List<SwatchUIData[]>());
+            foreach (Entity palettePrefabEntity in palettePrefabEntities)
             {
-                if (!EntityManager.TryGetBuffer(palettePrefab, isReadOnly: true, out DynamicBuffer<SwatchData> swatches) ||
+                if (!EntityManager.TryGetBuffer(palettePrefabEntity, isReadOnly: true, out DynamicBuffer<SwatchData> swatches) ||
                     swatches.Length < 2)
                 {
-                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} skipping palette entity {palettePrefab.Index}:{palettePrefab.Version}.");
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} skipping palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version}.");
                     continue;
                 }
 
                 SwatchUIData[] palette = new SwatchUIData[swatches.Length];
                 for (int i = 0; i < swatches.Length; i++)
                 {
-                    palette[i] = new SwatchUIData(swatches[i], i);
+                    palette[i] = new SwatchUIData(swatches[i]);
                 }
 
-                paletteList.Add(palette);
-                m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} adding palette entity {palettePrefab.Index}:{palettePrefab.Version} with {swatches.Length} swatches.");
+                if (!EntityManager.TryGetComponent(palettePrefabEntity, out PaletteSubcategoryData subcategoryData))
+                {
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} doesn't have subcategorydata.");
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} paletteChooserBuilder[NoSubcategoryName].count = {paletteChooserBuilder[NoSubcategoryName].Count}");
+                    paletteChooserBuilder[NoSubcategoryName].Add(palette);
+
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} adding palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version} with {swatches.Length} swatches.");
+                }
             }
 
-            m_Palettes.Value = paletteList.ToArray();
-            m_Palettes.Binding.TriggerUpdate();
+            m_PaletteChooserData.Value = new PaletteChooserUIData(paletteChooserBuilder);
+            m_PaletteChooserData.Binding.TriggerUpdate();
             m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} complete");
         }
 
@@ -97,11 +102,11 @@ namespace Recolor.Systems.Palettes
             System.IO.Directory.CreateDirectory(m_ContentFolder);
 
             // Create bindings with the UI for transfering data to the UI.
-            m_Swatches = CreateBinding("Swatches", new SwatchUIData[] { new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100, 0), new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100, 1) });
+            m_Swatches = CreateBinding("Swatches", new SwatchUIData[] { new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100), new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100) });
             m_UniqueName = CreateBinding("UniqueName", string.Empty);
             m_CurrentPaletteCategory = CreateBinding("PaletteCategory", PaletteCategoryData.PaletteCategory.Any);
             m_ShowPaletteEditorPanel = CreateBinding("ShowPaletteEditorMenu", false);
-            m_Palettes = CreateBinding("Palettes", new SwatchUIData[0][]);
+            m_PaletteChooserData = CreateBinding("PaletteChooserData", new PaletteChooserUIData());
 
             // Listen to trigger event that are sent from the UI to the C#.
             CreateTrigger("TrySavePalette", TrySavePalette);
@@ -211,8 +216,7 @@ namespace Recolor.Systems.Palettes
                 {
                     if (i != swatch)
                     {
-                        newSwatchDatas[j] = swatchDatas[i];
-                        newSwatchDatas[j].Index = j++;
+                        newSwatchDatas[j++] = swatchDatas[i];
                     }
                 }
 
@@ -247,7 +251,7 @@ namespace Recolor.Systems.Palettes
             SwatchUIData[] newSwatchUIDatas = new SwatchUIData[swatchUIDatas.Length + 1];
 
             swatchUIDatas.CopyTo(newSwatchUIDatas, 0);
-            newSwatchUIDatas[swatchUIDatas.Length] = new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100, swatchUIDatas.Length);
+            newSwatchUIDatas[swatchUIDatas.Length] = new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100);
             m_Swatches.Value = newSwatchUIDatas;
             m_Swatches.Binding.TriggerUpdate();
         }

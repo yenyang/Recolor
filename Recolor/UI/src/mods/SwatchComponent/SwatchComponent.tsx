@@ -46,7 +46,7 @@ function changeValue(event:string, index:number, value : number) {
 
 const SliderField : any = getModule("game-ui/editor/widgets/fields/number-slider-field.tsx", "FloatSliderField");
 
-export const SwatchComponent = (props: {info: SwatchUIData}) => {
+export const SwatchComponent = (props: {info: SwatchUIData, index: number}) => {
     const CanPasteColor = useValue(CanPasteColor$);    
     const ShowHexaDecimals = useValue(ShowHexaDecimals$);
     const Swatches = useValue(Swatches$);
@@ -58,12 +58,12 @@ export const SwatchComponent = (props: {info: SwatchUIData}) => {
     function HandleTextInput () {
         if (textInput.length == 9 &&  /^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(textInput)) 
         { 
-            changeColor(props.info.Index, convertHexaDecimalToColor(textInput));
+            changeColor(props.index, convertHexaDecimalToColor(textInput));
             setValidInput(true)
         }
         else if (textInput.length == 7 && /^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(textInput+"ff")) 
         {
-            changeColor(props.info.Index, convertHexaDecimalToColor(textInput+"ff"));      
+            changeColor(props.index, convertHexaDecimalToColor(textInput+"ff"));      
             setTextInput(textInput+"ff");      
             setValidInput(true);
         } else 
@@ -90,7 +90,7 @@ export const SwatchComponent = (props: {info: SwatchUIData}) => {
                             className={classNames(ColorFieldTheme.colorField, styles.rcColorField)} 
                             value={props.info.SwatchColor} 
                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} 
-                            onChange={(e) => {changeColor(props.info.Index, e); setTextInput(convertColorToHexaDecimal(e))}}
+                            onChange={(e) => {changeColor(props.index, e); setTextInput(convertColorToHexaDecimal(e))}}
                             alpha={1}
                         />
                     </div>
@@ -101,7 +101,7 @@ export const SwatchComponent = (props: {info: SwatchUIData}) => {
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                 tooltip = {"Remove"}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                onSelect={() => {handleSwatchClick("RemoveSwatch", props.info.Index)}}
+                                onSelect={() => {handleSwatchClick("RemoveSwatch", props.index)}}
                             />
                         )}
                         <VanillaComponentResolver.instance.ToolButton
@@ -109,7 +109,7 @@ export const SwatchComponent = (props: {info: SwatchUIData}) => {
                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
                             tooltip = {"Randomize"}
                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                            onSelect={() => handleSwatchClick("RandomizeSwatch", props.info.Index)}
+                            onSelect={() => handleSwatchClick("RandomizeSwatch", props.index)}
                         />
                         <VanillaComponentResolver.instance.ToolButton
                             src={copySrc}
@@ -124,7 +124,7 @@ export const SwatchComponent = (props: {info: SwatchUIData}) => {
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                 tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PasteColor]",locale["Recolor.TOOLTIP_DESCRIPTION[PasteColor]"])}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                onSelect={() => {handleSwatchClick("PasteSwatchColor", props.info.Index); setUpdateHexaDecimal(props.info.SwatchColor);}}
+                                onSelect={() => {handleSwatchClick("PasteSwatchColor", props.index); setUpdateHexaDecimal(props.info.SwatchColor);}}
                             />
                         )}
                     </div>
@@ -146,7 +146,7 @@ export const SwatchComponent = (props: {info: SwatchUIData}) => {
                 </div>
                 <div className={styles.columnGroup}>
                     <div className={styles.SliderFieldWidth}>
-                        <SliderField value={props.info.ProbabilityWeight} min={1} max={200} fractionDigits={0} onChange={(e: number) => {changeValue("ChangeProbabilityWeight", props.info.Index ,e)}}></SliderField>
+                        <SliderField value={props.info.ProbabilityWeight} min={1} max={200} fractionDigits={0} onChange={(e: number) => {changeValue("ChangeProbabilityWeight", props.index ,e)}}></SliderField>
                     </div> 
                     <span className={styles.belowSwapButton}></span>
                     { ShowHexaDecimals && (
