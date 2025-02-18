@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="surface1">
+        <path d="M31.461,6.363C32.258,6.363 33.055,6.719 33.574,7.426L35.641,9.945L35.645,9.953C36.723,11.348 36.707,13.309 35.602,14.684L35.594,14.691L25.207,26.77L50.773,26.77L50.809,26.773C52.527,26.957 53.793,28.508 53.637,30.23L53.637,33.773C53.793,35.496 52.527,37.043 50.809,37.227L50.773,37.23L25.203,37.23L35.594,49.313L35.602,49.32C36.691,50.699 36.711,52.648 35.648,54.047L35.641,54.055L33.574,56.578C32.539,57.996 30.383,57.996 29.348,56.578L11.141,34.344L11.133,34.336C10.07,32.957 10.07,31.035 11.133,29.66L11.141,29.652L29.348,7.43C29.863,6.719 30.66,6.367 31.461,6.367L31.461,6.363Z" style="fill:#f3f4f4;fill-rule:nonzero;"/>
+    </g>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" clip-rule="evenodd" viewBox="0 0 64 64">
+  <g id="white">
+    <path fill="#ebebeb" d="m40.891 15.301 1.855 2.565-20.111 14.546-1.855-2.565 20.111-14.546Zm2.179 31.441-1.709 2.67-20.905-13.38 1.709-2.671L43.07 46.742Z"/>
+  </g>
+  <g id="green">
+    <circle cx="43.368" cy="49" r="5.912" fill="#8ef411"/>
+  </g>
+  <g id="blue">
+    <circle cx="20.544" cy="33" r="5.912" fill="#5591e7"/>
+  </g>
+  <g id="red">
+    <circle cx="43.456" cy="15" r="5.912" fill="#ff2721"/>
+  </g>
+</svg>

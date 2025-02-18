@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" clip-rule="evenodd" viewBox="0 0 64 64">
+  <g id="grey">
+    <path fill="#c2bdbd" d="M13 45.014H7.319V11.32h2v-.028h45.362v.028h2v33.694H51V29.496C38.975 15.669 26.273 16.364 13 30v15.014Z"/>
+    <path fill="#575757" d="m56.672 44.925.016 8-49.446.102-.016-8 49.446-.102Z"/>
+  </g>
+  <g id="black">
+    <path fill="#010001" d="M13 30c13.273-13.636 25.975-14.331 38-.504v15.518H13V30Z"/>
+  </g>
+</svg>

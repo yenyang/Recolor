@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" clip-rule="evenodd" viewBox="0 0 64 64">
+  <g id="green">
+    <g id="grey">
+      <path fill="#c2bdbd" d="M6.456 41.638h-3V19.024h3v22.614Zm17.976 0h-3V19.024h3v22.614Zm18.118 0h-3V19.024h3v22.614Zm17.977 0h-3V19.024h3v22.614Z"/>
+    </g>
+    <path fill="#6aff4e" d="M10.966 25.339v1l-3-1.5 3-1.5v1h5.956v-1l3 1.5-3 1.5v-1h-5.956ZM6.927 45.466v.982l-2.944-1.472 2.944-1.472v.982h50.146v-.982l2.944 1.472-2.944 1.472v-.982H6.927Zm22.095-20.207v1l-3-1.5 3-1.5v1h5.956v-1l3 1.5-3 1.5v-1h-5.956Zm18.039.08v1l-3-1.5 3-1.5v1h5.956v-1l3 1.5-3 1.5v-1h-5.956Z"/>
+  </g>
+</svg>

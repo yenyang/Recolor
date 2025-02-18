@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" clip-rule="evenodd" viewBox="0 0 64 64">
+  <g id="white" fill="#f4f4f4">
+    <path d="M48.35 20.65v22.7c0 2.76-2.24 5-5 5h-22.7c-2.76 0-5-2.24-5-5v-22.7c0-2.76 2.24-5 5-5h22.7c2.76 0 5 2.24 5 5Zm-2 0c0-1.656-1.344-3-3-3h-22.7c-1.656 0-3 1.344-3 3v22.7c0 1.656 1.344 3 3 3h22.7c1.656 0 3-1.344 3-3v-22.7Z"/>
+    <path d="m18.469 44.846 8.375-14.014 4.683 7.453 8.772-4.652 5.191 11.213H18.469Z"/>
+    <ellipse cx="38.301" cy="23.388" rx="4.574" ry="4.738"/>
+  </g>
+</svg>

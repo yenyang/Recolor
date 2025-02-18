@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="Time">
+        <path id="Icon_awesome-clock" d="M32,4.312L32.006,4.312C47.192,4.312 59.688,16.808 59.688,31.994L59.688,32C59.688,47.189 47.189,59.688 32,59.688C16.811,59.688 4.312,47.189 4.312,32C4.312,16.811 16.811,4.312 32,4.312ZM32,7.819C18.654,7.819 7.819,18.654 7.819,32C7.819,45.346 18.654,56.181 32,56.181C45.346,56.181 56.181,45.346 56.181,32C56.181,18.654 45.346,7.819 32,7.819Z" style="fill:#f3f4f4;"/>
+        <path d="M36.018,14.368C35.889,13.524 35.432,13.091 34.678,13.028L29.32,13.028C28.458,13.097 27.983,13.518 27.98,14.368L27.98,35.158C27.878,35.722 28.084,36.066 28.528,36.24L40.376,45.398C41.078,45.839 41.705,45.758 42.25,45.106L45.398,40.776C45.827,40.151 45.772,39.525 45.108,38.9L36.346,32L36.018,14.368Z" style="fill:#b5b5b5;"/>
+    </g>
+</svg>

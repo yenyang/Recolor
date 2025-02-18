@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" clip-rule="evenodd" viewBox="0 0 64 64">
+  <g id="grey">
+    <path fill="#d4d4d4" d="M39.75 30v9h-6v-9h6Zm9 0v9h-6v-9h6Zm-18 0v9h-6v-9h6Z"/>
+  </g>
+  <g id="white" fill="#f4f4f4">
+    <path d="M22.75 18h28v3h-28v-3Zm28 38h-28v-3h28v3Z"/>
+    <path d="m13.25 10 9.5 8v3l-9.5-8v-3Zm9.5 46-9.5-8v-3l9.5 8v3Z"/>
+    <path d="M33.75 44h6v9h-6z"/>
+  </g>
+</svg>

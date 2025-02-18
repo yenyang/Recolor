@@ -19,6 +19,11 @@
     justify-content: center !important;
 }
 
+.buttonRow {
+    justify-content: flex-end !important;
+    width: 200rem;
+}
+
 .subMeshText {
     display: flex;
     flex-direction: row;

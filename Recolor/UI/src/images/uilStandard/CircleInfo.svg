@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;">
+    <g id="surface1">
+        <path d="M29,21C29,20.734 29.105,20.48 29.293,20.293C29.48,20.105 29.734,20 30,20L34,20C34.266,20 34.52,20.105 34.707,20.293C34.895,20.48 35,20.734 35,21L35,25C35,25.266 34.895,25.52 34.707,25.707C34.52,25.895 34.266,26 34,26L30,26C29.734,26 29.48,25.895 29.293,25.707C29.105,25.52 29,25.266 29,25L29,21Z" style="fill:#f3f4f4;fill-rule:nonzero;"/>
+        <path d="M29,30C29,29.734 29.105,29.48 29.293,29.293C29.48,29.105 29.734,29 30,29L34,29C34.266,29 34.52,29.105 34.707,29.293C34.895,29.48 35,29.734 35,30L35,43C35,43.266 34.895,43.52 34.707,43.707C34.52,43.895 34.266,44 34,44L30,44C29.734,44 29.48,43.895 29.293,43.707C29.105,43.52 29,43.266 29,43L29,30Z" style="fill:#f3f4f4;fill-rule:nonzero;"/>
+        <path d="M55,32C55,44.703 44.703,55 32,55C19.297,55 9,44.703 9,32C9,19.297 19.297,9 32,9C44.703,9 55,19.297 55,32Z" style="fill:none;fill-rule:nonzero;stroke:#f3f4f4;stroke-width:6px;"/>
+    </g>
+</svg>

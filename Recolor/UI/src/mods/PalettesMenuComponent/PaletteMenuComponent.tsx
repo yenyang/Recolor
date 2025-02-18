@@ -3,7 +3,7 @@ import { bindValue, trigger, useValue } from "cs2/api";
 import panelStyles from "./PaletteMenuStyles.module.scss";
 import styles from "../Domain/ColorFields.module.scss";
 import { Color, game, selectedInfo, tool } from "cs2/bindings";
-import { Button, Dropdown, DropdownItem, Panel, Portal } from "cs2/ui";
+import { Button, Dropdown, DropdownItem, DropdownToggle, Panel, Portal } from "cs2/ui";
 import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaComponentResolver";
 import { useLocalization } from "cs2/l10n";
 import { InfoSection, roundButtonHighlightStyle } from "mods/RecolorMainPanel/RecolorMainPanel";
@@ -17,16 +17,27 @@ import { SwatchComponent } from "mods/SwatchComponent/SwatchComponent";
 import { SwatchUIData } from "mods/Domain/PaletteAndSwatches/SwatchUIData";
 import { PaletteCategory } from "mods/Domain/PaletteAndSwatches/PaletteCategoryType";
 import { PaletteBoxComponent } from "mods/PaletteBoxComponent/PaletteBoxComponent";
+import { getModule } from "cs2/modding";
 
+import closeSrc from "images/uilStandard/XClose.svg";
+import buildingSrc from "images/uilStandard/House.svg";
+import vehiclesSrc from "images/uilStandard/GenericVehicle.svg";
+import propsSrc from "images/uilStandard/BenchAndLampProps.svg";
+import allSrc from "images/uilStandard/StarAll.svg";
+import plusSrc from "images/uilStandard/Plus.svg";
+import saveToDiskSrc from "images/uilStandard/DiskSave.svg";
+import { PaletteFilterType } from "mods/Domain/PaletteAndSwatches/PaletteFilterType";
+
+/*
 const uilStandard =                         "coui://uil/Standard/";
 const closeSrc =         uilStandard +  "XClose.svg";
-
 const buildingSrc =                     uilStandard + "House.svg";
 const vehiclesSrc =                     uilStandard + "GenericVehicle.svg";
 const propsSrc =                        uilStandard + "BenchAndLampProps.svg";
 const allSrc =                          uilStandard + "StarAll.svg";
 const plusSrc =                         uilStandard + "Plus.svg";
 const saveToDiskSrc =                   uilStandard + "DiskSave.svg";
+*/
 
 const Swatches$ = bindValue<SwatchUIData[]>(mod.id, "Swatches");
 const UniqueName$ = bindValue<string>(mod.id, "UniqueName");
@@ -40,6 +51,8 @@ function handleClick(event: string) {
 function handleCategoryClick(category : PaletteCategory) {
     trigger(mod.id, "ToggleCategory", category as number);
 }
+
+const dropDownThemes = getModule('game-ui/editor/themes/editor-dropdown.module.scss', 'classes');
 
 export const PaletteMenuComponent = () => {
     const isPhotoMode = useValue(game.activeGamePanel$)?.__Type == game.GamePanelType.PhotoMode;
@@ -55,6 +68,7 @@ export const PaletteMenuComponent = () => {
     let [uniqueNameInput, setTextInput] = useState(UniqueName);
     let [validInput, setValidInput] = useState(true);
     let [locales, setLocales] = useState(["en-US"]);
+    let [currentFilter, setFilter] = useState(PaletteFilterType.Theme)
 
     let FilterTypes : string[] = [
         "Theme",
@@ -117,12 +131,18 @@ export const PaletteMenuComponent = () => {
                                 </VanillaComponentResolver.instance.Section>
                                 <VanillaComponentResolver.instance.Section title={"Filter Type"}>
                                     <Dropdown 
-                                        content={FilterTypes.map((type) => (
-                                            <DropdownItem value={type}>
-                                                <div>{type}</div>
-                                            </DropdownItem>
-                                        ))}>
-                                        
+                                        theme = {dropDownThemes}
+                                        content={                    
+                                            FilterTypes.map((type, index: number) => (
+                                                <DropdownItem value={type} className={dropDownThemes.dropdownItem} selected={currentFilter==index} onChange={() => setFilter(index)}>
+                                                    <div className={panelStyles.filterTypeWidth}>{type}</div>
+                                                </DropdownItem>
+                                            ))
+                                        }
+                                    >
+                                        <DropdownToggle disabled={false}>
+                                               <div className={panelStyles.filterTypeWidth}>{FilterTypes[currentFilter]}</div>
+                                        </DropdownToggle>
                                     </Dropdown>
                                 </VanillaComponentResolver.instance.Section>
                             </InfoSection>

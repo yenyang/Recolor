@@ -14,7 +14,24 @@ import { ButtonState } from "mods/Domain/ButtonState";
 import { Scope } from "mods/Domain/Scope";
 import { tool } from "cs2/bindings";
 
+import resetSrc from "images/uilStandard/Reset.svg";
+import singleSrc from "images/uilStandard/SingleRhombus.svg";
+import matchingSrc from "images/uilStandard/SameRhombus.svg";
+import copySrc from "images/uilStandard/RectangleCopy.svg";
+import pasteSrc from "images/uilStandard/RectanglePaste.svg";
+import colorPickerSrc from "images/uilStandard/PickerPipette.svg";
+import colorPaletteSrc from "images/uilColored/ColorPalette.svg";
+import swapSrc from "images/uilStandard/ArrowsMoveLeftRight.svg";
+import singleSelectionSrc from "images/uilStandard/Dot.svg";
+import radiusSelectionSrc from "images/uilStandard/Circle.svg";
+import buildingSrc from "images/uilStandard/House.svg";
+import vehiclesSrc from "images/uilStandard/GenericVehicle.svg";
+import propsSrc from "images/uilStandard/BenchAndLampProps.svg";
+import arrowDownSrc from "images/uilStandard/ArrowDownThickStroke.svg";
+import arrowUpSrc from "images/uilStandard/ArrowUpThickStroke.svg";
+
 // These contain the coui paths to Unified Icon Library svg assets
+/*
 const uilStandard =                          "coui://uil/Standard/";
 const uilColored =                           "coui://uil/Colored/";
 const singleSelectionSrc =                       uilStandard + "Dot.svg";
@@ -27,10 +44,12 @@ const buildingSrc =                     uilStandard + "House.svg";
 const vehiclesSrc =                     uilStandard + "GenericVehicle.svg";
 const propsSrc =                        uilStandard + "BenchAndLampProps.svg";
 const swapSrc =                         uilStandard + "ArrowsMoveLeftRight.svg";
-
 const resetSrc =                     uilStandard + "Reset.svg";
 const colorPickerSrc =                  uilStandard + "PickerPipette.svg";
 const colorPaletteSrc =                 uilColored + "ColorPalette.svg";
+const arrowDownSrc =         uilStandard +  "ArrowDownThickStroke.svg";
+const arrowUpSrc =           uilStandard +  "ArrowUpThickStroke.svg";
+*/
 
 const ColorPainterSelectionType$ = bindValue<number>(mod.id, "ColorPainterSelectionType");
 const SingleInstance$ = bindValue<ButtonState>(mod.id, 'SingleInstance');
@@ -42,8 +61,6 @@ const ToolMode$ = bindValue<PainterToolMode>(mod.id, "PainterToolMode");
 const ShowHexaDecimals$ = bindValue<boolean>(mod.id, "ShowHexaDecimals");
 const PainterColorSet$ = bindValue<RecolorSet>(mod.id, "PainterColorSet");
 
-const arrowDownSrc =         uilStandard +  "ArrowDownThickStroke.svg";
-const arrowUpSrc =           uilStandard +  "ArrowUpThickStroke.svg";
 
 function handleClick(eventName : string) {
     // This triggers an event on C# side and C# designates the method to implement.

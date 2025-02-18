@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;">
+    <g id="Advisor">
+        <g id="Info">
+            <circle cx="32" cy="32" r="23" style="fill:none;stroke:#f3f4f4;stroke-width:6px;"/>
+        </g>
+    </g>
+    <g id="Layer1">
+        <path d="M20.964,44.038L30.276,31.491L22.064,19.962L25.858,19.962L30.226,26.137C31.135,27.418 31.781,28.403 32.164,29.093C32.701,28.217 33.336,27.303 34.069,26.351L38.914,19.962L42.379,19.962L33.921,31.31L43.036,44.038L39.095,44.038L33.035,35.449C32.695,34.956 32.345,34.42 31.984,33.839C31.447,34.715 31.064,35.317 30.834,35.646L24.79,44.038L20.964,44.038Z" style="fill:#f3f4f4;fill-rule:nonzero;stroke:#f3f4f4;stroke-width:1.5px;stroke-linejoin:round;stroke-miterlimit:2;"/>
+    </g>
+</svg>

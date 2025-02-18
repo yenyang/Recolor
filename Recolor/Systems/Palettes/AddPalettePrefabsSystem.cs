@@ -47,39 +47,43 @@ namespace Recolor.Systems.Palettes
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            string[] filePaths = Directory.GetFiles(m_UISystem.ModsDataFolder);
-            for (int i = 0; i < filePaths.Length; i++)
+            string[] directories = Directory.GetDirectories(m_UISystem.ModsDataFolder);
+            foreach (string directory in directories)
             {
-                string fileName = filePaths[i].Remove(0, m_UISystem.ModsDataFolder.Length);
-                m_Log.Debug($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Processing {fileName}.");
-                if (fileName.Contains(nameof(PalettePrefab)))
+                string[] filePaths = Directory.GetFiles(directory);
+                for (int i = 0; i < filePaths.Length; i++)
                 {
-                    try
+                    string fileName = filePaths[i].Remove(0, m_UISystem.ModsDataFolder.Length);
+                    m_Log.Debug($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Processing {fileName}.");
+                    if (fileName.Contains(nameof(PalettePrefab)))
                     {
-                        using StreamReader reader = new StreamReader(new FileStream(filePaths[i], FileMode.Open));
+                        try
                         {
-                            string entireFile = reader.ReadToEnd();
-                            PalettePrefab palettePrefab = JsonConvert.DeserializeObject<PalettePrefab>(entireFile);
-                            if (palettePrefab is not null &&
-                               !m_Prefabs.Contains(palettePrefab) &&
-                                m_PrefabSystem.AddPrefab(palettePrefab) &&
-                                m_PrefabSystem.TryGetEntity(palettePrefab, out Entity palettePrefabEntity))
+                            using StreamReader reader = new StreamReader(new FileStream(filePaths[i], FileMode.Open));
                             {
-                                palettePrefab.Initialize(EntityManager, palettePrefabEntity);
-                                m_Prefabs.Add(palettePrefab);
-                                m_Entities.Add(palettePrefab, palettePrefabEntity);
-                                m_Log.Info($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Sucessfully imported and partially initialized {nameof(PalettePrefab)}:{nameof(palettePrefab.name)}.");
-                                continue;
+                                string entireFile = reader.ReadToEnd();
+                                PalettePrefab palettePrefab = JsonConvert.DeserializeObject<PalettePrefab>(entireFile);
+                                if (palettePrefab is not null &&
+                                   !m_Prefabs.Contains(palettePrefab) &&
+                                    m_PrefabSystem.AddPrefab(palettePrefab) &&
+                                    m_PrefabSystem.TryGetEntity(palettePrefab, out Entity palettePrefabEntity))
+                                {
+                                    palettePrefab.Initialize(EntityManager, palettePrefabEntity);
+                                    m_Prefabs.Add(palettePrefab);
+                                    m_Entities.Add(palettePrefab, palettePrefabEntity);
+                                    m_Log.Info($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Sucessfully imported and partially initialized {nameof(PalettePrefab)}:{nameof(palettePrefab.name)}.");
+                                    continue;
+                                }
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            m_Log.Error($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Could not create or initialize prefab {nameof(PalettePrefab)}:{fileName}. Encountered Exception: {ex}.");
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        m_Log.Error($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Could not create or initialize prefab {nameof(PalettePrefab)}:{fileName}. Encountered Exception: {ex}.");
-                    }
-                }
 
-                // Also handle other prefab types.
+                    // Also handle other prefab types.
+                }
             }
 
             Enabled = false;

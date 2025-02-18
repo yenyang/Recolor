@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="Date">
+        <path id="Path_3258" d="M46,10L50,10C53.292,10 56,12.708 56,16L56,20L8,20L8,16C8,12.708 10.708,10 14,10L20,10L20,6C20,4.896 20.896,4 22,4L24,4C25.104,4 26,4.896 26,6L26,10L40,10L40,6C40,4.896 40.896,4 42,4L44,4C45.104,4 46,4.896 46,6L46,10ZM8,22L56,22L56,52C56,55.292 53.292,58 50,58L14,58C10.708,58 8,55.292 8,52L8,22ZM14,43L14,52L22,52L22,43L14,43ZM28,52L36,52L36,43L28,43L28,52ZM42,52L50,52L50,43L42,43L42,52ZM50,37L50,28L42,28L42,37L50,37ZM36,28L28,28L28,37L36,37L36,28ZM22,28L14,28L14,37L22,37L22,28Z" style="fill:#f3f4f4;"/>
+    </g>
+</svg>

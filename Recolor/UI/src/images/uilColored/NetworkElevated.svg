@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" clip-rule="evenodd" viewBox="0 0 64 64">
+  <g id="white">
+    <path fill="#ebebeb" d="M9.319 15.153h2V53.08h-2V15.153Zm43.362 0h2V53.08h-2V15.153Zm-21.681 0h2v38.499h-2V15.153Z"/>
+  </g>
+  <g id="grey">
+    <rect width="51.362" height="8" x="6.319" y="11.153" fill="#575757"/>
+  </g>
+</svg>

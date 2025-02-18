@@ -5,3 +5,20 @@
     align-items: center;
     height: 28rem;
 }
+
+.startBox {
+    border-top-right-radius: 0rem 0rem !important;
+    border-bottom-right-radius: 0rem 0rem !important;
+}
+
+.centerBox {
+    border-top-left-radius: 0rem 0rem !important;
+    border-top-right-radius: 0rem 0rem !important;
+    border-bottom-left-radius: 0rem 0rem !important;
+    border-bottom-right-radius: 0rem 0rem !important;
+}
+
+.endBox {
+    border-top-left-radius: 0rem 0rem !important;
+    border-bottom-left-radius: 0rem 0rem !important;
+}

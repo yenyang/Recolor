@@ -52,7 +52,7 @@ namespace Recolor.Systems.Palettes
             System.IO.Directory.CreateDirectory(m_ContentFolder);
 
             // Create bindings with the UI for transfering data to the UI.
-            m_Swatches = CreateBinding("Swatches", new SwatchUIData[] { new SwatchUIData(new UnityEngine.Color(0.25f, .35f, 0.58f, 1.0f), 100, 0), new SwatchUIData(new UnityEngine.Color(0.45f, .25f, 0.15f, 1.0f), 100, 1) });
+            m_Swatches = CreateBinding("Swatches", new SwatchUIData[] { new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100, 0), new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100, 1) });
             m_UniqueName = CreateBinding("UniqueName", string.Empty);
             m_CurrentPaletteCategory = CreateBinding("PaletteCategory", PaletteCategoryData.PaletteCategory.Any);
             m_ShowPaletteEditorPanel = CreateBinding("ShowPaletteEditorMenu", false);
@@ -95,8 +95,9 @@ namespace Recolor.Systems.Palettes
                     palettePrefabBase.Initialize(EntityManager, prefabEntity);
                     palettePrefabBase.LateInitialize(EntityManager, prefabEntity);
 
+                    System.IO.Directory.CreateDirectory(Path.Combine(m_ContentFolder, palettePrefabBase.name));
                     File.WriteAllText(
-                        Path.Combine(m_ContentFolder, $"{nameof(PalettePrefab)}-{palettePrefabBase.name}.json"),
+                        Path.Combine(m_ContentFolder, palettePrefabBase.name, $"{nameof(PalettePrefab)}-{palettePrefabBase.name}.json"),
                         JsonConvert.SerializeObject(palettePrefabBase, Formatting.Indented, settings: new JsonSerializerSettings() { ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore }));
                     m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)} Sucessfully created, initialized, and saved prefab {nameof(PalettePrefab)}:{palettePrefabBase.name}!");
                 }

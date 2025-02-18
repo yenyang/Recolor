@@ -13,11 +13,18 @@ import { FocusDisabled } from "cs2/input";
 import { getModule } from "cs2/modding";
 import { SwatchUIData } from "../Domain/PaletteAndSwatches/SwatchUIData";
 
+import copySrc from "images/uilStandard/RectangleCopy.svg";
+import pasteSrc from "images/uilStandard/RectanglePaste.svg";
+import minusSrc from "images/uilStandard/Minus.svg";
+import randomSrc from "images/uilStandard/Dice.svg";
+
+/*
 const uilStandard =                          "coui://uil/Standard/";
 const copySrc =                         uilStandard + "RectangleCopy.svg";
 const pasteSrc =                        uilStandard + "RectanglePaste.svg";
 const minusSrc =            uilStandard + "Minus.svg";
 const randomSrc =           uilStandard + "Dice.svg";
+*/
 
 const CanPasteColor$ = bindValue<boolean>(mod.id, "CanPasteColor");
 const ShowHexaDecimals$ = bindValue<boolean>(mod.id, 'ShowHexaDecimals');

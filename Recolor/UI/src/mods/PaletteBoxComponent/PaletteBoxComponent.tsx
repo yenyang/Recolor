@@ -33,6 +33,16 @@ function convertToBackGroundColor(color : Color) : string {
     return 'rgba('+r+','+g+','+b+','+color.a+')';
 }
 
+function getClassNames(index: number, total : number) : string {
+    if (index == 0) {
+        return classNames(styles.inputHeight, boxStyles.startBox);
+    } else if (index == total-1) {
+        return classNames(styles.inputHeight, boxStyles.endBox);
+    } else {
+        return classNames(styles.inputHeight, boxStyles.centerBox);
+    }
+}
+
 function generateStyles (Swatches: SwatchUIData[], widths : number[]) : inLinedStyle[] {
     let inLinedStyles : inLinedStyle[] = new Array(Swatches.length);
 
@@ -55,8 +65,8 @@ export const PaletteBoxComponent = (props : {Swatches : SwatchUIData[], totalWid
     return (
         <>
             <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered)}> 
-                {inLinedStyles.map((swatch) => (
-                    <div className={styles.inputHeight} style={swatch}></div>
+                {inLinedStyles.map((swatch, index: number) => (
+                    <div className={getClassNames(index, props.Swatches.length)} style={swatch}></div>
                 ))}
             </div>
         </>
