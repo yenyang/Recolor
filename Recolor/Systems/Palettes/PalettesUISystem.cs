@@ -6,16 +6,25 @@ namespace Recolor.Systems.Palettes
 {
     using System;
     using System.IO;
+    using System.Collections.Generic;
     using Colossal.Logging;
     using Colossal.PSI.Environment;
+    using Game.Common;
     using Game.Prefabs;
+    using Game.Rendering;
+    using Game.Tools;
     using Newtonsoft.Json;
+    using Recolor.Domain;
     using Recolor.Domain.Palette;
     using Recolor.Domain.Palette.Prefabs;
     using Recolor.Extensions;
     using Recolor.Systems.SelectedInfoPanel;
+    using Unity.Collections;
     using Unity.Entities;
     using UnityEngine;
+    using Colossal.Entities;
+    using Colossal.Serialization.Entities;
+    using Game;
 
     /// <summary>
     /// A UI System for Palettes and Swatches.
@@ -31,11 +40,47 @@ namespace Recolor.Systems.Palettes
         private ILog m_Log;
         private string m_ContentFolder;
         private Unity.Mathematics.Random m_Random;
+        private ValueBindingHelper<SwatchUIData[][]> m_Palettes;
+        private EntityQuery m_PaletteQuery;
 
         /// <summary>
         /// Gets the mods data folder for palette prefabs.
         /// </summary>
         public string ModsDataFolder { get { return m_ContentFolder; } }
+
+        /// <summary>
+        /// Updates the palettes binding.
+        /// </summary>
+        public void UpdatePalettes()
+        {
+            m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} starting");
+            NativeArray<Entity> palettePrefabs = m_PaletteQuery.ToEntityArray(Allocator.Temp);
+
+            List<SwatchUIData[]> paletteList = new List<SwatchUIData[]>();
+            m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} palettePrefabs.length = {palettePrefabs.Length}.");
+            foreach (Entity palettePrefab in palettePrefabs)
+            {
+                if (!EntityManager.TryGetBuffer(palettePrefab, isReadOnly: true, out DynamicBuffer<SwatchData> swatches) ||
+                    swatches.Length < 2)
+                {
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} skipping palette entity {palettePrefab.Index}:{palettePrefab.Version}.");
+                    continue;
+                }
+
+                SwatchUIData[] palette = new SwatchUIData[swatches.Length];
+                for (int i = 0; i < swatches.Length; i++)
+                {
+                    palette[i] = new SwatchUIData(swatches[i], i);
+                }
+
+                paletteList.Add(palette);
+                m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} adding palette entity {palettePrefab.Index}:{palettePrefab.Version} with {swatches.Length} swatches.");
+            }
+
+            m_Palettes.Value = paletteList.ToArray();
+            m_Palettes.Binding.TriggerUpdate();
+            m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} complete");
+        }
 
         /// <inheritdoc/>
         protected override void OnCreate()
@@ -56,6 +101,7 @@ namespace Recolor.Systems.Palettes
             m_UniqueName = CreateBinding("UniqueName", string.Empty);
             m_CurrentPaletteCategory = CreateBinding("PaletteCategory", PaletteCategoryData.PaletteCategory.Any);
             m_ShowPaletteEditorPanel = CreateBinding("ShowPaletteEditorMenu", false);
+            m_Palettes = CreateBinding("Palettes", new SwatchUIData[0][]);
 
             // Listen to trigger event that are sent from the UI to the C#.
             CreateTrigger("TrySavePalette", TrySavePalette);
@@ -68,6 +114,11 @@ namespace Recolor.Systems.Palettes
             CreateTrigger<int, int>("ChangeProbabilityWeight", ChangeProbabilityWeight);
             CreateTrigger("AddASwatch", AddASwatch);
             CreateTrigger("RandomizeSwatch", (int swatch) => ChangeSwatchColor(swatch, new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1)));
+
+            m_PaletteQuery = SystemAPI.QueryBuilder()
+                  .WithAll<SwatchData>()
+                  .WithNone<Deleted, Temp>()
+                  .Build();
 
             m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)}");
             Enabled = false;
@@ -100,6 +151,7 @@ namespace Recolor.Systems.Palettes
                         Path.Combine(m_ContentFolder, palettePrefabBase.name, $"{nameof(PalettePrefab)}-{palettePrefabBase.name}.json"),
                         JsonConvert.SerializeObject(palettePrefabBase, Formatting.Indented, settings: new JsonSerializerSettings() { ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore }));
                     m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)} Sucessfully created, initialized, and saved prefab {nameof(PalettePrefab)}:{palettePrefabBase.name}!");
+                    UpdatePalettes();
                 }
             }
             catch (Exception ex)

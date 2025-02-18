@@ -67,7 +67,7 @@ namespace Recolor.Domain.Palette
         /// <returns>UnityEngine.Color.</returns>
         public Color GetColor()
         {
-            return new UnityEngine.Color(m_Red, m_Blue, m_Green, m_Alpha);
+            return new UnityEngine.Color(m_Red, m_Green, m_Blue, m_Alpha);
         }
     }
 }

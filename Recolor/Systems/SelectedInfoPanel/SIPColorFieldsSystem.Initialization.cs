@@ -27,6 +27,7 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Recolor.Extensions;
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.Palettes;
     using Recolor.Systems.Tools;
     using Unity.Collections;
     using Unity.Entities;
@@ -91,6 +92,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private List<int> m_SubMeshIndexes = new List<int>();
         private ValueBindingHelper<bool> m_CanResetOtherSubMeshes;
         private ValueBindingHelper<bool> m_ShowPaletteChoices;
+        private PalettesUISystem m_PalettesUISystem;
 
         /// <summary>
         /// An enum to handle seasons.
@@ -187,6 +189,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_ColorPickerTool = World.GetOrCreateSystemManaged<ColorPickerToolSystem>();
             m_CustomColorVariationSystem = World.GetOrCreateSystemManaged<CustomColorVariationSystem>();
             m_DefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
+            m_PalettesUISystem = World.GetOrCreateSystemManaged<PalettesUISystem>();
 
             // These establish bindings to communicate between UI and C#.
             m_CurrentColorSet = CreateBinding("CurrentColorSet", new RecolorSet(default, default, default));

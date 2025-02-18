@@ -26,8 +26,8 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Recolor.Domain;
     using Recolor.Extensions;
     using Recolor.Settings;
-
     using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.Palettes;
     using Recolor.Systems.Tools;
     using Unity.Collections;
     using Unity.Entities;

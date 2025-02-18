@@ -103,6 +103,7 @@ namespace Recolor.Systems.Palettes
                 }
 
                 m_FullyInitialized = true;
+                m_UISystem.UpdatePalettes();
             }
         }
     }
