@@ -2,7 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-using System.Collections.Generic;
+using Unity.Entities;
 
 namespace Recolor.Domain.Palette
 {
@@ -12,7 +12,7 @@ namespace Recolor.Domain.Palette
     public class PaletteSubcategoryUIData
     {
         public string m_Subcategory;
-        public SwatchUIData[][] m_Palettes;
+        public PaletteUIData[] m_Palettes;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PaletteSubcategoryUIData"/> class.
@@ -25,11 +25,11 @@ namespace Recolor.Domain.Palette
         /// Initializes a new instance of the <see cref="PaletteSubcategoryUIData"/> class.
         /// </summary>
         /// <param name="subcategory">Subcategory prefab name.</param>
-        /// <param name="swatchUIDatas">Array of swatch ui data.</param>
-        public PaletteSubcategoryUIData(string subcategory, SwatchUIData[][] swatchUIDatas)
+        /// <param name="paletteUIDatas">Array of palette ui data.</param>
+        public PaletteSubcategoryUIData(string subcategory, PaletteUIData[] paletteUIDatas)
         {
             m_Subcategory = subcategory;
-            m_Palettes = swatchUIDatas;
+            m_Palettes = paletteUIDatas;
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Recolor.Domain.Palette
         /// <summary>
         /// Gets or sets the palettes.
         /// </summary>
-        public SwatchUIData[][] Palettes
+        public PaletteUIData[] Palettes
         {
             get { return m_Palettes; }
             set { m_Palettes = value; }

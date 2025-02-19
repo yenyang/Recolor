@@ -33,8 +33,9 @@ import routeSrc from "images/uilStandard/BusShelter.svg";
 import arrowLeftSrc from "images/uilStandard/ArrowLeftThickStroke.svg";
 import arrowRightSrc from "images/uilStandard/ArrowRightThickStroke.svg";
 import plusSrc from "images/uilStandard/Plus.svg";
-import { PaletteChooserComponent, setSelectedIndex, setSelectedSubcategory } from "mods/PaletteChooserComponent/PaletteChooserComponent";
+import { assignPalette, PaletteChooserComponent } from "mods/PaletteChooserComponent/PaletteChooserComponent";
 import { PaletteChooserUIData } from "mods/Domain/PaletteAndSwatches/PaletteChooserUIData";
+import { Entity } from "cs2/utils";
 
 /*
 const uilStandard =                          "coui://uil/Standard/";
@@ -444,12 +445,9 @@ export const RecolorMainPanelComponent = () => {
                                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                             onSelect={() => 
                                             {
-                                                let selectedIndex0 : number = PaletteChooserData.SelectedIndexes[0];
-                                                let selectedSubcategoryIndex0 : number = PaletteChooserData.SelectedSubcategories[0];
-                                                setSelectedIndex(0, PaletteChooserData.SelectedIndexes[1]);
-                                                setSelectedSubcategory(0, PaletteChooserData.SelectedSubcategories[1]);
-                                                setSelectedIndex(1, selectedIndex0);
-                                                setSelectedSubcategory(1, selectedSubcategoryIndex0);
+                                                let entity0 : Entity = PaletteChooserData.SelectedPaletteEntities[0];
+                                                assignPalette(0, PaletteChooserData.SelectedPaletteEntities[1]);
+                                                assignPalette(1, entity0);
                                             }}
                                         />
                                         <span className={styles.belowSwapButton}></span>  
@@ -466,12 +464,9 @@ export const RecolorMainPanelComponent = () => {
                                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                             onSelect={() => 
                                             {
-                                                let selectedIndex1 : number = PaletteChooserData.SelectedIndexes[1];
-                                                let selectedSubcategoryIndex1 : number = PaletteChooserData.SelectedSubcategories[1];
-                                                setSelectedIndex(1, PaletteChooserData.SelectedIndexes[2]);
-                                                setSelectedSubcategory(1, PaletteChooserData.SelectedSubcategories[2]);
-                                                setSelectedIndex(2, selectedIndex1);
-                                                setSelectedSubcategory(2, selectedSubcategoryIndex1);
+                                                let entity1 : Entity = PaletteChooserData.SelectedPaletteEntities[1];
+                                                assignPalette(1, PaletteChooserData.SelectedPaletteEntities[2]);
+                                                assignPalette(2, entity1);
                                             }}
                                         />
                                         <span className={styles.belowSwapButton}></span>  

@@ -67,6 +67,14 @@ namespace Recolor.Systems.SelectedInfoPanel
         }
 
         /// <summary>
+        /// Gets the current entity.
+        /// </summary>
+        public Entity CurrentEntity
+        {
+            get { return m_CurrentEntity; }
+        }
+
+        /// <summary>
         /// Gets a the copied color set.
         /// </summary>
         public UnityEngine.Color CopiedColor

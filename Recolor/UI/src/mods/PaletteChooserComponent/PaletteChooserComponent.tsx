@@ -8,24 +8,43 @@ import classNames from "classnames";
 import styles from "../Domain/ColorFields.module.scss";
 import boxStyles from "../PaletteBoxComponent/PaletteBoxStyles.module.scss";
 import { ColorFieldTheme } from "mods/SIPColorComponent/SIPColorComponent";
+import { Entity } from "cs2/bindings";
+import { useState } from "react";
+import { entityEquals } from "cs2/utils";
 
 
 const PaletteChooserData$ = bindValue<PaletteChooserUIData>(mod.id, "PaletteChooserData");
 const basicDropDownTheme = getModule('game-ui/common/input/dropdown/dropdown.module.scss', 'classes');
 
-export function setSelectedIndex(channel : number, index : number) {
+export function assignPalette(channel : number, entity : Entity) {
     // This triggers an event on C# side and C# designates the method to implement.
-    trigger(mod.id, "SetSelectedPaletteIndex", channel, index);
+    trigger(mod.id, "AssignPalette", channel, entity);
 }
 
-export function setSelectedSubcategory(channel : number, subcategoryIndex : number) {
-    // This triggers an event on C# side and C# designates the method to implement.
-    trigger(mod.id, "SetSelectedSubcategoryIndex", channel, subcategoryIndex);
+export function removePalette(channel: number) {
+    trigger(mod.id, "RemovePalette", channel);
 }
+
 
 export const PaletteChooserComponent = (props: {channel : number}) => {
 
     const PaletteChooserData = useValue(PaletteChooserData$);
+
+    function GetCurrentSwatches() : JSX.Element {
+        for (let i=0; i<PaletteChooserData.DropdownItems[props.channel].length; i++) 
+        {
+            for (let j=0; j<PaletteChooserData.DropdownItems[props.channel][i].Palettes.length; j++) 
+            {
+                if (entityEquals(PaletteChooserData.DropdownItems[props.channel][i].Palettes[j].PrefabEntity, PaletteChooserData.SelectedPaletteEntities[props.channel])) 
+                {
+                    return <PaletteBoxComponent Swatches={PaletteChooserData.DropdownItems[props.channel][i].Palettes[j].Swatches} totalWidth={80}></PaletteBoxComponent>
+                }
+            }
+        }
+
+        return <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.dropdownText)}>None</div>;
+    } 
+
 
     return (
         <>
@@ -34,18 +53,18 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                     theme = {basicDropDownTheme}
                     content={
                         <>
-                        <DropdownItem value={"None"} className={basicDropDownTheme.dropdownItem} onChange={() => setSelectedIndex(props.channel, -1)}>
+                        <DropdownItem value={"None"} className={basicDropDownTheme.dropdownItem} onChange={() => removePalette(props.channel)}>
                             <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.dropdownText)}>None</div>
                         </DropdownItem>
                         {
-                        PaletteChooserData.DropdownItems[props.channel].map((Subcategories, subcategoryIndex: number) => (
+                        PaletteChooserData.DropdownItems[props.channel].map((Subcategories) => (
                             <>
                                 <DropdownItem value={Subcategories} className={basicDropDownTheme.dropdownItem} closeOnSelect={false} >
                                     <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.dropdownText)}>{Subcategories.Subcategory}</div>
                                 </DropdownItem>
-                                {Subcategories.Palettes.map((Swatches, index: number) => (
-                                    <DropdownItem value={Swatches} className={basicDropDownTheme.dropdownItem} selected={PaletteChooserData.SelectedIndexes[props.channel] == index} onChange={() => {setSelectedIndex(props.channel, index); setSelectedSubcategory(props.channel, subcategoryIndex)}}>
-                                        <PaletteBoxComponent Swatches={Swatches} totalWidth={80}></PaletteBoxComponent>
+                                {Subcategories.Palettes.map((Palette) => (
+                                    <DropdownItem value={Palette} className={basicDropDownTheme.dropdownItem} selected={entityEquals(PaletteChooserData.SelectedPaletteEntities[props.channel],Palette.PrefabEntity)} onChange={() => {assignPalette(props.channel, Palette.PrefabEntity)}}>
+                                        <PaletteBoxComponent Swatches={Palette.Swatches} totalWidth={80}></PaletteBoxComponent>
                                     </DropdownItem>
                                 ))}
                             </>
@@ -54,11 +73,7 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                     }
                 >
                     <DropdownToggle disabled={false}>
-                        {PaletteChooserData.SelectedIndexes[props.channel] == -1 ?  
-                        <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.dropdownText)}>None</div>
-                        :
-                        <PaletteBoxComponent Swatches={PaletteChooserData.DropdownItems[props.channel][PaletteChooserData.SelectedSubcategories[props.channel]].Palettes[PaletteChooserData.SelectedIndexes[props.channel]]} totalWidth={80}></PaletteBoxComponent>
-                        }
+                        {GetCurrentSwatches()}
                     </DropdownToggle>
                 </Dropdown>
             )}

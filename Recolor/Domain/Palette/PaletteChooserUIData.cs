@@ -4,6 +4,7 @@
 namespace Recolor.Domain.Palette
 {
     using System.Collections.Generic;
+    using Unity.Entities;
     using Unity.Mathematics;
 
     /// <summary>
@@ -12,8 +13,7 @@ namespace Recolor.Domain.Palette
     public class PaletteChooserUIData
     {
         public PaletteSubcategoryUIData[][] m_DropdownItems;
-        public int[] m_SelectedIndexes;
-        public int[] m_SelectedSubcategories;
+        public Entity[] m_SelectedPaletteEntities;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PaletteChooserUIData"/> class.
@@ -21,29 +21,27 @@ namespace Recolor.Domain.Palette
         public PaletteChooserUIData()
         {
             m_DropdownItems = new PaletteSubcategoryUIData[3][];
-            m_SelectedIndexes = new int[3];
-            m_SelectedSubcategories = new int[3];
+            m_SelectedPaletteEntities = new Entity[3] { Entity.Null, Entity.Null, Entity.Null };
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PaletteChooserUIData"/> class.
         /// </summary>
         /// <param name="keyValuePairs">Dictionary of subcategorys and palettes.</param>
-        public PaletteChooserUIData(Dictionary<string, List<SwatchUIData[]>> keyValuePairs)
+        public PaletteChooserUIData(Dictionary<string, List<PaletteUIData>> keyValuePairs)
         {
             m_DropdownItems = new PaletteSubcategoryUIData[3][];
             for (int i = 0; i < 3; i++)
             {
                 m_DropdownItems[i] = new PaletteSubcategoryUIData[keyValuePairs.Count];
                 int j = 0;
-                foreach (KeyValuePair<string, List<SwatchUIData[]>> keyValuePair in keyValuePairs)
+                foreach (KeyValuePair<string, List<PaletteUIData>> keyValuePair in keyValuePairs)
                 {
                     m_DropdownItems[i][j++] = new PaletteSubcategoryUIData(keyValuePair.Key, keyValuePair.Value.ToArray());
                 }
             }
 
-            m_SelectedIndexes = new int[] { -1, -1, -1 };
-            m_SelectedSubcategories = new int[3];
+            m_SelectedPaletteEntities = new Entity[3] { Entity.Null, Entity.Null, Entity.Null };
         }
 
         /// <summary>
@@ -58,44 +56,23 @@ namespace Recolor.Domain.Palette
         /// <summary>
         /// Gets or sets the selectedIndexes.
         /// </summary>
-        public int[] SelectedIndexes
+        public Entity[] SelectedPaletteEntities
         {
-            get { return m_SelectedIndexes; }
-            set { m_SelectedIndexes = value; }
+            get { return m_SelectedPaletteEntities ; }
+            set { m_SelectedPaletteEntities = value; }
         }
 
         /// <summary>
-        /// Gets or sets the selectedSubcategories.
+        /// Sets the prefab entity for a channel.
         /// </summary>
-        public int[] SelectedSubcategories
-        {
-            get { return m_SelectedSubcategories; }
-            set { m_SelectedSubcategories = value; }
-        }
-
-        /// <summary>
-        /// Sets selected palette index for channel.
-        /// </summary>
-        /// <param name="channel">Channel 0-2.</param>
-        /// <param name="index">Index selected.</param>
-        public void SetSelectedPaletteIndex(int channel, int index)
+        /// <param name="channel">Channel 0 - 2.</param>
+        /// <param name="prefabEntity">Palette Prefab Entity.</param>
+        public void SetPrefabEntity(int channel, Entity prefabEntity)
         {
             if (channel >= 0 && channel <= 2)
             {
-                m_SelectedIndexes[channel] = index;
+                m_SelectedPaletteEntities[channel] = prefabEntity;
             }
         }
-
-        /// <summary>
-        /// Sets selected subcategory index for channel.
-        /// </summary>
-        /// <param name="channel">Channel 0-2.</param>
-        /// <param name="subcategoryIndex">Subcategory index selected.</param>
-        public void SetSelectedSubcategoryIndex(int channel, int subcategoryIndex)
-        {
-            if (channel >= 0 && channel <= 2)
-            {
-                m_SelectedSubcategories[channel] = subcategoryIndex;
-            }
-        }
+    }
 }
