@@ -12,10 +12,9 @@ import { RecolorSet } from "mods/Domain/RecolorSet";
 import { ButtonState } from "mods/Domain/ButtonState";
 import { Scope } from "mods/Domain/Scope";
 import { tool } from "cs2/bindings";
-import { Button, Dropdown, DropdownItem, DropdownToggle } from "cs2/ui";
+import { Button } from "cs2/ui";
 import { SubMeshData, SubMeshScopes } from "mods/Domain/SubMeshData";
 import paintSrc from "images/format_painter.svg";
-import { PaletteBoxComponent } from "mods/PaletteBoxComponent/PaletteBoxComponent";
 
 import resetSrc from "images/uilStandard/Reset.svg";
 import singleSrc from "images/uilStandard/SingleRhombus.svg";
@@ -34,8 +33,8 @@ import routeSrc from "images/uilStandard/BusShelter.svg";
 import arrowLeftSrc from "images/uilStandard/ArrowLeftThickStroke.svg";
 import arrowRightSrc from "images/uilStandard/ArrowRightThickStroke.svg";
 import plusSrc from "images/uilStandard/Plus.svg";
-import { SwatchUIData } from "mods/Domain/PaletteAndSwatches/SwatchUIData";
-import { PaletteChooserComponent } from "mods/PaletteChooserComponent/PaletteChooserComponent";
+import { PaletteChooserComponent, setSelectedIndex, setSelectedSubcategory } from "mods/PaletteChooserComponent/PaletteChooserComponent";
+import { PaletteChooserUIData } from "mods/Domain/PaletteAndSwatches/PaletteChooserUIData";
 
 /*
 const uilStandard =                          "coui://uil/Standard/";
@@ -73,7 +72,7 @@ const EditorVisible$ = bindValue<boolean>(mod.id, "EditorVisible");
 const SubMeshData$ = bindValue<SubMeshData>(mod.id, "SubMeshData");
 const CanResetOtherSubMeshes$ = bindValue<boolean>(mod.id, "CanResetOtherSubMeshes");
 const ShowPaletteChoices$ = bindValue<boolean>(mod.id,"ShowPaletteChoices");
-const Swatches$ = bindValue<SwatchUIData[]>(mod.id, "Swatches");
+const PaletteChooserData$ = bindValue<PaletteChooserUIData>(mod.id, "PaletteChooserData");
 
 export const InfoRowTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss",
@@ -141,7 +140,8 @@ export const RecolorMainPanelComponent = () => {
     const SubMeshData = useValue(SubMeshData$);
     const CanResetOtherSubMeshes = useValue(CanResetOtherSubMeshes$);
     const ShowPaletteChoices = useValue(ShowPaletteChoices$);    
-    const Swatches = useValue(Swatches$);
+    const PaletteChooserData = useValue(PaletteChooserData$);
+
     
     // translation handling. Translates using locale keys that are defined in C# or fallback string from en-US.json.
     const { translate } = useLocalization();
@@ -425,9 +425,6 @@ export const RecolorMainPanelComponent = () => {
                                         <VanillaComponentResolver.instance.ToolButton src={plusSrc} onSelect={() => { handleClick("TogglePaletteEditorMenu") }}           className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                                                                       tooltip = {"Show PaletteEditorPanel"}/>
                                     </div>
-                                    <div className={styles.rowGroup}>
-                                        
-                                    </div>
                                 </>
                             }
                             uppercase={false}
@@ -439,7 +436,49 @@ export const RecolorMainPanelComponent = () => {
                             right={
                                 <>
                                     <PaletteChooserComponent channel={0}></PaletteChooserComponent>
+                                    <div className={styles.columnGroup}>
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={swapSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            tooltip = {"Swap Palettes"}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => 
+                                            {
+                                                let selectedIndex0 : number = PaletteChooserData.SelectedIndexes[0];
+                                                let selectedSubcategoryIndex0 : number = PaletteChooserData.SelectedSubcategories[0];
+                                                setSelectedIndex(0, PaletteChooserData.SelectedIndexes[1]);
+                                                setSelectedSubcategory(0, PaletteChooserData.SelectedSubcategories[1]);
+                                                setSelectedIndex(1, selectedIndex0);
+                                                setSelectedSubcategory(1, selectedSubcategoryIndex0);
+                                            }}
+                                        />
+                                        <span className={styles.belowSwapButton}></span>  
+                                        {ShowHexaDecimals && (
+                                            <span className={styles.inputHeight}></span>
+                                        )}
+                                    </div>
                                     <PaletteChooserComponent channel={1}></PaletteChooserComponent>
+                                    <div className={styles.columnGroup}>
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={swapSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            tooltip = {"Swap Palettes"}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => 
+                                            {
+                                                let selectedIndex1 : number = PaletteChooserData.SelectedIndexes[1];
+                                                let selectedSubcategoryIndex1 : number = PaletteChooserData.SelectedSubcategories[1];
+                                                setSelectedIndex(1, PaletteChooserData.SelectedIndexes[2]);
+                                                setSelectedSubcategory(1, PaletteChooserData.SelectedSubcategories[2]);
+                                                setSelectedIndex(2, selectedIndex1);
+                                                setSelectedSubcategory(2, selectedSubcategoryIndex1);
+                                            }}
+                                        />
+                                        <span className={styles.belowSwapButton}></span>  
+                                        {ShowHexaDecimals && (
+                                            <span className={styles.inputHeight}></span>
+                                        )}
+                                    </div>
                                     <PaletteChooserComponent channel={2}></PaletteChooserComponent>
                                 </>
                             }

@@ -27,7 +27,7 @@ namespace Recolor.Systems.Palettes
     /// </summary>
     public partial class PalettesUISystem : ExtendedUISystemBase
     {
-        private const string NoSubcategoryName = "No_Subcategory";
+        private const string NoSubcategoryName = "No Subcategory";
 
         private PrefabSystem m_PrefabSystem;
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
@@ -119,6 +119,16 @@ namespace Recolor.Systems.Palettes
             CreateTrigger<int, int>("ChangeProbabilityWeight", ChangeProbabilityWeight);
             CreateTrigger("AddASwatch", AddASwatch);
             CreateTrigger("RandomizeSwatch", (int swatch) => ChangeSwatchColor(swatch, new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1)));
+            CreateTrigger("SetSelectedPaletteIndex", (int channel, int index) =>
+            {
+                m_PaletteChooserData.Value.SetSelectedPaletteIndex(channel, index);
+                m_PaletteChooserData.Binding.TriggerUpdate();
+            });
+            CreateTrigger("SetSelectedSubcategoryIndex", (int channel, int subcategoryIndex) =>
+            {
+                m_PaletteChooserData.Value.SetSelectedSubcategoryIndex(channel, subcategoryIndex);
+                m_PaletteChooserData.Binding.TriggerUpdate();
+            });
 
             m_PaletteQuery = SystemAPI.QueryBuilder()
                   .WithAll<SwatchData>()
