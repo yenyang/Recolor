@@ -526,6 +526,8 @@ namespace Recolor.Systems.SelectedInfoPanel
                     }
                 }
 
+                UpdatePalettes();
+
                 visible = true;
                 if (m_ToolSystem.actionMode.IsEditor())
                 {

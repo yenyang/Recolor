@@ -76,7 +76,16 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
             }
 
-            m_PaletteChooserData.Value = new PaletteChooserUIData(paletteChooserBuilder);
+            if (EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<AssignedPalette> assignedPalettes) &&
+                assignedPalettes.Length > 0)
+            {
+                m_PaletteChooserData.Value = new PaletteChooserUIData(paletteChooserBuilder, assignedPalettes);
+            }
+            else
+            {
+                m_PaletteChooserData.Value = new PaletteChooserUIData(paletteChooserBuilder);
+            }
+
             m_PaletteChooserData.Binding.TriggerUpdate();
             m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} complete");
         }

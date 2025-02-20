@@ -3,6 +3,9 @@
 // </copyright>
 namespace Recolor.Domain.Palette
 {
+    using Colossal.Entities;
+    using Game.Prefabs;
+    using Recolor.Domain.Palette.Prefabs;
     using System.Collections.Generic;
     using Unity.Entities;
     using Unity.Mathematics;
@@ -42,6 +45,43 @@ namespace Recolor.Domain.Palette
             }
 
             m_SelectedPaletteEntities = new Entity[3] { Entity.Null, Entity.Null, Entity.Null };
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PaletteChooserUIData"/> class.
+        /// </summary>
+        /// <param name="keyValuePairs">Dictionary of subcategorys and palettes.</param>
+        /// <param name="assignedPalettes">Buffer of Assigned palettes.</param>
+        public PaletteChooserUIData(Dictionary<string, List<PaletteUIData>> keyValuePairs, DynamicBuffer<AssignedPalette> assignedPalettes)
+        {
+            m_DropdownItems = new PaletteSubcategoryUIData[3][];
+            for (int i = 0; i < 3; i++)
+            {
+                m_DropdownItems[i] = new PaletteSubcategoryUIData[keyValuePairs.Count];
+                int j = 0;
+                foreach (KeyValuePair<string, List<PaletteUIData>> keyValuePair in keyValuePairs)
+                {
+                    m_DropdownItems[i][j++] = new PaletteSubcategoryUIData(keyValuePair.Key, keyValuePair.Value.ToArray());
+                }
+            }
+
+
+            m_SelectedPaletteEntities = new Entity[3] { Entity.Null, Entity.Null, Entity.Null };
+            PrefabSystem prefabSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<PrefabSystem>();
+
+            foreach (AssignedPalette assignedPalette in assignedPalettes)
+            {
+                if (assignedPalette.m_Channel >= 0 &&
+                    assignedPalette.m_Channel <= 2 &&
+                    prefabSystem.EntityManager.TryGetComponent(assignedPalette.m_PaletteInstanceEntity, out PrefabRef prefabRef) &&
+                    prefabSystem.EntityManager.TryGetBuffer(prefabRef, isReadOnly: true, out DynamicBuffer<SwatchData> swatchDatas) &&
+                    swatchDatas.Length >= 2 &&
+                    prefabSystem.TryGetPrefab(prefabRef, out PrefabBase prefabBase) &&
+                    prefabBase is PalettePrefab)
+                {
+                    m_SelectedPaletteEntities[assignedPalette.m_Channel] = prefabRef;
+                }
+            }
         }
 
         /// <summary>
