@@ -24,6 +24,7 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Game.Simulation;
     using Game.Tools;
     using Recolor.Domain;
+    using Recolor.Domain.Palette;
     using Recolor.Extensions;
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;

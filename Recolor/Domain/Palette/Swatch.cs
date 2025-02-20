@@ -14,7 +14,7 @@ namespace Recolor.Domain.Palette
     public struct Swatch : IBufferElementData, ISerializable
     {
         /// <summary>
-        /// The set of 3 colors.
+        /// The swatch color.
         /// </summary>
         public Color m_SwatchColor;
 
@@ -44,11 +44,21 @@ namespace Recolor.Domain.Palette
             m_ProbabilityWeight = swatchInfo.m_ProbabilityWeight;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Swatch"/> struct.
+        /// </summary>
+        /// <param name="swatchData">SwatchData buffer component from Prefab Entity.</param>
+        public Swatch(SwatchData swatchData)
+        {
+            m_SwatchColor = swatchData.m_SwatchColor;
+            m_ProbabilityWeight = swatchData.m_ProbabilityWeight;
+        }
+
         /// <inheritdoc/>
         public void Serialize<TWriter>(TWriter writer)
             where TWriter : IWriter
         {
-            writer.Write(1);
+            writer.Write(1); // version
             writer.Write(m_SwatchColor);
             writer.Write(m_ProbabilityWeight);
         }
@@ -58,8 +68,8 @@ namespace Recolor.Domain.Palette
             where TReader : IReader
         {
             reader.Read(out int _);
-            reader.Read(out Color m_SwatchColor);
-            reader.Read(out int m_ProbabilityWeight);
+            reader.Read(out m_SwatchColor);
+            reader.Read(out m_ProbabilityWeight);
         }
     }
 }

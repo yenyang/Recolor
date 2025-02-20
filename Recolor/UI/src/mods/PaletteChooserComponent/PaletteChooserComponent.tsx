@@ -11,6 +11,7 @@ import { ColorFieldTheme } from "mods/SIPColorComponent/SIPColorComponent";
 import { Entity } from "cs2/bindings";
 import { useState } from "react";
 import { entityEquals } from "cs2/utils";
+import { FocusDisabled } from "cs2/input";
 
 
 const PaletteChooserData$ = bindValue<PaletteChooserUIData>(mod.id, "PaletteChooserData");
@@ -52,24 +53,24 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                 <Dropdown 
                     theme = {basicDropDownTheme}
                     content={
-                        <>
-                        <DropdownItem value={"None"} className={basicDropDownTheme.dropdownItem} onChange={() => removePalette(props.channel)}>
-                            <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.dropdownText)}>None</div>
-                        </DropdownItem>
-                        {
-                        PaletteChooserData.DropdownItems[props.channel].map((Subcategories) => (
-                            <>
-                                <DropdownItem value={Subcategories} className={basicDropDownTheme.dropdownItem} closeOnSelect={false} >
-                                    <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.dropdownText)}>{Subcategories.Subcategory}</div>
-                                </DropdownItem>
-                                {Subcategories.Palettes.map((Palette) => (
-                                    <DropdownItem value={Palette} className={basicDropDownTheme.dropdownItem} selected={entityEquals(PaletteChooserData.SelectedPaletteEntities[props.channel],Palette.PrefabEntity)} onChange={() => {assignPalette(props.channel, Palette.PrefabEntity)}}>
-                                        <PaletteBoxComponent Swatches={Palette.Swatches} totalWidth={80}></PaletteBoxComponent>
+                        <FocusDisabled>
+                            <DropdownItem value={"None"} className={basicDropDownTheme.dropdownItem} onChange={() => removePalette(props.channel)}>
+                                <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.dropdownText)}>None</div>
+                            </DropdownItem>
+                            {
+                            PaletteChooserData.DropdownItems[props.channel].map((Subcategories) => (
+                                <>
+                                    <DropdownItem value={Subcategories} className={basicDropDownTheme.dropdownItem} closeOnSelect={false} >
+                                        <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.dropdownText)}>{Subcategories.Subcategory}</div>
                                     </DropdownItem>
-                                ))}
-                            </>
-                        ))}
-                        </>
+                                    {Subcategories.Palettes.map((Palette) => (
+                                        <DropdownItem value={Palette} className={basicDropDownTheme.dropdownItem} selected={entityEquals(PaletteChooserData.SelectedPaletteEntities[props.channel],Palette.PrefabEntity)} onChange={() => {assignPalette(props.channel, Palette.PrefabEntity)}}>
+                                            <PaletteBoxComponent Swatches={Palette.Swatches} totalWidth={80}></PaletteBoxComponent>
+                                        </DropdownItem>
+                                    ))}
+                                </>
+                            ))}
+                        </FocusDisabled>
                     }
                 >
                     <DropdownToggle disabled={false}>

@@ -18,6 +18,7 @@ import paintSrc from "images/format_painter.svg";
 import { assignPalette, PaletteChooserComponent } from "mods/PaletteChooserComponent/PaletteChooserComponent";
 import { PaletteChooserUIData } from "mods/Domain/PaletteAndSwatches/PaletteChooserUIData";
 import { Entity } from "cs2/utils";
+import { FocusDisabled } from "cs2/input";
 
 /*
 import resetSrc from "images/uilStandard/Reset.svg";
@@ -436,7 +437,7 @@ export const RecolorMainPanelComponent = () => {
                         ></InfoRow>
                         <InfoRow
                             right={
-                                <>
+                                <FocusDisabled>
                                     <PaletteChooserComponent channel={0}></PaletteChooserComponent>
                                     <div className={styles.columnGroup}>
                                         <VanillaComponentResolver.instance.ToolButton
@@ -476,7 +477,7 @@ export const RecolorMainPanelComponent = () => {
                                         )}
                                     </div>
                                     <PaletteChooserComponent channel={2}></PaletteChooserComponent>
-                                </>
+                                </FocusDisabled>
                             }
                             uppercase={false}
                             disableFocus={true}

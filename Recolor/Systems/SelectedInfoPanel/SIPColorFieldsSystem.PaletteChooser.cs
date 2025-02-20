@@ -53,7 +53,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             paletteChooserBuilder.Add(NoSubcategoryName, new List<PaletteUIData>());
             foreach (Entity palettePrefabEntity in palettePrefabEntities)
             {
-                if (!EntityManager.TryGetBuffer(palettePrefabEntity, isReadOnly: true, out DynamicBuffer<Swatch> swatches) ||
+                if (!EntityManager.TryGetBuffer(palettePrefabEntity, isReadOnly: true, out DynamicBuffer<SwatchData> swatches) ||
                     swatches.Length < 2)
                 {
                     m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} skipping palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version}.");
@@ -91,6 +91,11 @@ namespace Recolor.Systems.SelectedInfoPanel
 
         private void AssignPalette(int channel, Entity instanceEntity, Entity prefabEntity)
         {
+            if (channel < 0 || channel > 2)
+            {
+                return;
+            }
+
             if (!EntityManager.HasBuffer<AssignedPalette>(instanceEntity))
             {
                 EntityManager.AddBuffer<AssignedPalette>(instanceEntity);
@@ -103,8 +108,9 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (paletteAssignments[i].m_Channel == channel)
                 {
                     AssignedPalette paletteAssignment = paletteAssignments[i];
-                    paletteAssignment.m_PaletteInstanceEntity = prefabEntity;
+                    paletteAssignment.m_PaletteInstanceEntity = m_PaletteInstanceMangerSystem.GetOrCreatePaletteInstanceEntity(prefabEntity);
                     paletteAssignments[i] = paletteAssignment;
+                    EntityManager.AddComponent<BatchesUpdated>(instanceEntity);
                     return;
                 }
             }
@@ -112,12 +118,11 @@ namespace Recolor.Systems.SelectedInfoPanel
             AssignedPalette newPaletteAssignment = new AssignedPalette()
             {
                 m_Channel = channel,
-                m_PaletteInstanceEntity = prefabEntity,
+                m_PaletteInstanceEntity = m_PaletteInstanceMangerSystem.GetOrCreatePaletteInstanceEntity(prefabEntity),
             };
 
             paletteAssignments.Add(newPaletteAssignment);
             EntityManager.AddComponent<BatchesUpdated>(instanceEntity);
-            return;
         }
     }
 }

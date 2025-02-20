@@ -97,6 +97,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private ValueBindingHelper<bool> m_CanResetOtherSubMeshes;
         private ValueBindingHelper<bool> m_ShowPaletteChoices;
         private PalettesUISystem m_PalettesUISystem;
+        private PaletteInstanceManagerSystem m_PaletteInstanceMangerSystem;
         private ValueBindingHelper<PaletteChooserUIData> m_PaletteChooserData;
         private EntityQuery m_PaletteQuery;
 
@@ -197,6 +198,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_CustomColorVariationSystem = World.GetOrCreateSystemManaged<CustomColorVariationSystem>();
             m_DefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
             m_PalettesUISystem = World.GetOrCreateSystemManaged<PalettesUISystem>();
+            m_PaletteInstanceMangerSystem = World.GetOrCreateSystemManaged<PaletteInstanceManagerSystem>();
 
             // These establish bindings to communicate between UI and C#.
             m_CurrentColorSet = CreateBinding("CurrentColorSet", new RecolorSet(default, default, default));
@@ -283,7 +285,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 .Build();
 
             m_PaletteQuery = SystemAPI.QueryBuilder()
-                  .WithAll<Swatch>()
+                  .WithAll<SwatchData>()
                   .WithNone<Deleted, Temp>()
                   .Build();
 

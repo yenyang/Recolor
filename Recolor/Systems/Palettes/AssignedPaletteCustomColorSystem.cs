@@ -4,6 +4,8 @@
 
 namespace Recolor.Systems.Palettes
 {
+    using System.Collections.Generic;
+    using System.Linq;
     using Colossal.Entities;
     using Colossal.Logging;
     using Game;
@@ -11,20 +13,17 @@ namespace Recolor.Systems.Palettes
     using Game.Objects;
     using Game.Prefabs;
     using Game.Rendering;
-    using Game.Routes;
     using Game.Tools;
-    using Game.Vehicles;
     using Recolor.Domain;
     using Recolor.Domain.Palette;
     using Recolor.Systems.SelectedInfoPanel;
     using Recolor.Systems.Tools;
-    using Recolor.Systems.Vehicles;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
     using Unity.Collections;
     using Unity.Entities;
 
+    /// <summary>
+    /// System for assigning custom mesh colors to entities with Assigned palettes.
+    /// </summary>
     public partial class AssignedPaletteCustomColorSystem : GameSystemBase
     {
         private EntityQuery m_AssignedPaletteQuery;

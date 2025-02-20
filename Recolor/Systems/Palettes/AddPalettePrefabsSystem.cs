@@ -16,6 +16,7 @@ namespace Recolor.Systems.Palettes
     using Game.SceneFlow;
     using Newtonsoft.Json;
     using Recolor.Domain.Palette.Prefabs;
+    using Recolor.Systems.SelectedInfoPanel;
     using Unity.Entities;
     using UnityEngine;
 
@@ -31,6 +32,7 @@ namespace Recolor.Systems.Palettes
         private List<PrefabBase> m_Prefabs;
         private Dictionary<PrefabBase, Entity> m_Entities;
         private bool m_FullyInitialized;
+        private SIPColorFieldsSystem m_SIPColorFieldsSystem;
 
         /// <inheritdoc/>
         protected override void OnCreate()
@@ -38,10 +40,12 @@ namespace Recolor.Systems.Palettes
             base.OnCreate();
             m_Log = Mod.Instance.Log;
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_SIPColorFieldsSystem = World.GetExistingSystemManaged<SIPColorFieldsSystem>();
             m_UISystem = World.GetOrCreateSystemManaged<PalettesUISystem>();
             m_ModInstallPath = Path.Combine(Mod.Instance.InstallPath, ".PalettePrefabs");
             m_Prefabs = new List<PrefabBase>();
             m_Entities = new Dictionary<PrefabBase, Entity>();
+            m_Log.Info($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnCreate)} Created.");
         }
 
         /// <inheritdoc/>
@@ -62,7 +66,14 @@ namespace Recolor.Systems.Palettes
                             using StreamReader reader = new StreamReader(new FileStream(filePaths[i], FileMode.Open));
                             {
                                 string entireFile = reader.ReadToEnd();
-                                PalettePrefab palettePrefab = JsonConvert.DeserializeObject<PalettePrefab>(entireFile);
+                                PalettePrefabSerializeFormat palettePrefabSerializeFormat = JsonConvert.DeserializeObject<PalettePrefabSerializeFormat>(entireFile);
+                                if (palettePrefabSerializeFormat is null)
+                                {
+                                    continue;
+                                }
+
+                                PalettePrefab palettePrefab = ScriptableObject.CreateInstance<PalettePrefab>();
+                                palettePrefabSerializeFormat.AssignValuesToPrefab(ref palettePrefab);
                                 if (palettePrefab is not null &&
                                    !m_Prefabs.Contains(palettePrefab) &&
                                     m_PrefabSystem.AddPrefab(palettePrefab) &&
@@ -103,7 +114,7 @@ namespace Recolor.Systems.Palettes
                 }
 
                 m_FullyInitialized = true;
-                m_UISystem.UpdatePalettes();
+                m_SIPColorFieldsSystem.UpdatePalettes();
             }
         }
     }

@@ -11,7 +11,7 @@ namespace Recolor.Domain.Palette.Prefabs
     using Unity.Entities;
 
     /// <summary>
-    /// A custom prefab for color swatches.
+    /// A custom prefab for color swatches. Although this may look similar to vanilla prefabs, It may not follow format exactly. Serialization/Deserialization is done manually by the mod.
     /// </summary>
     public class PalettePrefab : PrefabBase
     {
@@ -42,7 +42,7 @@ namespace Recolor.Domain.Palette.Prefabs
         public override void GetPrefabComponents(HashSet<ComponentType> components)
         {
             base.GetPrefabComponents(components);
-            components.Add(ComponentType.ReadWrite<Swatch>());
+            components.Add(ComponentType.ReadWrite<SwatchData>());
             components.Add(ComponentType.ReadWrite<PaletteCategoryData>());
             if (m_PaletteFilter != null)
             {
@@ -61,7 +61,7 @@ namespace Recolor.Domain.Palette.Prefabs
                entityManager.AddComponent(entity, component);
             }
 
-            DynamicBuffer<Swatch> buffer = entityManager.GetBuffer<Swatch>(entity);
+            DynamicBuffer<SwatchData> buffer = entityManager.GetBuffer<SwatchData>(entity);
             buffer.Clear();
 
             for (int i = 0; i < m_Swatches.Length; i++)

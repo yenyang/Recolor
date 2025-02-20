@@ -102,9 +102,11 @@ namespace Recolor.Systems.Palettes
                     palettePrefabBase.LateInitialize(EntityManager, prefabEntity);
 
                     System.IO.Directory.CreateDirectory(Path.Combine(m_ContentFolder, palettePrefabBase.name));
+                    PalettePrefabSerializeFormat palettePrefabSerializeFormat = new PalettePrefabSerializeFormat(palettePrefabBase);
+
                     File.WriteAllText(
                         Path.Combine(m_ContentFolder, palettePrefabBase.name, $"{nameof(PalettePrefab)}-{palettePrefabBase.name}.json"),
-                        JsonConvert.SerializeObject(palettePrefabBase, Formatting.Indented, settings: new JsonSerializerSettings() { ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore }));
+                        JsonConvert.SerializeObject(palettePrefabSerializeFormat, Formatting.Indented, settings: new JsonSerializerSettings() { ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore }));
                     m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)} Sucessfully created, initialized, and saved prefab {nameof(PalettePrefab)}:{palettePrefabBase.name}!");
                     m_SIPColorFieldsSystem.UpdatePalettes();
                 }
