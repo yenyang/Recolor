@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" clip-rule="evenodd" viewBox="0 0 64 64">
-  <g id="brown">
-    <rect width="2.379" height="4.727" x="30.811" y="33.787" fill="#754600"/>
-  </g>
-  <g id="green">
-    <path fill="#558e2f" fill-rule="nonzero" d="M31.26 25.768c.109-.168.406-.282.742-.282.332 0 .629.114.734.282l4.762 7.465a.265.265 0 0 1 .043.136c0 .231-.352.418-.781.418h-9.524c-.425 0-.777-.187-.777-.418 0-.047.016-.09.043-.133l4.758-7.468Z"/>
-  </g>
-</svg>

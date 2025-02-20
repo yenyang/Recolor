@@ -13,7 +13,7 @@ import { RecolorSet } from "mods/Domain/RecolorSet";
 import { ButtonState } from "mods/Domain/ButtonState";
 import { Scope } from "mods/Domain/Scope";
 import { tool } from "cs2/bindings";
-
+/*
 import resetSrc from "images/uilStandard/Reset.svg";
 import singleSrc from "images/uilStandard/SingleRhombus.svg";
 import matchingSrc from "images/uilStandard/SameRhombus.svg";
@@ -29,9 +29,9 @@ import vehiclesSrc from "images/uilStandard/GenericVehicle.svg";
 import propsSrc from "images/uilStandard/BenchAndLampProps.svg";
 import arrowDownSrc from "images/uilStandard/ArrowDownThickStroke.svg";
 import arrowUpSrc from "images/uilStandard/ArrowUpThickStroke.svg";
-
+*/
 // These contain the coui paths to Unified Icon Library svg assets
-/*
+
 const uilStandard =                          "coui://uil/Standard/";
 const uilColored =                           "coui://uil/Colored/";
 const singleSelectionSrc =                       uilStandard + "Dot.svg";
@@ -49,7 +49,7 @@ const colorPickerSrc =                  uilStandard + "PickerPipette.svg";
 const colorPaletteSrc =                 uilColored + "ColorPalette.svg";
 const arrowDownSrc =         uilStandard +  "ArrowDownThickStroke.svg";
 const arrowUpSrc =           uilStandard +  "ArrowUpThickStroke.svg";
-*/
+
 
 const ColorPainterSelectionType$ = bindValue<number>(mod.id, "ColorPainterSelectionType");
 const SingleInstance$ = bindValue<ButtonState>(mod.id, 'SingleInstance');

@@ -15,7 +15,11 @@ import { tool } from "cs2/bindings";
 import { Button } from "cs2/ui";
 import { SubMeshData, SubMeshScopes } from "mods/Domain/SubMeshData";
 import paintSrc from "images/format_painter.svg";
+import { assignPalette, PaletteChooserComponent } from "mods/PaletteChooserComponent/PaletteChooserComponent";
+import { PaletteChooserUIData } from "mods/Domain/PaletteAndSwatches/PaletteChooserUIData";
+import { Entity } from "cs2/utils";
 
+/*
 import resetSrc from "images/uilStandard/Reset.svg";
 import singleSrc from "images/uilStandard/SingleRhombus.svg";
 import matchingSrc from "images/uilStandard/SameRhombus.svg";
@@ -33,11 +37,8 @@ import routeSrc from "images/uilStandard/BusShelter.svg";
 import arrowLeftSrc from "images/uilStandard/ArrowLeftThickStroke.svg";
 import arrowRightSrc from "images/uilStandard/ArrowRightThickStroke.svg";
 import plusSrc from "images/uilStandard/Plus.svg";
-import { assignPalette, PaletteChooserComponent } from "mods/PaletteChooserComponent/PaletteChooserComponent";
-import { PaletteChooserUIData } from "mods/Domain/PaletteAndSwatches/PaletteChooserUIData";
-import { Entity } from "cs2/utils";
+*/
 
-/*
 const uilStandard =                          "coui://uil/Standard/";
 const uilColored =                           "coui://uil/Colored/";
 const resetSrc =                        uilStandard + "Reset.svg";
@@ -47,7 +48,7 @@ const allSrc =                          uilStandard + "StarAll.svg";
 const copySrc =                         uilStandard + "RectangleCopy.svg";
 const pasteSrc =                        uilStandard + "RectanglePaste.svg";
 const colorPickerSrc =                  uilStandard + "PickerPipette.svg";
-const colorPaleteSrc =                  uilColored + "ColorPalette.svg";
+const colorPaletteSrc =                  uilColored + "ColorPalette.svg";
 const minimizeSrc =                     uilStandard + "ArrowsMinimize.svg";
 const expandSrc =                       uilStandard + "ArrowsExpand.svg";
 const saveToDiskSrc =                   uilStandard + "DiskSave.svg";
@@ -57,7 +58,7 @@ const routeSrc =                        uilStandard + "BusShelter.svg";
 const arrowLeftSrc =                    uilStandard +  "ArrowLeftThickStroke.svg";
 const arrowRightSrc =                   uilStandard +  "ArrowRightThickStroke.svg";
 const plusSrc =                         uilStandard + "Plus.svg";
-*/
+
 
 const SingleInstance$ = bindValue<ButtonState>(mod.id, 'SingleInstance');
 const Matching$ = bindValue<ButtonState>(mod.id, 'Matching');

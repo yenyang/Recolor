@@ -11,17 +11,18 @@ import classNames from "classnames";
 import { useState } from "react";
 import { FocusDisabled } from "cs2/input";
 
+/*
 import copySrc from "images/uilStandard/RectangleCopy.svg";
 import pasteSrc from "images/uilStandard/RectanglePaste.svg";
 import resetSrc from "images/uilStandard/Reset.svg";
-
+*/
 // These contain the coui paths to Unified Icon Library svg assets
-/*
+
 const uilStandard =                          "coui://uil/Standard/";
 const copySrc =                         uilStandard + "RectangleCopy.svg";
 const pasteSrc =                        uilStandard + "RectanglePaste.svg";
 const resetSrc =                     uilStandard + "Reset.svg";
-*/
+
 
 const CurrentColorSet$ = bindValue<RecolorSet>(mod.id, "CurrentColorSet");
 const CanPasteColor$ = bindValue<boolean>(mod.id, "CanPasteColor");

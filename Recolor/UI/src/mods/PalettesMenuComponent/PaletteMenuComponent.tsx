@@ -18,7 +18,9 @@ import { SwatchUIData } from "mods/Domain/PaletteAndSwatches/SwatchUIData";
 import { PaletteCategory } from "mods/Domain/PaletteAndSwatches/PaletteCategoryType";
 import { PaletteBoxComponent } from "mods/PaletteBoxComponent/PaletteBoxComponent";
 import { getModule } from "cs2/modding";
+import { PaletteFilterType } from "mods/Domain/PaletteAndSwatches/PaletteFilterType";
 
+/*
 import closeSrc from "images/uilStandard/XClose.svg";
 import buildingSrc from "images/uilStandard/House.svg";
 import vehiclesSrc from "images/uilStandard/GenericVehicle.svg";
@@ -26,9 +28,8 @@ import propsSrc from "images/uilStandard/BenchAndLampProps.svg";
 import allSrc from "images/uilStandard/StarAll.svg";
 import plusSrc from "images/uilStandard/Plus.svg";
 import saveToDiskSrc from "images/uilStandard/DiskSave.svg";
-import { PaletteFilterType } from "mods/Domain/PaletteAndSwatches/PaletteFilterType";
+*/
 
-/*
 const uilStandard =                         "coui://uil/Standard/";
 const closeSrc =         uilStandard +  "XClose.svg";
 const buildingSrc =                     uilStandard + "House.svg";
@@ -37,7 +38,7 @@ const propsSrc =                        uilStandard + "BenchAndLampProps.svg";
 const allSrc =                          uilStandard + "StarAll.svg";
 const plusSrc =                         uilStandard + "Plus.svg";
 const saveToDiskSrc =                   uilStandard + "DiskSave.svg";
-*/
+
 
 const Swatches$ = bindValue<SwatchUIData[]>(mod.id, "Swatches");
 const UniqueName$ = bindValue<string>(mod.id, "UniqueName");

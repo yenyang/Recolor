@@ -11,7 +11,7 @@ namespace Recolor.Domain.Palette
     /// Buffer component for assigned Palette to an entity.
     /// </summary>
     [InternalBufferCapacity(3)]
-    public struct AssignedPalette : IBufferElementData, ISerializable
+    public struct AssignedPalette : IBufferElementData, ISerializable, IQueryTypeParameter
     {
         /// <summary>
         /// Channel this palette applies to.
@@ -23,12 +23,15 @@ namespace Recolor.Domain.Palette
         /// </summary>
         public Entity m_PrefabEntity;
 
-        /// <inheritdoc/>
-        public void Deserialize<TReader>(TReader reader)
-            where TReader : IReader
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AssignedPalette"/> struct.
+        /// </summary>
+        /// <param name="channel">Channel 0-2.</param>
+        /// <param name="prefabEntity">Prefab Entity.</param>
+        public AssignedPalette(int channel,  Entity prefabEntity)
         {
-            reader.Read(out int _);
-            reader.Read(out m_PrefabEntity);
+            m_Channel = channel;
+            m_PrefabEntity = prefabEntity;
         }
 
         /// <inheritdoc/>
@@ -37,6 +40,16 @@ namespace Recolor.Domain.Palette
         {
             writer.Write(1);
             writer.Write(m_PrefabEntity);
+            writer.Write(m_Channel);
+        }
+
+        /// <inheritdoc/>
+        public void Deserialize<TReader>(TReader reader)
+            where TReader : IReader
+        {
+            reader.Read(out int _);
+            reader.Read(out m_PrefabEntity);
+            reader.Read(out m_Channel);
         }
     }
 }
