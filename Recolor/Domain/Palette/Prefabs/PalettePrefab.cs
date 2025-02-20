@@ -42,7 +42,7 @@ namespace Recolor.Domain.Palette.Prefabs
         public override void GetPrefabComponents(HashSet<ComponentType> components)
         {
             base.GetPrefabComponents(components);
-            components.Add(ComponentType.ReadWrite<SwatchData>());
+            components.Add(ComponentType.ReadWrite<Swatch>());
             components.Add(ComponentType.ReadWrite<PaletteCategoryData>());
             if (m_PaletteFilter != null)
             {
@@ -61,7 +61,7 @@ namespace Recolor.Domain.Palette.Prefabs
                entityManager.AddComponent(entity, component);
             }
 
-            DynamicBuffer<SwatchData> buffer = entityManager.GetBuffer<SwatchData>(entity);
+            DynamicBuffer<Swatch> buffer = entityManager.GetBuffer<Swatch>(entity);
             buffer.Clear();
 
             for (int i = 0; i < m_Swatches.Length; i++)

@@ -38,7 +38,7 @@ namespace Recolor.Domain.Palette
         /// </summary>
         /// <param name="swatchData">Buffer component from prefab entity.</param>
         /// <param name="index">Index from the buffer.</param>
-        public SwatchUIData(SwatchData swatchData)
+        public SwatchUIData(Swatch swatchData)
         {
             m_SwatchColor = swatchData.m_SwatchColor;
             m_ProbabilityWeight = swatchData.m_ProbabilityWeight;

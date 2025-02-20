@@ -21,17 +21,17 @@ namespace Recolor.Domain.Palette
         /// <summary>
         /// Palette Prefab Entity.
         /// </summary>
-        public Entity m_PrefabEntity;
+        public Entity m_PaletteInstanceEntity;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AssignedPalette"/> struct.
         /// </summary>
         /// <param name="channel">Channel 0-2.</param>
-        /// <param name="prefabEntity">Prefab Entity.</param>
-        public AssignedPalette(int channel,  Entity prefabEntity)
+        /// <param name="paletteInstanceEntity">Prefab Entity.</param>
+        public AssignedPalette(int channel,  Entity paletteInstanceEntity)
         {
             m_Channel = channel;
-            m_PrefabEntity = prefabEntity;
+            m_PaletteInstanceEntity = paletteInstanceEntity;
         }
 
         /// <inheritdoc/>
@@ -39,7 +39,7 @@ namespace Recolor.Domain.Palette
             where TWriter : IWriter
         {
             writer.Write(1);
-            writer.Write(m_PrefabEntity);
+            writer.Write(m_PaletteInstanceEntity);
             writer.Write(m_Channel);
         }
 
@@ -48,7 +48,7 @@ namespace Recolor.Domain.Palette
             where TReader : IReader
         {
             reader.Read(out int _);
-            reader.Read(out m_PrefabEntity);
+            reader.Read(out m_PaletteInstanceEntity);
             reader.Read(out m_Channel);
         }
     }

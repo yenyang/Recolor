@@ -8,7 +8,7 @@ namespace Recolor.Domain.Palette
     using UnityEngine;
 
     /// <summary>
-    /// Custom component for containing color and probability information for a swatch.
+    /// Custom component for containing color and probability information for a swatch for a prefab entity.
     /// </summary>
     public struct SwatchData : IBufferElementData
     {

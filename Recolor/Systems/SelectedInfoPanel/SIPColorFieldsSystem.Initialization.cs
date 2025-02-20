@@ -24,6 +24,7 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Game.Simulation;
     using Game.Tools;
     using Recolor.Domain;
+    using Recolor.Domain.Palette;
     using Recolor.Extensions;
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;
@@ -39,6 +40,8 @@ namespace Recolor.Systems.SelectedInfoPanel
     /// </summary>
     public partial class SIPColorFieldsSystem : ExtendedInfoSectionBase
     {
+        private const string NoSubcategoryName = "No Subcategory";
+
         /// <summary>
         ///  A way to lookup seasons.
         /// </summary>
@@ -49,6 +52,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 { "Climate.SEASON[Autumn]", Season.Autumn },
                 { "Climate.SEASON[Winter]", Season.Winter },
         };
+
 
         private ILog m_Log;
         private ToolSystem m_ToolSystem;
@@ -93,6 +97,9 @@ namespace Recolor.Systems.SelectedInfoPanel
         private ValueBindingHelper<bool> m_CanResetOtherSubMeshes;
         private ValueBindingHelper<bool> m_ShowPaletteChoices;
         private PalettesUISystem m_PalettesUISystem;
+        private ValueBindingHelper<PaletteChooserUIData> m_PaletteChooserData;
+        private EntityQuery m_PaletteQuery;
+
 
         /// <summary>
         /// An enum to handle seasons.
@@ -203,6 +210,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_CanResetSingleChannels = CreateBinding("CanResetSingleChannels", false);
             m_CanResetOtherSubMeshes = CreateBinding("CanResetOtherSubMeshes", false);
             m_EditorVisible = CreateBinding("EditorVisible", false);
+            m_PaletteChooserData = CreateBinding("PaletteChooserData", new PaletteChooserUIData());
             m_ShowPaletteChoices = CreateBinding("ShowPaletteChoices", false);
 
             // These bindings are closely related.
@@ -262,6 +270,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 m_PreviouslySelectedEntity = Entity.Null;
             });
             CreateTrigger("ToggleShowPaletteChoices", () => m_ShowPaletteChoices.Value = !m_ShowPaletteChoices.Value);
+            CreateTrigger<int, Entity>("AssignPalette", AssignPaletteAction);
 
             m_VanillaColorSets = new ();
             m_ContentFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, "SavedColorSet", "Custom");
@@ -272,6 +281,11 @@ namespace Recolor.Systems.SelectedInfoPanel
                 .WithAll<Game.Prefabs.SubMesh>()
                 .WithNone<Game.Prefabs.PlaceholderObjectElement, Game.Common.Deleted>()
                 .Build();
+
+            m_PaletteQuery = SystemAPI.QueryBuilder()
+                  .WithAll<Swatch>()
+                  .WithNone<Deleted, Temp>()
+                  .Build();
 
             RequireForUpdate(m_SubMeshQuery);
             Enabled = false;

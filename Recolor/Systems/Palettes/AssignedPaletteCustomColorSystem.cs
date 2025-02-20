@@ -73,14 +73,14 @@ namespace Recolor.Systems.Palettes
                 Unity.Mathematics.Random random = new (pseudoRandomSeed.m_Seed);
                 for (int i = 0; i < palettes.Length; i++)
                 {
-                    if (!EntityManager.TryGetBuffer(palettes[i].m_PrefabEntity, isReadOnly: true, out DynamicBuffer<SwatchData> swatches))
+                    if (!EntityManager.TryGetBuffer(palettes[i].m_PaletteInstanceEntity, isReadOnly: true, out DynamicBuffer<Swatch> swatches))
                     {
                         continue;
                     }
 
                     int totalProbabilityWeight = 0;
                     Dictionary<UnityEngine.Color, int> probabilityWeights = new Dictionary<UnityEngine.Color, int>();
-                    foreach (SwatchData swatch in swatches)
+                    foreach (Swatch swatch in swatches)
                     {
                         if (!probabilityWeights.ContainsKey(swatch.m_SwatchColor))
                         {

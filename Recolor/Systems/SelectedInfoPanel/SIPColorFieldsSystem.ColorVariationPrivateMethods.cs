@@ -33,7 +33,6 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Unity.Entities;
     using Unity.Jobs;
     using UnityEngine;
-    using static Game.Rendering.OverlayRenderSystem;
 
     /// <summary>
     ///  Adds color fields to selected info panel for changing colors of buildings, vehicles, props, etc.

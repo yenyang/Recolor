@@ -28,8 +28,6 @@ namespace Recolor.Systems.Palettes
     /// </summary>
     public partial class PalettesUISystem : ExtendedUISystemBase
     {
-        private const string NoSubcategoryName = "No Subcategory";
-
         private PrefabSystem m_PrefabSystem;
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
         private ValueBindingHelper<SwatchUIData[]> m_Swatches;
@@ -39,54 +37,11 @@ namespace Recolor.Systems.Palettes
         private ILog m_Log;
         private string m_ContentFolder;
         private Unity.Mathematics.Random m_Random;
-        private ValueBindingHelper<PaletteChooserUIData> m_PaletteChooserData;
-        private EntityQuery m_PaletteQuery;
 
         /// <summary>
         /// Gets the mods data folder for palette prefabs.
         /// </summary>
         public string ModsDataFolder { get { return m_ContentFolder; } }
-
-        /// <summary>
-        /// Updates the palettes binding.
-        /// </summary>
-        public void UpdatePalettes()
-        {
-            m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} starting");
-            NativeArray<Entity> palettePrefabEntities = m_PaletteQuery.ToEntityArray(Allocator.Temp);
-
-            Dictionary<string, List<PaletteUIData>> paletteChooserBuilder = new Dictionary<string, List<PaletteUIData>>();
-            m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} palettePrefabs.length = {palettePrefabEntities.Length}.");
-            paletteChooserBuilder.Add(NoSubcategoryName, new List<PaletteUIData>());
-            foreach (Entity palettePrefabEntity in palettePrefabEntities)
-            {
-                if (!EntityManager.TryGetBuffer(palettePrefabEntity, isReadOnly: true, out DynamicBuffer<SwatchData> swatches) ||
-                    swatches.Length < 2)
-                {
-                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} skipping palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version}.");
-                    continue;
-                }
-
-                SwatchUIData[] swatchData = new SwatchUIData[swatches.Length];
-                for (int i = 0; i < swatches.Length; i++)
-                {
-                    swatchData[i] = new SwatchUIData(swatches[i]);
-                }
-
-                if (!EntityManager.TryGetComponent(palettePrefabEntity, out PaletteSubcategoryData subcategoryData))
-                {
-                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} doesn't have subcategorydata.");
-                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} paletteChooserBuilder[NoSubcategoryName].count = {paletteChooserBuilder[NoSubcategoryName].Count}");
-                    paletteChooserBuilder[NoSubcategoryName].Add(new PaletteUIData(palettePrefabEntity, swatchData));
-
-                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} adding palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version} with {swatches.Length} swatches.");
-                }
-            }
-
-            m_PaletteChooserData.Value = new PaletteChooserUIData(paletteChooserBuilder);
-            m_PaletteChooserData.Binding.TriggerUpdate();
-            m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} complete");
-        }
 
         /// <inheritdoc/>
         protected override void OnCreate()
@@ -107,7 +62,6 @@ namespace Recolor.Systems.Palettes
             m_UniqueName = CreateBinding("UniqueName", string.Empty);
             m_CurrentPaletteCategory = CreateBinding("PaletteCategory", PaletteCategoryData.PaletteCategory.Any);
             m_ShowPaletteEditorPanel = CreateBinding("ShowPaletteEditorMenu", false);
-            m_PaletteChooserData = CreateBinding("PaletteChooserData", new PaletteChooserUIData());
 
             // Listen to trigger event that are sent from the UI to the C#.
             CreateTrigger("TrySavePalette", TrySavePalette);
@@ -120,12 +74,6 @@ namespace Recolor.Systems.Palettes
             CreateTrigger<int, int>("ChangeProbabilityWeight", ChangeProbabilityWeight);
             CreateTrigger("AddASwatch", AddASwatch);
             CreateTrigger("RandomizeSwatch", (int swatch) => ChangeSwatchColor(swatch, new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1)));
-            CreateTrigger<int, Entity>("AssignPalette", AssignPaletteAction);
-
-            m_PaletteQuery = SystemAPI.QueryBuilder()
-                  .WithAll<SwatchData>()
-                  .WithNone<Deleted, Temp>()
-                  .Build();
 
             m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)}");
             Enabled = false;
@@ -158,7 +106,7 @@ namespace Recolor.Systems.Palettes
                         Path.Combine(m_ContentFolder, palettePrefabBase.name, $"{nameof(PalettePrefab)}-{palettePrefabBase.name}.json"),
                         JsonConvert.SerializeObject(palettePrefabBase, Formatting.Indented, settings: new JsonSerializerSettings() { ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore }));
                     m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)} Sucessfully created, initialized, and saved prefab {nameof(PalettePrefab)}:{palettePrefabBase.name}!");
-                    UpdatePalettes();
+                    m_SIPColorFieldsSystem.UpdatePalettes();
                 }
             }
             catch (Exception ex)
@@ -256,44 +204,6 @@ namespace Recolor.Systems.Palettes
             newSwatchUIDatas[swatchUIDatas.Length] = new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100);
             m_Swatches.Value = newSwatchUIDatas;
             m_Swatches.Binding.TriggerUpdate();
-        }
-
-        private void AssignPaletteAction(int channel, Entity prefabEntity)
-        {
-            m_PaletteChooserData.Value.SetPrefabEntity(channel, prefabEntity);
-            m_PaletteChooserData.Binding.TriggerUpdate();
-            AssignPalette(channel, m_SIPColorFieldsSystem.CurrentEntity, prefabEntity);
-        }
-
-        private void AssignPalette(int channel, Entity instanceEntity, Entity prefabEntity)
-        {
-            if (!EntityManager.HasBuffer<AssignedPalette>(instanceEntity))
-            {
-                EntityManager.AddBuffer<AssignedPalette>(instanceEntity);
-            }
-
-            DynamicBuffer<AssignedPalette> paletteAssignments = EntityManager.GetBuffer<AssignedPalette>(instanceEntity, isReadOnly: false);
-
-            for (int i = 0; i < paletteAssignments.Length; i++)
-            {
-                if (paletteAssignments[i].m_Channel == channel)
-                {
-                    AssignedPalette paletteAssignment = paletteAssignments[i];
-                    paletteAssignment.m_PrefabEntity = prefabEntity;
-                    paletteAssignments[i] = paletteAssignment;
-                    return;
-                }
-            }
-
-            AssignedPalette newPaletteAssignment = new AssignedPalette()
-            {
-                m_Channel = channel,
-                m_PrefabEntity = prefabEntity,
-            };
-
-            paletteAssignments.Add(newPaletteAssignment);
-            EntityManager.AddComponent<BatchesUpdated>(instanceEntity);
-            return;
         }
     }
 }
