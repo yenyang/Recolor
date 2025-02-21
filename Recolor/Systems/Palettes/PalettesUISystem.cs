@@ -43,6 +43,23 @@ namespace Recolor.Systems.Palettes
         /// </summary>
         public string ModsDataFolder { get { return m_ContentFolder; } }
 
+        /// <summary>
+        /// Sets up bindings so that a palette prefab can be edited with panel.
+        /// </summary>
+        /// <param name="prefabEntity">Palette Prefab entity.</param>
+        public void EditPalette(Entity prefabEntity)
+        {
+            if (EntityManager.TryGetBuffer(prefabEntity, isReadOnly: true, out DynamicBuffer<SwatchData> swatchDatas) &&
+                m_PrefabSystem.TryGetPrefab(prefabEntity, out PrefabBase prefabBase) &&
+                prefabBase is PalettePrefab)
+            {
+                PalettePrefab palettePrefab = prefabBase as PalettePrefab;
+                m_ShowPaletteEditorPanel.Value = true;
+                m_UniqueName.Value = prefabBase.name;
+                m_CurrentPaletteCategory.Value = palettePrefab.m_Category;
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnCreate()
         {

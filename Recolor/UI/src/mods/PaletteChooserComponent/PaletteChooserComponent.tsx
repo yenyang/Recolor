@@ -99,14 +99,16 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                             onSelect={() => handleChannelClick("EditPalette", props.channel)}
                         />
-                        <VanillaComponentResolver.instance.ToolButton
-                            src={copySrc}
-                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                            tooltip = {"Copy Palette"}
-                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                            onSelect={() => handleChannelClick("CopyPalette", props.channel)}
-                        />
-                        { CanPastePalette && PaletteChooserData.SelectedPaletteEntities[props.channel].index == 0 && (
+                        { PaletteChooserData.SelectedPaletteEntities[props.channel].index != 0 && (
+                            <VanillaComponentResolver.instance.ToolButton
+                                src={copySrc}
+                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                tooltip = {"Copy Palette"}
+                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                onSelect={() => handleChannelClick("CopyPalette", props.channel)}
+                            />
+                        )}
+                        { CanPastePalette && (
                             <VanillaComponentResolver.instance.ToolButton
                                 src={pasteSrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
