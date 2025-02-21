@@ -45,12 +45,12 @@ namespace Recolor.Systems.SelectedInfoPanel
         /// </summary>
         public void UpdatePalettes()
         {
-            m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} starting");
             NativeArray<Entity> palettePrefabEntities = m_PaletteQuery.ToEntityArray(Allocator.Temp);
 
-            Dictionary<string, List<PaletteUIData>> paletteChooserBuilder = new Dictionary<string, List<PaletteUIData>>();
-            m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} palettePrefabs.length = {palettePrefabEntities.Length}.");
-            paletteChooserBuilder.Add(NoSubcategoryName, new List<PaletteUIData>());
+            Dictionary<string, List<PaletteUIData>> paletteChooserBuilder = new Dictionary<string, List<PaletteUIData>>
+            {
+                { NoSubcategoryName, new List<PaletteUIData>() },
+            };
             foreach (Entity palettePrefabEntity in palettePrefabEntities)
             {
                 if (!EntityManager.TryGetBuffer(palettePrefabEntity, isReadOnly: true, out DynamicBuffer<SwatchData> swatches) ||
@@ -68,11 +68,7 @@ namespace Recolor.Systems.SelectedInfoPanel
 
                 if (!EntityManager.TryGetComponent(palettePrefabEntity, out PaletteSubcategoryData subcategoryData))
                 {
-                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} doesn't have subcategorydata.");
-                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} paletteChooserBuilder[NoSubcategoryName].count = {paletteChooserBuilder[NoSubcategoryName].Count}");
                     paletteChooserBuilder[NoSubcategoryName].Add(new PaletteUIData(palettePrefabEntity, swatchData));
-
-                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} adding palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version} with {swatches.Length} swatches.");
                 }
             }
 
@@ -87,7 +83,6 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             m_PaletteChooserData.Binding.TriggerUpdate();
-            m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} complete");
         }
 
         private void AssignPaletteAction(int channel, Entity prefabEntity)

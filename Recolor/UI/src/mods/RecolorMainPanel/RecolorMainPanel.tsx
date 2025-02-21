@@ -449,8 +449,17 @@ export const RecolorMainPanelComponent = () => {
                             right={
                                 <>
                                     <div className={styles.rowGroup}>
-                                        <VanillaComponentResolver.instance.ToolButton src={plusSrc} onSelect={() => { handleClick("TogglePaletteEditorMenu") }}           className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                                                                      tooltip = {"Show PaletteEditorPanel"} selected={ShowPaletteEditorPanel && EditingPrefabEntity.index == 0}/>
+                                        <VanillaComponentResolver.instance.ToolButton src={plusSrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                                                      tooltip = {"Show PaletteEditorPanel"} selected={ShowPaletteEditorPanel && EditingPrefabEntity.index == 0} 
+                                                                                      onSelect={() => { 
+                                                                                        if (!ShowPaletteEditorPanel || (ShowPaletteEditorPanel && EditingPrefabEntity.index == 0)) 
+                                                                                        {
+                                                                                            handleClick("TogglePaletteEditorMenu"); 
+                                                                                        }
+                                                                                        if (EditingPrefabEntity.index != 0) {
+                                                                                            handleClick("GenerateNewPalette");
+                                                                                        }}}
+                                        />
                                     </div>
                                 </>
                             }
@@ -476,7 +485,7 @@ export const RecolorMainPanelComponent = () => {
                                                 entity0.index != 0 ? assignPalette(1, entity0) : removePalette(1);
                                             }}
                                         />
-                                        { PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[0].index != 0 ?
+                                        { PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[1].index != 0 || PaletteChooserData.SelectedPaletteEntities[2].index != 0 ?
                                             <span className={styles.belowSwapButton}></span> : <span className={styles.belowSwapButtonSmall}></span>
                                         }
                                     </div>
@@ -494,7 +503,7 @@ export const RecolorMainPanelComponent = () => {
                                                 entity1.index != 0 ? assignPalette(2, entity1) : removePalette(2);
                                             }}
                                         />
-                                        { PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[0].index != 0 ?
+                                        { PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[1].index != 0 || PaletteChooserData.SelectedPaletteEntities[2].index != 0 ?
                                             <span className={styles.belowSwapButton}></span> : <span className={styles.belowSwapButtonSmall}></span>
                                         }
                                     </div>

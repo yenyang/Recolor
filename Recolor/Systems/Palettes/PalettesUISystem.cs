@@ -7,10 +7,12 @@ namespace Recolor.Systems.Palettes
     using System;
     using System.IO;
     using Colossal.Entities;
+    using Colossal.IO.AssetDatabase;
     using Colossal.Logging;
     using Colossal.PSI.Environment;
     using Colossal.Serialization.Entities;
     using Game;
+    using Game.Common;
     using Game.Prefabs;
     using Newtonsoft.Json;
     using Recolor.Domain.Palette;
@@ -29,6 +31,7 @@ namespace Recolor.Systems.Palettes
 
         private PrefabSystem m_PrefabSystem;
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
+        private PaletteInstanceManagerSystem m_PaletteInstanceManagerSystem;
         private ValueBindingHelper<SwatchUIData[]> m_Swatches;
         private ValueBindingHelper<string> m_UniqueName;
         private ValueBindingHelper<PaletteCategoryData.PaletteCategory> m_CurrentPaletteCategory;
@@ -80,6 +83,7 @@ namespace Recolor.Systems.Palettes
 
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_SIPColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
+            m_PaletteInstanceManagerSystem = World.GetOrCreateSystemManaged<PaletteInstanceManagerSystem>();
 
             m_ContentFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, ".PalettePrefabs");
             System.IO.Directory.CreateDirectory(m_ContentFolder);
@@ -95,6 +99,7 @@ namespace Recolor.Systems.Palettes
             CreateTrigger("TrySavePalette", TrySavePalette);
             CreateTrigger<string>("ChangeUniqueName", ChangeUniqueName);
             CreateTrigger("TogglePaletteEditorMenu", () => m_ShowPaletteEditorPanel.Value = !m_ShowPaletteEditorPanel.Value);
+            CreateTrigger("GenerateNewPalette", GenerateNewPalette);
             CreateTrigger<int>("ToggleCategory", HandleCategoryClick);
             CreateTrigger<int>("RemoveSwatch", RemoveSwatch);
             CreateTrigger("PasteSwatchColor", (int swatch) => ChangeSwatchColor(swatch, m_SIPColorFieldsSystem.CopiedColor));
@@ -113,8 +118,18 @@ namespace Recolor.Systems.Palettes
             base.OnGameLoadingComplete(purpose, mode);
             if (mode.IsGameOrEditor())
             {
-                m_UniqueName.Value = GenerateUniqueName(typeof(PalettePrefab));
+                m_UniqueName.Value = GenerateUniqueName();
             }
+        }
+
+        private void GenerateNewPalette()
+        {
+            m_ShowPaletteEditorPanel.Value = true;
+            m_UniqueName.Value = GenerateUniqueName();
+            m_CurrentPaletteCategory.Value = PaletteCategoryData.PaletteCategory.Any;
+            m_Swatches.Value = new SwatchUIData[] { new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100), new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100) };
+            m_Swatches.Binding.TriggerUpdate();
+            m_EditingPrefabEntity.Value = Entity.Null;
         }
 
         private void TrySavePalette()
@@ -173,13 +188,21 @@ namespace Recolor.Systems.Palettes
                     System.IO.Directory.CreateDirectory(Path.Combine(m_ContentFolder, palettePrefabBase.name));
                     PalettePrefabSerializeFormat palettePrefabSerializeFormat = new PalettePrefabSerializeFormat(palettePrefabBase);
 
+                    m_EditingPrefabEntity.Value = prefabEntity;
+
+                    if (prefabEntityExists &&
+                        m_PaletteInstanceManagerSystem.TryGetPaletteInstanceEntity(prefabEntity, out Entity paletteInstanceEntity))
+                    {
+                        EntityManager.AddComponent<Updated>(paletteInstanceEntity);
+                        m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(TrySavePalette)} Added updated to paletteInstanceEntity {paletteInstanceEntity.Index}:{paletteInstanceEntity.Version}.");
+                    }
+
                     File.WriteAllText(
                         Path.Combine(m_ContentFolder, palettePrefabBase.name, $"{nameof(PalettePrefab)}-{palettePrefabBase.name}.json"),
                         JsonConvert.SerializeObject(palettePrefabSerializeFormat, Formatting.Indented, settings: new JsonSerializerSettings() { ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore }));
                     m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)} Sucessfully created, initialized, and saved prefab {nameof(PalettePrefab)}:{palettePrefabBase.name}!");
                     m_SIPColorFieldsSystem.UpdatePalettes();
                 }
-
             }
             catch (Exception ex)
             {
@@ -242,10 +265,10 @@ namespace Recolor.Systems.Palettes
             }
         }
 
-        private string GenerateUniqueName(Type type)
+        private string GenerateUniqueName()
         {
             int i = 1;
-            while (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(type), GeneratedPaletteNamePrefix + i), out _))
+            while (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PalettePrefab), GeneratedPaletteNamePrefix + i), out _))
             {
                 i++;
             }

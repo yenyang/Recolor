@@ -23,6 +23,7 @@ const PaletteChooserData$ = bindValue<PaletteChooserUIData>(mod.id, "PaletteChoo
 const CopiedPalette$ = bindValue<Entity>(mod.id, "CopiedPalette");
 const basicDropDownTheme = getModule('game-ui/common/input/dropdown/dropdown.module.scss', 'classes');
 const EditingPrefabEntity$ = bindValue<Entity>(mod.id, "EditingPrefabEntity");
+const ShowPaletteEditorPanel$ = bindValue<boolean>(mod.id, "ShowPaletteEditorMenu");
 
 export function assignPalette(channel : number, entity : Entity) {
     // This triggers an event on C# side and C# designates the method to implement.
@@ -38,7 +39,8 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
     const PaletteChooserData = useValue(PaletteChooserData$);
     const CopiedPalette = useValue(CopiedPalette$);
     const CanPastePalette : boolean = CopiedPalette.index != 0;
-    const EditingPrefabEntity = useValue(EditingPrefabEntity$);
+    const EditingPrefabEntity = useValue(EditingPrefabEntity$);    
+    const ShowPaletteEditorPanel = useValue(ShowPaletteEditorPanel$);
 
     function GetCurrentSwatches() : JSX.Element {
         for (let i=0; i<PaletteChooserData.DropdownItems[props.channel].length; i++) 
@@ -90,14 +92,16 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                         </Dropdown>
                     </div>
                     <div className={styles.rowGroup}>
-                        { PaletteChooserData.SelectedPaletteEntities[props.channel].index != 0 && (
+                        { PaletteChooserData.SelectedPaletteEntities[props.channel].index != 0  && (
                             <VanillaComponentResolver.instance.ToolButton
                                 src={editSrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                 tooltip = {"Edit Palette"}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                selected = {entityEquals(PaletteChooserData.SelectedPaletteEntities[props.channel], EditingPrefabEntity) && EditingPrefabEntity.index != 0}
-                                onSelect={() => trigger(mod.id, "EditPalette", PaletteChooserData.SelectedPaletteEntities[props.channel])}
+                                selected = {entityEquals(PaletteChooserData.SelectedPaletteEntities[props.channel], EditingPrefabEntity) && EditingPrefabEntity.index != 0 && ShowPaletteEditorPanel}
+                                onSelect={() => (entityEquals(PaletteChooserData.SelectedPaletteEntities[props.channel], EditingPrefabEntity) && EditingPrefabEntity.index != 0)?
+                                    trigger(mod.id, "TogglePaletteEditorMenu") :
+                                    trigger(mod.id, "EditPalette", PaletteChooserData.SelectedPaletteEntities[props.channel])}
                             />
                         )}
                         { PaletteChooserData.SelectedPaletteEntities[props.channel].index != 0 && (
@@ -118,7 +122,7 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                                 onSelect={() => trigger(mod.id, "AssignPalette", props.channel, CopiedPalette)}
                             />
                         )}
-                        { (PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[0].index != 0) &&
+                        { (PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[1].index != 0 || PaletteChooserData.SelectedPaletteEntities[2].index != 0) &&
                           PaletteChooserData.SelectedPaletteEntities[props.channel].index == 0 && !CanPastePalette && (
                             <span className={styles.belowPaletteArea}></span>
                         )}
