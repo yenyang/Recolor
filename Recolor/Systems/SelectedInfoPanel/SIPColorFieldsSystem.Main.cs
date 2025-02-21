@@ -335,6 +335,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             HandleScopeAndButtonStates();
+            UpdatePalettes();
 
             // Service Vehicles
             if (m_PreviouslySelectedEntity != m_CurrentEntity &&
@@ -526,8 +527,6 @@ namespace Recolor.Systems.SelectedInfoPanel
                         m_PreviouslySelectedEntity = Entity.Null;
                     }
                 }
-
-                UpdatePalettes();
 
                 visible = true;
                 if (m_ToolSystem.actionMode.IsEditor())

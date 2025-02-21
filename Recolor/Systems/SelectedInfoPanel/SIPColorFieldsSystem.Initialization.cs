@@ -95,7 +95,8 @@ namespace Recolor.Systems.SelectedInfoPanel
         private int m_RouteColorChannel = -1;
         private List<int> m_SubMeshIndexes = new List<int>();
         private ValueBindingHelper<bool> m_CanResetOtherSubMeshes;
-        private ValueBindingHelper<bool> m_ShowPaletteChoices;
+        private bool m_PreferPalettes = false;
+        private ValueBindingHelper<ButtonState> m_ShowPaletteChoices;
         private PalettesUISystem m_PalettesUISystem;
         private PaletteInstanceManagerSystem m_PaletteInstanceMangerSystem;
         private ValueBindingHelper<PaletteChooserUIData> m_PaletteChooserData;
@@ -215,7 +216,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_CanResetOtherSubMeshes = CreateBinding("CanResetOtherSubMeshes", false);
             m_EditorVisible = CreateBinding("EditorVisible", false);
             m_PaletteChooserData = CreateBinding("PaletteChooserData", new PaletteChooserUIData());
-            m_ShowPaletteChoices = CreateBinding("ShowPaletteChoices", false);
+            m_ShowPaletteChoices = CreateBinding("ShowPaletteChoices", ButtonState.Off);
 
             // These bindings are closely related.
             m_PreferredScope = Scope.SingleInstance;
@@ -273,7 +274,11 @@ namespace Recolor.Systems.SelectedInfoPanel
                 HandleSubMeshScopes();
                 m_PreviouslySelectedEntity = Entity.Null;
             });
-            CreateTrigger("ToggleShowPaletteChoices", () => m_ShowPaletteChoices.Value = !m_ShowPaletteChoices.Value);
+            CreateTrigger("ToggleShowPaletteChoices", () =>
+            {
+                m_PreferPalettes = !m_PreferPalettes;
+                HandleScopeAndButtonStates();
+            });
             CreateTrigger<int, Entity>("AssignPalette", AssignPaletteAction);
             CreateTrigger<int>("RemovePalette", RemovePaletteAction);
 

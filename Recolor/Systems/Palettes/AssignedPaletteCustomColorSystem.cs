@@ -18,7 +18,6 @@ namespace Recolor.Systems.Palettes
     using Recolor.Systems.Tools;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Entities.UniversalDelegates;
     using UnityEngine;
 
     /// <summary>

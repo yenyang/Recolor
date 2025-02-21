@@ -183,5 +183,6 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
             }
         }
+
     }
 }

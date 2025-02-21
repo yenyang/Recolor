@@ -26,7 +26,7 @@ function calculateWidths (Swatches: SwatchUIData[], totalWidth: number) : number
     return widths;
 }
 
-function convertToBackGroundColor(color : Color) : string {
+export function convertToBackGroundColor(color : Color) : string {
     const r = Math.round(color.r * 255);
     const g = Math.round(color.g * 255);
     const b = Math.round(color.b * 255);

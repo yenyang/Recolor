@@ -15,10 +15,11 @@ import { tool } from "cs2/bindings";
 import { Button } from "cs2/ui";
 import { SubMeshData, SubMeshScopes } from "mods/Domain/SubMeshData";
 import paintSrc from "images/format_painter.svg";
-import { assignPalette, PaletteChooserComponent } from "mods/PaletteChooserComponent/PaletteChooserComponent";
+import { assignPalette, PaletteChooserComponent, removePalette } from "mods/PaletteChooserComponent/PaletteChooserComponent";
 import { PaletteChooserUIData } from "mods/Domain/PaletteAndSwatches/PaletteChooserUIData";
 import { Entity } from "cs2/utils";
 import { FocusDisabled } from "cs2/input";
+import { convertToBackGroundColor } from "mods/PaletteBoxComponent/PaletteBoxComponent";
 
 /*
 import resetSrc from "images/uilStandard/Reset.svg";
@@ -74,7 +75,7 @@ const Route$ = bindValue<ButtonState>(mod.id, 'Route');
 const EditorVisible$ = bindValue<boolean>(mod.id, "EditorVisible");
 const SubMeshData$ = bindValue<SubMeshData>(mod.id, "SubMeshData");
 const CanResetOtherSubMeshes$ = bindValue<boolean>(mod.id, "CanResetOtherSubMeshes");
-const ShowPaletteChoices$ = bindValue<boolean>(mod.id,"ShowPaletteChoices");
+const ShowPaletteChoices$ = bindValue<ButtonState>(mod.id,"ShowPaletteChoices");
 const PaletteChooserData$ = bindValue<PaletteChooserUIData>(mod.id, "PaletteChooserData");
 
 export const InfoRowTheme: Theme | any = getModule(
@@ -144,7 +145,6 @@ export const RecolorMainPanelComponent = () => {
     const CanResetOtherSubMeshes = useValue(CanResetOtherSubMeshes$);
     const ShowPaletteChoices = useValue(ShowPaletteChoices$);    
     const PaletteChooserData = useValue(PaletteChooserData$);
-
     
     // translation handling. Translates using locale keys that are defined in C# or fallback string from en-US.json.
     const { translate } = useLocalization();
@@ -160,14 +160,16 @@ export const RecolorMainPanelComponent = () => {
                             <>
                                 {!Minimized && (
                                 <>
-                                    <VanillaComponentResolver.instance.ToolButton
-                                        src={colorPaletteSrc}
-                                        focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                        tooltip = {"Toggle Palette Options"}
-                                        selected={ShowPaletteChoices}
-                                        className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                        onSelect={() => handleClick("ToggleShowPaletteChoices")}
-                                    />
+                                    {(ShowPaletteChoices & ButtonState.Hidden) != ButtonState.Hidden && (
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={colorPaletteSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            tooltip = {"Toggle Palette Options"}
+                                            selected={ShowPaletteChoices == ButtonState.On}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => handleClick("ToggleShowPaletteChoices")}
+                                        />
+                                    )}
                                     <VanillaComponentResolver.instance.ToolButton
                                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                         selected={ShowHexaDecimals}
@@ -373,43 +375,61 @@ export const RecolorMainPanelComponent = () => {
                                 {
                                     <>
                                         <SIPColorComponent channel={0}></SIPColorComponent>
-                                        <div className={styles.columnGroup}>
-                                            <VanillaComponentResolver.instance.ToolButton
-                                                src={swapSrc}
-                                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                                tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SwapColors]", locale["Recolor.TOOLTIP_DESCRIPTION[SwapColors]"])}
-                                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                                onSelect={() => 
-                                                {
-                                                    let channel0 : Color = CurrentColorSet.Channels[0];
-                                                    changeColor(0, CurrentColorSet.Channels[1]);
-                                                    changeColor(1, channel0);
-                                                }}
-                                            />
-                                            <span className={styles.belowSwapButton}></span>  
-                                            {ShowHexaDecimals && (
-                                                <span className={styles.inputHeight}></span>
-                                            )}
-                                        </div>
+                                        { (PaletteChooserData.SelectedPaletteEntities[0].index == 0 && PaletteChooserData.SelectedPaletteEntities[1].index == 0) ?  
+                                            <div className={styles.columnGroup}>
+                                                <VanillaComponentResolver.instance.ToolButton
+                                                    src={swapSrc}
+                                                    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                    tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SwapColors]", locale["Recolor.TOOLTIP_DESCRIPTION[SwapColors]"])}
+                                                    className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                    onSelect={() => 
+                                                    {
+                                                        let channel0 : Color = CurrentColorSet.Channels[0];
+                                                        changeColor(0, CurrentColorSet.Channels[1]);
+                                                        changeColor(1, channel0);
+                                                    }}
+                                                />
+                                                <span className={styles.belowSwapButton}></span>  
+                                                {ShowHexaDecimals && (
+                                                    <span className={styles.inputHeight}></span>
+                                                )}
+                                            </div> : 
+                                            <div className={styles.columnGroup}>
+                                                <span className={styles.ButtonWidth}></span>  
+                                                <span className={styles.belowSwapButton}></span>  
+                                                {ShowHexaDecimals && (
+                                                    <span className={styles.inputHeight}></span>
+                                                )}
+                                            </div>
+                                        }
                                         <SIPColorComponent channel={1}></SIPColorComponent>
-                                        <div className={styles.columnGroup}>
-                                            <VanillaComponentResolver.instance.ToolButton
-                                                src={swapSrc}
-                                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                                tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SwapColors]", locale["Recolor.TOOLTIP_DESCRIPTION[SwapColors]"])}
-                                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                                onSelect={() => 
-                                                {
-                                                    let channel1 : Color = CurrentColorSet.Channels[1];
-                                                    changeColor(1, CurrentColorSet.Channels[2]);
-                                                    changeColor(2, channel1);
-                                                }}
-                                            />                                              
-                                            <span className={styles.belowSwapButton}></span>  
-                                            {ShowHexaDecimals && (
-                                                <span className={styles.inputHeight}></span>
-                                            )}
-                                        </div>
+                                        { (PaletteChooserData.SelectedPaletteEntities[1].index == 0 && PaletteChooserData.SelectedPaletteEntities[2].index == 0) ?  
+                                            <div className={styles.columnGroup}>
+                                                <VanillaComponentResolver.instance.ToolButton
+                                                    src={swapSrc}
+                                                    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                    tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SwapColors]", locale["Recolor.TOOLTIP_DESCRIPTION[SwapColors]"])}
+                                                    className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                    onSelect={() => 
+                                                    {
+                                                        let channel1 : Color = CurrentColorSet.Channels[1];
+                                                        changeColor(1, CurrentColorSet.Channels[2]);
+                                                        changeColor(2, channel1);
+                                                    }}
+                                                />
+                                                <span className={styles.belowSwapButton}></span>  
+                                                {ShowHexaDecimals && (
+                                                    <span className={styles.inputHeight}></span>
+                                                )}
+                                            </div> : 
+                                            <div className={styles.columnGroup}>
+                                                <span className={styles.ButtonWidth}></span>  
+                                                <span className={styles.belowSwapButton}></span>  
+                                                {ShowHexaDecimals && (
+                                                    <span className={styles.inputHeight}></span>
+                                                )}
+                                            </div>
+                                        }
                                         <SIPColorComponent channel={2}></SIPColorComponent>
                                     </>
                                 }
@@ -418,7 +438,7 @@ export const RecolorMainPanelComponent = () => {
                             ></InfoRow>
                         </>
                     )}
-                    { !Minimized && ShowPaletteChoices && (
+                    { !Minimized && ShowPaletteChoices == ButtonState.On && (
                         <>
                         <InfoRow
                             left="Palette"
@@ -448,14 +468,11 @@ export const RecolorMainPanelComponent = () => {
                                             onSelect={() => 
                                             {
                                                 let entity0 : Entity = PaletteChooserData.SelectedPaletteEntities[0];
-                                                assignPalette(0, PaletteChooserData.SelectedPaletteEntities[1]);
-                                                assignPalette(1, entity0);
+                                                PaletteChooserData.SelectedPaletteEntities[1].index != 0 ? assignPalette(0, PaletteChooserData.SelectedPaletteEntities[1]) : removePalette(0);
+                                                entity0.index != 0 ? assignPalette(1, entity0) : removePalette(1);
                                             }}
                                         />
-                                        <span className={styles.belowSwapButton}></span>  
-                                        {ShowHexaDecimals && (
-                                            <span className={styles.inputHeight}></span>
-                                        )}
+                                        <span className={styles.belowSwapButton}></span>
                                     </div>
                                     <PaletteChooserComponent channel={1}></PaletteChooserComponent>
                                     <div className={styles.columnGroup}>
@@ -467,14 +484,11 @@ export const RecolorMainPanelComponent = () => {
                                             onSelect={() => 
                                             {
                                                 let entity1 : Entity = PaletteChooserData.SelectedPaletteEntities[1];
-                                                assignPalette(1, PaletteChooserData.SelectedPaletteEntities[2]);
-                                                assignPalette(2, entity1);
+                                                PaletteChooserData.SelectedPaletteEntities[2].index != 0 ? assignPalette(1, PaletteChooserData.SelectedPaletteEntities[2]) : removePalette(1);
+                                                entity1.index != 0 ? assignPalette(2, entity1) : removePalette(2);
                                             }}
                                         />
-                                        <span className={styles.belowSwapButton}></span>  
-                                        {ShowHexaDecimals && (
-                                            <span className={styles.inputHeight}></span>
-                                        )}
+                                        <span className={styles.belowSwapButton}></span>
                                     </div>
                                     <PaletteChooserComponent channel={2}></PaletteChooserComponent>
                                 </FocusDisabled>
