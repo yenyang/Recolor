@@ -5,21 +5,18 @@
 namespace Recolor.Systems.Palettes
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using Colossal.Entities;
     using Colossal.Logging;
     using Colossal.PSI.Environment;
-    using Colossal.UI.Binding;
-    using Game.Common;
+    using Colossal.Serialization.Entities;
+    using Game;
     using Game.Prefabs;
-    using Game.Tools;
     using Newtonsoft.Json;
     using Recolor.Domain.Palette;
     using Recolor.Domain.Palette.Prefabs;
     using Recolor.Extensions;
     using Recolor.Systems.SelectedInfoPanel;
-    using Unity.Collections;
     using Unity.Entities;
     using UnityEngine;
 
@@ -28,6 +25,8 @@ namespace Recolor.Systems.Palettes
     /// </summary>
     public partial class PalettesUISystem : ExtendedUISystemBase
     {
+        const string GeneratedPaletteNamePrefix = "Custom Palette ";
+
         private PrefabSystem m_PrefabSystem;
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
         private ValueBindingHelper<SwatchUIData[]> m_Swatches;
@@ -37,6 +36,7 @@ namespace Recolor.Systems.Palettes
         private ILog m_Log;
         private string m_ContentFolder;
         private Unity.Mathematics.Random m_Random;
+        private ValueBindingHelper<Entity> m_EditingPrefabEntity;
 
         /// <summary>
         /// Gets the mods data folder for palette prefabs.
@@ -50,6 +50,7 @@ namespace Recolor.Systems.Palettes
         public void EditPalette(Entity prefabEntity)
         {
             if (EntityManager.TryGetBuffer(prefabEntity, isReadOnly: true, out DynamicBuffer<SwatchData> swatchDatas) &&
+                swatchDatas.Length >= 2 &&
                 m_PrefabSystem.TryGetPrefab(prefabEntity, out PrefabBase prefabBase) &&
                 prefabBase is PalettePrefab)
             {
@@ -57,6 +58,15 @@ namespace Recolor.Systems.Palettes
                 m_ShowPaletteEditorPanel.Value = true;
                 m_UniqueName.Value = prefabBase.name;
                 m_CurrentPaletteCategory.Value = palettePrefab.m_Category;
+                SwatchUIData[] swatchUIDatas = new SwatchUIData[swatchDatas.Length];
+                for (int i = 0; i < swatchUIDatas.Length; i++)
+                {
+                    swatchUIDatas[i] = new SwatchUIData(swatchDatas[i]);
+                }
+
+                m_Swatches.Value = swatchUIDatas;
+                m_Swatches.Binding.TriggerUpdate();
+                m_EditingPrefabEntity.Value = prefabEntity;
             }
         }
 
@@ -79,10 +89,11 @@ namespace Recolor.Systems.Palettes
             m_UniqueName = CreateBinding("UniqueName", string.Empty);
             m_CurrentPaletteCategory = CreateBinding("PaletteCategory", PaletteCategoryData.PaletteCategory.Any);
             m_ShowPaletteEditorPanel = CreateBinding("ShowPaletteEditorMenu", false);
+            m_EditingPrefabEntity = CreateBinding("EditingPrefabEntity", Entity.Null);
 
             // Listen to trigger event that are sent from the UI to the C#.
             CreateTrigger("TrySavePalette", TrySavePalette);
-            CreateTrigger<string>("ChangeUniqueName", (name) => m_UniqueName.Value = name);
+            CreateTrigger<string>("ChangeUniqueName", ChangeUniqueName);
             CreateTrigger("TogglePaletteEditorMenu", () => m_ShowPaletteEditorPanel.Value = !m_ShowPaletteEditorPanel.Value);
             CreateTrigger<int>("ToggleCategory", HandleCategoryClick);
             CreateTrigger<int>("RemoveSwatch", RemoveSwatch);
@@ -96,13 +107,52 @@ namespace Recolor.Systems.Palettes
             Enabled = false;
         }
 
+        /// <inheritdoc/>
+        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
+        {
+            base.OnGameLoadingComplete(purpose, mode);
+            if (mode.IsGameOrEditor())
+            {
+                m_UniqueName.Value = GenerateUniqueName(typeof(PalettePrefab));
+            }
+        }
+
         private void TrySavePalette()
         {
             try
             {
-                PalettePrefab palettePrefabBase = ScriptableObject.CreateInstance<PalettePrefab>();
+                PalettePrefab palettePrefabBase;
+                bool prefabEntityExists = false;
+
+                // Existing Prefab Entity.
+                if (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PalettePrefab), m_UniqueName.Value), out PrefabBase prefabBase) &&
+                    prefabBase != null &&
+                    prefabBase is PalettePrefab &&
+                    m_PrefabSystem.TryGetEntity(prefabBase, out Entity existingPrefabEntity) &&
+                    EntityManager.TryGetBuffer(existingPrefabEntity, isReadOnly: false, out DynamicBuffer<SwatchData> swatchData))
+                {
+                    m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)} Found existing Palette Prefab Entity {nameof(PalettePrefab)}:{prefabBase.name}!");
+                    prefabEntityExists = true;
+                    palettePrefabBase = (PalettePrefab)prefabBase;
+                    palettePrefabBase.active = true;
+                    palettePrefabBase.m_Category = m_CurrentPaletteCategory.Value;
+                    palettePrefabBase.m_Swatches = GetSwatchInfos();
+
+                    // Palette Filters are not implemented yet.
+                    palettePrefabBase.m_PaletteFilter = null;
+
+                    // SubCategories are not implemented yet.
+                    palettePrefabBase.m_SubCategoryPrefab = null;
+                }
+
+                // New Prefab Entity
+                else
+                {
+                    palettePrefabBase = ScriptableObject.CreateInstance<PalettePrefab>();
+                    palettePrefabBase.name = m_UniqueName.Value;
+                }
+
                 palettePrefabBase.active = true;
-                palettePrefabBase.name = m_UniqueName.Value;
                 palettePrefabBase.m_Category = m_CurrentPaletteCategory.Value;
                 palettePrefabBase.m_Swatches = GetSwatchInfos();
 
@@ -112,8 +162,10 @@ namespace Recolor.Systems.Palettes
                 // SubCategories are not implemented yet.
                 palettePrefabBase.m_SubCategoryPrefab = null;
 
-                if (m_PrefabSystem.AddPrefab(palettePrefabBase) &&
-                    m_PrefabSystem.TryGetEntity(palettePrefabBase, out Entity prefabEntity))
+                if ((prefabEntityExists ||
+                     m_PrefabSystem.AddPrefab(palettePrefabBase)) &&
+                     m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PalettePrefab), m_UniqueName.Value), out PrefabBase prefabBase1) &&
+                     m_PrefabSystem.TryGetEntity(prefabBase1, out Entity prefabEntity))
                 {
                     palettePrefabBase.Initialize(EntityManager, prefabEntity);
                     palettePrefabBase.LateInitialize(EntityManager, prefabEntity);
@@ -127,6 +179,7 @@ namespace Recolor.Systems.Palettes
                     m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)} Sucessfully created, initialized, and saved prefab {nameof(PalettePrefab)}:{palettePrefabBase.name}!");
                     m_SIPColorFieldsSystem.UpdatePalettes();
                 }
+
             }
             catch (Exception ex)
             {
@@ -171,6 +224,33 @@ namespace Recolor.Systems.Palettes
             {
                 m_CurrentPaletteCategory.Value = currentPaletteCategory;
             }
+        }
+
+        private void ChangeUniqueName(string newName)
+        {
+            m_UniqueName.Value = newName;
+            if (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PalettePrefab), m_UniqueName.Value), out PrefabBase prefabBase) &&
+                prefabBase != null &&
+                prefabBase is PalettePrefab &&
+                m_PrefabSystem.TryGetEntity(prefabBase, out Entity existingPrefabEntity))
+            {
+                m_EditingPrefabEntity.Value = existingPrefabEntity;
+            }
+            else if (m_EditingPrefabEntity.Value != Entity.Null)
+            {
+                m_EditingPrefabEntity.Value = Entity.Null;
+            }
+        }
+
+        private string GenerateUniqueName(Type type)
+        {
+            int i = 1;
+            while (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(type), GeneratedPaletteNamePrefix + i), out _))
+            {
+                i++;
+            }
+
+            return GeneratedPaletteNamePrefix + i;
         }
 
         private void RemoveSwatch(int swatch)

@@ -77,6 +77,8 @@ const SubMeshData$ = bindValue<SubMeshData>(mod.id, "SubMeshData");
 const CanResetOtherSubMeshes$ = bindValue<boolean>(mod.id, "CanResetOtherSubMeshes");
 const ShowPaletteChoices$ = bindValue<ButtonState>(mod.id,"ShowPaletteChoices");
 const PaletteChooserData$ = bindValue<PaletteChooserUIData>(mod.id, "PaletteChooserData");
+const EditingPrefabEntity$ = bindValue<Entity>(mod.id, "EditingPrefabEntity");
+const ShowPaletteEditorPanel$ = bindValue<boolean>(mod.id, "ShowPaletteEditorMenu");
 
 export const InfoRowTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss",
@@ -145,6 +147,8 @@ export const RecolorMainPanelComponent = () => {
     const CanResetOtherSubMeshes = useValue(CanResetOtherSubMeshes$);
     const ShowPaletteChoices = useValue(ShowPaletteChoices$);    
     const PaletteChooserData = useValue(PaletteChooserData$);
+    const EditingPrefabEntity = useValue(EditingPrefabEntity$);
+    const ShowPaletteEditorPanel = useValue(ShowPaletteEditorPanel$);
     
     // translation handling. Translates using locale keys that are defined in C# or fallback string from en-US.json.
     const { translate } = useLocalization();
@@ -446,7 +450,7 @@ export const RecolorMainPanelComponent = () => {
                                 <>
                                     <div className={styles.rowGroup}>
                                         <VanillaComponentResolver.instance.ToolButton src={plusSrc} onSelect={() => { handleClick("TogglePaletteEditorMenu") }}           className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                                                                      tooltip = {"Show PaletteEditorPanel"}/>
+                                                                                      tooltip = {"Show PaletteEditorPanel"} selected={ShowPaletteEditorPanel && EditingPrefabEntity.index == 0}/>
                                     </div>
                                 </>
                             }
@@ -472,7 +476,9 @@ export const RecolorMainPanelComponent = () => {
                                                 entity0.index != 0 ? assignPalette(1, entity0) : removePalette(1);
                                             }}
                                         />
-                                        <span className={styles.belowSwapButton}></span>
+                                        { PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[0].index != 0 ?
+                                            <span className={styles.belowSwapButton}></span> : <span className={styles.belowSwapButtonSmall}></span>
+                                        }
                                     </div>
                                     <PaletteChooserComponent channel={1}></PaletteChooserComponent>
                                     <div className={styles.columnGroup}>
@@ -488,7 +494,9 @@ export const RecolorMainPanelComponent = () => {
                                                 entity1.index != 0 ? assignPalette(2, entity1) : removePalette(2);
                                             }}
                                         />
-                                        <span className={styles.belowSwapButton}></span>
+                                        { PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[0].index != 0 ?
+                                            <span className={styles.belowSwapButton}></span> : <span className={styles.belowSwapButtonSmall}></span>
+                                        }
                                     </div>
                                     <PaletteChooserComponent channel={2}></PaletteChooserComponent>
                                 </FocusDisabled>

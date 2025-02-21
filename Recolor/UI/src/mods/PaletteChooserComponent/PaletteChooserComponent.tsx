@@ -20,7 +20,9 @@ const copySrc =                         uilStandard + "RectangleCopy.svg";
 const pasteSrc =                        uilStandard + "RectanglePaste.svg";
 
 const PaletteChooserData$ = bindValue<PaletteChooserUIData>(mod.id, "PaletteChooserData");
+const CopiedPalette$ = bindValue<Entity>(mod.id, "CopiedPalette");
 const basicDropDownTheme = getModule('game-ui/common/input/dropdown/dropdown.module.scss', 'classes');
+const EditingPrefabEntity$ = bindValue<Entity>(mod.id, "EditingPrefabEntity");
 
 export function assignPalette(channel : number, entity : Entity) {
     // This triggers an event on C# side and C# designates the method to implement.
@@ -31,16 +33,12 @@ export function removePalette(channel: number) {
     trigger(mod.id, "RemovePalette", channel);
 }
 
-function handleChannelClick(eventName : string, channel : number) {
-    // This triggers an event on C# side and C# designates the method to implement.
-    trigger(mod.id, eventName, channel);
-}
-
-
 export const PaletteChooserComponent = (props: {channel : number}) => {
 
     const PaletteChooserData = useValue(PaletteChooserData$);
-    const CanPastePalette = false;
+    const CopiedPalette = useValue(CopiedPalette$);
+    const CanPastePalette : boolean = CopiedPalette.index != 0;
+    const EditingPrefabEntity = useValue(EditingPrefabEntity$);
 
     function GetCurrentSwatches() : JSX.Element {
         for (let i=0; i<PaletteChooserData.DropdownItems[props.channel].length; i++) 
@@ -92,20 +90,23 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                         </Dropdown>
                     </div>
                     <div className={styles.rowGroup}>
-                        <VanillaComponentResolver.instance.ToolButton
-                            src={editSrc}
-                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                            tooltip = {"Edit Palette"}
-                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                            onSelect={() => handleChannelClick("EditPalette", props.channel)}
-                        />
+                        { PaletteChooserData.SelectedPaletteEntities[props.channel].index != 0 && (
+                            <VanillaComponentResolver.instance.ToolButton
+                                src={editSrc}
+                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                tooltip = {"Edit Palette"}
+                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                selected = {entityEquals(PaletteChooserData.SelectedPaletteEntities[props.channel], EditingPrefabEntity) && EditingPrefabEntity.index != 0}
+                                onSelect={() => trigger(mod.id, "EditPalette", PaletteChooserData.SelectedPaletteEntities[props.channel])}
+                            />
+                        )}
                         { PaletteChooserData.SelectedPaletteEntities[props.channel].index != 0 && (
                             <VanillaComponentResolver.instance.ToolButton
                                 src={copySrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                 tooltip = {"Copy Palette"}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                onSelect={() => handleChannelClick("CopyPalette", props.channel)}
+                                onSelect={() => trigger(mod.id, "CopyPalette", PaletteChooserData.SelectedPaletteEntities[props.channel])}
                             />
                         )}
                         { CanPastePalette && (
@@ -114,10 +115,13 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                 tooltip = {"Paste Palette"}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                onSelect={() => handleChannelClick("PastePalette", props.channel)}
+                                onSelect={() => trigger(mod.id, "AssignPalette", props.channel, CopiedPalette)}
                             />
                         )}
-                        
+                        { (PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[0].index != 0) &&
+                          PaletteChooserData.SelectedPaletteEntities[props.channel].index == 0 && !CanPastePalette && (
+                            <span className={styles.belowPaletteArea}></span>
+                        )}
                     </div>
                 </div>
                 

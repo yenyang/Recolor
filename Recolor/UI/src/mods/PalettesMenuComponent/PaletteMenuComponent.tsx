@@ -82,6 +82,11 @@ export const PaletteMenuComponent = () => {
        trigger(mod.id, "ChangeUniqueName", uniqueNameInput);
     }
 
+    if (uniqueNameInput != UniqueName) 
+    {
+        setTextInput(UniqueName);
+    }
+
     return (
         <>
             {ShowPaletteEditorPanel && !isPhotoMode && defaultTool && activeSelection && (

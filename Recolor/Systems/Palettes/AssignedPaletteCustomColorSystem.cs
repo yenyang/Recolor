@@ -99,7 +99,6 @@ namespace Recolor.Systems.Palettes
                 }
             }
 
-
             color = default;
             return false;
         }

@@ -102,7 +102,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private ValueBindingHelper<PaletteChooserUIData> m_PaletteChooserData;
         private AssignedPaletteCustomColorSystem m_AssignedPaletteCustomColorSystem;
         private EntityQuery m_PaletteQuery;
-        private Entity m_CopiedPalette;
+        private ValueBindingHelper<Entity> m_CopiedPalette;
 
         /// <summary>
         /// An enum to handle seasons.
@@ -217,6 +217,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_EditorVisible = CreateBinding("EditorVisible", false);
             m_PaletteChooserData = CreateBinding("PaletteChooserData", new PaletteChooserUIData());
             m_ShowPaletteChoices = CreateBinding("ShowPaletteChoices", ButtonState.Off);
+            m_CopiedPalette = CreateBinding("CopiedPalette", Entity.Null);
 
             // These bindings are closely related.
             m_PreferredScope = Scope.SingleInstance;
@@ -281,14 +282,8 @@ namespace Recolor.Systems.SelectedInfoPanel
             });
             CreateTrigger<int, Entity>("AssignPalette", AssignPaletteAction);
             CreateTrigger<int>("RemovePalette", RemovePaletteAction);
-            CreateTrigger("CopyPalette", (int channel) =>
-            {
-                if (channel >= 0 && channel <= 2)
-                {
-                    m_CopiedPalette = m_PaletteChooserData.Value.m_SelectedPaletteEntities[channel];
-                }
-            });
-            CreateTrigger("PastePalette", (int channel) => AssignPalette(channel, m_CurrentEntity, m_CopiedPalette));
+            CreateTrigger("CopyPalette", (Entity prefabEntity) => m_CopiedPalette.Value = prefabEntity);
+            CreateTrigger("EditPalette", (Entity prefabEntity) => m_PalettesUISystem.EditPalette(prefabEntity));
 
             m_VanillaColorSets = new ();
             m_ContentFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, "SavedColorSet", "Custom");
