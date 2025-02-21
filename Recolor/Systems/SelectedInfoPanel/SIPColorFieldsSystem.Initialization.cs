@@ -99,6 +99,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private PalettesUISystem m_PalettesUISystem;
         private PaletteInstanceManagerSystem m_PaletteInstanceMangerSystem;
         private ValueBindingHelper<PaletteChooserUIData> m_PaletteChooserData;
+        private AssignedPaletteCustomColorSystem m_AssignedPaletteCustomColorSystem;
         private EntityQuery m_PaletteQuery;
 
 
@@ -199,6 +200,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_DefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
             m_PalettesUISystem = World.GetOrCreateSystemManaged<PalettesUISystem>();
             m_PaletteInstanceMangerSystem = World.GetOrCreateSystemManaged<PaletteInstanceManagerSystem>();
+            m_AssignedPaletteCustomColorSystem = World.GetOrCreateSystemManaged<AssignedPaletteCustomColorSystem>();
 
             // These establish bindings to communicate between UI and C#.
             m_CurrentColorSet = CreateBinding("CurrentColorSet", new RecolorSet(default, default, default));
@@ -273,6 +275,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             });
             CreateTrigger("ToggleShowPaletteChoices", () => m_ShowPaletteChoices.Value = !m_ShowPaletteChoices.Value);
             CreateTrigger<int, Entity>("AssignPalette", AssignPaletteAction);
+            CreateTrigger<int>("RemovePalette", RemovePaletteAction);
 
             m_VanillaColorSets = new ();
             m_ContentFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, "SavedColorSet", "Custom");

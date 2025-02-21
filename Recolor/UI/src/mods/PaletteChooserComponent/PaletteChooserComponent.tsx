@@ -43,7 +43,7 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
             }
         }
 
-        return <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.dropdownText)}>None</div>;
+        return <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.largeDropdownText)}>None</div>;
     } 
 
 
@@ -55,13 +55,13 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                     content={
                         <FocusDisabled>
                             <DropdownItem value={"None"} className={basicDropDownTheme.dropdownItem} onChange={() => removePalette(props.channel)}>
-                                <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.dropdownText)}>None</div>
+                                <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.largeDropdownText)}>None</div>
                             </DropdownItem>
                             {
                             PaletteChooserData.DropdownItems[props.channel].map((Subcategories) => (
                                 <>
                                     <DropdownItem value={Subcategories} className={basicDropDownTheme.dropdownItem} closeOnSelect={false} >
-                                        <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.dropdownText)}>{Subcategories.Subcategory}</div>
+                                        <div className={classNames(ColorFieldTheme.colorField, boxStyles.subcategory, boxStyles.centered, styles.dropdownText)}>{Subcategories.Subcategory}</div>
                                     </DropdownItem>
                                     {Subcategories.Palettes.map((Palette) => (
                                         <DropdownItem value={Palette} className={basicDropDownTheme.dropdownItem} selected={entityEquals(PaletteChooserData.SelectedPaletteEntities[props.channel],Palette.PrefabEntity)} onChange={() => {assignPalette(props.channel, Palette.PrefabEntity)}}>

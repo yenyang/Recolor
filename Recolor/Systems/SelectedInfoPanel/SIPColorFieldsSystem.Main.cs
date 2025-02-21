@@ -278,7 +278,8 @@ namespace Recolor.Systems.SelectedInfoPanel
                 ColorRefresh();
             }
 
-            if (m_PreviouslySelectedEntity == m_CurrentEntity)
+            if (m_PreviouslySelectedEntity == m_CurrentEntity &&
+               !EntityManager.HasComponent<BatchesUpdated>(m_CurrentEntity))
             {
                 return;
             }

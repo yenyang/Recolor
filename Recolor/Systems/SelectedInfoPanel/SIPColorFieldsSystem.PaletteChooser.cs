@@ -119,7 +119,15 @@ namespace Recolor.Systems.SelectedInfoPanel
                     AssignedPalette paletteAssignment = paletteAssignments[i];
                     paletteAssignment.m_PaletteInstanceEntity = m_PaletteInstanceMangerSystem.GetOrCreatePaletteInstanceEntity(prefabEntity);
                     paletteAssignments[i] = paletteAssignment;
-                    EntityManager.AddComponent<BatchesUpdated>(instanceEntity);
+                    if (m_AssignedPaletteCustomColorSystem.TryGetColorFromPalette(instanceEntity, channel, out UnityEngine.Color newColor))
+                    {
+                        ChangeColor(channel, newColor);
+                    }
+                    else
+                    {
+                        EntityManager.AddComponent<BatchesUpdated>(instanceEntity);
+                    }
+
                     return;
                 }
             }
@@ -131,7 +139,49 @@ namespace Recolor.Systems.SelectedInfoPanel
             };
 
             paletteAssignments.Add(newPaletteAssignment);
-            EntityManager.AddComponent<BatchesUpdated>(instanceEntity);
+            if (m_AssignedPaletteCustomColorSystem.TryGetColorFromPalette(instanceEntity, channel, out UnityEngine.Color color))
+            {
+                ChangeColor(channel, color);
+            }
+            else
+            {
+                EntityManager.AddComponent<BatchesUpdated>(instanceEntity);
+            }
+        }
+
+        private void RemovePaletteAction(int channel)
+        {
+            RemovePalette(channel, m_CurrentEntity);
+            m_PreviouslySelectedEntity = Entity.Null;
+        }
+
+        private void RemovePalette(int channel, Entity instanceEntity)
+        {
+            if (channel < 0 ||
+                channel > 2 ||
+               !EntityManager.HasBuffer<AssignedPalette>(instanceEntity))
+            {
+                return;
+            }
+
+            DynamicBuffer<AssignedPalette> paletteAssignments = EntityManager.GetBuffer<AssignedPalette>(instanceEntity, isReadOnly: false);
+
+            if (paletteAssignments.Length == 1 &&
+                paletteAssignments[0].m_Channel == channel)
+            {
+                EntityManager.RemoveComponent<AssignedPalette>(instanceEntity);
+                ResetColor(channel);
+            }
+
+            for (int i = 0; i < paletteAssignments.Length; i++)
+            {
+                if (paletteAssignments[i].m_Channel == channel)
+                {
+                    paletteAssignments.RemoveAt(i);
+                    ResetColor(channel);
+                    return;
+                }
+            }
         }
     }
 }
