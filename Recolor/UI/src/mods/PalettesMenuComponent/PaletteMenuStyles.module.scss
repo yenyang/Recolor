@@ -33,8 +33,8 @@
 .panel {
     position: absolute;
     top: 56rem;
-    left: 420rem;
-    height: 675rem;
+    left: 645rem;
+    height: 680rem;
 }
 
 .header {
@@ -66,8 +66,12 @@
 .sliderSpacerLeft {
     width: 100rem;
 }
-.savePaletteSpacer {
-    width: 50rem;
+.smallSpacer {
+    width: 10rem;
+}
+
+.wideSpacer {
+    width: 250rem;
 }
 
 .probabilityWeightWidth {

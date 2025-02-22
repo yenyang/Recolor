@@ -107,6 +107,7 @@ namespace Recolor.Systems.Palettes
             CreateTrigger<int, int>("ChangeProbabilityWeight", ChangeProbabilityWeight);
             CreateTrigger("AddASwatch", AddASwatch);
             CreateTrigger("RandomizeSwatch", (int swatch) => ChangeSwatchColor(swatch, new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1)));
+            CreateTrigger("DeletePalette", DeletePalette);
 
             m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)}");
             Enabled = false;
@@ -326,6 +327,45 @@ namespace Recolor.Systems.Palettes
             newSwatchUIDatas[swatchUIDatas.Length] = new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100);
             m_Swatches.Value = newSwatchUIDatas;
             m_Swatches.Binding.TriggerUpdate();
+        }
+
+        private void DeletePalette()
+        {
+            if (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PalettePrefab), m_UniqueName.Value), out PrefabBase prefabBase) &&
+                    prefabBase != null &&
+                    prefabBase is PalettePrefab &&
+                    m_PrefabSystem.TryGetEntity(prefabBase, out Entity existingPrefabEntity) &&
+                    EntityManager.TryGetBuffer(existingPrefabEntity, isReadOnly: false, out DynamicBuffer<SwatchData> swatchData))
+            {
+                if (m_PaletteInstanceManagerSystem.TryGetPaletteInstanceEntity(existingPrefabEntity, out Entity paletteInstanceEntity))
+                {
+                    EntityManager.AddComponent<Deleted>(paletteInstanceEntity);
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(TrySavePalette)} Added deleted to paletteInstanceEntity {paletteInstanceEntity.Index}:{paletteInstanceEntity.Version}.");
+                }
+
+                m_PaletteInstanceManagerSystem.RemoveFromMap(existingPrefabEntity);
+                m_PrefabSystem.RemovePrefab(prefabBase);
+                try
+                {
+                    File.Delete(Path.Combine(m_ContentFolder, prefabBase.name, $"{nameof(PalettePrefab)}-{prefabBase.name}.json"));
+                }
+                catch (Exception e)
+                {
+                    m_Log.Info($"Could not remove files for {prefabBase.name} encountered exception {e}.");
+                }
+
+                try
+                {
+                    Directory.Delete(Path.Combine(m_ContentFolder, prefabBase.name));
+                }
+                catch (Exception e)
+                {
+                    m_Log.Info($"Could not remove directory for {prefabBase.name} encountered exception {e}.");
+                }
+            }
+
+            m_ShowPaletteEditorPanel.Value = false;
+            GenerateNewPalette();
         }
     }
 }

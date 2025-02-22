@@ -35,7 +35,6 @@ export function removePalette(channel: number) {
 }
 
 export const PaletteChooserComponent = (props: {channel : number}) => {
-
     const PaletteChooserData = useValue(PaletteChooserData$);
     const CopiedPalette = useValue(CopiedPalette$);
     const CanPastePalette : boolean = CopiedPalette.index != 0;

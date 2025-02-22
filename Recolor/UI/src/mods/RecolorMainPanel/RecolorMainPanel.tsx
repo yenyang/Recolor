@@ -79,6 +79,8 @@ const ShowPaletteChoices$ = bindValue<ButtonState>(mod.id,"ShowPaletteChoices");
 const PaletteChooserData$ = bindValue<PaletteChooserUIData>(mod.id, "PaletteChooserData");
 const EditingPrefabEntity$ = bindValue<Entity>(mod.id, "EditingPrefabEntity");
 const ShowPaletteEditorPanel$ = bindValue<boolean>(mod.id, "ShowPaletteEditorMenu");
+const CopiedPaletteSet$ = bindValue<Entity[]>(mod.id, "CopiedPaletteSet");
+const CopiedPalette$ = bindValue<Entity>(mod.id, "CopiedPalette");
 
 export const InfoRowTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss",
@@ -149,6 +151,8 @@ export const RecolorMainPanelComponent = () => {
     const PaletteChooserData = useValue(PaletteChooserData$);
     const EditingPrefabEntity = useValue(EditingPrefabEntity$);
     const ShowPaletteEditorPanel = useValue(ShowPaletteEditorPanel$);
+    const CopiedPaletteSet = useValue(CopiedPaletteSet$);
+    const CopiedPalette = useValue(CopiedPalette$);
     
     // translation handling. Translates using locale keys that are defined in C# or fallback string from en-US.json.
     const { translate } = useLocalization();
@@ -449,16 +453,22 @@ export const RecolorMainPanelComponent = () => {
                             right={
                                 <>
                                     <div className={styles.rowGroup}>
+                                        { (PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[1].index != 0 || PaletteChooserData.SelectedPaletteEntities[2].index != 0) && (
+                                        <VanillaComponentResolver.instance.ToolButton src={copySrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                                                        tooltip = {"Copy Palette Set"}
+                                                                                        onSelect={() => { trigger(mod.id, "CopyPaletteSet", PaletteChooserData.SelectedPaletteEntities)}}
+                                        />
+                                        )} 
+                                        { (CopiedPaletteSet[0].index != 0 ||  CopiedPaletteSet[1].index != 0 || CopiedPaletteSet[2].index != 0) && (
+                                        <VanillaComponentResolver.instance.ToolButton src={pasteSrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                                                        tooltip = {"Paste Palette Set"}
+                                                                                        onSelect={() => { trigger(mod.id, "AssignPalette", 0, CopiedPaletteSet[0]); trigger(mod.id, "AssignPalette", 1, CopiedPaletteSet[1]); trigger(mod.id, "AssignPalette", 2, CopiedPaletteSet[2]);}}
+                                        />
+                                        )} 
                                         <VanillaComponentResolver.instance.ToolButton src={plusSrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                                                                       tooltip = {"Show PaletteEditorPanel"} selected={ShowPaletteEditorPanel && EditingPrefabEntity.index == 0} 
-                                                                                      onSelect={() => { 
-                                                                                        if (!ShowPaletteEditorPanel || (ShowPaletteEditorPanel && EditingPrefabEntity.index == 0)) 
-                                                                                        {
-                                                                                            handleClick("TogglePaletteEditorMenu"); 
-                                                                                        }
-                                                                                        if (EditingPrefabEntity.index != 0) {
-                                                                                            handleClick("GenerateNewPalette");
-                                                                                        }}}
+                                                                                      onSelect={() => { if (!ShowPaletteEditorPanel || (ShowPaletteEditorPanel && EditingPrefabEntity.index == 0))  {handleClick("TogglePaletteEditorMenu"); }
+                                                                                                        if (EditingPrefabEntity.index != 0) {handleClick("GenerateNewPalette");}}}
                                         />
                                     </div>
                                 </>
@@ -485,7 +495,7 @@ export const RecolorMainPanelComponent = () => {
                                                 entity0.index != 0 ? assignPalette(1, entity0) : removePalette(1);
                                             }}
                                         />
-                                        { PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[1].index != 0 || PaletteChooserData.SelectedPaletteEntities[2].index != 0 ?
+                                        { (PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[1].index != 0 || PaletteChooserData.SelectedPaletteEntities[2].index != 0 || CopiedPalette.index != 0)   ?
                                             <span className={styles.belowSwapButton}></span> : <span className={styles.belowSwapButtonSmall}></span>
                                         }
                                     </div>
@@ -503,7 +513,7 @@ export const RecolorMainPanelComponent = () => {
                                                 entity1.index != 0 ? assignPalette(2, entity1) : removePalette(2);
                                             }}
                                         />
-                                        { PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[1].index != 0 || PaletteChooserData.SelectedPaletteEntities[2].index != 0 ?
+                                        { (PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[1].index != 0 || PaletteChooserData.SelectedPaletteEntities[2].index != 0 || CopiedPalette.index != 0)   ?
                                             <span className={styles.belowSwapButton}></span> : <span className={styles.belowSwapButtonSmall}></span>
                                         }
                                     </div>

@@ -19,6 +19,7 @@ import { PaletteCategory } from "mods/Domain/PaletteAndSwatches/PaletteCategoryT
 import { PaletteBoxComponent } from "mods/PaletteBoxComponent/PaletteBoxComponent";
 import { getModule } from "cs2/modding";
 import { PaletteFilterType } from "mods/Domain/PaletteAndSwatches/PaletteFilterType";
+import { ButtonState } from "mods/Domain/ButtonState";
 
 /*
 import closeSrc from "images/uilStandard/XClose.svg";
@@ -38,12 +39,14 @@ const propsSrc =                        uilStandard + "BenchAndLampProps.svg";
 const allSrc =                          uilStandard + "StarAll.svg";
 const plusSrc =                         uilStandard + "Plus.svg";
 const saveToDiskSrc =                   uilStandard + "DiskSave.svg";
+const trashSrc =                        uilStandard + "Trash.svg";
 
 
 const Swatches$ = bindValue<SwatchUIData[]>(mod.id, "Swatches");
 const UniqueName$ = bindValue<string>(mod.id, "UniqueName");
 const ShowPaletteEditorPanel$ = bindValue<boolean>(mod.id, "ShowPaletteEditorMenu");
 const CurrentPaletteCategory$ = bindValue<PaletteCategory>(mod.id, "PaletteCategory");
+const ShowPaletteChoices$ = bindValue<ButtonState>(mod.id,"ShowPaletteChoices");
 
 function handleClick(event: string) {
     trigger(mod.id, event);
@@ -62,7 +65,8 @@ export const PaletteMenuComponent = () => {
     const activeSelection = useValue(selectedInfo.activeSelection$);
     const UniqueName = useValue(UniqueName$);
     const ShowPaletteEditorPanel = useValue(ShowPaletteEditorPanel$);
-    const CurrentPaletteCategory = useValue(CurrentPaletteCategory$);
+    const CurrentPaletteCategory = useValue(CurrentPaletteCategory$);    
+    const ShowPaletteChoices = useValue(ShowPaletteChoices$);    
     
     const { translate } = useLocalization();
 
@@ -89,7 +93,7 @@ export const PaletteMenuComponent = () => {
 
     return (
         <>
-            {ShowPaletteEditorPanel && !isPhotoMode && defaultTool && activeSelection && (
+            {ShowPaletteEditorPanel && !isPhotoMode && defaultTool && activeSelection && ShowPaletteChoices == ButtonState.On && (
                 <Portal>
                     <Panel 
                         className={panelStyles.panel}
@@ -102,10 +106,12 @@ export const PaletteMenuComponent = () => {
                         )}
                         footer = {(
                             <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
-                                <VanillaComponentResolver.instance.Section title={"Save Palette"}>
+                                <VanillaComponentResolver.instance.Section title={"Palette"}>
                                     <PaletteBoxComponent Swatches={Swatches} totalWidth={80}></PaletteBoxComponent>
-                                    <span className={panelStyles.savePaletteSpacer}></span>
+                                    <span className={panelStyles.smallSpacer}></span>
                                     <VanillaComponentResolver.instance.ToolButton src={saveToDiskSrc}          tooltip = {"Save Palette"}   onSelect={() => {handleClick("TrySavePalette")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                    <span className={panelStyles.wideSpacer}></span>
+                                    <VanillaComponentResolver.instance.ToolButton src={trashSrc}     tooltip = {"Delete Palette"}   onSelect={() => {handleClick("DeletePalette")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
                                 </VanillaComponentResolver.instance.Section>
                             </InfoSection>
                         )}>

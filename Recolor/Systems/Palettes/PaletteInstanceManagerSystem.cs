@@ -90,6 +90,18 @@ namespace Recolor.Systems.Palettes
             }
         }
 
+        /// <summary>
+        /// Removes prefab entity from map.
+        /// </summary>
+        /// <param name="prefabEntity">Palette Prefab Entity.</param>
+        public void RemoveFromMap(Entity prefabEntity)
+        {
+            if (m_PaletteInstanceMap.ContainsKey(prefabEntity))
+            {
+                m_PaletteInstanceMap.Remove(prefabEntity);
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnCreate()
         {
@@ -146,6 +158,15 @@ namespace Recolor.Systems.Palettes
                     }
                 }
             }
+
+            if (!m_DeletedPaletteInstanceQuery.IsEmptyIgnoreFilter)
+            {
+                NativeArray<Entity> entities = m_DeletedPaletteInstanceQuery.ToEntityArray(Allocator.Temp);
+                for (int i = 0; i < entities.Length; i++)
+                {
+                    DeletePaletteInstance(entities[i]);
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -199,7 +220,49 @@ namespace Recolor.Systems.Palettes
                     }
                 }
             }
+        }
 
+        private void DeletePaletteInstance(Entity paletteInstanceEntity)
+        {
+            m_Log.Debug($"{nameof(PaletteInstanceManagerSystem)}.{nameof(DeletePaletteInstance)} paletteInstanceEntity {paletteInstanceEntity.Index}:{paletteInstanceEntity.Version}.");
+
+            // This removed assigned palettes associated with paletteInstance entity.
+            NativeArray<Entity> entities = m_AssignedPaletteQuery.ToEntityArray(Allocator.Temp);
+            EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
+            for (int i = 0; i < entities.Length; i++)
+            {
+                if (!EntityManager.TryGetBuffer(entities[i], isReadOnly: true, out DynamicBuffer<AssignedPalette> assignedPalettes))
+                {
+                    continue;
+                }
+
+                DynamicBuffer<AssignedPalette> newAssignedPalettes = buffer.SetBuffer<AssignedPalette>(entities[i]);
+                int removed = 0;
+                bool foundAssignedPalette = false;
+                for (int j = 0; j < assignedPalettes.Length; j++)
+                {
+                    if (assignedPalettes[j].m_PaletteInstanceEntity == paletteInstanceEntity)
+                    {
+                        foundAssignedPalette = true;
+                        removed++;
+                        m_SIPColorFieldsSystem.ResetSingleInstanceByChannel(assignedPalettes[j].m_Channel, entities[i], buffer);
+                    }
+                    else
+                    {
+                        newAssignedPalettes.Add(assignedPalettes[j]);
+                    }
+                }
+
+                if (foundAssignedPalette && m_SIPColorFieldsSystem.CurrentEntity == entities[i])
+                {
+                    m_SIPColorFieldsSystem.ResetPreviouslySelectedEntity();
+                }
+
+                if (removed == assignedPalettes.Length)
+                {
+                    buffer.RemoveComponent<AssignedPalette>(entities[i]);
+                }
+            }
         }
     }
 }
