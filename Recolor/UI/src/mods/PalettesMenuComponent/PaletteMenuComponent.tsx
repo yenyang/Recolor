@@ -72,6 +72,7 @@ export const PaletteMenuComponent = () => {
 
     let [uniqueNameInput, setTextInput] = useState(UniqueName);
     let [validInput, setValidInput] = useState(true);
+    let [updateText, setUpdateText] = useState(UniqueName);
     let [locales, setLocales] = useState(["en-US"]);
     let [currentFilter, setFilter] = useState(PaletteFilterType.Theme)
 
@@ -86,9 +87,10 @@ export const PaletteMenuComponent = () => {
        trigger(mod.id, "ChangeUniqueName", uniqueNameInput);
     }
 
-    if (uniqueNameInput != UniqueName) 
+    if (UniqueName !== updateText) 
     {
         setTextInput(UniqueName);
+        setUpdateText(UniqueName);
     }
 
     return (
