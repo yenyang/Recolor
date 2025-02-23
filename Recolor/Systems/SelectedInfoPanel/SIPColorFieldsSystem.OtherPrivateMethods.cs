@@ -558,7 +558,9 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             for (int i = 0; i < meshColorBuffer.Length; i++)
             {
-                if (!m_SubMeshIndexes.Contains(i))
+                if (!m_SubMeshIndexes.Contains(i) &&
+                    m_ServiceVehicles.Value != ButtonState.On &&
+                    m_Route.Value != ButtonState.On)
                 {
                     continue;
                 }

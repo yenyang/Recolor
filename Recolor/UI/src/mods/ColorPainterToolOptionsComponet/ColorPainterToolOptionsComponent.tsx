@@ -13,10 +13,13 @@ import { RecolorSet } from "mods/Domain/RecolorSet";
 import { ButtonState } from "mods/Domain/ButtonState";
 import { Scope } from "mods/Domain/Scope";
 import { tool } from "cs2/bindings";
+import paintSrc from "images/format_painter.svg";
+
+
 
 // These contain the coui paths to Unified Icon Library svg assets
 const uilStandard =                          "coui://uil/Standard/";
-const uilColored =                           "coui://uil/Colored/";
+// const uilColored =                           "coui://uil/Colored/";
 const singleSelectionSrc =                       uilStandard + "Dot.svg";
 const radiusSelectionSrc =                        uilStandard + "Circle.svg";
 const singleSrc =                        uilStandard + "SingleRhombus.svg";
@@ -30,7 +33,7 @@ const swapSrc =                         uilStandard + "ArrowsMoveLeftRight.svg";
 
 const resetSrc =                     uilStandard + "Reset.svg";
 const colorPickerSrc =                  uilStandard + "PickerPipette.svg";
-const colorPaletteSrc =                 uilColored + "ColorPalette.svg";
+// const colorPaletteSrc =                 uilColored + "ColorPalette.svg";
 
 const ColorPainterSelectionType$ = bindValue<number>(mod.id, "ColorPainterSelectionType");
 const SingleInstance$ = bindValue<ButtonState>(mod.id, 'SingleInstance');
@@ -100,7 +103,7 @@ export const ColorPainterToolOptionsComponent = () => {
                     <VanillaComponentResolver.instance.Section title={translate("Toolbar.TOOL_MODE_TITLE", "Tool Mode")}> 
                         <>
                             <VanillaComponentResolver.instance.ToolButton
-                                src={colorPaletteSrc}
+                                src={paintSrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                 selected = {ToolMode == PainterToolMode.Paint}
                                 multiSelect = {false}   // I haven't tested any other value here 

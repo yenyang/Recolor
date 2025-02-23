@@ -14,9 +14,10 @@ import { Scope } from "mods/Domain/Scope";
 import { tool } from "cs2/bindings";
 import { Button } from "cs2/ui";
 import { SubMeshData, SubMeshScopes } from "mods/Domain/SubMeshData";
+import paintSrc from "images/format_painter.svg";
 
 const uilStandard =                          "coui://uil/Standard/";
-const uilColored =                           "coui://uil/Colored/";
+// const uilColored =                           "coui://uil/Colored/";
 const resetSrc =                        uilStandard + "Reset.svg";
 const singleSrc =                        uilStandard + "SingleRhombus.svg";
 const matchingSrc =                     uilStandard + "SameRhombus.svg";
@@ -24,7 +25,7 @@ const allSrc =                          uilStandard + "StarAll.svg";
 const copySrc =                         uilStandard + "RectangleCopy.svg";
 const pasteSrc =                        uilStandard + "RectanglePaste.svg";
 const colorPickerSrc =                  uilStandard + "PickerPipette.svg";
-const colorPaleteSrc =                 uilColored + "ColorPalette.svg";
+// const colorPaleteSrc =                 uilColored + "ColorPalette.svg";
 const minimizeSrc =                     uilStandard + "ArrowsMinimize.svg";
 const expandSrc =                       uilStandard + "ArrowsExpand.svg";
 const saveToDiskSrc =                   uilStandard + "DiskSave.svg";
@@ -210,7 +211,7 @@ export const RecolorMainPanelComponent = () => {
                                         onSelect={() => handleClick("ActivateColorPicker")}
                                     />
                                     <VanillaComponentResolver.instance.ToolButton
-                                        src={colorPaleteSrc}
+                                        src={paintSrc}
                                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                         tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ColorPainter]", locale["Recolor.TOOLTIP_DESCRIPTION[ColorPainter]"])}
                                         className = {VanillaComponentResolver.instance.toolButtonTheme.button}
