@@ -19,6 +19,7 @@ namespace Recolor
     using Game.SceneFlow;
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.Palettes;
     using Recolor.Systems.SelectedInfoPanel;
     using Recolor.Systems.SingleInstance;
     using Recolor.Systems.Tools;

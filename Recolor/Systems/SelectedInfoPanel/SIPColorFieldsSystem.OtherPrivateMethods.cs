@@ -157,25 +157,25 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             if ((singleInstance & ButtonState.Hidden) != ButtonState.Hidden &&
                 (m_PreferredScope == Scope.SingleInstance ||
-                IsPreferredScopeHidden()))
+                IsPreferredScopeHidden(singleInstance, matching, serviceVehicles, route)))
             {
                 singleInstance = ButtonState.On;
             }
             else if ((matching & ButtonState.Hidden) != ButtonState.Hidden &&
                      (m_PreferredScope == Scope.Matching ||
-                     IsPreferredScopeHidden()))
+                     IsPreferredScopeHidden(singleInstance, matching, serviceVehicles, route)))
             {
                 matching = ButtonState.On;
             }
             else if ((serviceVehicles & ButtonState.Hidden) != ButtonState.Hidden &&
                      (m_PreferredScope == Scope.ServiceVehicles ||
-                     IsPreferredScopeHidden()))
+                     IsPreferredScopeHidden(singleInstance, matching, serviceVehicles, route)))
             {
                 serviceVehicles = ButtonState.On;
             }
             else if ((route & ButtonState.Hidden) != ButtonState.Hidden &&
                       (m_PreferredScope == Scope.Route ||
-                      IsPreferredScopeHidden()))
+                      IsPreferredScopeHidden(singleInstance, matching, serviceVehicles, route)))
             {
                 route = ButtonState.On;
             }
@@ -223,28 +223,28 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
         }
 
-        private bool IsPreferredScopeHidden()
+        private bool IsPreferredScopeHidden(ButtonState singleInstance, ButtonState matching, ButtonState serviceVehicles, ButtonState route)
         {
             if (m_PreferredScope == Scope.SingleInstance &&
-                (m_SingleInstance.Value & ButtonState.Hidden) == ButtonState.Hidden)
+                (singleInstance & ButtonState.Hidden) == ButtonState.Hidden)
             {
                 return true;
             }
 
             if (m_PreferredScope == Scope.Matching &&
-                (m_Matching.Value & ButtonState.Hidden) == ButtonState.Hidden)
+                (matching & ButtonState.Hidden) == ButtonState.Hidden)
             {
                 return true;
             }
 
             if (m_PreferredScope == Scope.ServiceVehicles &&
-                (m_ServiceVehicles.Value & ButtonState.Hidden) == ButtonState.Hidden)
+                (serviceVehicles & ButtonState.Hidden) == ButtonState.Hidden)
             {
                 return true;
             }
 
             if (m_PreferredScope == Scope.Route &&
-                (m_Route.Value & ButtonState.Hidden) == ButtonState.Hidden)
+                (route & ButtonState.Hidden) == ButtonState.Hidden)
             {
                 return true;
             }
@@ -578,7 +578,9 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             for (int i = 0; i < meshColorBuffer.Length; i++)
             {
-                if (!m_SubMeshIndexes.Contains(i))
+                if (!m_SubMeshIndexes.Contains(i) &&
+                    m_ServiceVehicles.Value != ButtonState.On &&
+                    m_Route.Value != ButtonState.On)
                 {
                     continue;
                 }

@@ -138,8 +138,7 @@ declare module "cs2/ui" {
   	openPanel = "open-panel",
   	closePanel = "close-panel",
   	openMenu = "open-menu",
-  	closeMenu = "close-menu",
-  	clickDisableButton = "click-disable-button"
+  	closeMenu = "close-menu"
   }
   export interface Number2 {
   	readonly x: number;
@@ -153,7 +152,6 @@ declare module "cs2/ui" {
   	"Change Tool Option": Action1D;
   	"Change Value": Action1D;
   	"Change Line Schedule": Action1D;
-  	"Select Popup Button": Action1D;
   	"Move Vertical": Action1D;
   	"Switch Radio Station": Action1D;
   	"Scroll Vertical": Action1D;
@@ -163,7 +161,6 @@ declare module "cs2/ui" {
   	"Select Chirp Sender": Action;
   	"Save Game": Action;
   	"Overwrite Save": Action;
-  	"Confirm": Action;
   	"Expand Group": Action;
   	"Collapse Group": Action;
   	"Select Route": Action;
@@ -262,7 +259,6 @@ declare module "cs2/ui" {
   	"Select Directory": Action;
   	"Search Options": Action;
   	"Clear Search": Action;
-  	"Credit Speed": Action1D;
   	"Debug UI": Action;
   	"Debug Prefab Tool": Action;
   	"Debug Change Field": Action1D;
@@ -444,9 +440,8 @@ declare module "cs2/ui" {
   	src: string;
   	tinted?: boolean;
   	className?: string;
-  	children?: ReactNode;
   }
-  export export const Icon: ({ tinted, className, src, children }: IconProps) => JSX.Element;
+  export export const Icon: ({ tinted, className, src }: IconProps) => JSX.Element;
   export const PortalContainerProvider: ({ children }: {
   	children: RefReactElement<HTMLElement>;
   }) => JSX.Element;

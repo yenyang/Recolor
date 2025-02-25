@@ -27,6 +27,8 @@ namespace Recolor.Systems.SingleInstance
         private EntityQuery m_MeshColorRecordQuery;
         private EntityQuery m_CustomMeshColorAndSubObjectsQuery;
         private EntityQuery m_CustomMeshColorAndSubLanesQuery;
+        private EntityQuery m_RouteVehicleColorQuery;
+        private EntityQuery m_ServiceVehicleColorQuery;
         private EndFrameBarrier m_Barrier;
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
 
@@ -57,6 +59,16 @@ namespace Recolor.Systems.SingleInstance
                   .WithAllRW<MeshColorRecord>()
                   .WithNone<Deleted>()
                   .Build();
+
+            m_RouteVehicleColorQuery = SystemAPI.QueryBuilder()
+                 .WithAllRW<RouteVehicleColor>()
+                 .WithNone<Deleted>()
+                 .Build();
+
+            m_ServiceVehicleColorQuery = SystemAPI.QueryBuilder()
+                   .WithAllRW<ServiceVehicleColor>()
+                   .WithNone<Deleted>()
+                   .Build();
 
             Enabled = false;
         }
@@ -92,6 +104,8 @@ namespace Recolor.Systems.SingleInstance
                 buffer.AddComponent<BatchesUpdated>(m_CustomMeshColorQuery, EntityQueryCaptureMode.AtPlayback);
                 buffer.RemoveComponent<CustomMeshColor>(m_CustomMeshColorQuery, EntityQueryCaptureMode.AtPlayback);
                 buffer.RemoveComponent<MeshColorRecord>(m_MeshColorRecordQuery, EntityQueryCaptureMode.AtPlayback);
+                buffer.RemoveComponent<ServiceVehicleColor>(m_MeshColorRecordQuery, EntityQueryCaptureMode.AtPlayback);
+                buffer.RemoveComponent<RouteVehicleColor>(m_MeshColorRecordQuery, EntityQueryCaptureMode.AtPlayback);
             }
 
             Enabled = false;

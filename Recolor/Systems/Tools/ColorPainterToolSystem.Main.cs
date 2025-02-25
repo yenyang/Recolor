@@ -200,7 +200,7 @@ namespace Recolor.Systems.Tools
             {
                 m_GenericTooltipSystem.RemoveTooltip("ColorPickerToolIcon");
                 m_GenericTooltipSystem.RemoveTooltip("ResetToolIcon");
-                m_GenericTooltipSystem.RegisterIconTooltip("ColorPainterToolIcon", "coui://uil/Colored/ColorPalette.svg");
+                m_GenericTooltipSystem.RegisterIconTooltip("ColorPainterToolIcon", "coui://ui-mods/images/format_painter.svg");
             }
             else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker)
             {
