@@ -127,82 +127,6 @@ export const RecolorMainPanelComponent = () => {
                             <>  
                                 {!Minimized && (
                                 <>
-                                    {(SingleInstance & ButtonState.Hidden) != ButtonState.Hidden && (                             
-                                        <VanillaComponentResolver.instance.ToolButton
-                                            src={singleSrc}
-                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                            selected = {SingleInstance == ButtonState.On}   
-                                            tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[SingleInstance]",locale["Recolor.TOOLTIP_TITLE[SingleInstance]"]), translate("Recolor.TOOLTIP_DESCRIPTION[SingleInstance]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SingleInstance]"]))}
-                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                            onSelect={() => changeScope(Scope.SingleInstance)}
-                                        />
-                                    )} 
-                                    {(Matching & ButtonState.Hidden) != ButtonState.Hidden && (   
-                                        <VanillaComponentResolver.instance.ToolButton
-                                            src={matchingSrc}
-                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                            selected = {Matching == ButtonState.On} 
-                                            tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[Matching]",locale["Recolor.TOOLTIP_TITLE[Matching]"]), translate("Recolor.TOOLTIP_DESCRIPTION[Matching]" ,locale["Recolor.TOOLTIP_DESCRIPTION[Matching]"]))}
-                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                            onSelect={() => changeScope(Scope.Matching)}
-                                        />
-                                    )}
-                                    {(ServiceVehicles & ButtonState.Hidden) != ButtonState.Hidden && (   
-                                        <VanillaComponentResolver.instance.ToolButton
-                                            src={serviceVehiclesSrc}
-                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                            selected = {ServiceVehicles == ButtonState.On} 
-                                            tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[ServiceVehicles]" ,locale["Recolor.TOOLTIP_TITLE[ServiceVehicles]"]), translate("Recolor.TOOLTIP_DESCRIPTION[ServiceVehicles]" , locale["Recolor.TOOLTIP_DESCRIPTION[ServiceVehicles]"]))}
-                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                            onSelect={() => changeScope(Scope.ServiceVehicles)}
-                                        />
-                                    )}
-                                    {(Route & ButtonState.Hidden) != ButtonState.Hidden && (   
-                                        <VanillaComponentResolver.instance.ToolButton
-                                            src={routeSrc}
-                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                            selected = {Route == ButtonState.On} 
-                                            tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[RouteVehicles]" ,locale["Recolor.TOOLTIP_TITLE[RouteVehicles]"]), translate("Recolor.TOOLTIP_DESCRIPTION[RouteVehicles]", locale["Recolor.TOOLTIP_DESCRIPTION[RouteVehicles]"]))}
-                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                            onSelect={() => changeScope(Scope.Route)}
-                                        />
-                                    )}
-
-                                    <VanillaComponentResolver.instance.ToolButton
-                                        src={copySrc}
-                                        focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} 
-                                        tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[CopyColorSet]" ,locale["Recolor.TOOLTIP_DESCRIPTION[CopyColorSet]"])}
-                                        className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                        onSelect={() => handleClick("CopyColorSet")}
-                                    />
-                                    {CanPasteColorSet && (
-                                        <VanillaComponentResolver.instance.ToolButton
-                                            src={pasteSrc}
-                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                            tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PasteColorSet]", locale["Recolor.TOOLTIP_DESCRIPTION[PasteColorSet]"])}
-                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                            onSelect={() => handleClick("PasteColorSet")}
-                                        />  
-                                    )}
-                                    { (!MatchesVanillaColorSet[0] || !MatchesVanillaColorSet[1] || !MatchesVanillaColorSet[2] || CanResetOtherSubMeshes) && (        
-                                        <VanillaComponentResolver.instance.ToolButton
-                                            src={resetSrc}
-                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                            tooltip = {((Matching & ButtonState.Hidden) == ButtonState.Hidden)? translate("Recolor.TOOLTIP_DESCRIPTION[ResetInstanceColor]" ,locale["Recolor.TOOLTIP_DESCRIPTION[ResetInstanceColor]"]) : translate("Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]",locale["Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]"])}
-                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                            onSelect={() => handleClick("ResetColorSet")}
-                                        />
-                                    )}
-                                    { (!MatchesVanillaColorSet[0] || !MatchesVanillaColorSet[1] || !MatchesVanillaColorSet[2]) && Matching == ButtonState.On &&(        
-                                        <VanillaComponentResolver.instance.ToolButton
-                                            src={saveToDiskSrc}
-                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                            selected={MatchesSavedToDisk}
-                                            tooltip = {MatchesSavedToDisk?  translate("Recolor.TOOLTIP_DESCRIPTION[RemoveFromDisk]" ,locale["Recolor.TOOLTIP_DESCRIPTION[RemoveFromDisk]"]) : translate("Recolor.TOOLTIP_DESCRIPTION[SaveToDisk]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SaveToDisk]"])}
-                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                            onSelect={() => handleClick(MatchesSavedToDisk? "RemoveFromDisk" : "SaveToDisk")}
-                                        />
-                                    )}
                                     <VanillaComponentResolver.instance.ToolButton
                                         src={colorPickerSrc}
                                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} 
@@ -313,8 +237,95 @@ export const RecolorMainPanelComponent = () => {
                     )}
 
                     { !Minimized && (
-                        <InfoRow 
+                        <InfoRow
                             left={translate("Recolor.SECTION_TITLE[ColorSet]" ,locale["Recolor.SECTION_TITLE[ColorSet]"])}
+                            right= {
+                                <>
+                                    {(SingleInstance & ButtonState.Hidden) != ButtonState.Hidden && (                             
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={singleSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            selected = {SingleInstance == ButtonState.On}   
+                                            tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[SingleInstance]",locale["Recolor.TOOLTIP_TITLE[SingleInstance]"]), translate("Recolor.TOOLTIP_DESCRIPTION[SingleInstance]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SingleInstance]"]))}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => changeScope(Scope.SingleInstance)}
+                                        />
+                                    )} 
+                                    {(Matching & ButtonState.Hidden) != ButtonState.Hidden && (   
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={matchingSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            selected = {Matching == ButtonState.On} 
+                                            tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[Matching]",locale["Recolor.TOOLTIP_TITLE[Matching]"]), translate("Recolor.TOOLTIP_DESCRIPTION[Matching]" ,locale["Recolor.TOOLTIP_DESCRIPTION[Matching]"]))}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => changeScope(Scope.Matching)}
+                                        />
+                                    )}
+                                    {(ServiceVehicles & ButtonState.Hidden) != ButtonState.Hidden && (   
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={serviceVehiclesSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            selected = {ServiceVehicles == ButtonState.On} 
+                                            tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[ServiceVehicles]" ,locale["Recolor.TOOLTIP_TITLE[ServiceVehicles]"]), translate("Recolor.TOOLTIP_DESCRIPTION[ServiceVehicles]" , locale["Recolor.TOOLTIP_DESCRIPTION[ServiceVehicles]"]))}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => changeScope(Scope.ServiceVehicles)}
+                                        />
+                                    )}
+                                    {(Route & ButtonState.Hidden) != ButtonState.Hidden && (   
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={routeSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            selected = {Route == ButtonState.On} 
+                                            tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[RouteVehicles]" ,locale["Recolor.TOOLTIP_TITLE[RouteVehicles]"]), translate("Recolor.TOOLTIP_DESCRIPTION[RouteVehicles]", locale["Recolor.TOOLTIP_DESCRIPTION[RouteVehicles]"]))}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => changeScope(Scope.Route)}
+                                        />
+                                    )}
+
+                                    <VanillaComponentResolver.instance.ToolButton
+                                        src={copySrc}
+                                        focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} 
+                                        tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[CopyColorSet]" ,locale["Recolor.TOOLTIP_DESCRIPTION[CopyColorSet]"])}
+                                        className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                        onSelect={() => handleClick("CopyColorSet")}
+                                    />
+                                    {CanPasteColorSet && (
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={pasteSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PasteColorSet]", locale["Recolor.TOOLTIP_DESCRIPTION[PasteColorSet]"])}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => handleClick("PasteColorSet")}
+                                        />  
+                                    )}
+                                    { (!MatchesVanillaColorSet[0] || !MatchesVanillaColorSet[1] || !MatchesVanillaColorSet[2] || CanResetOtherSubMeshes) && (        
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={resetSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            tooltip = {((Matching & ButtonState.Hidden) == ButtonState.Hidden)? translate("Recolor.TOOLTIP_DESCRIPTION[ResetInstanceColor]" ,locale["Recolor.TOOLTIP_DESCRIPTION[ResetInstanceColor]"]) : translate("Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]",locale["Recolor.TOOLTIP_DESCRIPTION[ResetColorSet]"])}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => handleClick("ResetColorSet")}
+                                        />
+                                    )}
+                                    { (!MatchesVanillaColorSet[0] || !MatchesVanillaColorSet[1] || !MatchesVanillaColorSet[2]) && Matching == ButtonState.On &&(        
+                                        <VanillaComponentResolver.instance.ToolButton
+                                            src={saveToDiskSrc}
+                                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                            selected={MatchesSavedToDisk}
+                                            tooltip = {MatchesSavedToDisk?  translate("Recolor.TOOLTIP_DESCRIPTION[RemoveFromDisk]" ,locale["Recolor.TOOLTIP_DESCRIPTION[RemoveFromDisk]"]) : translate("Recolor.TOOLTIP_DESCRIPTION[SaveToDisk]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SaveToDisk]"])}
+                                            className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                            onSelect={() => handleClick(MatchesSavedToDisk? "RemoveFromDisk" : "SaveToDisk")}
+                                        />
+                                    )}
+                    
+                                </>
+                            }
+                            ></InfoRow>
+                    )}
+
+                    { !Minimized && (
+                        <InfoRow 
+                            left={""}
                             right=
                             {
                                 <>
