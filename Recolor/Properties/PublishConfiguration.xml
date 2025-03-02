@@ -55,10 +55,11 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * yenyang - Mod Author
 * CloverPie - Testing, Feedback, Promotional Material, Logo.
 * Chameleon TBN - Testing, Feedback, Icons, Logo.
+* Tigon Ologdring - Project discussions, Feedback, Icon.
 * HarborMasterJay, Sully, Dome - Testing, Feedback
 * Klyte45, Algernon, T.D.W., krzychu124, Trejek, Triton Supreme, Konsi, and Quboid - Help with UI, Cooperative Development and Code Sharing
 * Translators: enGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey (French), Hendrix and KaeseMitKuchen (German), Ti4goc (European Portuguese)
-* Bruceyboy24804, spacechad, Tigon Ologdring - Project discussions.
+* Bruceyboy24804, spacechad - Project discussions.
 * Vecteezy.com as an image source for parts of Logo design.</LongDescription>
   <!--Thumbnail-->
   <Thumbnail Value="Properties/Thumbnail.png" />
@@ -73,7 +74,7 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/recolor.1694303/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.0.101" />
+  <ModVersion Value="1.1.0" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.2.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -95,7 +96,8 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * Recolor works in the editor.
 * Fixed random colors when hovering over assets with multiple meshes and custom colors.
 * While changing Single Instance colors on a prefab with Multiple Meshes, you can limit color changes to individual submeshes, matching submeshes, or all submeshes.
-* While changing Matching Color Variations on a prefab with Multiple Meshes, you are limited to only matching submeshes and it will not change all submeshes. You can pick which type of submesh to change.</ChangeLog>
+* While changing Matching Color Variations on a prefab with Multiple Meshes, you are limited to only matching submeshes and it will not change all submeshes. You can pick which type of submesh to change. 
+* New Icon for Color painter tool by Tigon Ologdring.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=2FX0UDSThmQ" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
