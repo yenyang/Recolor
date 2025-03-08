@@ -775,6 +775,8 @@ namespace Recolor.Systems.SelectedInfoPanel
         private void ResetSingleInstanceByChannel(int channel, Entity entity, EntityCommandBuffer buffer)
         {
             bool removeComponents = true;
+
+
             if (EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer) &&
                 EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) &&
                 channel >= 0 && channel <= 2)
@@ -782,7 +784,9 @@ namespace Recolor.Systems.SelectedInfoPanel
                 for (int i = 0; i < m_SubMeshData.Value.SubMeshLength; i++)
                 {
                     CustomMeshColor customMeshColor = customMeshColorBuffer[i];
-                    if (m_SubMeshIndexes.Contains(i))
+                    if (m_SubMeshIndexes.Contains(i) ||
+                        m_ServiceVehicles.Value == ButtonState.On ||
+                        m_Route.Value == ButtonState.On)
                     {
                         customMeshColor.m_ColorSet[channel] = meshColorRecordBuffer[i].m_ColorSet[channel];
                         customMeshColorBuffer[i] = customMeshColor;
