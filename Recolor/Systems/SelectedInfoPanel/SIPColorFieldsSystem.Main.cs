@@ -281,6 +281,8 @@ namespace Recolor.Systems.SelectedInfoPanel
                 return;
             }
 
+            HandleScopeAndButtonStates();
+
             if (EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer1) &&
                 subMeshBuffer1.Length > 0)
             {
@@ -330,8 +332,6 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 originalMeshColor = meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet;
             }
-
-            HandleScopeAndButtonStates();
 
             // Service Vehicles
             if (m_PreviouslySelectedEntity != m_CurrentEntity &&
