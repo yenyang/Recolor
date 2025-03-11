@@ -488,6 +488,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                     meshColorBuffer.Length <= m_SubMeshData.Value.SubMeshIndex)
                 {
                     m_MatchesVanillaColorSet.Value = EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity) ? new bool[] { false, false, false } : new bool[] { true, true, true };
+                    m_CanResetOtherSubMeshes.Value = false;
                     m_CanResetSingleChannels.Value = false;
                 }
                 else if (EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer))

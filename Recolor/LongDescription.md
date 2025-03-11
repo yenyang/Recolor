@@ -49,6 +49,6 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * Tigon Ologdring - Project discussions, Feedback, Icon.
 * HarborMasterJay, Sully, Dome - Testing, Feedback
 * Klyte45, Algernon, T.D.W., krzychu124, Trejek, Triton Supreme, Konsi, and Quboid - Help with UI, Cooperative Development and Code Sharing
-* Translators: enGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey (French), Hendrix and KaeseMitKuchen (German), Ti4goc (European Portuguese)
+* Translators: enGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey (French), Hendrix and KaeseMitKuchen (German), Ti4goc and Obelix  (European Portuguese), Hinanchovo (Korean)
 * Bruceyboy24804, spacechad - Project discussions.
 * Vecteezy.com as an image source for parts of Logo design.
