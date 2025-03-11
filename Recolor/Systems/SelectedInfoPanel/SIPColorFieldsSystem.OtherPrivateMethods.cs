@@ -573,12 +573,12 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
 
                 customMeshColorBuffer[i] = customMeshColor;
-                m_PreviouslySelectedEntity = Entity.Null;
                 colorSet = customMeshColor.m_ColorSet;
             }
 
             buffer.AddComponent<BatchesUpdated>(entity);
             AddBatchesUpdatedToSubElements(entity, buffer);
+            m_PreviouslySelectedEntity = Entity.Null;
             return colorSet;
         }
 

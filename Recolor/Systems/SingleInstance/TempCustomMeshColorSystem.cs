@@ -105,17 +105,17 @@ namespace Recolor.Systems.SingleInstance
                         }
                     }
 
-                    buffer.AddBuffer<CustomMeshColor>(entityNativeArray[i]);
+                    DynamicBuffer<CustomMeshColor> newCustomMeshColorBuffer = buffer.AddBuffer<CustomMeshColor>(entityNativeArray[i]);
 
                     for (int j = 0; j < subMeshBuffer.Length; j++)
                     {
                         if (customMeshColorBuffer.Length > j)
                         {
-                            buffer.AppendToBuffer(entityNativeArray[i], customMeshColorBuffer[j]);
+                            newCustomMeshColorBuffer.Add(customMeshColorBuffer[j]);
                         }
                         else
                         {
-                            buffer.AppendToBuffer(entityNativeArray[i], customMeshColorBuffer[0]);
+                            newCustomMeshColorBuffer.Add(customMeshColorBuffer[0]);
                         }
                     }
 

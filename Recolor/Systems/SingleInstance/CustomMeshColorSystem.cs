@@ -124,7 +124,7 @@ namespace Recolor.Systems.SingleInstance
             {
                 if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<MeshColor> meshColorBuffer) ||
                     meshColorBuffer.Length == 0 ||
-                    !EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) ||
+                    !EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) ||
                     customMeshColorBuffer.Length == 0 ||
                     !EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) ||
                     !EntityManager.TryGetBuffer(prefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
@@ -142,7 +142,6 @@ namespace Recolor.Systems.SingleInstance
                     else
                     {
                         meshColor.m_ColorSet = meshColorBuffer[0].m_ColorSet;
-                        customMeshColorBuffer[i] = new CustomMeshColor(meshColorBuffer[0].m_ColorSet);
                     }
 
                     meshColorBuffer[i] = meshColor;
