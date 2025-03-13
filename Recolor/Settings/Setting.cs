@@ -18,7 +18,7 @@ namespace Recolor.Settings
     /// <summary>
     /// Settings class for Recolor mod.
     /// </summary>
-    [FileLocation("ModsSettings/" + nameof(Recolor) + "/" + nameof(Recolor))]
+    [FileLocation("Mods_Yenyang_" + nameof(Recolor))]
     [SettingsUIGroupOrder(General, Keybinds, Remove, About)]
     public class Setting : ModSetting
     {

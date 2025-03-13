@@ -54,10 +54,10 @@ function changeColor(channel : number, newColor : Color) {
 }
 
 export function convertColorToHexaDecimal(color: Color ) : string {
-    const r = Math.round(color.r * 255).toString(16);
-    const g = Math.round(color.g * 255).toString(16);
-    const b = Math.round(color.b * 255).toString(16);
-    const a = Math.round(color.a * 255).toString(16);
+    const r =  Math.round(color.r * 255) == 0 ? "00" : Math.round(color.r * 255).toString(16);
+    const g = Math.round(color.g * 255) == 0 ? "00" : Math.round(color.g * 255).toString(16);
+    const b = Math.round(color.b * 255) == 0 ? "00" : Math.round(color.b * 255).toString(16);
+    const a = Math.round(color.a * 255) == 0 ? "00" : Math.round(color.a * 255).toString(16);
     return "#"+r+g+b+a;
 }
 
@@ -96,7 +96,7 @@ export const SIPColorComponent = (props : { channel : number }) => {
             changeColor(props.channel, convertHexaDecimalToColor(textInput));
             setValidInput(true)
         }
-        else if (textInput.length == 7 && /^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(textInput+"ff")) 
+        else if (textInput.length == 7 && /^#[0-9A-F]{6}$/i.test(textInput)) 
         {
             changeColor(props.channel, convertHexaDecimalToColor(textInput+"ff"));      
             setTextInput(textInput+"ff");      

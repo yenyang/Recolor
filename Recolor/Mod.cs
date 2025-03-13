@@ -70,7 +70,7 @@ namespace Recolor
         public void OnLoad(UpdateSystem updateSystem)
         {
             Instance = this;
-            Log = LogManager.GetLogger(Id).SetShowsErrorsInUI(false);
+            Log = LogManager.GetLogger("Mods_Yenyang_" + Id).SetShowsErrorsInUI(false);
 #if DEBUG
             Log.effectivenessLevel = Level.Debug;
 #elif VERBOSE
