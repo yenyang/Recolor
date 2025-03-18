@@ -3,7 +3,8 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    padding-left: 10rem;
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
 }
 
 .rowGroup {
@@ -12,6 +13,20 @@
     justify-content: flex-start;
     align-items: center;
     padding-bottom: 5rem;
+}
+
+.subMeshText {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 5rem;
+    color: white !important;
+    width: 235rem !important;
+}
+
+.subMeshButtonWidth {
+    width: 24rem;
 }
 
 .rcColorField {
@@ -23,4 +38,40 @@
     height: 30rem !important; 
     width: 90rem !important;
     padding-right: 1.5rem;
+}
+
+.rcColorFieldInput {
+    height: 25rem !important; 
+    width: 90rem !important;
+}
+
+.belowSwapButton {
+    height: 37.5rem; 
+}
+
+.swapButtonWidth {
+    width: 31rem; 
+}
+
+.inputHeight {
+    height: 30rem; 
+}
+
+.invalidFieldInput {
+    color: red !important;
+}
+
+.buttonWithText {
+    position: absolute;
+    width: 24rem;
+    height: 24rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 18rem;
+    color: #f4f4f4;
+}
+
+.painterFieldInputTextSize {
+    font-size: 14rem !important;
 }

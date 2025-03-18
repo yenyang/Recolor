@@ -16,8 +16,6 @@ CloverPie has produced a colorful video demonstration with a pre-release version
 ## Dependencies
 Unified Icon Library
 
-I18n Everywhere (Soft dependency required for loading languages other than English.)
-
 ## Donations
 If you want to say thank you with a donation you can do so on Paypal.
 
@@ -26,7 +24,7 @@ I am looking for volunteers to help translate the mod into the other languages. 
 The mod is fully or partially available in the following languages: French, Polish, Brazilian Portuguese, Russian, Spanish, German, Chinese Simplified, and European Portuguese.
 
 ## Supplemental Mods
-European Portuguese Localization (Only needed for European Portuguese Translations)
+European Portuguese Localization and I18N Everywhere (Only needed for European Portuguese Translations)
   
 # Detailed Description
 ## Recolor Panel Section
@@ -34,17 +32,29 @@ Adds a Recolor section to the top left panel when selecting an asset instance if
 
 The Recolor panel can control the single instance colors or color variations of all assets that utilize the matching mesh and color variation. Single instance colors of plants and trees is not currently supported. Color changes are immediately applied and saved into this save game. With a button press you can save color variations to the ModsData folder so that color variation will be a default for all other saves. These xml files can also be shared out of game. 
 
-The panel features copy, paste, and reset functions. Sets of colors and single color fields can be independently copied and pasted, and are separate. The panel can be minimized when not being used. The panel has a color picker tool as an alternative to copy/paste. 
+The panel features copy, paste, reset, swap channel functions. Sets of colors and single color fields can be independently copied and pasted, and are separate. The panel can be minimized when not being used. The panel has a color picker tool as an alternative to copy/paste. 
+
+All vehicles from a specific service building can have an assigned color set which will affect existing and newly spawned vehicles from that service building.
+
+All vehicles along an assigned route can have an assigned color set which will affect existing and newly spawned vehicles from that route.
+
+While changing Single Instance colors on a prefab with Multiple Meshes, you can limit color changes to individual submeshes, matching submeshes, or all submeshes.
+
+While changing Matching Color Variations on a prefab with Multiple Meshes, you are limited to only matching submeshes and it will not change all submeshes. You can pick which type of submesh to change. 
+
+Optional Hexidecimal input for colors.
+
+You can select NetLane fences and hedges placed by EDT or inside buildings using a tool activated by keyboard shortcut (default Alt + F).
 
 ## Color Painter Tool
 The recolor panel has a button to activate the color painter tool. You can also use a customizable keyboard shortcut (default Shift + P). By default when activating the color painter tool the color set of the selected asset is copied automatically. This can be changed in settings. 
 
 The color painter tool has similar functionality to the recolor panel but with a different workflow. It is faster but changes to the colors are not applied immediately, you must select the asset to apply changes. Paint tool mode uses left mouse button to change colors, and right mouse button to do a quick reset. Reset tool mode will only highlight assets that can be reset and uses left mouse button to apply the reset. You can copy/paste colors between the color painter tool and the Recolor panel. The color painter has its own color picker tool mode as an alternative to copy/paste. For even faster application you can change instance colors of buildings, props, and vehicles over a radius. You must choose the filter that you want to use between those three. 
 
+Channels can be toggle with the painter, but may require knowing what channel affect what on the subjects.
+
 ## Limitations
 * Not all buildings or props support custom colors because their mesh was not designed to support this. For instance most unique buildings were intended to be unique.
-* NetLane Fencing from EDT is not supported, and this cannot change their colors. Fencing props with color variations can be changed.
-* This mod has not yet been designed to handle experimental custom assets from unfinished editor featuring multiple meshes. Trying to use this mod on these types of assets may have varying and undesirable results.
 * To select sub-objects other than service upgrades and utilize the Recolor panel, you must enable DevUI Tab Menu -&gt; Simulation tab -&gt; Debug Toggle. The color painter can target sub-objects without debug toggle.
 
 ## Other Color Variation Mods
@@ -57,10 +67,11 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * yenyang - Mod Author
 * CloverPie - Testing, Feedback, Promotional Material, Logo.
 * Chameleon TBN - Testing, Feedback, Icons, Logo.
+* Tigon Ologdring - Project discussions, Feedback, Icon.
 * HarborMasterJay, Sully, Dome - Testing, Feedback
-* Klyte45, Algernon, T.D.W., krzychu124, Trejek, Triton Supreme, and Quboid - Help with UI, Cooperative Development and Code Sharing
-* Translators: enGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey (French), Hendrix and KaeseMitKuchen (German), Ti4goc (European Portuguese)
-* Bruceyboy24804, spacechad, Tigon Ologdring - Project discussions.
+* Klyte45, Algernon, T.D.W., krzychu124, Trejek, Triton Supreme, Konsi, and Quboid - Help with UI, Cooperative Development and Code Sharing
+* Translators: enGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey (French), Hendrix and KaeseMitKuchen (German), Ti4goc and Obelix  (European Portuguese), Hinanchovo (Korean)
+* Bruceyboy24804, spacechad - Project discussions.
 * Vecteezy.com as an image source for parts of Logo design.</LongDescription>
   <!--Thumbnail-->
   <Thumbnail Value="Properties/Thumbnail.png" />
@@ -75,18 +86,30 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/recolor.1694303/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.0.3" />
+  <ModVersion Value="1.1.0" />
   <!--Recommended version of the base game to use the mod-->
-  <GameVersion Value="1.1.*" />
+  <GameVersion Value="1.2.*" />
   <!--Dependency for the mod, can be set multiple times-->
-  <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.9" />
-  <Dependency Id="75426" DisplayName="I18n EveryWhere" Version="1.2.0" />
+  <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.12" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Patch V1.0.3
-* Code Cleanup
-* Updated Localization
-* Painter tool options no longer says color set
-* LICENSE.txt ships with mod to include MIT License.</ChangeLog>
+  <ChangeLog># Update V1.1.0
+* You can select NetLane fences and hedges placed by EDT or inside buildings using a tool activated by keyboard shortcut.
+* Color picker and painter can select Netlane fences and hedges.
+* When changing colors, SubObject and SubLanes colors will update immediately.
+* Color painter can toggle channels.
+* Alpha transparency sliders added. (May not effect every asset the same way.)
+* Optional Hexadecimal input fields.
+* Individual resets for single selection. (Does not currently work on instances changed with previous versions.)
+* Added swap color buttons between channels.
+* Added ability to set color set for all service vehicles from a service building instance. This includes any future ones that spawn from the building.
+* Added ability to set color set for all vehicles on a route. This includes any futures ones that spawn or are assigned to that route.
+* Removed I18N Everywhere dependency.
+* Translations for officially supported languages are handled internally with embedded resource files.
+* Recolor works in the editor.
+* Fixed random colors when hovering over assets with multiple meshes and custom colors.
+* While changing Single Instance colors on a prefab with Multiple Meshes, you can limit color changes to individual submeshes, matching submeshes, or all submeshes.
+* While changing Matching Color Variations on a prefab with Multiple Meshes, you are limited to only matching submeshes and it will not change all submeshes. You can pick which type of submesh to change. 
+* New Icon for Color painter tool by Tigon Ologdring.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=2FX0UDSThmQ" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />

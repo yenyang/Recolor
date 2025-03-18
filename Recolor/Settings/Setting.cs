@@ -1,4 +1,8 @@
-﻿namespace Recolor.Settings
+﻿// <copyright file="Setting.cs" company="Yenyang's Mods. MIT License">
+// Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
+// </copyright>
+
+namespace Recolor.Settings
 {
     using Colossal.IO.AssetDatabase;
     using Game;
@@ -6,17 +10,16 @@
     using Game.Modding;
     using Game.Settings;
     using Game.Tools;
-    using Recolor.Systems;
+    using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.SelectedInfoPanel;
+    using Recolor.Systems.SingleInstance;
     using Unity.Entities;
 
     /// <summary>
     /// Settings class for Recolor mod.
     /// </summary>
-    [FileLocation("ModsSettings/" + nameof(Recolor) + "/" + nameof(Recolor))]
+    [FileLocation("Mods_Yenyang_" + nameof(Recolor))]
     [SettingsUIGroupOrder(General, Keybinds, Remove, About)]
-    [SettingsUIMouseAction(Mod.PickerApplyMimicAction, "ColorPickerActions")]
-    [SettingsUIMouseAction(Mod.PainterApplyMimicAction, "ColorPainterActions")]
-    [SettingsUIMouseAction(Mod.PainterSecondaryApplyMimicAction, "ColorPainterActions")]
     public class Setting : ModSetting
     {
         /// <summary>
@@ -43,6 +46,12 @@
         /// The action name for toggle color painter keybind.
         /// </summary>
         public const string ActivateColorPainterActionName = "ActivateColorPainter";
+
+
+        /// <summary>
+        /// The action name for activate fence selector mode.
+        /// </summary>
+        public const string FenceSelectorModeActionName = "FenceSelectorMode";
 
 
         /// <summary>
@@ -77,35 +86,25 @@
         }
 
         /// <summary>
-        /// Gets or sets a value indicating the keybinding for Reset Elevation.
+        /// Gets or sets a value indicating the keybinding for activating color painter.
         /// </summary>
         [SettingsUISection(General, Keybinds)]
         [SettingsUIKeyboardBinding(BindingKeyboard.P, actionName: ActivateColorPainterActionName, shift: true)]
         public ProxyBinding ActivateColorPainter { get; set; }
 
         /// <summary>
-        /// Gets or sets hidden keybinding for Picker apply action
+        /// Gets or sets a value indicating the keybinding for activating color painter.
         /// </summary>
-        [SettingsUIMouseBinding(Mod.PickerApplyMimicAction)]
-        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
-        [SettingsUIHidden]
-        public ProxyBinding PickerApplyMimic { get; set; }
+        [SettingsUISection(General, Keybinds)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.F, actionName: FenceSelectorModeActionName, alt: true)]
+        public ProxyBinding FenceSelectorMode { get; set; }
+
 
         /// <summary>
-        /// Gets or sets hidden keybinding for Painter Apply Action.
+        /// Gets or sets a value indicating whether to show hexadecimals.
         /// </summary>
-        [SettingsUIMouseBinding(Mod.PainterApplyMimicAction)]
-        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
         [SettingsUIHidden]
-        public ProxyBinding PainterApplyMimic { get; set; }
-
-        /// <summary>
-        /// Gets or sets hidden keybinding for Painter secondary apply action.
-        /// </summary>
-        [SettingsUIMouseBinding(Mod.PainterSecondaryApplyMimicAction)]
-        [SettingsUIBindingMimic(InputManager.kToolMap, "Secondary Apply")]
-        [SettingsUIHidden]
-        public ProxyBinding PainterSecondaryApplyMimic { get; set; }
+        public bool ShowHexaDecimals { get; set; }
 
 
         /// <summary>
@@ -136,6 +135,7 @@
             {
                 ResetCustomMeshColorSystem resetCustomMeshColorSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ResetCustomMeshColorSystem>();
                 resetCustomMeshColorSystem.Enabled = true;
+                
             }
         }
 
@@ -165,7 +165,7 @@
         {
             set
             {
-                SelectedInfoPanelColorFieldsSystem selectedInfoPanelColorFieldsSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
+                SIPColorFieldsSystem selectedInfoPanelColorFieldsSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
                 selectedInfoPanelColorFieldsSystem.DeleteAllModsDataFiles();
             }
         }
@@ -184,7 +184,7 @@
                 resetCustomMeshColorSystem.Enabled = true;
                 CustomColorVariationSystem customColorVariationSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<CustomColorVariationSystem>();
                 customColorVariationSystem.ResetAllCustomColorVariations();
-                SelectedInfoPanelColorFieldsSystem selectedInfoPanelColorFieldsSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
+                SIPColorFieldsSystem selectedInfoPanelColorFieldsSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
                 selectedInfoPanelColorFieldsSystem.DeleteAllModsDataFiles();
             }
         }
@@ -199,6 +199,7 @@
         public override void SetDefaults()
         {
             ColorPainterAutomaticCopyColor = true;
+            ShowHexaDecimals = false;
         }
 
         private bool IsNotGame()

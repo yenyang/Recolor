@@ -7,9 +7,9 @@
 		<LangVersion>9</LangVersion>
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
-		<AssemblyVersion>1.0.3</AssemblyVersion>
-		<FileVersion>1.0.3</FileVersion>
-		<Version>1.0.3</Version>
+		<AssemblyVersion>1.1.0</AssemblyVersion>
+		<FileVersion>1.1.0</FileVersion>
+		<Version>1.1.0</Version>
 	</PropertyGroup>
 	
 	<!--Imports must be after PropertyGroup block-->
@@ -149,6 +149,17 @@
 		<Content Include="lang\**">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="l10n\de-DE.json" />
+	  <EmbeddedResource Include="l10n\es-ES.json" />
+	  <EmbeddedResource Include="l10n\fr-FR.json" />
+	  <EmbeddedResource Include="l10n\ko-KR.json" />
+	  <EmbeddedResource Include="l10n\pl-PL.json" />
+	  <EmbeddedResource Include="l10n\pt-BR.json" />
+	  <EmbeddedResource Include="l10n\ru-RU.json" />
+	  <EmbeddedResource Include="l10n\zh-HANS.json" />
 	</ItemGroup>
 
 	<ItemGroup>

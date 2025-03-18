@@ -6,10 +6,10 @@ namespace Recolor.Domain
 {
     using Game.Prefabs;
     using Game.Rendering;
-    using Recolor.Systems;
+    using Recolor.Systems.SelectedInfoPanel;
 
     /// <summary>
-    /// A class to use for XML Serialization and deserialization of custom foliage color sets.
+    /// A class to use for XML Serialization and deserialization of custom color sets.
     /// </summary>
     public class SavedColorSet
     {
@@ -67,7 +67,7 @@ namespace Recolor.Domain
         /// </summary>
         /// <param name="colorSet">set of colors</param>
         /// <param name="assetSeasonIdentifier">struct with required data.</param>
-        public SavedColorSet(ColorSet colorSet, SelectedInfoPanelColorFieldsSystem.AssetSeasonIdentifier assetSeasonIdentifier)
+        public SavedColorSet(ColorSet colorSet, SIPColorFieldsSystem.AssetSeasonIdentifier assetSeasonIdentifier)
         {
             m_ColorSet = colorSet;
             m_PrefabName = assetSeasonIdentifier.m_PrefabID.GetName();

@@ -3,7 +3,7 @@
 // </copyright>
 
 #define BURST
-namespace Recolor.Systems
+namespace Recolor.Systems.SingleInstance
 {
     using Colossal.Logging;
     using Game;
@@ -44,7 +44,7 @@ namespace Recolor.Systems
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            GatherEntitiesFromRentersUpdatedEventsJob gatherEntitiesFromRentersUpdatedEventsJob = new GatherEntitiesFromRentersUpdatedEventsJob()
+            GatherEntitiesFromRentersUpdatedEventsJob gatherEntitiesFromRentersUpdatedEventsJob = new ()
             {
                 m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
                 m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),

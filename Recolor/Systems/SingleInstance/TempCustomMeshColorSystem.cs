@@ -3,11 +3,12 @@
 // </copyright>
 
 #define BURST
-namespace Recolor.Systems
+namespace Recolor.Systems.SingleInstance
 {
     using Colossal.Logging;
     using Game;
     using Game.Common;
+    using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
     using Recolor.Domain;
@@ -44,48 +45,15 @@ namespace Recolor.Systems
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            /*
-            NativeArray<Entity> entities = m_TempMeshColorQuery.ToEntityArray(Allocator.Temp);
-            foreach (Entity entity in entities)
-            {
-                if (!EntityManager.TryGetComponent(entity, out Temp temp))
-                {
-                    continue;
-                }
-
-                if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<MeshColor> meshColorBuffer) || meshColorBuffer.Length == 0)
-                {
-                    continue;
-                }
-
-                if (!EntityManager.TryGetBuffer(temp.m_Original, isReadOnly: true, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) || customMeshColorBuffer.Length == 0)
-                {
-                    continue;
-                }
-
-                EntityManager.AddComponent<BatchesUpdated>(entity);
-                for (int i = 0; i < meshColorBuffer.Length; i++)
-                {
-                    if (customMeshColorBuffer.Length > i)
-                    {
-                        meshColorBuffer[i] = new MeshColor() { m_ColorSet = customMeshColorBuffer[i].m_ColorSet };
-                    }
-                }
-
-                DynamicBuffer<CustomMeshColor> newBuffer = EntityManager.AddBuffer<CustomMeshColor>(entity);
-                foreach (CustomMeshColor customMeshColor in customMeshColorBuffer)
-                {
-                    newBuffer.Add(customMeshColor);
-                }
-            }*/
-
-            TempCustomMeshColorJob tempCustomMeshColorJob = new TempCustomMeshColorJob()
+            TempCustomMeshColorJob tempCustomMeshColorJob = new ()
             {
                 m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
                 m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
                 buffer = m_Barrier.CreateCommandBuffer(),
                 m_EntityType = SystemAPI.GetEntityTypeHandle(),
                 m_TempType = SystemAPI.GetComponentTypeHandle<Temp>(),
+                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                m_SubMeshLookup = SystemAPI.GetBufferLookup<SubMesh>(isReadOnly: true),
             };
             JobHandle jobHandle = tempCustomMeshColorJob.Schedule(m_TempMeshColorQuery, Dependency);
             m_Barrier.AddJobHandleForProducer(jobHandle);
@@ -105,6 +73,10 @@ namespace Recolor.Systems
             public EntityCommandBuffer buffer;
             [ReadOnly]
             public ComponentTypeHandle<Temp> m_TempType;
+            [ReadOnly]
+            public BufferLookup<SubMesh> m_SubMeshLookup;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
@@ -113,18 +85,38 @@ namespace Recolor.Systems
                 for (int i = 0; i < chunk.Count; i++)
                 {
                     Temp temp = tempNativeArray[i];
-                    if (!m_CustomMeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer))
+                    if (!m_CustomMeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) ||
+                        !m_PrefabRefLookup.TryGetComponent(temp.m_Original, out PrefabRef prefabRef) ||
+                        !m_SubMeshLookup.TryGetBuffer(prefabRef.m_Prefab, out DynamicBuffer<SubMesh> subMeshBuffer))
                     {
                         continue;
                     }
 
                     DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(entityNativeArray[i]);
-
-                    meshColorBuffer.Add(new MeshColor() { m_ColorSet = customMeshColorBuffer[0].m_ColorSet });
-                    buffer.AddBuffer<CustomMeshColor>(entityNativeArray[i]);
-                    foreach (CustomMeshColor customMeshColor in customMeshColorBuffer)
+                    for (int j = 0; j < subMeshBuffer.Length; j++)
                     {
-                        buffer.AppendToBuffer(entityNativeArray[i], customMeshColor);
+                        if (customMeshColorBuffer.Length > j)
+                        {
+                            meshColorBuffer.Add(new () { m_ColorSet = customMeshColorBuffer[j].m_ColorSet });
+                        }
+                        else
+                        {
+                            meshColorBuffer.Add(new () { m_ColorSet = customMeshColorBuffer[0].m_ColorSet });
+                        }
+                    }
+
+                    DynamicBuffer<CustomMeshColor> newCustomMeshColorBuffer = buffer.AddBuffer<CustomMeshColor>(entityNativeArray[i]);
+
+                    for (int j = 0; j < subMeshBuffer.Length; j++)
+                    {
+                        if (customMeshColorBuffer.Length > j)
+                        {
+                            newCustomMeshColorBuffer.Add(customMeshColorBuffer[j]);
+                        }
+                        else
+                        {
+                            newCustomMeshColorBuffer.Add(customMeshColorBuffer[0]);
+                        }
                     }
 
                     buffer.AddComponent<BatchesUpdated>(entityNativeArray[i]);

@@ -2,7 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-namespace Recolor.Systems
+namespace Recolor.Systems.Tools
 {
     using System;
     using Colossal.Entities;
@@ -13,23 +13,25 @@ namespace Recolor.Systems
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
+    using Recolor;
     using Recolor.Domain;
+    using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.SelectedInfoPanel;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
-    using static Recolor.Systems.SelectedInfoPanelColorFieldsSystem;
+    using static Recolor.Systems.SelectedInfoPanel.SIPColorFieldsSystem;
 
     /// <summary>
     /// A tool for picking colors from meshes.
     /// </summary>
     public partial class ColorPickerToolSystem : ToolBaseSystem
     {
-        private ProxyAction m_ApplyAction;
         private ILog m_Log;
         private Entity m_PreviousRaycastedEntity;
         private Entity m_PreviousSelectedEntity;
         private EntityQuery m_HighlightedQuery;
-        private SelectedInfoPanelColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
+        private SIPColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
         private ToolOutputBarrier m_Barrier;
         private GenericTooltipSystem m_GenericTooltipSystem;
         private CustomColorVariationSystem m_CustomColorVariationSystem;
@@ -53,9 +55,11 @@ namespace Recolor.Systems
         public override void InitializeRaycast()
         {
             base.InitializeRaycast();
-            m_ToolRaycastSystem.collisionMask = Game.Common.CollisionMask.OnGround | Game.Common.CollisionMask.Overground;
-            m_ToolRaycastSystem.typeMask = Game.Common.TypeMask.MovingObjects | Game.Common.TypeMask.StaticObjects;
+            m_ToolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Overground;
+            m_ToolRaycastSystem.typeMask = TypeMask.MovingObjects | TypeMask.StaticObjects | TypeMask.Lanes;
             m_ToolRaycastSystem.raycastFlags |= RaycastFlags.SubBuildings | RaycastFlags.SubElements;
+            m_ToolRaycastSystem.netLayerMask = Game.Net.Layer.Fence;
+            m_ToolRaycastSystem.utilityTypeMask = Game.Net.UtilityTypes.Fence;
         }
 
         /// <summary>
@@ -73,23 +77,21 @@ namespace Recolor.Systems
             Enabled = false;
             m_Log = Mod.Instance.Log;
             m_Log.Info($"{nameof(ColorPickerToolSystem)}.{nameof(OnCreate)}");
-            m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SelectedInfoPanelColorFieldsSystem>();
+            m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_CustomColorVariationSystem = World.GetOrCreateSystemManaged<CustomColorVariationSystem>();
             m_HighlightedQuery = SystemAPI.QueryBuilder()
                 .WithAll<Highlighted>()
-                .WithNone<Deleted, Temp, Game.Common.Overridden>()
+                .WithNone<Deleted, Temp, Overridden>()
                 .Build();
             m_GenericTooltipSystem = World.GetOrCreateSystemManaged<GenericTooltipSystem>();
-
-            m_ApplyAction = Mod.Instance.Settings.GetAction(Mod.PickerApplyMimicAction);
         }
 
         /// <inheritdoc/>
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            m_ApplyAction.shouldBeEnabled = true;
+            applyAction.enabled = true;
             m_Log.Debug($"{nameof(ColorPickerToolSystem)}.{nameof(OnStartRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
         }
@@ -98,7 +100,6 @@ namespace Recolor.Systems
         protected override void OnStopRunning()
         {
             base.OnStopRunning();
-            m_ApplyAction.shouldBeEnabled = false;
             EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
             EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
             m_PreviousRaycastedEntity = Entity.Null;
@@ -114,7 +115,7 @@ namespace Recolor.Systems
 
             m_GenericTooltipSystem.RegisterIconTooltip("ColorPickerToolIcon", "coui://uil/Standard/PickerPipette.svg");
 
-            if (!GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit) || !EntityManager.TryGetBuffer(currentRaycastEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            if (!GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit _) || !EntityManager.TryGetBuffer(currentRaycastEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
                 buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
                 buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
@@ -136,7 +137,7 @@ namespace Recolor.Systems
                 m_PreviousRaycastedEntity = currentRaycastEntity;
             }
 
-            if (!m_ApplyAction.WasPerformedThisFrame() || m_ToolSystem.selected == Entity.Null)
+            if (!applyAction.WasReleasedThisFrame() || m_ToolSystem.selected == Entity.Null)
             {
                 return inputDeps;
             }
@@ -145,7 +146,7 @@ namespace Recolor.Systems
             {
                 ChangeInstanceColorSet(meshColorBuffer[0].m_ColorSet, ref buffer, m_ToolSystem.selected);
             }
-            else if ((!m_SelectedInfoPanelColorFieldsSystem.SingleInstance || EntityManager.HasComponent<Plant>(m_ToolSystem.selected)) && m_SelectedInfoPanelColorFieldsSystem.TryGetAssetSeasonIdentifier(m_ToolSystem.selected, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet colorSet))
+            else if ((!m_SelectedInfoPanelColorFieldsSystem.SingleInstance || EntityManager.HasComponent<Plant>(m_ToolSystem.selected)) && m_SelectedInfoPanelColorFieldsSystem.TryGetAssetSeasonIdentifier(m_ToolSystem.selected, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet _))
             {
                 ChangeColorVariation(meshColorBuffer[0].m_ColorSet, ref buffer, m_ToolSystem.selected, assetSeasonIdentifier);
                 GenerateOrUpdateCustomColorVariationEntity(ref buffer, m_ToolSystem.selected, assetSeasonIdentifier);
@@ -157,7 +158,7 @@ namespace Recolor.Systems
 
         private void ChangeInstanceColorSet(ColorSet colorSet, ref EntityCommandBuffer buffer, Entity entity)
         {
-            if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance && !EntityManager.HasComponent<Game.Objects.Plant>(entity) && EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance && !EntityManager.HasComponent<Plant>(entity) && EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
                 if (!EntityManager.HasBuffer<CustomMeshColor>(entity))
                 {
@@ -237,7 +238,7 @@ namespace Recolor.Systems
             }
 
             ColorSet colorSet = colorVariationBuffer[assetSeasonIdentifier.m_Index].m_ColorSet;
-            if (!EntityManager.HasComponent<Game.Objects.Tree>(entity))
+            if (!EntityManager.HasComponent<Tree>(entity))
             {
                 m_CustomColorVariationSystem.CreateOrUpdateCustomColorVariationEntity(buffer, subMeshBuffer[0].m_SubMesh, colorSet, assetSeasonIdentifier.m_Index);
             }
@@ -246,7 +247,7 @@ namespace Recolor.Systems
                 int length = Math.Min(4, subMeshBuffer.Length);
                 for (int i = 0; i < length; i++)
                 {
-                    if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[i].m_SubMesh, out PrefabBase prefabBase))
+                    if (!m_PrefabSystem.TryGetPrefab(subMeshBuffer[i].m_SubMesh, out PrefabBase _))
                     {
                         continue;
                     }
@@ -257,7 +258,7 @@ namespace Recolor.Systems
 
             EntityQuery prefabRefQuery = SystemAPI.QueryBuilder()
                 .WithAll<PrefabRef>()
-                .WithNone<Deleted, Game.Common.Overridden, Game.Tools.Temp>()
+                .WithNone<Deleted, Overridden, Temp>()
                 .Build();
 
             NativeArray<Entity> entities = prefabRefQuery.ToEntityArray(Allocator.Temp);

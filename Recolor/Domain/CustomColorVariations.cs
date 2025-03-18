@@ -39,7 +39,7 @@ namespace Recolor.Domain
         public void Deserialize<TReader>(TReader reader)
             where TReader : IReader
         {
-            reader.Read(out int version);
+            reader.Read(out int _); // version
             reader.Read(out Color color0);
             reader.Read(out Color color1);
             reader.Read(out Color color2);
@@ -56,7 +56,7 @@ namespace Recolor.Domain
         public void Serialize<TWriter>(TWriter writer)
             where TWriter : IWriter
         {
-            writer.Write(0);
+            writer.Write(0); // version
             writer.Write(m_ColorSet.m_Channel0);
             writer.Write(m_ColorSet.m_Channel1);
             writer.Write(m_ColorSet.m_Channel2);

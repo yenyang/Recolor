@@ -2,25 +2,34 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
+// #define DUMP_VANILLA_LOCALIZATION
 namespace Recolor
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
     using System.Reflection;
     using Colossal.IO.AssetDatabase;
+    using Colossal.Localization;
     using Colossal.Logging;
     using Game;
     using Game.Modding;
     using Game.Rendering;
     using Game.SceneFlow;
     using Recolor.Settings;
-    using Recolor.Systems;
+    using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.SelectedInfoPanel;
+    using Recolor.Systems.SingleInstance;
+    using Recolor.Systems.Tools;
+    using Recolor.Systems.Vehicles;
 
 #if DEBUG
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
     using Newtonsoft.Json;
-    using UnityEngine;using Colossal;
+    using Colossal;
+    using Game.UI.InGame;
+    using Unity.Entities;
+    using UnityEngine;
 #endif
 
     /// <summary>
@@ -28,22 +37,6 @@ namespace Recolor
     /// </summary>
     public class Mod : IMod
     {
-
-        /// <summary>
-        /// Fake keybind action for apply.
-        /// </summary>
-        public const string PickerApplyMimicAction = "PickerApplyMimic";
-
-        /// <summary>
-        /// Fake keybind action for apply.
-        /// </summary>
-        public const string PainterApplyMimicAction = "PainterApplyMimic";
-
-        /// <summary>
-        /// Fake keybind action for secondary apply.
-        /// </summary>
-        public const string PainterSecondaryApplyMimicAction = "PainterSecondaryApplyMimic";
-
         /// <summary>
         /// An id used for bindings between UI and C#.
         /// </summary>
@@ -77,7 +70,7 @@ namespace Recolor
         public void OnLoad(UpdateSystem updateSystem)
         {
             Instance = this;
-            Log = LogManager.GetLogger(Id).SetShowsErrorsInUI(false);
+            Log = LogManager.GetLogger("Mods_Yenyang_" + Id).SetShowsErrorsInUI(false);
 #if DEBUG
             Log.effectivenessLevel = Level.Debug;
 #elif VERBOSE
@@ -94,6 +87,8 @@ namespace Recolor
             AssetDatabase.global.LoadSettings(nameof(Recolor), Settings, new Setting(this));
             Log.Info($"{nameof(OnLoad)} Initalizing en-US localization.");
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Settings));
+            Log.Info($"[{nameof(Mod)}] {nameof(OnLoad)} Initalizing localization for other languages.");
+            LoadNonEnglishLocalizations();
 #if DEBUG
             Log.Info($"{nameof(Mod)}.{nameof(OnLoad)} Exporting localization");
             var localeDict = new LocaleEN(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
@@ -107,8 +102,19 @@ namespace Recolor
                 Log.Error(ex.ToString());
             }
 #endif
+#if DUMP_VANILLA_LOCALIZATION
+            var strings = GameManager.instance.localizationManager.activeDictionary.entries
+                .OrderBy(kv => kv.Key)
+                .ToDictionary(kv => kv.Key, kv => kv.Value);
+
+            var json = Colossal.Json.JSON.Dump(strings);
+
+            var filePath = Path.Combine(Application.persistentDataPath, "locale-dictionary.json");
+
+            File.WriteAllText(filePath, json);
+#endif
             Log.Info($"{nameof(OnLoad)} Initalizing systems");
-            updateSystem.UpdateAt<SelectedInfoPanelColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<SIPColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<TempCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAfter<CustomMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<ColorPickerToolSystem>(SystemUpdatePhase.ToolUpdate);
@@ -118,6 +124,9 @@ namespace Recolor
             updateSystem.UpdateAt<CustomColorVariationSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<RentersUpdatedCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<ResetCustomMeshColorSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateAt<SelectNetLaneFencesToolSystem>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAfter<CreatedServiceVehicleCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateAfter<AssignedRouteVehicleCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             Log.Info($"{nameof(OnLoad)} complete.");
         }
 
@@ -129,6 +138,52 @@ namespace Recolor
             {
                 Settings.UnregisterInOptionsUI();
                 Settings = null;
+            }
+        }
+
+        private void LoadNonEnglishLocalizations()
+        {
+            Assembly thisAssembly = Assembly.GetExecutingAssembly();
+            string[] resourceNames = thisAssembly.GetManifestResourceNames();
+
+            try
+            {
+                Log.Debug($"Reading localizations");
+
+                foreach (string localeID in GameManager.instance.localizationManager.GetSupportedLocales())
+                {
+                    string resourceName = $"{thisAssembly.GetName().Name}.l10n.{localeID}.json";
+                    if (resourceNames.Contains(resourceName))
+                    {
+                        Log.Debug($"Found localization file {resourceName}");
+                        try
+                        {
+                            Log.Debug($"Reading embedded translation file {resourceName}");
+
+                            // Read embedded file.
+                            using StreamReader reader = new (thisAssembly.GetManifestResourceStream(resourceName));
+                            {
+                                string entireFile = reader.ReadToEnd();
+                                Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
+                                Dictionary<string, string> translations = varient.Make<Dictionary<string, string>>();
+                                GameManager.instance.localizationManager.AddSource(localeID, new MemorySource(translations));
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            // Don't let a single failure stop us.
+                            Log.Error(e, $"Exception reading localization from embedded file {resourceName}");
+                        }
+                    }
+                    else
+                    {
+                        Log.Debug($"Did not find localization file {resourceName}");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Exception reading embedded settings localization files");
             }
         }
     }
