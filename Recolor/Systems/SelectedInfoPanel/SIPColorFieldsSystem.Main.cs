@@ -65,9 +65,14 @@ namespace Recolor.Systems.SelectedInfoPanel
                 Enabled = true;
                 m_ReloadInXFrames = 30;
 
-                if (mode.IsEditor())
+                if (mode.IsEditor() ||
+                    Mod.Instance.Settings.AlwaysMinimizedAtGameStart)
                 {
                     m_Minimized.Value = true;
+                }
+                else
+                {
+                    m_Minimized.Value = Mod.Instance.Settings.Minimized;
                 }
             }
             else

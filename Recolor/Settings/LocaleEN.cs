@@ -6,7 +6,6 @@ namespace Recolor.Settings
 {
     using System.Collections.Generic;
     using Colossal;
-    using Colossal.IO.AssetDatabase.Internal;
     using Recolor;
 
     /// <summary>
@@ -98,6 +97,8 @@ namespace Recolor.Settings
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetKeybindSettings)), $"Reset {Mod.Id} mod Keybindings" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetKeybindSettings)), $"Upon confirmation this will reset the keybindings for {Mod.Id} mod." },
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.ResetKeybindSettings)), $"Reset {Mod.Id} mod Keybindings?" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(setting.AlwaysMinimizedAtGameStart)), "Always Minimized at Game Start" },
+                { m_Setting.GetOptionDescLocaleID(nameof(setting.AlwaysMinimizedAtGameStart)), "When enabled, the Recolor panel will always start minimized. When disabled, the Recolor panel will start minimized or not based on whether it was minimized or not when you last closed the game." },
                 { MouseTooltipKey("SingleInstancePlantWarning"), "Single instance color changes for plants is not currently supported." },
                 { MouseTooltipKey("HasCustomMeshColorWarning"),  "Cannot change color variation on this because it has custom instance colors." },
                 { MouseTooltipKey("SelectANetLaneFence"), "Select a NetLane Fence or Hedge." },
