@@ -367,6 +367,8 @@ declare module "cs2/input" {
   	onChange: (key: UniqueFocusKey | null) => void;
   	onRefocus?: (controller: MultiChildFocusController, lastElement: FocusController | null) => UniqueFocusKey | null;
   	allowFocusExit?: boolean;
+  	allowLooping?: boolean | "x" | "y";
+  	jumpSections?: boolean;
   }
   /**
    * A stateless component that allows the user to navigate between multiple focusable children with a gamepad.
@@ -393,6 +395,8 @@ declare module "cs2/input" {
   	"Change Slider Value": Action1D;
   	"Change Tool Option": Action1D;
   	"Change Value": Action1D;
+  	"Change Line Schedule": Action1D;
+  	"Select Popup Button": Action1D;
   	"Move Vertical": Action1D;
   	"Switch Radio Station": Action1D;
   	"Scroll Vertical": Action1D;
@@ -401,6 +405,8 @@ declare module "cs2/input" {
   	"Purchase Dev Tree Node": Action;
   	"Select Chirp Sender": Action;
   	"Save Game": Action;
+  	"Overwrite Save": Action;
+  	"Confirm": Action;
   	"Expand Group": Action;
   	"Collapse Group": Action;
   	"Select Route": Action;
@@ -494,6 +500,12 @@ declare module "cs2/input" {
   	"Unset Binding": Action;
   	"Reset Binding": Action;
   	"Switch Savegame Location": Action1D;
+  	"Show Advanced": Action;
+  	"Hide Advanced": Action;
+  	"Select Directory": Action;
+  	"Search Options": Action;
+  	"Clear Search": Action;
+  	"Credit Speed": Action1D;
   	"Debug UI": Action;
   	"Debug Prefab Tool": Action;
   	"Debug Change Field": Action1D;
