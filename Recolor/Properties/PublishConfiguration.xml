@@ -70,7 +70,7 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * Tigon Ologdring - Project discussions, Feedback, Icon.
 * HarborMasterJay, Sully, Dome - Testing, Feedback
 * Klyte45, Algernon, T.D.W., krzychu124, Trejek, Triton Supreme, Konsi, and Quboid - Help with UI, Cooperative Development and Code Sharing
-* Translators: enGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey (French), Hendrix and KaeseMitKuchen (German), Ti4goc and Obelix  (European Portuguese), Hinanchovo (Korean)
+* Translators: enGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey and Edou24 (French), Hendrix and KaeseMitKuchen (German), Ti4goc and Obelix  (European Portuguese), Hinanchovo (Korean)
 * Bruceyboy24804, spacechad - Project discussions.
 * Vecteezy.com as an image source for parts of Logo design.</LongDescription>
   <!--Thumbnail-->
@@ -86,30 +86,18 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/recolor.1694303/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.1.0" />
+  <ModVersion Value="1.1.1" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.2.*" />
   <!--Dependency for the mod, can be set multiple times-->
   <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.12" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Update V1.1.0
-* You can select NetLane fences and hedges placed by EDT or inside buildings using a tool activated by keyboard shortcut.
-* Color picker and painter can select Netlane fences and hedges.
-* When changing colors, SubObject and SubLanes colors will update immediately.
-* Color painter can toggle channels.
-* Alpha transparency sliders added. (May not effect every asset the same way.)
-* Optional Hexadecimal input fields.
-* Individual resets for single selection. (Does not currently work on instances changed with previous versions.)
-* Added swap color buttons between channels.
-* Added ability to set color set for all service vehicles from a service building instance. This includes any future ones that spawn from the building.
-* Added ability to set color set for all vehicles on a route. This includes any futures ones that spawn or are assigned to that route.
-* Removed I18N Everywhere dependency.
-* Translations for officially supported languages are handled internally with embedded resource files.
-* Recolor works in the editor.
-* Fixed random colors when hovering over assets with multiple meshes and custom colors.
-* While changing Single Instance colors on a prefab with Multiple Meshes, you can limit color changes to individual submeshes, matching submeshes, or all submeshes.
-* While changing Matching Color Variations on a prefab with Multiple Meshes, you are limited to only matching submeshes and it will not change all submeshes. You can pick which type of submesh to change. 
-* New Icon for Color painter tool by Tigon Ologdring.</ChangeLog>
+  <ChangeLog># Patch v1.1.1
+* Fix stroke dash array UI warning logs from loading color painter svg image. Fixes lag spike from opening panel.
+* Added hidden setting that minimizes panel on game load if it was minimized when game was previously closed.
+* Added setting that always minimizes panel on game load.
+* Updated Localization.
+* Prevent color picker and painter from selecting Creatures including Citizens.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=2FX0UDSThmQ" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />

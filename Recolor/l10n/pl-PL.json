@@ -69,6 +69,8 @@
   "Options.OPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Zresetuj skróty klawiszowe moda Recolor",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Po potwierdzeniu spowoduje to zresetowanie skrótów klawiszowych moda Recolor.",
   "Options.WARNING[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Zresetować skróty klawiszowe moda Recolor?",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.AlwaysMinimizedAtGameStart]": "Zawsze zminimalizowane",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.AlwaysMinimizedAtGameStart]": "Jeśli włączone, panel Przekoloruj zawsze będzie zminimalizowany po włączeniu gry. Jeśli wyłączone, panel Przekoloruj będzie zminimalizowany lub nie zależnie od tego, czy był zminimalizowany, czy nie, kiedy ostatni raz wyłączono grę.",
   "Recolor.MOUSE_TOOLTIP[SingleInstancePlantWarning]": "Zmiany kolorów dla indywidualnych roślin nie są obecnie obsługiwane.",
   "Recolor.MOUSE_TOOLTIP[HasCustomMeshColorWarning]": "Nie można zmienić wariantu kolorystycznego, ponieważ posiada on niestandardowe indywidualne kolory.",
   "Recolor.MOUSE_TOOLTIP[SelectANetLaneFence]": "Wybierz ogrodzenie lub żywopłot NetLane.",

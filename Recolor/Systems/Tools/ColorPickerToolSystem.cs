@@ -115,7 +115,9 @@ namespace Recolor.Systems.Tools
 
             m_GenericTooltipSystem.RegisterIconTooltip("ColorPickerToolIcon", "coui://uil/Standard/PickerPipette.svg");
 
-            if (!GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit _) || !EntityManager.TryGetBuffer(currentRaycastEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            if (!GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit _) ||
+                !EntityManager.TryGetBuffer(currentRaycastEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer) ||
+                EntityManager.HasComponent<Game.Creatures.Creature>(currentRaycastEntity))
             {
                 buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
                 buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);

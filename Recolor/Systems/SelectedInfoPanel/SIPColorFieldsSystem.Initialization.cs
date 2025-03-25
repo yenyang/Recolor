@@ -192,7 +192,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_MatchesVanillaColorSet = CreateBinding("MatchesVanillaColorSet", new bool[] { true, true, true });
             m_CanPasteColor = CreateBinding("CanPasteColor", false);
             m_CanPasteColorSet = CreateBinding("CanPasteColorSet", false);
-            m_Minimized = CreateBinding("Minimized", false);
+            m_Minimized = CreateBinding("Minimized", Mod.Instance.Settings.Minimized || Mod.Instance.Settings.AlwaysMinimizedAtGameStart);
             m_MatchesSavedOnDisk = CreateBinding("MatchesSavedOnDisk", false);
             m_ShowHexaDecimals = CreateBinding("ShowHexaDecimals", Mod.Instance.Settings.ShowHexaDecimals);
             m_SubMeshData = CreateBinding("SubMeshData", new SubMeshData(0, 1, string.Empty, SubMeshData.SubMeshScopes.All, ButtonState.Off, ButtonState.Off, ButtonState.On));
@@ -234,7 +234,12 @@ namespace Recolor.Systems.SelectedInfoPanel
                     m_ColorPainterUISystem.ColorSet = m_CurrentColorSet.Value.GetColorSet();
                 }
             });
-            CreateTrigger("Minimize", () => m_Minimized.Value = !m_Minimized.Value);
+            CreateTrigger("Minimize", () =>
+            {
+                m_Minimized.Value = !m_Minimized.Value;
+                Mod.Instance.Settings.Minimized = m_Minimized.Value;
+                Mod.Instance.Settings.ApplyAndSave();
+            });
             CreateTrigger("ChangeScope", (int newScope) =>
             {
                 m_PreferredScope = (Scope)newScope;

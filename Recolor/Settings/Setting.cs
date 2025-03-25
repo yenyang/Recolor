@@ -70,6 +70,13 @@ namespace Recolor.Settings
         [SettingsUISection(General, General)]
         public bool ColorPainterAutomaticCopyColor { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to always minimize at game start.
+        /// </summary>
+        [SettingsUISection(General, General)]
+        public bool AlwaysMinimizedAtGameStart { get; set; }
+
         /// <summary>
         /// Sets a value indicating whether to reset all settings to default.
         /// </summary>
@@ -106,6 +113,11 @@ namespace Recolor.Settings
         [SettingsUIHidden]
         public bool ShowHexaDecimals { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to minimize the panel.
+        /// </summary>
+        [SettingsUIHidden]
+        public bool Minimized { get; set; }
 
         /// <summary>
         /// Sets a value indicating whether: a button for Resetting the settings for keybinds.
@@ -135,7 +147,6 @@ namespace Recolor.Settings
             {
                 ResetCustomMeshColorSystem resetCustomMeshColorSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ResetCustomMeshColorSystem>();
                 resetCustomMeshColorSystem.Enabled = true;
-                
             }
         }
 
@@ -200,6 +211,8 @@ namespace Recolor.Settings
         {
             ColorPainterAutomaticCopyColor = true;
             ShowHexaDecimals = false;
+            Minimized = false;
+            AlwaysMinimizedAtGameStart = false;
         }
 
         private bool IsNotGame()
