@@ -3,6 +3,7 @@
 // </copyright>
 
 // #define DUMP_VANILLA_LOCALIZATION
+// #define EXPORT_EN_US
 namespace Recolor
 {
     using System;
@@ -102,7 +103,7 @@ namespace Recolor
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Settings));
             Log.Info($"[{nameof(Mod)}] {nameof(OnLoad)} Initalizing localization for other languages.");
             LoadNonEnglishLocalizations();
-#if DEBUG
+#if DEBUG && EXPORT_EN_US
             Log.Info($"{nameof(Mod)}.{nameof(OnLoad)} Exporting localization");
             var localeDict = new LocaleEN(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
             var str = JsonConvert.SerializeObject(localeDict, Formatting.Indented);
