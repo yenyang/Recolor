@@ -69,6 +69,8 @@
   "Options.OPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Restablecer atajos de teclado del mod Recolor",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Al confirmar se restablecerán todos los atajos de teclado de Recolor.",
   "Options.WARNING[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "¿Restablecer atajos de teclado del mod Recolor?",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.AlwaysMinimizedAtGameStart]": "Siempre minimizado al iniciar el juego",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.AlwaysMinimizedAtGameStart]": "Cuando está activado, el panel Recolor siempre se iniciará minimizado. Cuando está deshabilitado, el panel Recolor se iniciará minimizado o no basado en si fue minimizado o no cuando cerró el juego.",
   "Recolor.MOUSE_TOOLTIP[SingleInstancePlantWarning]": "Los cambios de color de objeto único para las plantas, no están soportados actualmente.",
   "Recolor.MOUSE_TOOLTIP[HasCustomMeshColorWarning]": "No se puede cambiar la variación de color en esto, ya que tiene colores de objeto personalizados.",
   "Recolor.MOUSE_TOOLTIP[SelectANetLaneFence]": "Seleccione una red de valla o seto.",

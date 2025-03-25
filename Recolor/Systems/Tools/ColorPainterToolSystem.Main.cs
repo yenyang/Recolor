@@ -284,14 +284,25 @@ namespace Recolor.Systems.Tools
             m_GenericTooltipSystem.RemoveTooltip("SingleInstancePlantWarning");
             m_GenericTooltipSystem.RemoveTooltip("HasCustomMeshColorWarning");
 
-            if (currentRaycastEntity != m_PreviousRaycastedEntity && !m_HighlightedQuery.IsEmptyIgnoreFilter)
+            if (EntityManager.HasComponent<Game.Creatures.Creature>(currentRaycastEntity))
+            {
+                buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
+                buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
+                m_PreviousRaycastedEntity = Entity.Null;
+                return inputDeps;
+            }
+
+            if (currentRaycastEntity != m_PreviousRaycastedEntity &&
+                !m_HighlightedQuery.IsEmptyIgnoreFilter)
             {
                 m_PreviousRaycastedEntity = currentRaycastEntity;
                 buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtRecord);
                 buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtRecord);
             }
 
-            if (m_HighlightedQuery.IsEmptyIgnoreFilter && (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single || m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker))
+            if (m_HighlightedQuery.IsEmptyIgnoreFilter &&
+               (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single ||
+                m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker))
             {
                 buffer.AddComponent<BatchesUpdated>(currentRaycastEntity);
                 buffer.AddComponent<Highlighted>(currentRaycastEntity);

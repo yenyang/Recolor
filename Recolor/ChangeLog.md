@@ -3,3 +3,4 @@
 * Added hidden setting that minimizes panel on game load if it was minimized when game was previously closed.
 * Added setting that always minimizes panel on game start.
 * Updated Localization.
+* Prevent color picker and painter from selecting Creatures including Citizens.

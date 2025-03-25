@@ -69,6 +69,8 @@
   "Options.OPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "重置 Recolor 模组的快捷键设置",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "确认后，将会重置 Recolor 模组的快捷键设置。",
   "Options.WARNING[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "确定要重置 Recolor 模组的快捷键设置吗?",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.AlwaysMinimizedAtGameStart]": "游戏开始时总是最小化",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.AlwaysMinimizedAtGameStart]": "启用此选项后，模组面板将始终最小化。禁用此选项后，将根据您上次关闭游戏时的选择调整面板大小。",
   "Recolor.MOUSE_TOOLTIP[SingleInstancePlantWarning]": "目前不支持更改植物的单一实例颜色。",
   "Recolor.MOUSE_TOOLTIP[HasCustomMeshColorWarning]": "无法更改该资产的颜色，因为它有自定义的实例颜色。",
   "Recolor.MOUSE_TOOLTIP[SelectANetLaneFence]": "选择一个栅栏网络或者树篱网络。",
