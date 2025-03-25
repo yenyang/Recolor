@@ -340,7 +340,6 @@ namespace Recolor.Systems.SelectedInfoPanel
                 originalMeshColor = meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet;
             }
 
-            HandleScopeAndButtonStates();
             UpdatePalettes();
 
             // Service Vehicles
