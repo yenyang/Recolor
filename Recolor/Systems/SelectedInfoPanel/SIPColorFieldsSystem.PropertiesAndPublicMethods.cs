@@ -24,10 +24,11 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Game.Simulation;
     using Game.Tools;
     using Recolor.Domain;
+    using Recolor.Domain.Palette;
     using Recolor.Extensions;
     using Recolor.Settings;
-
     using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.Palettes;
     using Recolor.Systems.Tools;
     using Unity.Collections;
     using Unity.Entities;
@@ -64,6 +65,14 @@ namespace Recolor.Systems.SelectedInfoPanel
         {
             get { return m_CanPasteColorSet.Value; }
             set { m_CanPasteColorSet.Value = value; }
+        }
+
+        /// <summary>
+        /// Gets the current entity.
+        /// </summary>
+        public Entity CurrentEntity
+        {
+            get { return m_CurrentEntity; }
         }
 
         /// <summary>
@@ -392,5 +401,48 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
         }
 
+        /// <summary>
+        /// Resets a single instance color change by channel.
+        /// </summary>
+        /// <param name="channel">Channel 0 - 2.</param>
+        /// <param name="entity">Instance Entity.</param>
+        /// <param name="buffer">ECB from appropriate phase.</param>
+        public void ResetSingleInstanceByChannel(int channel, Entity entity, EntityCommandBuffer buffer)
+        {
+            bool removeComponents = true;
+            if (EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer) &&
+                EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) &&
+                channel >= 0 && channel <= 2)
+            {
+                for (int i = 0; i < m_SubMeshData.Value.SubMeshLength; i++)
+                {
+                    CustomMeshColor customMeshColor = customMeshColorBuffer[i];
+                    if (m_SubMeshIndexes.Contains(i))
+                    {
+                        customMeshColor.m_ColorSet[channel] = meshColorRecordBuffer[i].m_ColorSet[channel];
+                        customMeshColorBuffer[i] = customMeshColor;
+                    }
+
+                    if (!MatchesEntireVanillaColorSet(meshColorRecordBuffer[i].m_ColorSet, customMeshColor.m_ColorSet))
+                    {
+                        removeComponents = false;
+                    }
+                }
+            }
+            else
+            {
+                removeComponents = true;
+            }
+
+            if (removeComponents)
+            {
+                buffer.RemoveComponent<CustomMeshColor>(entity);
+                buffer.RemoveComponent<MeshColorRecord>(entity);
+            }
+
+            buffer.AddComponent<BatchesUpdated>(entity);
+
+            AddBatchesUpdatedToSubElements(entity, buffer);
+        }
     }
 }

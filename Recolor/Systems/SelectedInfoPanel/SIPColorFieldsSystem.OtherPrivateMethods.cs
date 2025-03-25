@@ -26,9 +26,11 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Game.Tools;
     using Game.Vehicles;
     using Recolor.Domain;
+    using Recolor.Domain.Palette;
     using Recolor.Extensions;
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.Palettes;
     using Recolor.Systems.Tools;
     using Unity.Collections;
     using Unity.Entities;
@@ -200,6 +202,24 @@ namespace Recolor.Systems.SelectedInfoPanel
             if (m_Route.Value != route)
             {
                 m_Route.Value = route;
+            }
+
+            ButtonState showPaletteButton = ButtonState.Off;
+
+            if (singleInstance == ButtonState.On &&
+               (EntityManager.HasBuffer<AssignedPalette>(m_CurrentEntity) ||
+                m_PreferPalettes))
+            {
+                showPaletteButton = ButtonState.On;
+            }
+            else if (singleInstance != ButtonState.On)
+            {
+                showPaletteButton = ButtonState.Hidden;
+            }
+
+            if (m_ShowPaletteChoices.Value != showPaletteButton)
+            {
+                m_ShowPaletteChoices.Value = showPaletteButton;
             }
         }
 
@@ -584,9 +604,15 @@ namespace Recolor.Systems.SelectedInfoPanel
 
         private void ResetColorSet()
         {
-            ResetColor(0);
-            ResetColor(1);
-            ResetColor(2);
+            for (int i = 0; i <= 2; i++)
+            {
+                if (m_ShowPaletteChoices.Value == ButtonState.On)
+                {
+                    RemovePalette(i, m_CurrentEntity);
+                }
+
+                ResetColor(i);
+            }
         }
 
         private bool[] MatchesVanillaColorSet(ColorSet record, ColorSet colorSet)

@@ -19,6 +19,7 @@ namespace Recolor
     using Game.SceneFlow;
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.Palettes;
     using Recolor.Systems.SelectedInfoPanel;
     using Recolor.Systems.SingleInstance;
     using Recolor.Systems.Tools;
@@ -30,6 +31,7 @@ namespace Recolor
     using Game.UI.InGame;
     using Unity.Entities;
     using UnityEngine;
+    using Recolor.Systems.Palettes;
 #endif
 
     /// <summary>
@@ -66,6 +68,11 @@ namespace Recolor
         /// </summary>
         internal string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
 
+        /// <summary>
+        /// Gets the install path for the mod.
+        /// </summary>
+        internal string InstallPath { get; private set; }
+
         /// <inheritdoc/>
         public void OnLoad(UpdateSystem updateSystem)
         {
@@ -80,6 +87,12 @@ namespace Recolor
 #endif
             Log.Info($"{nameof(OnLoad)} Version: " + Version);
             Log.Info($"{nameof(OnLoad)} Initalizing Settings");
+
+            if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
+            {
+                Log.Info($"Current mod asset at {asset.path}");
+                InstallPath = asset.path;
+            }
 
             Settings = new Setting(this);
             Settings.RegisterKeyBindings();
@@ -127,6 +140,10 @@ namespace Recolor
             updateSystem.UpdateAt<SelectNetLaneFencesToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAfter<CreatedServiceVehicleCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAfter<AssignedRouteVehicleCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateAt<PalettesUISystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<AddPalettePrefabsSystem>(SystemUpdatePhase.PrefabUpdate);
+            updateSystem.UpdateAfter<AssignedPaletteCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateAt<PaletteInstanceManagerSystem>(SystemUpdatePhase.ModificationEnd);
             Log.Info($"{nameof(OnLoad)} complete.");
         }
 

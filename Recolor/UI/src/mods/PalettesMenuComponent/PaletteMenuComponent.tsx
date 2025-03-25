@@ -1,0 +1,199 @@
+
+import { bindValue, trigger, useValue } from "cs2/api";
+import panelStyles from "./PaletteMenuStyles.module.scss";
+import styles from "../Domain/ColorFields.module.scss";
+import { Color, game, selectedInfo, tool } from "cs2/bindings";
+import { Button, Dropdown, DropdownItem, DropdownToggle, Panel, Portal } from "cs2/ui";
+import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaComponentResolver";
+import { useLocalization } from "cs2/l10n";
+import { InfoSection, roundButtonHighlightStyle } from "mods/RecolorMainPanel/RecolorMainPanel";
+import mod from "../../../mod.json";
+import locale from "../lang/en-US.json";
+import { StringInputField, StringInputFieldStyle } from "mods/SIPColorComponent/SIPColorComponent";
+import { useState } from "react";
+import classNames from "classnames";
+import { PaletteLocalizationSet } from "mods/Domain/PaletteAndSwatches/PaletteLocalizationSet";
+import { SwatchComponent } from "mods/SwatchComponent/SwatchComponent";
+import { SwatchUIData } from "mods/Domain/PaletteAndSwatches/SwatchUIData";
+import { PaletteCategory } from "mods/Domain/PaletteAndSwatches/PaletteCategoryType";
+import { PaletteBoxComponent } from "mods/PaletteBoxComponent/PaletteBoxComponent";
+import { getModule } from "cs2/modding";
+import { PaletteFilterType } from "mods/Domain/PaletteAndSwatches/PaletteFilterType";
+import { ButtonState } from "mods/Domain/ButtonState";
+
+/*
+import closeSrc from "images/uilStandard/XClose.svg";
+import buildingSrc from "images/uilStandard/House.svg";
+import vehiclesSrc from "images/uilStandard/GenericVehicle.svg";
+import propsSrc from "images/uilStandard/BenchAndLampProps.svg";
+import allSrc from "images/uilStandard/StarAll.svg";
+import plusSrc from "images/uilStandard/Plus.svg";
+import saveToDiskSrc from "images/uilStandard/DiskSave.svg";
+*/
+
+const uilStandard =                         "coui://uil/Standard/";
+const closeSrc =         uilStandard +  "XClose.svg";
+const buildingSrc =                     uilStandard + "House.svg";
+const vehiclesSrc =                     uilStandard + "GenericVehicle.svg";
+const propsSrc =                        uilStandard + "BenchAndLampProps.svg";
+const allSrc =                          uilStandard + "StarAll.svg";
+const plusSrc =                         uilStandard + "Plus.svg";
+const saveToDiskSrc =                   uilStandard + "DiskSave.svg";
+const trashSrc =                        uilStandard + "Trash.svg";
+
+
+const Swatches$ = bindValue<SwatchUIData[]>(mod.id, "Swatches");
+const UniqueName$ = bindValue<string>(mod.id, "UniqueName");
+const ShowPaletteEditorPanel$ = bindValue<boolean>(mod.id, "ShowPaletteEditorMenu");
+const CurrentPaletteCategory$ = bindValue<PaletteCategory>(mod.id, "PaletteCategory");
+const ShowPaletteChoices$ = bindValue<ButtonState>(mod.id,"ShowPaletteChoices");
+
+function handleClick(event: string) {
+    trigger(mod.id, event);
+}
+
+function handleCategoryClick(category : PaletteCategory) {
+    trigger(mod.id, "ToggleCategory", category as number);
+}
+
+const dropDownThemes = getModule('game-ui/editor/themes/editor-dropdown.module.scss', 'classes');
+
+export const PaletteMenuComponent = () => {
+    const isPhotoMode = useValue(game.activeGamePanel$)?.__Type == game.GamePanelType.PhotoMode;
+    const Swatches = useValue(Swatches$);
+    const defaultTool = useValue(tool.activeTool$).id == tool.DEFAULT_TOOL;
+    const activeSelection = useValue(selectedInfo.activeSelection$);
+    const UniqueName = useValue(UniqueName$);
+    const ShowPaletteEditorPanel = useValue(ShowPaletteEditorPanel$);
+    const CurrentPaletteCategory = useValue(CurrentPaletteCategory$);    
+    const ShowPaletteChoices = useValue(ShowPaletteChoices$);    
+    
+    const { translate } = useLocalization();
+
+    let [uniqueNameInput, setTextInput] = useState(UniqueName);
+    let [validInput, setValidInput] = useState(true);
+    let [updateText, setUpdateText] = useState(UniqueName);
+    let [locales, setLocales] = useState(["en-US"]);
+    let [currentFilter, setFilter] = useState(PaletteFilterType.Theme)
+
+    let FilterTypes : string[] = [
+        "Theme",
+        "Pack",
+        "Zoning Type"
+    ];
+
+    function HandleTextInput () {
+       setValidInput(true);
+       trigger(mod.id, "ChangeUniqueName", uniqueNameInput);
+    }
+
+    if (UniqueName !== updateText) 
+    {
+        setTextInput(UniqueName);
+        setUpdateText(UniqueName);
+    }
+
+    return (
+        <>
+            {ShowPaletteEditorPanel && !isPhotoMode && defaultTool && activeSelection && ShowPaletteChoices == ButtonState.On && (
+                <Portal>
+                    <Panel 
+                        className={panelStyles.panel}
+                        header={(
+                            <VanillaComponentResolver.instance.Section title={"Palette Editor Menu"}>
+                                <Button className={roundButtonHighlightStyle.button} variant="icon" onSelect={() => handleClick("TogglePaletteEditorMenu")} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}>
+                                    <img src={closeSrc}></img>
+                                </Button>
+                            </VanillaComponentResolver.instance.Section>
+                        )}
+                        footer = {(
+                            <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
+                                <VanillaComponentResolver.instance.Section title={"Palette"}>
+                                    <PaletteBoxComponent Swatches={Swatches} totalWidth={80}></PaletteBoxComponent>
+                                    <span className={panelStyles.smallSpacer}></span>
+                                    <VanillaComponentResolver.instance.ToolButton src={saveToDiskSrc}          tooltip = {"Save Palette"}   onSelect={() => {handleClick("TrySavePalette")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                    <span className={panelStyles.wideSpacer}></span>
+                                    <VanillaComponentResolver.instance.ToolButton src={trashSrc}     tooltip = {"Delete Palette"}   onSelect={() => {handleClick("DeletePalette")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                </VanillaComponentResolver.instance.Section>
+                            </InfoSection>
+                        )}>
+                        <>
+                            <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
+                                <VanillaComponentResolver.instance.Section title={"Unique Name"}>
+                                    <StringInputField 
+                                        value={uniqueNameInput.replace(/[\r\n]+/gm, '')}
+                                        disabled ={false}
+                                        onChange={ (e : string) => { setTextInput(e); }}
+                                        onChangeEnd={HandleTextInput}
+                                        className={validInput?  classNames(StringInputFieldStyle.textInput, styles.nameFieldInput) : classNames(StringInputFieldStyle.textInput, styles.nameFieldInput, styles.invalidFieldInput)}
+                                        multiline={false}
+                                        maxLength={32}
+                                    ></StringInputField>
+                                </VanillaComponentResolver.instance.Section>
+                            </InfoSection>
+                            <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
+                                <VanillaComponentResolver.instance.Section title={"Category"}>
+                                    <VanillaComponentResolver.instance.ToolButton src={allSrc}          tooltip = {"All Categories"}                                                                                    selected={CurrentPaletteCategory == PaletteCategory.Any}                                                                                      onSelect={() => {handleCategoryClick(PaletteCategory.Any)} }                                        className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                    <VanillaComponentResolver.instance.ToolButton src={buildingSrc}     tooltip = {translate("Recolor.TOOLTIP_TITLE[BuildingFilter]", locale["Recolor.TOOLTIP_TITLE[BuildingFilter]"])} selected={CurrentPaletteCategory == PaletteCategory.Any || (CurrentPaletteCategory & PaletteCategory.Buildings) == PaletteCategory.Buildings} onSelect={() => {handleCategoryClick(PaletteCategory.Buildings)} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}  focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                    <VanillaComponentResolver.instance.ToolButton src={vehiclesSrc}     tooltip = {translate("Recolor.TOOLTIP_TITLE[VehicleFilter]", locale["Recolor.TOOLTIP_TITLE[VehicleFilter]"])}   selected={CurrentPaletteCategory == PaletteCategory.Any || (CurrentPaletteCategory & PaletteCategory.Vehicles) == PaletteCategory.Vehicles}   onSelect={() => {handleCategoryClick(PaletteCategory.Vehicles)} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}  focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                    <VanillaComponentResolver.instance.ToolButton src={propsSrc}        tooltip = {translate("Recolor.TOOLTIP_TITLE[PropFilter]", locale["Recolor.TOOLTIP_TITLE[PropFilter]"])}         selected={CurrentPaletteCategory == PaletteCategory.Any || (CurrentPaletteCategory & PaletteCategory.Props) == PaletteCategory.Props}         onSelect={() => {handleCategoryClick(PaletteCategory.Props)} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}  focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />  
+                                </VanillaComponentResolver.instance.Section>
+                                <VanillaComponentResolver.instance.Section title={"Subcategory"}>
+                                    <Dropdown content={undefined}>
+                                        
+                                    </Dropdown>
+                                </VanillaComponentResolver.instance.Section>
+                                <VanillaComponentResolver.instance.Section title={"Filter Type"}>
+                                    <Dropdown 
+                                        theme = {dropDownThemes}
+                                        content={                    
+                                            FilterTypes.map((type, index: number) => (
+                                                <DropdownItem value={type} className={dropDownThemes.dropdownItem} selected={currentFilter==index} onChange={() => setFilter(index)}>
+                                                    <div className={panelStyles.filterTypeWidth}>{type}</div>
+                                                </DropdownItem>
+                                            ))
+                                        }
+                                    >
+                                        <DropdownToggle disabled={false}>
+                                               <div className={panelStyles.filterTypeWidth}>{FilterTypes[currentFilter]}</div>
+                                        </DropdownToggle>
+                                    </Dropdown>
+                                </VanillaComponentResolver.instance.Section>
+                            </InfoSection>
+                            <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
+                                { locales.map((currentLocale) => (
+                                    <PaletteLocalizationSet localeCode={currentLocale}></PaletteLocalizationSet>
+                                ))}
+                                <VanillaComponentResolver.instance.Section title={"Add a Locale"}>
+                                    <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {"Add Locale"}   onSelect={() => {} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                </VanillaComponentResolver.instance.Section>
+                            </InfoSection>
+                            <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
+                                { Swatches.length < 8 && (
+                                    <VanillaComponentResolver.instance.Section title={"Add a Swatch"}>
+                                        <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {"Add Swatch"}   onSelect={() => {handleClick("AddASwatch")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                    </VanillaComponentResolver.instance.Section>
+                                )}
+                                <div className={classNames(styles.rowGroup, panelStyles.subtitleRow, styles.centered)}>
+                                    <div className={classNames(panelStyles.centeredSubTitle, styles.colorFieldWidth)}>Color</div>
+                                    <span className={panelStyles.sliderSpacerLeft}></span>
+                                    <div className={classNames(panelStyles.probabilityWeightWidth, panelStyles.centeredSubTitle)}>Probability Weight</div>
+                                </div>
+                                { Swatches.map((currentSwatch, index:number) => (
+                                    <SwatchComponent info={currentSwatch} index={index}></SwatchComponent>
+                                ))}
+                                { Swatches.length >= 8 && (
+                                    <VanillaComponentResolver.instance.Section title={"Add a Swatch"}>
+                                        <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {"Add Swatch"}   onSelect={() => {handleClick("AddASwatch")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                    </VanillaComponentResolver.instance.Section>
+                                )}
+                            </InfoSection>
+                        
+                        </>
+                        
+                    </Panel>
+                </Portal>
+            )}
+        </>
+    );
+}

@@ -1,0 +1,83 @@
+.columnGroup {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+    padding-bottom: 5rem;
+}
+
+.rowGroup {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.leftColumn {
+    padding-left: 5rem !important;
+}
+
+.rightColumn {
+    padding-right: 5rem !important;
+}
+
+.definedHeight {
+    height: 30rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: left;
+}
+
+.panel {
+    position: absolute;
+    top: 56rem;
+    left: 645rem;
+    height: 680rem;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.subtitleRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: left;
+    padding-top: 2rem;
+    font-size: 18rem !important;
+    font-weight: bold;
+    padding-bottom: 5rem;
+    height: 35rem;
+    flex-grow: 1;
+}
+
+.centeredSubTitle {
+    text-align: center !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.sliderSpacerLeft {
+    width: 100rem;
+}
+.smallSpacer {
+    width: 10rem;
+}
+
+.wideSpacer {
+    width: 250rem;
+}
+
+.probabilityWeightWidth {
+    width: 200rem;
+}
+
+.filterTypeWidth {
+    width: 100rem;
+}

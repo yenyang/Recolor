@@ -58,7 +58,7 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * yenyang - Mod Author
 * CloverPie - Testing, Feedback, Promotional Material, Logo.
 * Chameleon TBN - Testing, Feedback, Icons, Logo.
-* Tigon Ologdring - Project discussions, Feedback, Icon.
+* Tigon Ologdring - Feedback, Paint brush icon, Project Discussions.
 * HarborMasterJay, Sully, Dome - Testing, Feedback
 * Klyte45, Algernon, T.D.W., krzychu124, Trejek, Triton Supreme, Konsi, and Quboid - Help with UI, Cooperative Development and Code Sharing
 * Translators: enGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey and Edou24 (French), Hendrix and KaeseMitKuchen (German), Ti4goc and Obelix  (European Portuguese), Hinanchovo (Korean)
