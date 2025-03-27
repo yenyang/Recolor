@@ -25,6 +25,7 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Game.Tools;
     using Recolor.Domain;
     using Recolor.Domain.Palette;
+    using Recolor.Domain.Palette.Prefabs;
     using Recolor.Extensions;
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;
@@ -60,6 +61,11 @@ namespace Recolor.Systems.SelectedInfoPanel
                     continue;
                 }
 
+                if (FilterForCategories(palettePrefabEntity))
+                {
+                    continue;
+                }
+
                 SwatchUIData[] swatchData = new SwatchUIData[swatches.Length];
                 for (int i = 0; i < swatches.Length; i++)
                 {
@@ -83,6 +89,57 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             m_PaletteChooserData.Binding.TriggerUpdate();
+        }
+
+        private bool FilterForCategories(Entity palettePrefabEntity)
+        {
+            if (m_PrefabSystem.TryGetPrefab(palettePrefabEntity, out PrefabBase prefabBase) &&
+                  prefabBase is PalettePrefab)
+            {
+                PalettePrefab palettePrefab = prefabBase as PalettePrefab;
+                if ((palettePrefab.m_Category == PaletteCategoryData.PaletteCategory.Vehicles &&
+                    !EntityManager.HasComponent<Game.Vehicles.Vehicle>(m_CurrentEntity)) ||
+                    (palettePrefab.m_Category == PaletteCategoryData.PaletteCategory.Buildings &&
+                    !EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity)) ||
+                    (palettePrefab.m_Category == PaletteCategoryData.PaletteCategory.Props &&
+                   (!EntityManager.HasComponent<Game.Objects.Static>(m_CurrentEntity) ||
+                    !EntityManager.HasComponent<Game.Objects.Object>(m_CurrentEntity) ||
+                     EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity))))
+                {
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} wrong category: {palettePrefab.m_Category}. skipping palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version}.");
+                    return true;
+                }
+
+                if (palettePrefab.m_Category == (PaletteCategoryData.PaletteCategory.Vehicles | PaletteCategoryData.PaletteCategory.Buildings) &&
+                   !EntityManager.HasComponent<Game.Vehicles.Vehicle>(m_CurrentEntity) &&
+                   !EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity))
+                {
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} wrong categories: {palettePrefab.m_Category}. skipping palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version}.");
+                    return true;
+                }
+
+                if (palettePrefab.m_Category == (PaletteCategoryData.PaletteCategory.Vehicles | PaletteCategoryData.PaletteCategory.Props) &&
+                   !EntityManager.HasComponent<Game.Vehicles.Vehicle>(m_CurrentEntity) &&
+                  (!EntityManager.HasComponent<Game.Objects.Static>(m_CurrentEntity) ||
+                   !EntityManager.HasComponent<Game.Objects.Object>(m_CurrentEntity) ||
+                    EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity)))
+                {
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} wrong categories: {palettePrefab.m_Category}. skipping palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version}.");
+                    return true;
+                }
+
+                if (palettePrefab.m_Category == (PaletteCategoryData.PaletteCategory.Buildings | PaletteCategoryData.PaletteCategory.Props) &&
+                   !EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity) &&
+                  (!EntityManager.HasComponent<Game.Objects.Static>(m_CurrentEntity) ||
+                   !EntityManager.HasComponent<Game.Objects.Object>(m_CurrentEntity) ||
+                    EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity)))
+                {
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} wrong categories: {palettePrefab.m_Category}. skipping palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version}.");
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void AssignPaletteAction(int channel, Entity prefabEntity)
