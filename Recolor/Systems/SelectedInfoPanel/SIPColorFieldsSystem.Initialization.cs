@@ -40,7 +40,10 @@ namespace Recolor.Systems.SelectedInfoPanel
     /// </summary>
     public partial class SIPColorFieldsSystem : ExtendedInfoSectionBase
     {
-        private const string NoSubcategoryName = "No Subcategory";
+        /// <summary>
+        /// Category name for no subcategory.
+        /// </summary>
+        public const string NoSubcategoryName = "No Subcategory";
 
         /// <summary>
         ///  A way to lookup seasons.
@@ -73,6 +76,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private ValueBindingHelper<bool> m_MatchesSavedOnDisk;
         private ValueBindingHelper<bool> m_CanResetSingleChannels;
         private ValueBindingHelper<bool> m_EditorVisible;
+        private ValueBindingHelper<bool> m_ResidentialBuildingSelected;
         private Scope m_PreferredScope;
         private ColorPickerToolSystem m_ColorPickerTool;
         private ColorPainterToolSystem m_ColorPainterTool;
@@ -220,6 +224,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_ShowPaletteChoices = CreateBinding("ShowPaletteChoices", ButtonState.Off);
             m_CopiedPalette = CreateBinding("CopiedPalette", Entity.Null);
             m_CopiedPaletteSet = CreateBinding("CopiedPaletteSet", new Entity[] { Entity.Null, Entity.Null, Entity.Null });
+            m_ResidentialBuildingSelected = CreateBinding("ResidentialBuildingSelected", false);
 
             // These bindings are closely related.
             m_PreferredScope = Scope.SingleInstance;

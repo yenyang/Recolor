@@ -14,6 +14,14 @@
     align-items: center;
 }
 
+.panelRowGroup {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items:first baseline;
+    padding-right: 100rem !important;
+}
+
 .leftColumn {
     padding-left: 5rem !important;
 }
@@ -33,14 +41,26 @@
 .panel {
     position: absolute;
     top: 56rem;
-    left: 645rem;
+    left: 420rem;
     height: 680rem;
+}
+
+.subcategoryPanel {
+    height: 375rem !important;
+}
+
+.residenialBuildingPosition {
+    left: 645rem !important;
 }
 
 .header {
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
+}
+
+.headerWidth {
+    width: 500rem;
 }
 
 .subtitleRow {

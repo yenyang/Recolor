@@ -51,13 +51,13 @@ namespace Recolor.Systems.Palettes
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            string[] directories = Directory.GetDirectories(m_UISystem.ModsDataFolder);
+            string[] directories = Directory.GetDirectories(m_UISystem.PalettePrefabsModsDataFolder);
             foreach (string directory in directories)
             {
                 string[] filePaths = Directory.GetFiles(directory);
                 for (int i = 0; i < filePaths.Length; i++)
                 {
-                    string fileName = filePaths[i].Remove(0, m_UISystem.ModsDataFolder.Length);
+                    string fileName = filePaths[i].Remove(0, m_UISystem.PalettePrefabsModsDataFolder.Length);
                     m_Log.Debug($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Processing {fileName}.");
                     if (fileName.Contains(nameof(PalettePrefab)))
                     {
@@ -90,6 +90,51 @@ namespace Recolor.Systems.Palettes
                         catch (Exception ex)
                         {
                             m_Log.Error($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Could not create or initialize prefab {nameof(PalettePrefab)}:{fileName}. Encountered Exception: {ex}.");
+                        }
+                    }
+
+                    // Also handle other prefab types.
+                }
+            }
+
+            string[] subcategoryDirectories = Directory.GetDirectories(m_UISystem.SubcategoryPrefabsFolder);
+            foreach (string directory in subcategoryDirectories)
+            {
+                string[] filePaths = Directory.GetFiles(directory);
+                for (int i = 0; i < filePaths.Length; i++)
+                {
+                    string fileName = filePaths[i].Remove(0, m_UISystem.SubcategoryPrefabsFolder.Length);
+                    m_Log.Debug($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Processing {fileName}.");
+                    if (fileName.Contains(nameof(PaletteSubCategoryPrefab)))
+                    {
+                        try
+                        {
+                            using StreamReader reader = new StreamReader(new FileStream(filePaths[i], FileMode.Open));
+                            {
+                                string entireFile = reader.ReadToEnd();
+                                PaletteSubcategoryPrefabSerializeFormat paletteSubcategoryPrefabSerializeFormat = JsonConvert.DeserializeObject<PaletteSubcategoryPrefabSerializeFormat>(entireFile);
+                                if (paletteSubcategoryPrefabSerializeFormat is null)
+                                {
+                                    continue;
+                                }
+
+                                PaletteSubCategoryPrefab subcategoryPrefab = ScriptableObject.CreateInstance<PaletteSubCategoryPrefab>();
+                                paletteSubcategoryPrefabSerializeFormat.AssignValuesToPrefab(ref subcategoryPrefab);
+                                if (subcategoryPrefab is not null &&
+                                   !m_Prefabs.Contains(subcategoryPrefab) &&
+                                    m_PrefabSystem.AddPrefab(subcategoryPrefab) &&
+                                    m_PrefabSystem.TryGetEntity(subcategoryPrefab, out Entity palettePrefabEntity))
+                                {
+                                    subcategoryPrefab.Initialize(EntityManager, palettePrefabEntity);
+                                    m_Prefabs.Add(subcategoryPrefab);
+                                    m_Log.Info($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Sucessfully imported and partially initialized {nameof(PaletteSubCategoryPrefab)}:{nameof(subcategoryPrefab.name)}.");
+                                    continue;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            m_Log.Error($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Could not create or initialize prefab {nameof(PaletteSubCategoryPrefab)}:{fileName}. Encountered Exception: {ex}.");
                         }
                     }
 
