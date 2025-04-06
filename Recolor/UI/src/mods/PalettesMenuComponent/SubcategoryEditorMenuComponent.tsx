@@ -2,7 +2,7 @@ import { Button, Panel } from "cs2/ui"
 import { InfoSection, roundButtonHighlightStyle } from "mods/RecolorMainPanel/RecolorMainPanel";
 import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaComponentResolver";
 import panelStyles from "./PaletteMenuStyles.module.scss";
-import { StringInputField, StringInputFieldStyle } from "mods/SIPColorComponent/SIPColorComponent";
+import { ColorFieldTheme, StringInputField, StringInputFieldStyle } from "mods/SIPColorComponent/SIPColorComponent";
 import { useState } from "react";
 import mod from "../../../mod.json";
 import { bindValue, trigger, useValue } from "cs2/api";
@@ -15,6 +15,8 @@ import { MenuType } from "mods/Domain/MenuType";
 import { HeaderSection } from "./HeaderSection";
 import { CategorySection } from "./CategorySection";
 import { LocaleSection } from "./LocaleSection";
+import { getModule } from "cs2/modding";
+import boxStyles from "../PaletteBoxComponent/PaletteBoxStyles.module.scss";
 
 const uilStandard =                         "coui://uil/Standard/";
 const closeSrc =                        uilStandard +  "XClose.svg";
@@ -40,6 +42,9 @@ function handleCategoryClick(category : PaletteCategory) {
     trigger(mod.id, "ToggleCategory", category as number);
 }
 
+
+const basicDropDownTheme = getModule('game-ui/common/input/dropdown/dropdown.module.scss', 'classes');
+
 export const SubcategoryEditorMenuComponent = () => {
     const UniqueNames = useValue(UniqueNames$);
     const PaletteCategories = useValue(PaletteCategories$);
@@ -58,6 +63,7 @@ export const SubcategoryEditorMenuComponent = () => {
                     footer={(
                         <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
                                 <VanillaComponentResolver.instance.Section title={"Subcategory"}>
+                                    <div className={classNames(ColorFieldTheme.colorField, boxStyles.subcategory, boxStyles.centered, styles.dropdownText, basicDropDownTheme.dropdownItem)}>{UniqueNames[MenuType.Subcategory]}</div>
                                     <span className={panelStyles.smallSpacer}></span>
                                     <VanillaComponentResolver.instance.ToolButton src={saveToDiskSrc}          tooltip = {"Save Subcategory"}   onSelect={() => {handleClick("TrySaveSubcategory")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
                                     <span className={panelStyles.wideSpacer}></span>

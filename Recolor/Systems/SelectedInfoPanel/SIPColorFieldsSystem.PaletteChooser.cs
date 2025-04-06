@@ -57,7 +57,6 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (!EntityManager.TryGetBuffer(palettePrefabEntity, isReadOnly: true, out DynamicBuffer<SwatchData> swatches) ||
                     swatches.Length < 2)
                 {
-                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} skipping palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version}.");
                     continue;
                 }
 

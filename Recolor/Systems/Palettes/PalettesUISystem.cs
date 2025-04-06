@@ -50,6 +50,7 @@ namespace Recolor.Systems.Palettes
         private ValueBindingHelper<Entity> m_EditingPrefabEntity;
         private EntityQuery m_SubcategoryQuery;
         private ValueBindingHelper<string> m_SelectedSubcategory;
+        private EntityQuery m_PaletteCategoryQuery;
 
         /// <summary>
         /// Enum for handing common events for different menus.
@@ -106,13 +107,15 @@ namespace Recolor.Systems.Palettes
                 m_UniqueNames.Binding.TriggerUpdate();
                 m_PaletteCategories.Value[(int)MenuType.Palette] = palettePrefab.m_Category;
                 m_PaletteCategories.Binding.TriggerUpdate();
-                if (palettePrefab.m_SubCategoryPrefabName == string.Empty)
+
+                if (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PaletteSubCategoryPrefab), palettePrefab.m_SubCategoryPrefabName), out PrefabBase subcategoryPrefabBase) &&
+                    subcategoryPrefabBase is PaletteSubCategoryPrefab)
                 {
-                    m_SelectedSubcategory.Value = SIPColorFieldsSystem.NoSubcategoryName;
+                    m_SelectedSubcategory.Value = palettePrefab.m_SubCategoryPrefabName;
                 }
                 else
                 {
-                    m_SelectedSubcategory.Value = palettePrefab.m_SubCategoryPrefabName;
+                    m_SelectedSubcategory.Value = SIPColorFieldsSystem.NoSubcategoryName;
                 }
 
                 m_PaletteCategories.Value[(int)MenuType.Palette] = palettePrefab.m_Category;
@@ -174,9 +177,15 @@ namespace Recolor.Systems.Palettes
             CreateTrigger("ShowSubcategoryEditorPanel", () => m_ShowSubcategoryEditorPanel.Value = !m_ShowSubcategoryEditorPanel.Value);
             CreateTrigger<string>("EditSubcategory", EditSubcategory);
             CreateTrigger("GenerateNewSubcategory", GenerateNewSubcategory);
+            CreateTrigger("DeleteSubcategory", DeleteSubcategory);
 
             m_SubcategoryQuery = SystemAPI.QueryBuilder()
                 .WithAll<PaletteSubcategoryData>()
+                .WithNone<Deleted, Temp>()
+                .Build();
+
+            m_PaletteCategoryQuery = SystemAPI.QueryBuilder()
+                .WithAll<PaletteCategoryData>()
                 .WithNone<Deleted, Temp>()
                 .Build();
 
@@ -210,6 +219,9 @@ namespace Recolor.Systems.Palettes
             m_Swatches.Value = new SwatchUIData[] { new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100), new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100) };
             m_Swatches.Binding.TriggerUpdate();
             m_EditingPrefabEntity.Value = Entity.Null;
+            m_PaletteCategories.Value[(int)MenuType.Palette] = PaletteCategoryData.PaletteCategory.Any;
+            m_PaletteCategories.Binding.TriggerUpdate();
+            m_SelectedSubcategory.Value = SIPColorFieldsSystem.NoSubcategoryName;
         }
 
         private void GenerateNewSubcategory()
@@ -217,6 +229,8 @@ namespace Recolor.Systems.Palettes
             m_ShowSubcategoryEditorPanel.Value = true;
             m_UniqueNames.Value[(int)MenuType.Subcategory] = GenerateUniqueSubcategoryPrefabName();
             m_UniqueNames.Binding.TriggerUpdate();
+            m_PaletteCategories.Value[(int)MenuType.Subcategory] = PaletteCategoryData.PaletteCategory.Any;
+            m_PaletteCategories.Binding.TriggerUpdate();
         }
 
         private void ChangeSubcategory(string subcategory)
@@ -382,6 +396,10 @@ namespace Recolor.Systems.Palettes
                     m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)} Sucessfully created, initialized, and saved prefab {nameof(PaletteSubCategoryPrefab)}:{paletteSubcategoryPrefabBase.name}!");
 
                     UpdateSubcategories(m_PaletteCategories.Value[(int)MenuType.Palette]);
+                    m_SelectedSubcategory.Value = paletteSubcategoryPrefabBase.name;
+                    m_PaletteCategories.Value[(int)MenuType.Palette] = paletteSubcategoryPrefabBase.m_Category;
+                    m_PaletteCategories.Binding.TriggerUpdate();
+                    m_ShowSubcategoryEditorPanel.Value = false;
                 }
             }
             catch (Exception ex)
@@ -408,7 +426,10 @@ namespace Recolor.Systems.Palettes
                 return;
             }
 
-            m_SelectedSubcategory.Value = SIPColorFieldsSystem.NoSubcategoryName;
+            if (menu == (int)MenuType.Palette)
+            {
+                m_SelectedSubcategory.Value = SIPColorFieldsSystem.NoSubcategoryName;
+            }
 
             PaletteCategoryData.PaletteCategory toggledPaletteCategory = (PaletteCategoryData.PaletteCategory)category;
             PaletteCategoryData.PaletteCategory currentPaletteCategory = m_PaletteCategories.Value[menu];
@@ -577,10 +598,62 @@ namespace Recolor.Systems.Palettes
                 {
                     m_Log.Info($"Could not remove directory for {prefabBase.name} encountered exception {e}.");
                 }
+
+                m_SIPColorFieldsSystem.UpdatePalettes();
             }
 
             m_ShowPaletteEditorPanel.Value = false;
             GenerateNewPalette();
+        }
+
+        private void DeleteSubcategory()
+        {
+            if (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PaletteSubCategoryPrefab), m_UniqueNames.Value[(int)MenuType.Subcategory]), out PrefabBase prefabBase) &&
+                prefabBase is PaletteSubCategoryPrefab &&
+                m_PrefabSystem.TryGetEntity(prefabBase, out Entity prefabEntity))
+            {
+                NativeArray<Entity> palettePrefabEntities = m_PaletteCategoryQuery.ToEntityArray(Allocator.Temp);
+                for (int i = 0; i < palettePrefabEntities.Length; i++)
+                {
+                    if (EntityManager.TryGetComponent(palettePrefabEntities[i], out PaletteCategoryData paletteCategoryData) &&
+                        paletteCategoryData.m_SubCategory == prefabEntity)
+                    {
+                        paletteCategoryData.m_SubCategory = Entity.Null;
+                        EntityManager.SetComponentData(palettePrefabEntities[i], paletteCategoryData);
+                    }
+                }
+
+                m_PrefabSystem.RemovePrefab(prefabBase);
+
+                try
+                {
+                    File.Delete(Path.Combine(m_SubcategoryPrefabsFolder, prefabBase.name, $"{nameof(PaletteSubCategoryPrefab)}-{prefabBase.name}.json"));
+                }
+                catch (Exception e)
+                {
+                    m_Log.Info($"Could not remove files for {prefabBase.name} encountered exception {e}.");
+                }
+
+                try
+                {
+                    Directory.Delete(Path.Combine(m_SubcategoryPrefabsFolder, prefabBase.name));
+                }
+                catch (Exception e)
+                {
+                    m_Log.Info($"Could not remove directory for {prefabBase.name} encountered exception {e}.");
+                }
+
+                UpdateSubcategories(m_PaletteCategories.Value[(int)MenuType.Palette]);
+                m_SIPColorFieldsSystem.UpdatePalettes();
+                if (m_SelectedSubcategory == prefabBase.name)
+                {
+                    m_SelectedSubcategory.Value = SIPColorFieldsSystem.NoSubcategoryName;
+                }
+            }
+
+            GenerateNewSubcategory();
+
+            m_ShowSubcategoryEditorPanel.Value = false;
         }
     }
 }
