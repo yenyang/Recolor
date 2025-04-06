@@ -72,9 +72,20 @@ namespace Recolor.Systems.SelectedInfoPanel
                     swatchData[i] = new SwatchUIData(swatches[i]);
                 }
 
-                if (!EntityManager.TryGetComponent(palettePrefabEntity, out PaletteSubcategoryData subcategoryData))
+                if (!EntityManager.TryGetComponent(palettePrefabEntity, out PaletteCategoryData categoryData) ||
+                    categoryData.m_SubCategory == Entity.Null)
                 {
                     paletteChooserBuilder[NoSubcategoryName].Add(new PaletteUIData(palettePrefabEntity, swatchData));
+                }
+                else if (m_PrefabSystem.TryGetPrefab(categoryData.m_SubCategory, out PrefabBase prefabBase) &&
+                           prefabBase is PaletteSubCategoryPrefab)
+                {
+                    if (!paletteChooserBuilder.ContainsKey(prefabBase.name))
+                    {
+                        paletteChooserBuilder.Add(prefabBase.name, new List<PaletteUIData>());
+                    }
+
+                    paletteChooserBuilder[prefabBase.name].Add(new PaletteUIData(palettePrefabEntity, swatchData));
                 }
             }
 

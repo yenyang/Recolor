@@ -35,6 +35,9 @@ namespace Recolor.Domain.Palette.Prefabs
             {
                 entityManager.AddComponent(entity, component);
             }
+
+            PaletteSubcategoryData paleteSubCategoryData = new PaletteSubcategoryData(m_Category);
+            entityManager.SetComponentData(entity, paleteSubCategoryData);
         }
     }
 }

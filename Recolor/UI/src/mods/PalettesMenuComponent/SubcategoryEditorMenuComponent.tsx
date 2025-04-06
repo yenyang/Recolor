@@ -30,6 +30,7 @@ const subcategoryIcon =                 uilStandard+"GearOnText.svg";
 
 const UniqueNames$ = bindValue<string[]>(mod.id, "UniqueNames");
 const PaletteCategories$ = bindValue<PaletteCategory[]>(mod.id, "PaletteCategories");
+const ShowSubcategoryEditorMenu$ = bindValue<boolean>(mod.id, "ShowSubcategoryEditorPanel");
 
 function handleClick(event: string) {
     trigger(mod.id, event);
@@ -42,33 +43,36 @@ function handleCategoryClick(category : PaletteCategory) {
 export const SubcategoryEditorMenuComponent = () => {
     const UniqueNames = useValue(UniqueNames$);
     const PaletteCategories = useValue(PaletteCategories$);
+    const ShowSubcategoryEditorMenu = useValue(ShowSubcategoryEditorMenu$);
 
     const { translate } = useLocalization();
 
     return (
         <>
-            <Panel 
-                className={panelStyles.subcategoryPanel}
-                header={(
-                     <HeaderSection title="Subcategory Editor Menu" icon={subcategoryIcon} onCloseEventName={"TogglePaletteEditorMenu"}></HeaderSection>
-                )}
-                footer={(
+            { ShowSubcategoryEditorMenu && (
+                <Panel 
+                    className={panelStyles.subcategoryPanel}
+                    header={(
+                        <HeaderSection title="Subcategory Editor Menu" icon={subcategoryIcon} onCloseEventName={"TogglePaletteEditorMenu"}></HeaderSection>
+                    )}
+                    footer={(
+                        <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
+                                <VanillaComponentResolver.instance.Section title={"Subcategory"}>
+                                    <span className={panelStyles.smallSpacer}></span>
+                                    <VanillaComponentResolver.instance.ToolButton src={saveToDiskSrc}          tooltip = {"Save Subcategory"}   onSelect={() => {handleClick("TrySaveSubcategory")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                    <span className={panelStyles.wideSpacer}></span>
+                                    <VanillaComponentResolver.instance.ToolButton src={trashSrc}     tooltip = {"Delete Subcategory"}   onSelect={() => {handleClick("DeleteSubcategory")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                </VanillaComponentResolver.instance.Section>
+                        </InfoSection>
+                    )}
+                >
+                    <UniqueNameSectionComponent uniqueName={UniqueNames[MenuType.Subcategory]} uniqueNameType={MenuType.Subcategory}></UniqueNameSectionComponent>
                     <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
-                            <VanillaComponentResolver.instance.Section title={"Subcategory"}>
-                                <span className={panelStyles.smallSpacer}></span>
-                                <VanillaComponentResolver.instance.ToolButton src={saveToDiskSrc}          tooltip = {"Save Subcategory"}   onSelect={() => {handleClick("TrySaveSubcategory")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
-                                <span className={panelStyles.wideSpacer}></span>
-                                <VanillaComponentResolver.instance.ToolButton src={trashSrc}     tooltip = {"Delete Subcategory"}   onSelect={() => {handleClick("DeleteSubcategory")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
-                            </VanillaComponentResolver.instance.Section>
+                        <CategorySection category={PaletteCategories[MenuType.Subcategory]} menu={MenuType.Subcategory}></CategorySection>
                     </InfoSection>
-                )}
-            >
-                <UniqueNameSectionComponent uniqueName={UniqueNames[MenuType.Subcategory]} uniqueNameType={MenuType.Subcategory}></UniqueNameSectionComponent>
-                <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
-                    <CategorySection category={PaletteCategories[MenuType.Subcategory]} menu={MenuType.Subcategory}></CategorySection>
-                </InfoSection>
-                <LocaleSection></LocaleSection>
-            </Panel>
+                    <LocaleSection></LocaleSection>
+                </Panel>
+            )}
         </>
     );
 }

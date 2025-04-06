@@ -23,8 +23,7 @@ namespace Recolor.Domain.Palette.Prefabs
         /// <summary>
         /// Subcategory prefab for swatches.
         /// </summary>
-        [CanBeNull]
-        public PrefabBase m_SubCategoryPrefab;
+        public string m_SubCategoryPrefabName;
 
         /// <summary>
         /// Array of swatch info that stores swatches.
@@ -35,7 +34,6 @@ namespace Recolor.Domain.Palette.Prefabs
         /// <summary>
         /// Array of palette filters for controlling visibility.
         /// </summary>
-        [CanBeNull]
         public PaletteFilterInfo[] m_PaletteFilter;
 
         /// <inheritdoc/>
@@ -80,7 +78,8 @@ namespace Recolor.Domain.Palette.Prefabs
             {
                 DynamicBuffer<PaletteFilterData> paleteFilterDatas = entityManager.GetBuffer<PaletteFilterData>(entity);
                 paleteFilterDatas.Clear();
-
+                /*
+                 Not Implemented!
                 for (int i = 0; i < m_PaletteFilter.Length; i++)
                 {
                     if (m_PaletteFilter[i].m_FilterPrefab != null &&
@@ -88,17 +87,20 @@ namespace Recolor.Domain.Palette.Prefabs
                     {
                         paleteFilterDatas.Add(new PaletteFilterData(prefabEntity, m_PaletteFilter[i].m_FilterType));
                     }
-                }
+                }*/
             }
 
             PaletteCategoryData paleteCategoryData = new PaletteCategoryData(m_Category);
 
-            if (m_SubCategoryPrefab != null &&
-                prefabSystem.TryGetEntity(m_SubCategoryPrefab, out Entity subCategoryPrefabEntity))
+            if (m_SubCategoryPrefabName != string.Empty &&
+                prefabSystem.TryGetPrefab(new PrefabID(nameof(PaletteSubCategoryPrefab), m_SubCategoryPrefabName), out PrefabBase prefabBase) &&
+                prefabBase is PaletteSubCategoryPrefab &&
+                prefabSystem.TryGetEntity(prefabBase, out Entity subCategoryPrefabEntity))
             {
                 paleteCategoryData.m_SubCategory = subCategoryPrefabEntity;
             }
 
+            
             entityManager.SetComponentData(entity, paleteCategoryData);
         }
     }

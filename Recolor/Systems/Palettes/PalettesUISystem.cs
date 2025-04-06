@@ -11,6 +11,7 @@ namespace Recolor.Systems.Palettes
     using Colossal.IO.AssetDatabase;
     using Colossal.Logging;
     using Colossal.PSI.Environment;
+    using Colossal.Rendering;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
@@ -41,12 +42,14 @@ namespace Recolor.Systems.Palettes
         private ValueBindingHelper<PaletteCategoryData.PaletteCategory[]> m_PaletteCategories;
         private ValueBindingHelper<string[]> m_Subcategories;
         private ValueBindingHelper<bool> m_ShowPaletteEditorPanel;
+        private ValueBindingHelper<bool> m_ShowSubcategoryEditorPanel;
         private ILog m_Log;
         private string m_PalettePrefabsFolder;
         private string m_SubcategoryPrefabsFolder;
         private Unity.Mathematics.Random m_Random;
         private ValueBindingHelper<Entity> m_EditingPrefabEntity;
         private EntityQuery m_SubcategoryQuery;
+        private ValueBindingHelper<string> m_SelectedSubcategory;
 
         /// <summary>
         /// Enum for handing common events for different menus.
@@ -103,6 +106,17 @@ namespace Recolor.Systems.Palettes
                 m_UniqueNames.Binding.TriggerUpdate();
                 m_PaletteCategories.Value[(int)MenuType.Palette] = palettePrefab.m_Category;
                 m_PaletteCategories.Binding.TriggerUpdate();
+                if (palettePrefab.m_SubCategoryPrefabName == string.Empty)
+                {
+                    m_SelectedSubcategory.Value = SIPColorFieldsSystem.NoSubcategoryName;
+                }
+                else
+                {
+                    m_SelectedSubcategory.Value = palettePrefab.m_SubCategoryPrefabName;
+                }
+
+                m_PaletteCategories.Value[(int)MenuType.Palette] = palettePrefab.m_Category;
+
                 SwatchUIData[] swatchUIDatas = new SwatchUIData[swatchDatas.Length];
                 for (int i = 0; i < swatchUIDatas.Length; i++)
                 {
@@ -139,6 +153,8 @@ namespace Recolor.Systems.Palettes
             m_ShowPaletteEditorPanel = CreateBinding("ShowPaletteEditorMenu", false);
             m_EditingPrefabEntity = CreateBinding("EditingPrefabEntity", Entity.Null);
             m_Subcategories = CreateBinding("Subcategories", new string[] { SIPColorFieldsSystem.NoSubcategoryName });
+            m_SelectedSubcategory = CreateBinding("SelectedSubcategory", SIPColorFieldsSystem.NoSubcategoryName);
+            m_ShowSubcategoryEditorPanel = CreateBinding("ShowSubcategoryEditorPanel", false);
 
             // Listen to trigger event that are sent from the UI to the C#.
             CreateTrigger("TrySavePalette", TrySavePalette);
@@ -154,6 +170,10 @@ namespace Recolor.Systems.Palettes
             CreateTrigger("RandomizeSwatch", (int swatch) => ChangeSwatchColor(swatch, new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1)));
             CreateTrigger("DeletePalette", DeletePalette);
             CreateTrigger("TrySaveSubcategory", TrySaveSubcategory);
+            CreateTrigger<string>("ChangeSubcategory", ChangeSubcategory);
+            CreateTrigger("ShowSubcategoryEditorPanel", () => m_ShowSubcategoryEditorPanel.Value = !m_ShowSubcategoryEditorPanel.Value);
+            CreateTrigger<string>("EditSubcategory", EditSubcategory);
+            CreateTrigger("GenerateNewSubcategory", GenerateNewSubcategory);
 
             m_SubcategoryQuery = SystemAPI.QueryBuilder()
                 .WithAll<PaletteSubcategoryData>()
@@ -192,6 +212,38 @@ namespace Recolor.Systems.Palettes
             m_EditingPrefabEntity.Value = Entity.Null;
         }
 
+        private void GenerateNewSubcategory()
+        {
+            m_ShowSubcategoryEditorPanel.Value = true;
+            m_UniqueNames.Value[(int)MenuType.Subcategory] = GenerateUniqueSubcategoryPrefabName();
+            m_UniqueNames.Binding.TriggerUpdate();
+        }
+
+        private void ChangeSubcategory(string subcategory)
+        {
+            m_SelectedSubcategory.Value = subcategory;
+            if (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PaletteSubCategoryPrefab), subcategory), out PrefabBase prefabBase) &&
+                prefabBase is PaletteSubCategoryPrefab)
+            {
+                PaletteSubCategoryPrefab paletteSubCategoryPrefab = prefabBase as PaletteSubCategoryPrefab;
+                m_PaletteCategories.Value[(int)MenuType.Palette] = paletteSubCategoryPrefab.m_Category;
+                m_PaletteCategories.Binding.TriggerUpdate();
+            }
+        }
+
+        private void EditSubcategory(string subcategory)
+        {
+            if (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PaletteSubCategoryPrefab), subcategory), out PrefabBase prefabBase) &&
+                prefabBase is PaletteSubCategoryPrefab)
+            {
+                PaletteSubCategoryPrefab paletteSubCategoryPrefab = prefabBase as PaletteSubCategoryPrefab;
+                m_PaletteCategories.Value[(int)MenuType.Subcategory] = paletteSubCategoryPrefab.m_Category;
+                m_PaletteCategories.Binding.TriggerUpdate();
+                m_UniqueNames.Value[(int)MenuType.Subcategory] = subcategory;
+                m_UniqueNames.Binding.TriggerUpdate();
+            }
+        }
+
         private void UpdateSubcategories(PaletteCategoryData.PaletteCategory category)
         {
             List<string> subcategories = new List<string>() { SIPColorFieldsSystem.NoSubcategoryName };
@@ -200,11 +252,7 @@ namespace Recolor.Systems.Palettes
             {
                 if (m_PrefabSystem.TryGetPrefab(subcategoryPrefabEntities[i], out PrefabBase prefabBase) &&
                     prefabBase is PaletteSubCategoryPrefab &&
-                    !subcategories.Contains(prefabBase.name) &&
-                   (category == PaletteCategoryData.PaletteCategory.Any ||
-                   (EntityManager.TryGetComponent(subcategoryPrefabEntities[i], out PaletteSubcategoryData subcategoryData) &&
-                   (subcategoryData.m_Category == category ||
-                    subcategoryData.m_Category == PaletteCategoryData.PaletteCategory.Any))))
+                    !subcategories.Contains(prefabBase.name))
                 {
                     subcategories.Add(prefabBase.name);
                 }
@@ -231,15 +279,6 @@ namespace Recolor.Systems.Palettes
                     m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)} Found existing Palette Prefab Entity {nameof(PalettePrefab)}:{prefabBase.name}!");
                     prefabEntityExists = true;
                     palettePrefabBase = (PalettePrefab)prefabBase;
-                    palettePrefabBase.active = true;
-                    palettePrefabBase.m_Category = m_PaletteCategories.Value[(int)MenuType.Palette];
-                    palettePrefabBase.m_Swatches = GetSwatchInfos();
-
-                    // Palette Filters are not implemented yet.
-                    palettePrefabBase.m_PaletteFilter = null;
-
-                    // SubCategories are not implemented yet.
-                    palettePrefabBase.m_SubCategoryPrefab = null;
                 }
 
                 // New Prefab Entity
@@ -256,8 +295,16 @@ namespace Recolor.Systems.Palettes
                 // Palette Filters are not implemented yet.
                 palettePrefabBase.m_PaletteFilter = null;
 
-                // SubCategories are not implemented yet.
-                palettePrefabBase.m_SubCategoryPrefab = null;
+                if (m_SelectedSubcategory.Value == SIPColorFieldsSystem.NoSubcategoryName ||
+                   !m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PaletteSubCategoryPrefab), m_SelectedSubcategory.Value), out PrefabBase prefabBase2) ||
+                    prefabBase2 is not PaletteSubCategoryPrefab)
+                {
+                    palettePrefabBase.m_SubCategoryPrefabName = string.Empty;
+                }
+                else
+                {
+                    palettePrefabBase.m_SubCategoryPrefabName = prefabBase2.name;
+                }
 
                 if ((prefabEntityExists ||
                      m_PrefabSystem.AddPrefab(palettePrefabBase)) &&
@@ -329,14 +376,12 @@ namespace Recolor.Systems.Palettes
                     PaletteSubcategoryPrefabSerializeFormat paletteSubcategoryPrefabSerializeFormat = new PaletteSubcategoryPrefabSerializeFormat(paletteSubcategoryPrefabBase);
                     System.IO.Directory.CreateDirectory(Path.Combine(m_SubcategoryPrefabsFolder, paletteSubcategoryPrefabBase.name));
 
-                    // m_EditingPrefabEntity.Value = prefabEntity;
-
                     File.WriteAllText(
                         Path.Combine(m_SubcategoryPrefabsFolder, paletteSubcategoryPrefabBase.name, $"{nameof(PaletteSubCategoryPrefab)}-{paletteSubcategoryPrefabBase.name}.json"),
                         JsonConvert.SerializeObject(paletteSubcategoryPrefabSerializeFormat, Formatting.Indented, settings: new JsonSerializerSettings() { ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore }));
                     m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)} Sucessfully created, initialized, and saved prefab {nameof(PaletteSubCategoryPrefab)}:{paletteSubcategoryPrefabBase.name}!");
 
-                    // m_SIPColorFieldsSystem.UpdatePalettes();
+                    UpdateSubcategories(m_PaletteCategories.Value[(int)MenuType.Palette]);
                 }
             }
             catch (Exception ex)
@@ -362,6 +407,8 @@ namespace Recolor.Systems.Palettes
             {
                 return;
             }
+
+            m_SelectedSubcategory.Value = SIPColorFieldsSystem.NoSubcategoryName;
 
             PaletteCategoryData.PaletteCategory toggledPaletteCategory = (PaletteCategoryData.PaletteCategory)category;
             PaletteCategoryData.PaletteCategory currentPaletteCategory = m_PaletteCategories.Value[menu];
@@ -400,6 +447,7 @@ namespace Recolor.Systems.Palettes
             }
 
             m_UniqueNames.Value[menuType] = newName;
+            m_UniqueNames.Binding.TriggerUpdate();
             string prefabType;
 
             switch (menuType)

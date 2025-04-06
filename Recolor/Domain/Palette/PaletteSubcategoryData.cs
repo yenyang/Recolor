@@ -16,5 +16,14 @@ namespace Recolor.Domain.Palette
         /// Assigns a category to the pallete that controls when it is visible.
         /// </summary>
         public PaletteCategory m_Category;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PaletteSubcategoryData"/> struct.
+        /// </summary>
+        /// <param name="category">Category this subcategory belongs to.</param>
+        public PaletteSubcategoryData(PaletteCategory category)
+        {
+            m_Category = category;
+        }
     }
 }

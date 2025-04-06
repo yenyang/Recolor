@@ -41,6 +41,7 @@ const plusSrc =                         uilStandard + "Plus.svg";
 const saveToDiskSrc =                   uilStandard + "DiskSave.svg";
 const trashSrc =                        uilStandard + "Trash.svg";
 const colorPaletteSrc =                  uilColored + "ColorPalette.svg";
+const editSrc =                        uilStandard + "PencilPaper.svg";
 
 const Swatches$ = bindValue<SwatchUIData[]>(mod.id, "Swatches");
 const UniqueNames$ = bindValue<string[]>(mod.id, "UniqueNames");
@@ -49,6 +50,8 @@ const PaletteCategories$ = bindValue<PaletteCategory[]>(mod.id, "PaletteCategori
 const ShowPaletteChoices$ = bindValue<ButtonState>(mod.id,"ShowPaletteChoices");
 const ResidentialBuildingSelected$ = bindValue<boolean>(mod.id, "ResidentialBuildingSelected");
 const Subcategories$ = bindValue<string[]>(mod.id, "Subcategories");
+const SelectedSubcategory$ = bindValue<string>(mod.id, "SelectedSubcategory");
+const ShowSubcategoryEditorMenu$ = bindValue<boolean>(mod.id, "ShowSubcategoryEditorPanel");
 
 function handleClick(event: string) {
     trigger(mod.id, event);
@@ -69,11 +72,12 @@ export const PaletteMenuComponent = () => {
     const ShowPaletteChoices = useValue(ShowPaletteChoices$);    
     const ResidentialBuildingSelected = useValue(ResidentialBuildingSelected$);
     const Subcategories = useValue(Subcategories$);
+    const SelectedSubcategory = useValue(SelectedSubcategory$);
+    const ShowSubcategoryEditorMenu = useValue(ShowSubcategoryEditorMenu$);
     
     const { translate } = useLocalization();
 
     
-    let [currentSubcategory, setSubcategory] = useState(Subcategories[0]);
     let [currentFilter, setFilter] = useState(PaletteFilterType.Theme)
 
     let FilterTypes : string[] = [
@@ -108,21 +112,43 @@ export const PaletteMenuComponent = () => {
                                 <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
                                     <CategorySection category={PaletteCategories[MenuType.Palette]} menu={MenuType.Palette}></CategorySection>
                                     <VanillaComponentResolver.instance.Section title={"Subcategory"}>
-                                        <Dropdown 
-                                            theme = {dropDownThemes}
-                                            content={                    
-                                                Subcategories.map((subcategory) => (
-                                                    <DropdownItem value={subcategory} className={dropDownThemes.dropdownItem} selected={subcategory==currentSubcategory} onChange={() => setSubcategory(subcategory)}>
-                                                        <div className={panelStyles.filterTypeWidth}>{subcategory}</div>
-                                                    </DropdownItem>
-                                                ))
-                                            }
-                                        >
-                                            <DropdownToggle disabled={false}>
-                                                <div className={panelStyles.filterTypeWidth}>{currentSubcategory}</div>
-                                            </DropdownToggle>
-                                        </Dropdown>
-                                        <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {"Add Subcategory"}   onSelect={() => {} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                        <>
+                                            { (SelectedSubcategory != Subcategories[0]) && (
+                                                <VanillaComponentResolver.instance.ToolButton
+                                                    src={editSrc}
+                                                    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                    tooltip = {"Edit Subcategory"}
+                                                    className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                    selected = {UniqueNames[MenuType.Subcategory] == SelectedSubcategory && ShowSubcategoryEditorMenu}
+                                                    onSelect={() => {
+                                                            if (!ShowSubcategoryEditorMenu) { trigger(mod.id, "ShowSubcategoryEditorPanel"); trigger(mod.id, "EditSubcategory", SelectedSubcategory)}
+                                                            else if (UniqueNames[MenuType.Subcategory] == SelectedSubcategory) { trigger(mod.id, "ShowSubcategoryEditorPanel"); }
+                                                            else {trigger(mod.id, "EditSubcategory", SelectedSubcategory); console.log("UN: " + UniqueNames[MenuType.Subcategory]); console.log(SelectedSubcategory)}}}
+                                                />
+                                            )}
+                                            <span className={panelStyles.smallSpacer}></span>
+                                        
+                                            <Dropdown 
+                                                theme = {dropDownThemes}
+                                                content={                    
+                                                    Subcategories.map((subcategory) => (
+                                                        <DropdownItem value={subcategory} className={dropDownThemes.dropdownItem} selected={subcategory==SelectedSubcategory} onChange={() =>  trigger(mod.id, "ChangeSubcategory", subcategory)}>
+                                                            <div className={panelStyles.subcategoryDropwdownWidth}>{subcategory}</div>
+                                                        </DropdownItem>
+                                                    ))
+                                                }
+                                            >
+                                                <DropdownToggle disabled={false}>
+                                                    <div className={panelStyles.subcategoryDropwdownWidth}>{SelectedSubcategory}</div>
+                                                </DropdownToggle>
+                                            </Dropdown>
+                                            <span className={panelStyles.smallSpacer}></span>
+                                            <VanillaComponentResolver.instance.ToolButton src={plusSrc}  selected={UniqueNames[MenuType.Subcategory] != SelectedSubcategory && ShowSubcategoryEditorMenu}        tooltip = {"Add Subcategory"}        className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
+                                                onSelect={() => {
+                                                    if (!ShowSubcategoryEditorMenu) { trigger(mod.id, "ShowSubcategoryEditorPanel")} 
+                                                    else if (UniqueNames[MenuType.Subcategory] == SelectedSubcategory) { trigger(mod.id, "GenerateNewSubcategory")}
+                                                    else {trigger(mod.id, "ShowSubcategoryEditorPanel")}}} />
+                                        </>
                                     </VanillaComponentResolver.instance.Section>
                                     <VanillaComponentResolver.instance.Section title={"Filter Type"}>
                                         <Dropdown 

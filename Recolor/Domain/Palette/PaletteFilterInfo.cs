@@ -14,7 +14,7 @@ namespace Recolor.Domain.Palette
         /// <summary>
         /// Prefab for filter.
         /// </summary>
-        public PrefabBase m_FilterPrefab;
+        public string m_FilterPrefabName;
 
         /// <summary>
         /// Type of filter.
@@ -28,7 +28,7 @@ namespace Recolor.Domain.Palette
         /// <param name="filterType">Type of filter.</param>
         public PaletteFilterInfo(PrefabBase prefabBase, PaletteFilterData.PaletteFilterType filterType)
         {
-            m_FilterPrefab = prefabBase;
+            m_FilterPrefabName = prefabBase.name;
             m_FilterType = filterType;
         }
 
