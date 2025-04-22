@@ -7,6 +7,7 @@ namespace Recolor.Systems.Palettes
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using Colossal.Entities;
     using Colossal.IO.AssetDatabase;
     using Colossal.Logging;
@@ -55,6 +56,7 @@ namespace Recolor.Systems.Palettes
         private EntityQuery m_ThemePrefabEntityQuery;
         private ValueBindingHelper<PaletteFilterTypeData.PaletteFilterType> m_PaletteFilterType;
         private ValueBindingHelper<PaletteFilterEntityUIData[]> m_FilterEntities;
+        private ValueBindingHelper<Entity[]> m_SelectedFilterPrefabEntities;
 
         /// <summary>
         /// Enum for handing common events for different menus.
@@ -100,6 +102,7 @@ namespace Recolor.Systems.Palettes
             m_ShowSubcategoryEditorPanel = CreateBinding("ShowSubcategoryEditorPanel", false);
             m_PaletteFilterType = CreateBinding("SelectedFilterType", PaletteFilterTypeData.PaletteFilterType.None);
             m_FilterEntities = CreateBinding("FilterEntities", new PaletteFilterEntityUIData[0]);
+            m_SelectedFilterPrefabEntities = CreateBinding("SelectedFilterPrefabEntities", new Entity[0]);
 
             // Listen to trigger event that are sent from the UI to the C#.
             CreateTrigger("TrySavePalette", TrySavePalette);
@@ -121,6 +124,9 @@ namespace Recolor.Systems.Palettes
             CreateTrigger("GenerateNewSubcategory", GenerateNewSubcategory);
             CreateTrigger("DeleteSubcategory", DeleteSubcategory);
             CreateTrigger<int>("SetFilter", SetFilter);
+            CreateTrigger<int, Entity>("SetFilterChoice", SetFilterChoice);
+            CreateTrigger("AddFilterChoice", AddFilterChoice);
+            CreateTrigger<int>("RemoveFilterChoice", RemoveFilterChoice);
 
             m_SubcategoryQuery = SystemAPI.QueryBuilder()
                 .WithAll<PaletteSubcategoryData>()
@@ -265,6 +271,8 @@ namespace Recolor.Systems.Palettes
                 case PaletteFilterTypeData.PaletteFilterType.None:
                     m_FilterEntities.Value = new PaletteFilterEntityUIData[0];
                     m_FilterEntities.Binding.TriggerUpdate();
+                    m_SelectedFilterPrefabEntities.Value = new Entity[0];
+                    m_SelectedFilterPrefabEntities.Binding.TriggerUpdate();
                     return;
                 case PaletteFilterTypeData.PaletteFilterType.Theme:
                     filterQuery = m_ThemePrefabEntityQuery;
@@ -278,6 +286,8 @@ namespace Recolor.Systems.Palettes
                 default:
                     m_FilterEntities.Value = new PaletteFilterEntityUIData[0];
                     m_FilterEntities.Binding.TriggerUpdate();
+                    m_SelectedFilterPrefabEntities.Value = new Entity[0];
+                    m_SelectedFilterPrefabEntities.Binding.TriggerUpdate();
                     return;
             }
 
@@ -290,6 +300,11 @@ namespace Recolor.Systems.Palettes
 
             m_FilterEntities.Value = paletteFilterEntityUIDatas;
             m_FilterEntities.Binding.TriggerUpdate();
+            if (paletteFilterEntityUIDatas.Length > 0)
+            {
+                m_SelectedFilterPrefabEntities.Value = new Entity[1] { paletteFilterEntityUIDatas[0].FilterPrefabEntity };
+                m_SelectedFilterPrefabEntities.Binding.TriggerUpdate();
+            }
         }
 
         private string GetLocaleKey(Entity prefabEntity, PaletteFilterTypeData.PaletteFilterType paletteFilterType)
@@ -312,6 +327,56 @@ namespace Recolor.Systems.Palettes
             }
 
             return string.Empty;
+        }
+
+        private void SetFilterChoice(int index, Entity prefabEntity)
+        {
+            if (m_SelectedFilterPrefabEntities.Value.Length > index)
+            {
+                m_SelectedFilterPrefabEntities.Value[index] = prefabEntity;
+                m_SelectedFilterPrefabEntities.Binding.TriggerUpdate();
+            }
+        }
+
+        private void AddFilterChoice()
+        {
+            if (m_SelectedFilterPrefabEntities.Value.Length == 0 ||
+                m_FilterEntities.Value.Length <= m_SelectedFilterPrefabEntities.Value.Length)
+            {
+                return;
+            }
+
+            List<Entity> prefabEntities = m_SelectedFilterPrefabEntities.Value.ToList();
+            for (int i = 0; i < m_FilterEntities.Value.Length; i++)
+            {
+                if (!prefabEntities.Contains(m_FilterEntities.Value[i].FilterPrefabEntity))
+                {
+                    prefabEntities.Add(m_FilterEntities.Value[i].FilterPrefabEntity);
+                    break;
+                }
+            }
+
+            m_SelectedFilterPrefabEntities.Value = prefabEntities.ToArray();
+            m_SelectedFilterPrefabEntities.Binding.TriggerUpdate();
+        }
+
+        private void RemoveFilterChoice(int index)
+        {
+            if (m_SelectedFilterPrefabEntities.Value.Length > index && index >= 0)
+            {
+                Entity[] prefabEntities = new Entity[m_SelectedFilterPrefabEntities.Value.Length - 1];
+                int j = 0;
+                for (int i = 0; i < m_SelectedFilterPrefabEntities.Value.Length; i++)
+                {
+                    if (i != index)
+                    {
+                        prefabEntities[j++] = m_SelectedFilterPrefabEntities.Value[i];
+                    }
+                }
+
+                m_SelectedFilterPrefabEntities.Value = prefabEntities;
+                m_SelectedFilterPrefabEntities.Binding.TriggerUpdate();
+            }
         }
     }
 }

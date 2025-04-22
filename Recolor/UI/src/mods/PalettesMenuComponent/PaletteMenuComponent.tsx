@@ -2,14 +2,14 @@
 import { bindValue, trigger, useValue } from "cs2/api";
 import panelStyles from "./PaletteMenuStyles.module.scss";
 import styles from "../Domain/ColorFields.module.scss";
-import {  game, selectedInfo, tool } from "cs2/bindings";
+import {  Entity, game, selectedInfo, tool } from "cs2/bindings";
 import {  Dropdown, DropdownItem, DropdownToggle, Panel, Portal } from "cs2/ui";
 import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaComponentResolver";
 import { useLocalization } from "cs2/l10n";
 import { InfoSection } from "mods/RecolorMainPanel/RecolorMainPanel";
 import mod from "../../../mod.json";
 import locale from "../lang/en-US.json";
-import { useState } from "react";
+import { useState, version } from "react";
 import classNames from "classnames";
 import { SwatchComponent } from "mods/SwatchComponent/SwatchComponent";
 import { SwatchUIData } from "mods/Domain/PaletteAndSwatches/SwatchUIData";
@@ -25,6 +25,8 @@ import { UniqueNameSectionComponent } from "./UniqueNameSection";
 import { CategorySection } from "./CategorySection";
 import { LocaleSection } from "./LocaleSection";
 import { PaletteFilterEntityUIData } from "mods/Domain/PaletteAndSwatches/PaletteFilterEntityUIData";
+import { entityEquals } from "cs2/utils";
+import { FocusDisabled } from "cs2/input";
 
 /*
 import closeSrc from "images/uilStandard/XClose.svg";
@@ -39,6 +41,7 @@ import saveToDiskSrc from "images/uilStandard/DiskSave.svg";
 const uilStandard =                         "coui://uil/Standard/";
 const uilColored =                           "coui://uil/Colored/";
 const plusSrc =                         uilStandard + "Plus.svg";
+const minusSrc =                         uilStandard + "Minus.svg";
 const saveToDiskSrc =                   uilStandard + "DiskSave.svg";
 const trashSrc =                        uilStandard + "Trash.svg";
 const colorPaletteSrc =                  uilColored + "ColorPalette.svg";
@@ -55,10 +58,12 @@ const SelectedSubcategory$ = bindValue<string>(mod.id, "SelectedSubcategory");
 const ShowSubcategoryEditorMenu$ = bindValue<boolean>(mod.id, "ShowSubcategoryEditorPanel");
 const SelectedFilterType$ = bindValue<PaletteFilterType>(mod.id, "SelectedFilterType");
 const FilterEntities$ = bindValue<PaletteFilterEntityUIData[]>(mod.id, "FilterEntities");
+const SelectedFilterPrefabEntities$ = bindValue<Entity[]>(mod.id, "SelectedFilterPrefabEntities");
 
 function handleClick(event: string) {
     trigger(mod.id, event);
 }
+
 
 
 const dropDownThemes = getModule('game-ui/editor/themes/editor-dropdown.module.scss', 'classes');
@@ -79,8 +84,52 @@ export const PaletteMenuComponent = () => {
     const ShowSubcategoryEditorMenu = useValue(ShowSubcategoryEditorMenu$);
     const SelectedFilterType = useValue(SelectedFilterType$);
     const FilterEntities = useValue(FilterEntities$);
+    const SelectedFilterPrefabEntities = useValue(SelectedFilterPrefabEntities$);
     
     const { translate } = useLocalization();
+
+    function GetFilterUIData(prefabEntity : Entity) 
+    {
+        for (let i=0; i<FilterEntities.length; i++) 
+        {
+            if (entityEquals(FilterEntities[i].FilterPrefabEntity, prefabEntity)) 
+            {
+                return FilterEntities[i];
+            }
+        }
+
+        if (FilterEntities.length > 0) 
+        {
+            return FilterEntities[0];
+        }
+
+        const nullEntity : Entity = {
+            index: 0,
+            version: 0,
+        }
+
+        const defaultData : PaletteFilterEntityUIData = {
+            FilterPrefabEntity:  nullEntity,
+            Src: "",
+            LocaleKey: "",
+        };
+
+        return defaultData;
+    }
+
+    function IsSelected(prefabEntity: Entity) 
+    {
+        for (let i=0; i<SelectedFilterPrefabEntities.length; i++) 
+        {
+            if (entityEquals(prefabEntity, SelectedFilterPrefabEntities[i])) 
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
 
     let FilterTypes : string[] = [
         "None",
@@ -169,30 +218,56 @@ export const PaletteMenuComponent = () => {
                                                 </DropdownToggle>
                                             </Dropdown>
                                     </VanillaComponentResolver.instance.Section>
-                                    {FilterEntities.length > 0 && (
+                                    {FilterEntities.length > 0 && SelectedFilterPrefabEntities.length > 0 && (
                                         <VanillaComponentResolver.instance.Section title={"Filter Choices"}>
-                                                <Dropdown 
-                                                    theme = {dropDownThemes}
-                                                    content={         
-                                                        FilterEntities.map((entityData: PaletteFilterEntityUIData) => (
-                                                            <DropdownItem value={entityData} className={dropDownThemes.dropdownItem} onChange={() => trigger(mod.id, "SetFilterChoice", entityData.PrefabEntity)}>
-                                                                <div className={classNames(panelStyles.filterChoicesDropdown, styles.rowGroup)}>
-                                                                    <img src={entityData.Src} className={panelStyles.filterChoicesIcon}></img>
-                                                                    <span className={panelStyles.smallSpacer}></span>
-                                                                    <div>{translate(entityData.LocaleKey)}</div>
-                                                                </div>
-                                                            </DropdownItem>
-                                                        ))
-                                                    }
-                                                    >
-                                                    <DropdownToggle disabled={false}>
-                                                        <div className={classNames(panelStyles.filterChoicesDropdown, styles.rowGroup)}>
-                                                            <img src={FilterEntities[0].Src} className={panelStyles.filterChoicesIcon}></img>
+                                            <FocusDisabled>
+                                                <div className={styles.columnGroup}>
+                                                    {SelectedFilterPrefabEntities.map((selectedEntity: Entity, index: number) => (
+                                                        <div className={styles.rowGroup}>
+                                                            <Dropdown 
+                                                                theme = {dropDownThemes}
+                                                                content={         
+                                                                    FilterEntities.map((entityData: PaletteFilterEntityUIData) => (
+                                                                        <>
+                                                                        {(IsSelected(entityData.FilterPrefabEntity) == false || entityEquals(SelectedFilterPrefabEntities[index], entityData.FilterPrefabEntity)) && (
+                                                                            <DropdownItem value={entityData} className={dropDownThemes.dropdownItem} onChange={() => trigger(mod.id, "SetFilterChoice", index, entityData.FilterPrefabEntity)}>
+                                                                                <div className={classNames(panelStyles.filterChoicesDropdown, panelStyles.filterRowGroup)}>
+                                                                                    <img src={entityData.Src} className={panelStyles.filterChoicesIcon}></img>
+                                                                                    <span className={panelStyles.smallSpacer}></span>
+                                                                                    <div>{translate(entityData.LocaleKey)}</div>
+                                                                                </div>
+                                                                            </DropdownItem>
+                                                                        )}
+                                                                        </>
+                                                                    ))
+                                                                }
+                                                                >
+                                                                <DropdownToggle disabled={false}>
+                                                                    <div className={classNames(panelStyles.filterChoicesDropdown, panelStyles.filterRowGroup)}>
+                                                                        <img src={GetFilterUIData(selectedEntity).Src} className={panelStyles.filterChoicesIcon}></img>
+                                                                        <span className={panelStyles.smallSpacer}></span>
+                                                                        <div>{translate(GetFilterUIData(selectedEntity).LocaleKey)}</div>
+                                                                    </div>
+                                                                </DropdownToggle>
+                                                            </Dropdown>
                                                             <span className={panelStyles.smallSpacer}></span>
-                                                            <div>{translate(FilterEntities[0].LocaleKey)}</div>
+                                                            { SelectedFilterPrefabEntities.length < FilterEntities.length - 1 && index == SelectedFilterPrefabEntities.length - 1 && (
+                                                                <VanillaComponentResolver.instance.ToolButton src={plusSrc}  tooltip = {"Add a compatible filter"}        className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
+                                                                    onSelect={() => trigger(mod.id, "AddFilterChoice")}
+                                                                />
+                                                            )}
+                                                            { FilterEntities.length > 2 && index != SelectedFilterPrefabEntities.length - 1 && (
+                                                                <VanillaComponentResolver.instance.ToolButton src={minusSrc}  tooltip = {"Remove a compatible filter"}        className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
+                                                                    onSelect={() => trigger(mod.id, "RemoveFilterChoice", index)}
+                                                                />
+                                                            )}
+                                                            { (FilterEntities.length <= 2 || (SelectedFilterPrefabEntities.length == FilterEntities.length - 1 && index == SelectedFilterPrefabEntities.length - 1)) && (
+                                                                <span className={styles.ButtonWidth}></span>
+                                                            )}
                                                         </div>
-                                                    </DropdownToggle>
-                                                </Dropdown>
+                                                    ))}    
+                                                </div>        
+                                            </FocusDisabled>                                        
                                         </VanillaComponentResolver.instance.Section>
                                     )}
                                 </InfoSection>

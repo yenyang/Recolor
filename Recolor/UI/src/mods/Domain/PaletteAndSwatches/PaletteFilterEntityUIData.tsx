@@ -2,7 +2,7 @@ import { Entity } from "cs2/bindings";
 
 export interface PaletteFilterEntityUIData 
 {
-    PrefabEntity : Entity,
+    FilterPrefabEntity : Entity,
     Src : string,
     LocaleKey: string,
 }
