@@ -24,6 +24,7 @@ import { MenuType } from "mods/Domain/MenuType";
 import { UniqueNameSectionComponent } from "./UniqueNameSection";
 import { CategorySection } from "./CategorySection";
 import { LocaleSection } from "./LocaleSection";
+import { PaletteFilterEntityUIData } from "mods/Domain/PaletteAndSwatches/PaletteFilterEntityUIData";
 
 /*
 import closeSrc from "images/uilStandard/XClose.svg";
@@ -52,6 +53,8 @@ const ResidentialBuildingSelected$ = bindValue<boolean>(mod.id, "ResidentialBuil
 const Subcategories$ = bindValue<string[]>(mod.id, "Subcategories");
 const SelectedSubcategory$ = bindValue<string>(mod.id, "SelectedSubcategory");
 const ShowSubcategoryEditorMenu$ = bindValue<boolean>(mod.id, "ShowSubcategoryEditorPanel");
+const SelectedFilterType$ = bindValue<PaletteFilterType>(mod.id, "SelectedFilterType");
+const FilterEntities$ = bindValue<PaletteFilterEntityUIData[]>(mod.id, "FilterEntities");
 
 function handleClick(event: string) {
     trigger(mod.id, event);
@@ -74,13 +77,13 @@ export const PaletteMenuComponent = () => {
     const Subcategories = useValue(Subcategories$);
     const SelectedSubcategory = useValue(SelectedSubcategory$);
     const ShowSubcategoryEditorMenu = useValue(ShowSubcategoryEditorMenu$);
+    const SelectedFilterType = useValue(SelectedFilterType$);
+    const FilterEntities = useValue(FilterEntities$);
     
     const { translate } = useLocalization();
 
-    
-    let [currentFilter, setFilter] = useState(PaletteFilterType.Theme)
-
     let FilterTypes : string[] = [
+        "None",
         "Theme",
         "Pack",
         "Zoning Type"
@@ -151,21 +154,47 @@ export const PaletteMenuComponent = () => {
                                         </>
                                     </VanillaComponentResolver.instance.Section>
                                     <VanillaComponentResolver.instance.Section title={"Filter Type"}>
-                                        <Dropdown 
-                                            theme = {dropDownThemes}
-                                            content={                    
-                                                FilterTypes.map((type, index: number) => (
-                                                    <DropdownItem value={type} className={dropDownThemes.dropdownItem} selected={currentFilter==index} onChange={() => setFilter(index)}>
-                                                        <div className={panelStyles.filterTypeWidth}>{type}</div>
-                                                    </DropdownItem>
-                                                ))
-                                            }
-                                        >
-                                            <DropdownToggle disabled={false}>
-                                                <div className={panelStyles.filterTypeWidth}>{FilterTypes[currentFilter]}</div>
-                                            </DropdownToggle>
-                                        </Dropdown>
+                                            <Dropdown 
+                                                theme = {dropDownThemes}
+                                                content={                    
+                                                    FilterTypes.map((type, index: number) => (
+                                                        <DropdownItem value={type} className={dropDownThemes.dropdownItem} selected={SelectedFilterType==index} onChange={() => trigger(mod.id, "SetFilter", index)}>
+                                                            <div className={panelStyles.filterTypeWidth}>{type}</div>
+                                                        </DropdownItem>
+                                                    ))
+                                                }
+                                            >
+                                                <DropdownToggle disabled={false}>
+                                                    <div className={panelStyles.filterTypeWidth}>{FilterTypes[SelectedFilterType]}</div>
+                                                </DropdownToggle>
+                                            </Dropdown>
                                     </VanillaComponentResolver.instance.Section>
+                                    {FilterEntities.length > 0 && (
+                                        <VanillaComponentResolver.instance.Section title={"Filter Choices"}>
+                                                <Dropdown 
+                                                    theme = {dropDownThemes}
+                                                    content={         
+                                                        FilterEntities.map((entityData: PaletteFilterEntityUIData) => (
+                                                            <DropdownItem value={entityData} className={dropDownThemes.dropdownItem} onChange={() => trigger(mod.id, "SetFilterChoice", entityData.PrefabEntity)}>
+                                                                <div className={classNames(panelStyles.filterChoicesDropdown, styles.rowGroup)}>
+                                                                    <img src={entityData.Src} className={panelStyles.filterChoicesIcon}></img>
+                                                                    <span className={panelStyles.smallSpacer}></span>
+                                                                    <div>{translate(entityData.LocaleKey)}</div>
+                                                                </div>
+                                                            </DropdownItem>
+                                                        ))
+                                                    }
+                                                    >
+                                                    <DropdownToggle disabled={false}>
+                                                        <div className={classNames(panelStyles.filterChoicesDropdown, styles.rowGroup)}>
+                                                            <img src={FilterEntities[0].Src} className={panelStyles.filterChoicesIcon}></img>
+                                                            <span className={panelStyles.smallSpacer}></span>
+                                                            <div>{translate(FilterEntities[0].LocaleKey)}</div>
+                                                        </div>
+                                                    </DropdownToggle>
+                                                </Dropdown>
+                                        </VanillaComponentResolver.instance.Section>
+                                    )}
                                 </InfoSection>
                                 <LocaleSection></LocaleSection>
                                 <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >

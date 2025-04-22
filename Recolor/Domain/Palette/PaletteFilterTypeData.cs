@@ -1,4 +1,4 @@
-﻿// <copyright file="PaleteFilterData.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="PaletteFilterTypeData.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
@@ -9,27 +9,21 @@ namespace Recolor.Domain.Palette
     /// <summary>
     /// Custom component for containing filters for palletes.
     /// </summary>
-    public struct PaletteFilterData : IBufferElementData
+    public struct PaletteFilterTypeData : IComponentData
     {
-        /// <summary>
-        /// Prefab entity for filtering visibility.
-        /// </summary>
-        public Entity m_PrefabEntity;
-
         /// <summary>
         /// Type of filter.
         /// </summary>
         public PaletteFilterType m_FilterType;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PaletteFilterData"/> struct.
+        /// Initializes a new instance of the <see cref="PaletteFilterTypeData"/> struct.
         /// </summary>
         /// <param name="prefabEntity">Prefab entity for filter.</param>
         /// <param name="filterType">Type of filter.</param>
-        public PaletteFilterData(Entity prefabEntity, PaletteFilterType filterType)
+        public PaletteFilterTypeData(PaletteFilterType filterType)
         {
             m_FilterType = filterType;
-            m_PrefabEntity = prefabEntity;
         }
 
         /// <summary>
@@ -38,19 +32,24 @@ namespace Recolor.Domain.Palette
         public enum PaletteFilterType
         {
             /// <summary>
+            /// No filter.
+            /// </summary>
+            None = 0,
+
+            /// <summary>
             /// Theme prefab filter.
             /// </summary>
-            Theme = 0,
+            Theme = 1,
 
             /// <summary>
             /// Region pack prefab filter.
             /// </summary>
-            Pack = 1,
+            Pack = 2,
 
             /// <summary>
             /// Zone prefab filter.
             /// </summary>
-            ZoningType = 2,
+            ZoningType = 3,
         }
     }
 }

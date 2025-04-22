@@ -58,7 +58,7 @@ export const SubcategoryEditorMenuComponent = () => {
                 <Panel 
                     className={panelStyles.subcategoryPanel}
                     header={(
-                        <HeaderSection title="Subcategory Editor Menu" icon={subcategoryIcon} onCloseEventName={"TogglePaletteEditorMenu"}></HeaderSection>
+                        <HeaderSection title="Subcategory Editor Menu" icon={subcategoryIcon} onCloseEventName={"ShowSubcategoryEditorPanel"}></HeaderSection>
                     )}
                     footer={(
                         <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >

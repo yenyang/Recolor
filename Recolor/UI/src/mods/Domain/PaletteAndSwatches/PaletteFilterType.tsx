@@ -3,18 +3,20 @@
 /// </summary>
 export enum PaletteFilterType
 {
+    None = 0,
+
     /// <summary>
     /// Theme prefab filter.
     /// </summary>
-    Theme = 0,
+    Theme = 1,
 
     /// <summary>
     /// Region pack prefab filter.
     /// </summary>
-    Pack = 1,
+    Pack = 2,
 
     /// <summary>
     /// Zone prefab filter.
     /// </summary>
-    ZoningType = 2,
+    ZoningType = 3,
 }

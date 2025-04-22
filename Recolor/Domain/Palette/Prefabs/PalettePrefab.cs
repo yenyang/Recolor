@@ -11,7 +11,7 @@ namespace Recolor.Domain.Palette.Prefabs
     using Unity.Entities;
 
     /// <summary>
-    /// A custom prefab for color swatches. Although this may look similar to vanilla prefabs, It may not follow format exactly. Serialization/Deserialization is done manually by the mod.
+    /// A custom prefab for color palettes. Although this may look similar to vanilla prefabs, It may not follow format exactly. Serialization/Deserialization is done manually by the mod.
     /// </summary>
     public class PalettePrefab : PrefabBase
     {
@@ -32,9 +32,14 @@ namespace Recolor.Domain.Palette.Prefabs
         public SwatchInfo[] m_Swatches;
 
         /// <summary>
-        /// Array of palette filters for controlling visibility.
+        /// Type of filter.
         /// </summary>
-        public PaletteFilterInfo[] m_PaletteFilter;
+        public PaletteFilterTypeData.PaletteFilterType m_FilterType;
+
+        /// <summary>
+        /// Array of palette filters names for controlling visibility.
+        /// </summary>
+        public string[] m_FilterNames;
 
         /// <inheritdoc/>
         public override void GetPrefabComponents(HashSet<ComponentType> components)
@@ -42,9 +47,10 @@ namespace Recolor.Domain.Palette.Prefabs
             base.GetPrefabComponents(components);
             components.Add(ComponentType.ReadWrite<SwatchData>());
             components.Add(ComponentType.ReadWrite<PaletteCategoryData>());
-            if (m_PaletteFilter != null)
+            if (m_FilterType != PaletteFilterTypeData.PaletteFilterType.None &&
+                m_FilterNames.Length > 0)
             {
-                components.Add(ComponentType.ReadWrite<PaletteFilterData>());
+                components.Add(ComponentType.ReadWrite<PaletteFilterEntityData>());
             }
         }
 
@@ -74,20 +80,48 @@ namespace Recolor.Domain.Palette.Prefabs
             base.LateInitialize(entityManager, entity);
             PrefabSystem prefabSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<PrefabSystem>();
 
-            if (m_PaletteFilter != null)
+            if (m_FilterType != PaletteFilterTypeData.PaletteFilterType.None &&
+                m_FilterNames.Length > 0)
             {
-                DynamicBuffer<PaletteFilterData> paleteFilterDatas = entityManager.GetBuffer<PaletteFilterData>(entity);
+                DynamicBuffer<PaletteFilterEntityData> paleteFilterDatas = entityManager.GetBuffer<PaletteFilterEntityData>(entity);
                 paleteFilterDatas.Clear();
-                /*
-                 Not Implemented!
-                for (int i = 0; i < m_PaletteFilter.Length; i++)
+
+                string prefabTypeName;
+
+                switch (m_FilterType)
                 {
-                    if (m_PaletteFilter[i].m_FilterPrefab != null &&
-                        prefabSystem.TryGetEntity(m_PaletteFilter[i].m_FilterPrefab, out Entity prefabEntity))
+                    case PaletteFilterTypeData.PaletteFilterType.Theme:
+                        prefabTypeName = nameof(ThemePrefab);
+                        break;
+                    case PaletteFilterTypeData.PaletteFilterType.ZoningType:
+                        prefabTypeName = nameof(ZonePrefab);
+                        break;
+                    case PaletteFilterTypeData.PaletteFilterType.Pack:
+                        prefabTypeName = nameof(AssetPackPrefab);
+                        break;
+                    default:
+                        prefabTypeName = nameof(ThemePrefab);
+                        break;
+                }
+
+                for (int i = 0; i < m_FilterNames.Length; i++)
+                {
+                    if (m_FilterNames[i] != string.Empty &&
+                        prefabSystem.TryGetPrefab(new PrefabID(prefabTypeName, m_FilterNames[i]), out PrefabBase filterPrefabBase) &&
+                      ((filterPrefabBase is ThemePrefab && m_FilterType == PaletteFilterTypeData.PaletteFilterType.Theme) ||
+                       (filterPrefabBase is ZonePrefab && m_FilterType == PaletteFilterTypeData.PaletteFilterType.ZoningType) ||
+                       (filterPrefabBase is AssetPackPrefab && m_FilterType == PaletteFilterTypeData.PaletteFilterType.Pack)) &&
+                        prefabSystem.TryGetEntity(filterPrefabBase, out Entity filterPrefabEntity))
                     {
-                        paleteFilterDatas.Add(new PaletteFilterData(prefabEntity, m_PaletteFilter[i].m_FilterType));
+                        paleteFilterDatas.Add(new PaletteFilterEntityData(filterPrefabEntity));
                     }
-                }*/
+                }
+
+                if (paleteFilterDatas.Length == 0)
+                {
+                    entityManager.RemoveComponent<PaletteFilterEntityData>(entity);
+                    m_FilterType = PaletteFilterTypeData.PaletteFilterType.None;
+                }
             }
 
             PaletteCategoryData paleteCategoryData = new PaletteCategoryData(m_Category);
@@ -100,7 +134,6 @@ namespace Recolor.Domain.Palette.Prefabs
                 paleteCategoryData.m_SubCategory = subCategoryPrefabEntity;
             }
 
-            
             entityManager.SetComponentData(entity, paleteCategoryData);
         }
     }

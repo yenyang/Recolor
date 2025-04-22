@@ -116,7 +116,6 @@ namespace Recolor.Systems.SelectedInfoPanel
                     !EntityManager.HasComponent<Game.Objects.Object>(m_CurrentEntity) ||
                      EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity))))
                 {
-                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} wrong category: {palettePrefab.m_Category}. skipping palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version}.");
                     return true;
                 }
 
@@ -124,7 +123,6 @@ namespace Recolor.Systems.SelectedInfoPanel
                    !EntityManager.HasComponent<Game.Vehicles.Vehicle>(m_CurrentEntity) &&
                    !EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity))
                 {
-                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} wrong categories: {palettePrefab.m_Category}. skipping palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version}.");
                     return true;
                 }
 
@@ -134,7 +132,6 @@ namespace Recolor.Systems.SelectedInfoPanel
                    !EntityManager.HasComponent<Game.Objects.Object>(m_CurrentEntity) ||
                     EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity)))
                 {
-                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} wrong categories: {palettePrefab.m_Category}. skipping palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version}.");
                     return true;
                 }
 
@@ -144,7 +141,6 @@ namespace Recolor.Systems.SelectedInfoPanel
                    !EntityManager.HasComponent<Game.Objects.Object>(m_CurrentEntity) ||
                     EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity)))
                 {
-                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(UpdatePalettes)} wrong categories: {palettePrefab.m_Category}. skipping palette entity {palettePrefabEntity.Index}:{palettePrefabEntity.Version}.");
                     return true;
                 }
             }

@@ -4,8 +4,6 @@
 
 namespace Recolor.Domain.Palette.Prefabs
 {
-    using Game.Prefabs;
-
     /// <summary>
     /// Class to manually serialize palette prefab information in a custom format.
     /// </summary>
@@ -29,9 +27,13 @@ namespace Recolor.Domain.Palette.Prefabs
         /// <summary>
         /// Array of palette filters for controlling visibility.
         /// </summary>
-        public PaletteFilterInfo[] m_PaletteFilter;
+        public PaletteFilterTypeData.PaletteFilterType m_FilterType;
 
-        public string m_name;
+        public string[] m_FilterNames;
+
+        public string m_Name;
+
+        public int m_Version = 1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PalettePrefabSerializeFormat"/> class.
@@ -49,8 +51,9 @@ namespace Recolor.Domain.Palette.Prefabs
             m_Category = palettePrefab.m_Category;
             m_SubCategoryPrefabName = palettePrefab.m_SubCategoryPrefabName;
             m_Swatches = palettePrefab.m_Swatches;
-            m_PaletteFilter = palettePrefab.m_PaletteFilter;
-            m_name = palettePrefab.name;
+            m_FilterType = palettePrefab.m_FilterType;
+            m_FilterNames = palettePrefab.m_FilterNames;
+            m_Name = palettePrefab.name;
         }
 
         /// <summary>
@@ -60,10 +63,11 @@ namespace Recolor.Domain.Palette.Prefabs
         public void AssignValuesToPrefab(ref PalettePrefab palettePrefab)
         {
             palettePrefab.m_Category = m_Category;
-            palettePrefab.m_PaletteFilter = m_PaletteFilter;
+            palettePrefab.m_FilterNames = m_FilterNames;
+            palettePrefab.m_FilterType = m_FilterType;
             palettePrefab.m_SubCategoryPrefabName = m_SubCategoryPrefabName;
             palettePrefab.m_Swatches = m_Swatches;
-            palettePrefab.name = m_name;
+            palettePrefab.name = m_Name;
             palettePrefab.active = true;
         }
     }
