@@ -108,6 +108,9 @@ namespace Recolor.Systems.SelectedInfoPanel
         private EntityQuery m_PaletteQuery;
         private ValueBindingHelper<Entity> m_CopiedPalette;
         private ValueBindingHelper<Entity[]> m_CopiedPaletteSet;
+        private EntityQuery m_AssetPackQuery;
+        private EntityQuery m_ZonePrefabEntityQuery;
+        private EntityQuery m_ThemePrefabEntityQuery;
 
         /// <summary>
         /// An enum to handle seasons.
@@ -301,7 +304,6 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_VanillaColorSets = new ();
             m_ContentFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, "SavedColorSet", "Custom");
             System.IO.Directory.CreateDirectory(m_ContentFolder);
-            m_EndFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
 
             m_SubMeshQuery = SystemAPI.QueryBuilder()
                 .WithAll<Game.Prefabs.SubMesh>()
@@ -312,6 +314,21 @@ namespace Recolor.Systems.SelectedInfoPanel
                   .WithAll<SwatchData>()
                   .WithNone<Deleted, Temp>()
                   .Build();
+
+            m_AssetPackQuery = SystemAPI.QueryBuilder()
+                .WithAll<AssetPackData>()
+                .WithNone<Deleted, Temp>()
+                .Build();
+
+            m_ThemePrefabEntityQuery = SystemAPI.QueryBuilder()
+                .WithAll<ThemeData>()
+                .WithNone<Deleted, Temp>()
+                .Build();
+
+            m_ZonePrefabEntityQuery = SystemAPI.QueryBuilder()
+                .WithAll<ZoneData, UIObjectData>()
+                .WithNone<Deleted, Temp>()
+                .Build();
 
             RequireForUpdate(m_SubMeshQuery);
             Enabled = false;
