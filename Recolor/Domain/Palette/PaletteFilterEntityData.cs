@@ -7,7 +7,7 @@ namespace Recolor.Domain.Palette
     using Unity.Entities;
 
     /// <summary>
-    /// Custom component for containing filters for palletes.
+    /// Custom component for containing filters prefab entities for palletes.
     /// </summary>
     public struct PaletteFilterEntityData : IBufferElementData
     {

@@ -7,6 +7,7 @@ namespace Recolor.Systems.Palettes
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using Colossal.Entities;
     using Colossal.Logging;
     using Colossal.PSI.Environment;
@@ -68,7 +69,30 @@ namespace Recolor.Systems.Palettes
                     m_SelectedSubcategory.Value = SIPColorFieldsSystem.NoSubcategoryName;
                 }
 
-                m_PaletteCategories.Value[(int)MenuType.Palette] = palettePrefab.m_Category;
+                if (palettePrefab.m_FilterType != PaletteFilterTypeData.PaletteFilterType.None &&
+                    EntityManager.TryGetBuffer(prefabEntity, isReadOnly: true, out DynamicBuffer<PaletteFilterEntityData> paletteFilterEntityDatas) &&
+                    paletteFilterEntityDatas.Length > 0)
+                {
+                    SetFilter((int)palettePrefab.m_FilterType);
+                    List<Entity> selectedPaletteFilterEntities = new List<Entity>();
+                    for (int i = 0; i < paletteFilterEntityDatas.Length; i++)
+                    {
+                        if (paletteFilterEntityDatas[i].m_PrefabEntity != Entity.Null &&
+                            CurrentListContainsPrefabEntity(paletteFilterEntityDatas[i].m_PrefabEntity))
+                        {
+                            selectedPaletteFilterEntities.Add(paletteFilterEntityDatas[i].m_PrefabEntity);
+                        }
+                    }
+
+                    m_SelectedFilterPrefabEntities.Value = selectedPaletteFilterEntities.ToArray();
+                    m_SelectedFilterPrefabEntities.Binding.TriggerUpdate();
+                }
+
+                if (palettePrefab.m_FilterType == PaletteFilterTypeData.PaletteFilterType.None ||
+                    m_SelectedFilterPrefabEntities.Value.Length == 0)
+                {
+                    SetFilter(0);
+                }
 
                 SwatchUIData[] swatchUIDatas = new SwatchUIData[swatchDatas.Length];
                 for (int i = 0; i < swatchUIDatas.Length; i++)
@@ -126,7 +150,8 @@ namespace Recolor.Systems.Palettes
                 palettePrefabBase.m_Category = m_PaletteCategories.Value[(int)MenuType.Palette];
                 palettePrefabBase.m_Swatches = GetSwatchInfos();
 
-                // Palette Filters are not implemented yet.
+                palettePrefabBase.m_FilterType = m_PaletteFilterType.Value;
+                palettePrefabBase.m_FilterNames = GetFilterNames();
 
                 if (m_SelectedSubcategory.Value == SIPColorFieldsSystem.NoSubcategoryName ||
                    !m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PaletteSubCategoryPrefab), m_SelectedSubcategory.Value), out PrefabBase prefabBase2) ||
