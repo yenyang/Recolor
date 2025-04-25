@@ -217,7 +217,7 @@ namespace Recolor.Systems.Palettes
         private void RemoveSwatch(int swatch)
         {
             if (m_Swatches.Value.Length > swatch &&
-                swatch > 0)
+                swatch >= 0)
             {
                 SwatchUIData[] swatchDatas = m_Swatches.Value;
                 SwatchUIData[] newSwatchDatas = new SwatchUIData[swatchDatas.Length - 1];

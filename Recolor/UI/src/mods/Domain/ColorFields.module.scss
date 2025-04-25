@@ -108,7 +108,7 @@
 }
 
 .SliderFieldWidth {
-    width: 300rem;
+    width: 220rem;
 }
 
 .SliderFieldWidth > div {
@@ -126,4 +126,21 @@
 .largeDropdownText {
     color: white !important;
     font-size: 14rem;
+}
+
+.paddingRight {
+    padding-right: 5rem !important;
+}
+
+.paddingRightAndLeft {
+    padding-right: 8rem !important;
+    padding-left: 5rem !important;
+}
+
+.smPaddingRight {
+    padding-right: 3rem !important;
+}
+
+.paddingLeft {
+    padding-left: 3rem !important;
 }

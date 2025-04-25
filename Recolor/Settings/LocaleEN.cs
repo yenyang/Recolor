@@ -116,6 +116,22 @@ namespace Recolor.Settings
                 { TooltipTitleKey("AllSubmeshes"), "All Submeshes" },
                 { TooltipDescriptionKey("AllSubmeshes"), "Changes the colors of all submeshes." },
                 { SectionLabel("SubMeshes"), "SubMeshes" },
+                { SectionLabel("PaletteEditorMenu"), "Palette Editor Menu" },
+                { SectionLabel("Palette"), "Palette" },
+                { TooltipDescriptionKey("SavePalette"), "Save Palette" },
+                { TooltipDescriptionKey("DeletePalette"), "Delete Palette" },
+                { SectionLabel("Subcategory"), "Subcategory" },
+                { TooltipDescriptionKey("EditSubcategory"), "Edit Subcategory" },
+                { SectionLabel("FilterType"), "Filter Type" },
+                { SectionLabel("FilterChoices"), "Filter Choices" },
+                { TooltipDescriptionKey("AddSubcategory"), "Generate a new Subcategory." },
+                { TooltipDescriptionKey("AddFilter"), "Add a compatible filter." },
+                { TooltipDescriptionKey("RemoveFilter"), "Remove a compatible filter." },
+                { SectionLabel("AddSwatch"), "Add a Swatch" },
+                { TooltipDescriptionKey("AddSwatch"), "Generates an additional and randomly colored swatch." },
+                { TooltipDescriptionKey("RemoveSwatch"), "Remove this swatch from the palette." },
+                { TooltipDescriptionKey("RandomizeSwatch"), "Randomize the color of this swatch." },
+                { TooltipDescriptionKey("ProbabilityWeight"), "Probability Weight" },
             };
         }
 

@@ -152,7 +152,10 @@ export const PaletteMenuComponent = () => {
                                 <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
                                     <VanillaComponentResolver.instance.Section title={"Palette"}>
                                         <PaletteBoxComponent Swatches={Swatches} totalWidth={80}></PaletteBoxComponent>
-                                        <span className={panelStyles.smallSpacer}></span>
+                                        { Swatches.length <= 3 ?
+                                            <span className={panelStyles.spacer15}></span> : 
+                                            <span className={panelStyles.spacer25}></span>
+                                        }
                                         <VanillaComponentResolver.instance.ToolButton src={saveToDiskSrc}          tooltip = {"Save Palette"}   onSelect={() => {handleClick("TrySavePalette")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
                                         <span className={panelStyles.wideSpacer}></span>
                                         <VanillaComponentResolver.instance.ToolButton src={trashSrc}     tooltip = {"Delete Palette"}   onSelect={() => {handleClick("DeletePalette")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
@@ -175,7 +178,7 @@ export const PaletteMenuComponent = () => {
                                                     onSelect={() => {
                                                             if (!ShowSubcategoryEditorMenu) { trigger(mod.id, "ShowSubcategoryEditorPanel"); trigger(mod.id, "EditSubcategory", SelectedSubcategory)}
                                                             else if (UniqueNames[MenuType.Subcategory] == SelectedSubcategory) { trigger(mod.id, "ShowSubcategoryEditorPanel"); }
-                                                            else {trigger(mod.id, "EditSubcategory", SelectedSubcategory); console.log("UN: " + UniqueNames[MenuType.Subcategory]); console.log(SelectedSubcategory)}}}
+                                                            else {trigger(mod.id, "EditSubcategory", SelectedSubcategory); }}}
                                                 />
                                             )}
                                             <span className={panelStyles.smallSpacer}></span>
@@ -220,7 +223,7 @@ export const PaletteMenuComponent = () => {
                                     </VanillaComponentResolver.instance.Section>
                                     {FilterEntities.length > 0 && SelectedFilterPrefabEntities.length > 0 && (
                                         <VanillaComponentResolver.instance.Section title={"Filter Choices"}>
-                                            <FocusDisabled>
+                                            <FocusDisabled disabled={true}>
                                                 <div className={styles.columnGroup}>
                                                     {SelectedFilterPrefabEntities.map((selectedEntity: Entity, index: number) => (
                                                         <div className={styles.rowGroup}>
@@ -279,7 +282,8 @@ export const PaletteMenuComponent = () => {
                                         </VanillaComponentResolver.instance.Section>
                                     )}
                                     <div className={classNames(styles.rowGroup, panelStyles.subtitleRow, styles.centered)}>
-                                        <div className={classNames(panelStyles.centeredSubTitle, styles.colorFieldWidth)}>Color</div>
+                                        <span className={panelStyles.colorSpacerLeft}></span>
+                                        <div className={classNames(panelStyles.centeredSubTitle, styles.colorFieldWidth)}>{translate("PhotoMode.PROPERTY_TITLE[Vignette.color]")}</div>
                                         <span className={panelStyles.sliderSpacerLeft}></span>
                                         <div className={classNames(panelStyles.probabilityWeightWidth, panelStyles.centeredSubTitle)}>Probability Weight</div>
                                     </div>

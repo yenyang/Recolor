@@ -86,17 +86,8 @@ export const SwatchComponent = (props: {info: SwatchUIData, index: number}) => {
         <>
             <div className={classNames(styles.rowGroup, styles.centered)}>
                 <div className={styles.columnGroup}>
-                    <div className={styles.rowGroup}>
-                        <VanillaComponentResolver.instance.ColorField 
-                            className={classNames(ColorFieldTheme.colorField, styles.rcColorField)} 
-                            value={props.info.SwatchColor} 
-                            focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} 
-                            onChange={(e) => {changeColor(props.index, e); setTextInput(convertColorToHexaDecimal(e))}}
-                            alpha={1}
-                        />
-                    </div>
-                    <div className={styles.rowGroup}>
-                        { Swatches.length > 2 && (
+                    <div className={styles.rowGroup }>
+                        { Swatches.length > 2 ? (
                             <VanillaComponentResolver.instance.ToolButton
                                 src={minusSrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
@@ -104,7 +95,9 @@ export const SwatchComponent = (props: {info: SwatchUIData, index: number}) => {
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                 onSelect={() => {handleSwatchClick("RemoveSwatch", props.index)}}
                             />
-                        )}
+                        ) : 
+                            <span className={styles.swapButtonWidth}></span>
+                        }
                         <VanillaComponentResolver.instance.ToolButton
                             src={randomSrc}
                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
@@ -119,7 +112,7 @@ export const SwatchComponent = (props: {info: SwatchUIData, index: number}) => {
                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                             onSelect={() => copyColor(props.info.SwatchColor)}
                         />
-                        { CanPasteColor && (
+                        { CanPasteColor ? (
                             <VanillaComponentResolver.instance.ToolButton
                                 src={pasteSrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
@@ -127,32 +120,38 @@ export const SwatchComponent = (props: {info: SwatchUIData, index: number}) => {
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                 onSelect={() => {handleSwatchClick("PasteSwatchColor", props.index); setUpdateHexaDecimal(props.info.SwatchColor);}}
                             />
-                        )}
+                        ) :      
+                        <span className={styles.swapButtonWidth}></span>
+                        }
+                        <div className={styles.paddingRightAndLeft}> 
+                            <VanillaComponentResolver.instance.ColorField 
+                                className={classNames(ColorFieldTheme.colorField, styles.rcColorField, styles.marginRight)} 
+                                value={props.info.SwatchColor} 
+                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} 
+                                onChange={(e) => {changeColor(props.index, e); setTextInput(convertColorToHexaDecimal(e))}}
+                                alpha={1}
+                            />
+                        </div>
+                        { ShowHexaDecimals ? (
+                            <FocusDisabled disabled={true}>
+                                    <StringInputField
+                                        value={textInput.replace(/[\r\n]+/gm, '')}
+                                        disabled ={false}
+                                        onChange={ (e : string) => { setTextInput(e); }}
+                                        onChangeEnd={HandleTextInput}
+                                        className={validInput?  classNames(StringInputFieldStyle.textInput, styles.rcColorFieldInput,  styles.marginLeft) : classNames(StringInputFieldStyle.textInput, styles.rcColorFieldInput, styles.invalidFieldInput,  styles.marginLeft)}
+                                        multiline={false}
+                                        maxLength={9}
+                                    />
+                            </FocusDisabled>
+                        ) : <span className={styles.rcColorFieldInput}></span>
+                        }
                     </div>
-                    { ShowHexaDecimals && (
-                        <FocusDisabled disabled={true}>
-                            <div className={styles.rowGroup}>
-                                <StringInputField
-                                    value={textInput.replace(/[\r\n]+/gm, '')}
-                                    disabled ={false}
-                                    onChange={ (e : string) => { setTextInput(e); }}
-                                    onChangeEnd={HandleTextInput}
-                                    className={validInput?  classNames(StringInputFieldStyle.textInput, styles.rcColorFieldInput) : classNames(StringInputFieldStyle.textInput, styles.rcColorFieldInput, styles.invalidFieldInput)}
-                                    multiline={false}
-                                    maxLength={9}
-                                />
-                            </div>
-                        </FocusDisabled>
-                    )}
                 </div>
                 <div className={styles.columnGroup}>
                     <div className={styles.SliderFieldWidth}>
                         <SliderField value={props.info.ProbabilityWeight} min={1} max={200} fractionDigits={0} onChange={(e: number) => {changeValue("ChangeProbabilityWeight", props.index ,e)}}></SliderField>
                     </div> 
-                    <span className={styles.belowSwapButton}></span>
-                    { ShowHexaDecimals && (
-                        <span className={styles.inputHeight}></span>
-                    )}
                 </div>
             </div>
         </>
