@@ -13,6 +13,8 @@ import { useState } from "react";
 import { entityEquals } from "cs2/utils";
 import { FocusDisabled } from "cs2/input";
 import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaComponentResolver";
+import { useLocalization } from "cs2/l10n";
+import locale from "../lang/en-US.json";
 
 const uilStandard =                          "coui://uil/Standard/";
 const editSrc =                        uilStandard + "PencilPaper.svg";
@@ -41,6 +43,9 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
     const EditingPrefabEntity = useValue(EditingPrefabEntity$);    
     const ShowPaletteEditorPanel = useValue(ShowPaletteEditorPanel$);
 
+    
+    const { translate } = useLocalization();
+
     function GetCurrentSwatches() : JSX.Element {
         for (let i=0; i<PaletteChooserData.DropdownItems[props.channel].length; i++) 
         {
@@ -66,7 +71,7 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                             theme = {basicDropDownTheme}
                             content={
                                 <FocusDisabled>
-                                    <DropdownItem value={"None"} className={basicDropDownTheme.dropdownItem} onChange={() => removePalette(props.channel)}>
+                                    <DropdownItem value={translate("Recolor.SECTION_TITLE[None]" , locale["Recolor.SECTION_TITLE[None]"])} className={basicDropDownTheme.dropdownItem} onChange={() => removePalette(props.channel)}>
                                         <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.largeDropdownText)}>None</div>
                                     </DropdownItem>
                                     {
@@ -95,7 +100,7 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                             <VanillaComponentResolver.instance.ToolButton
                                 src={editSrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                tooltip = {"Edit Palette"}
+                                tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[EditPalette]", locale["Recolor.TOOLTIP_DESCRIPTION[EditPalette]"])}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                 selected = {entityEquals(PaletteChooserData.SelectedPaletteEntities[props.channel], EditingPrefabEntity) && EditingPrefabEntity.index != 0 && ShowPaletteEditorPanel}
                                 onSelect={() => (entityEquals(PaletteChooserData.SelectedPaletteEntities[props.channel], EditingPrefabEntity) && EditingPrefabEntity.index != 0)?
@@ -107,7 +112,7 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                             <VanillaComponentResolver.instance.ToolButton
                                 src={copySrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                tooltip = {"Copy Palette"}
+                                tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[CopyPalette]" , locale["Recolor.TOOLTIP_DESCRIPTION[CopyPalette]"])}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                 onSelect={() => trigger(mod.id, "CopyPalette", PaletteChooserData.SelectedPaletteEntities[props.channel])}
                             />
@@ -116,7 +121,7 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                             <VanillaComponentResolver.instance.ToolButton
                                 src={pasteSrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                tooltip = {"Paste Palette"}
+                                tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PastePalette]" , locale["Recolor.TOOLTIP_DESCRIPTION[PastePalette]"])}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                 onSelect={() => trigger(mod.id, "AssignPalette", props.channel, CopiedPalette)}
                             />

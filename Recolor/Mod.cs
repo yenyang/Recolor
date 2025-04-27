@@ -3,7 +3,7 @@
 // </copyright>
 
 // #define DUMP_VANILLA_LOCALIZATION
-// #define EXPORT_EN_US
+#define EXPORT_EN_US
 namespace Recolor
 {
     using System;

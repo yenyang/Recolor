@@ -16,7 +16,9 @@ namespace Recolor.Systems.Palettes
     using Game;
     using Game.Common;
     using Game.Prefabs;
+    using Game.SceneFlow;
     using Game.Tools;
+    using Game.UI.InGame;
     using Newtonsoft.Json;
     using Recolor.Domain.Palette;
     using Recolor.Domain.Palette.Prefabs;
@@ -24,6 +26,7 @@ namespace Recolor.Systems.Palettes
     using Recolor.Systems.SelectedInfoPanel;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Entities.Serialization;
     using UnityEngine;
 
     /// <summary>
@@ -57,6 +60,10 @@ namespace Recolor.Systems.Palettes
         private ValueBindingHelper<PaletteFilterTypeData.PaletteFilterType> m_PaletteFilterType;
         private ValueBindingHelper<PaletteFilterEntityUIData[]> m_FilterEntities;
         private ValueBindingHelper<Entity[]> m_SelectedFilterPrefabEntities;
+        private ValueBindingHelper<string[]> m_SupportedLocaleCodes;
+        private ValueBindingHelper<string> m_ActiveLocaleCode;
+        private ValueBindingHelper<string> m_FallbackLocaleCode;
+        private ValueBindingHelper<LocalizationUIData[][]> m_LocalizationUIDatas;
 
         /// <summary>
         /// Enum for handing common events for different menus.
@@ -103,6 +110,10 @@ namespace Recolor.Systems.Palettes
             m_PaletteFilterType = CreateBinding("SelectedFilterType", PaletteFilterTypeData.PaletteFilterType.None);
             m_FilterEntities = CreateBinding("FilterEntities", new PaletteFilterEntityUIData[0]);
             m_SelectedFilterPrefabEntities = CreateBinding("SelectedFilterPrefabEntities", new Entity[0]);
+            m_SupportedLocaleCodes = CreateBinding("SupportedLocaleCodes", GameManager.instance.localizationManager.GetSupportedLocales());
+            m_ActiveLocaleCode = CreateBinding("ActiveLocale", GameManager.instance.localizationManager.activeLocaleId);
+            m_FallbackLocaleCode = CreateBinding("FallbackLocale", GameManager.instance.localizationManager.fallbackLocaleId);
+            m_LocalizationUIDatas = CreateBinding("LocalizationDatas", new LocalizationUIData[2][] { new LocalizationUIData[] { new LocalizationUIData(GameManager.instance.localizationManager.activeLocaleId, string.Empty, string.Empty), }, new LocalizationUIData[] { new LocalizationUIData(GameManager.instance.localizationManager.activeLocaleId, string.Empty, string.Empty), } });
 
             // Listen to trigger event that are sent from the UI to the C#.
             CreateTrigger("TrySavePalette", TrySavePalette);
@@ -127,6 +138,8 @@ namespace Recolor.Systems.Palettes
             CreateTrigger<int, Entity>("SetFilterChoice", SetFilterChoice);
             CreateTrigger("AddFilterChoice", AddFilterChoice);
             CreateTrigger<int>("RemoveFilterChoice", RemoveFilterChoice);
+            CreateTrigger<string, int>("ChangeLocaleCode", ChangeLocaleCode);
+            CreateTrigger("AddLocale", AddLocale);
 
             m_SubcategoryQuery = SystemAPI.QueryBuilder()
                 .WithAll<PaletteSubcategoryData>()

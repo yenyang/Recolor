@@ -17,6 +17,8 @@ import { CategorySection } from "./CategorySection";
 import { LocaleSection } from "./LocaleSection";
 import { getModule } from "cs2/modding";
 import boxStyles from "../PaletteBoxComponent/PaletteBoxStyles.module.scss";
+import locale from "../lang/en-US.json";
+import { LocalizationUIData } from "mods/Domain/PaletteAndSwatches/LocalizationUIData";
 
 const uilStandard =                         "coui://uil/Standard/";
 const closeSrc =                        uilStandard +  "XClose.svg";
@@ -33,6 +35,7 @@ const subcategoryIcon =                 uilStandard+"GearOnText.svg";
 const UniqueNames$ = bindValue<string[]>(mod.id, "UniqueNames");
 const PaletteCategories$ = bindValue<PaletteCategory[]>(mod.id, "PaletteCategories");
 const ShowSubcategoryEditorMenu$ = bindValue<boolean>(mod.id, "ShowSubcategoryEditorPanel");
+const LocalizationUIDatas$ = bindValue<LocalizationUIData[][]>(mod.id, "LocalizationDatas");
 
 function handleClick(event: string) {
     trigger(mod.id, event);
@@ -49,6 +52,7 @@ export const SubcategoryEditorMenuComponent = () => {
     const UniqueNames = useValue(UniqueNames$);
     const PaletteCategories = useValue(PaletteCategories$);
     const ShowSubcategoryEditorMenu = useValue(ShowSubcategoryEditorMenu$);
+    const LocalizationUIDatas = useValue(LocalizationUIDatas$);
 
     const { translate } = useLocalization();
 
@@ -62,12 +66,12 @@ export const SubcategoryEditorMenuComponent = () => {
                     )}
                     footer={(
                         <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
-                                <VanillaComponentResolver.instance.Section title={"Subcategory"}>
+                                <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Subcategory]" , locale["Recolor.SECTION_TITLE[Subcategory]"])}>
                                     <div className={classNames(ColorFieldTheme.colorField, boxStyles.subcategory, boxStyles.centered, styles.dropdownText, basicDropDownTheme.dropdownItem)}>{UniqueNames[MenuType.Subcategory]}</div>
                                     <span className={panelStyles.smallSpacer}></span>
-                                    <VanillaComponentResolver.instance.ToolButton src={saveToDiskSrc}          tooltip = {"Save Subcategory"}   onSelect={() => {handleClick("TrySaveSubcategory")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                    <VanillaComponentResolver.instance.ToolButton src={saveToDiskSrc}          tooltip = { translate("Recolor.TOOLTIP_DESCRIPTION[SaveSubcategory]" , locale["Recolor.TOOLTIP_DESCRIPTION[SaveSubcategory]"])}   onSelect={() => {handleClick("TrySaveSubcategory")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
                                     <span className={panelStyles.wideSpacer}></span>
-                                    <VanillaComponentResolver.instance.ToolButton src={trashSrc}     tooltip = {"Delete Subcategory"}   onSelect={() => {handleClick("DeleteSubcategory")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                    <VanillaComponentResolver.instance.ToolButton src={trashSrc}     tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[DeleteSubcategory]" , locale["Recolor.TOOLTIP_DESCRIPTION[DeleteSubcategory]"])}   onSelect={() => {handleClick("DeleteSubcategory")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
                                 </VanillaComponentResolver.instance.Section>
                         </InfoSection>
                     )}
@@ -76,7 +80,7 @@ export const SubcategoryEditorMenuComponent = () => {
                     <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
                         <CategorySection category={PaletteCategories[MenuType.Subcategory]} menu={MenuType.Subcategory}></CategorySection>
                     </InfoSection>
-                    <LocaleSection></LocaleSection>
+                    <LocaleSection menu={MenuType.Subcategory} localizations={LocalizationUIDatas[MenuType.Subcategory]}></LocaleSection>
                 </Panel>
             )}
         </>

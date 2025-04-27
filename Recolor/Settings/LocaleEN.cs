@@ -132,6 +132,23 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("RemoveSwatch"), "Remove this swatch from the palette." },
                 { TooltipDescriptionKey("RandomizeSwatch"), "Randomize the color of this swatch." },
                 { TooltipDescriptionKey("ProbabilityWeight"), "Probability Weight" },
+                { SectionLabel("Category"), "Category" },
+                { TooltipDescriptionKey("BuildingCategory"), "Palette will be available to use for Buildings." },
+                { TooltipDescriptionKey("VehicleCategory"), "Palette will be available to use for Vehicles." },
+                { TooltipDescriptionKey("PropCategory"), "Palette will be available to use for Props." },
+                { TooltipDescriptionKey("AllCategories"), "Palette will not be limited based on category." },
+                { TooltipDescriptionKey("AddLocale"), "Adds another set of input fields for entering translations for another language." },
+                { SectionLabel("AddALocale"), "Add a Locale" },
+                { SectionLabel("UniqueName"), "Unique Name" },
+                { SectionLabel("None"), "None" },
+                { TooltipDescriptionKey("EditPalette"), "Edit the selected palette." },
+                { TooltipDescriptionKey("CopyPalette"), "Copy the selected palette to paste later." },
+                { TooltipDescriptionKey("PastePalette"), "Paste the copied palette." },
+                { TooltipDescriptionKey("SaveSubcategory"), "Save Subcategory" },
+                { TooltipDescriptionKey("DeleteSubcategory"), "Delete Subcategory" },
+                { SectionLabel("LocaleCode"), "Locale Code" },
+                { SectionLabel("LocalizedName"), "Localized Name" },
+                { SectionLabel("LocalizedDescription"), "Localized Description" },
             };
         }
 

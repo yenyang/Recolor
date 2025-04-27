@@ -91,7 +91,7 @@ export const SwatchComponent = (props: {info: SwatchUIData, index: number}) => {
                             <VanillaComponentResolver.instance.ToolButton
                                 src={minusSrc}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                tooltip = {"Remove"}
+                                tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[RemoveSwatch]" , locale["Recolor.TOOLTIP_DESCRIPTION[RemoveSwatch]"])}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                 onSelect={() => {handleSwatchClick("RemoveSwatch", props.index)}}
                             />
@@ -101,7 +101,7 @@ export const SwatchComponent = (props: {info: SwatchUIData, index: number}) => {
                         <VanillaComponentResolver.instance.ToolButton
                             src={randomSrc}
                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
-                            tooltip = {"Randomize"}
+                            tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[RandomizeSwatch]" ,locale["Recolor.TOOLTIP_DESCRIPTION[RandomizeSwatch]"])}
                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                             onSelect={() => handleSwatchClick("RandomizeSwatch", props.index)}
                         />

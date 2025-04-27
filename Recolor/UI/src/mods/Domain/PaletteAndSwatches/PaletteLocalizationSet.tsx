@@ -3,46 +3,86 @@ import { StringInputField, StringInputFieldStyle } from "mods/SIPColorComponent/
 import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaComponentResolver";
 import { useState } from "react";
 import styles from ".././ColorFields.module.scss";
+import { bindValue, trigger, useValue } from "cs2/api";
+import mod from "mod.json";
+import { getModule } from "cs2/modding";
+import { Dropdown, DropdownItem, DropdownToggle } from "cs2/ui";
+import { useLocalization } from "cs2/l10n";
+import locale from "../../lang/en-US.json";
+import { LocalizationUIData } from "./LocalizationUIData";
+import { MenuType } from "../MenuType";
 
-export const PaletteLocalizationSet = (props : { localeCode : string}) => {
 
-    let [localeKey, setLocaleKey] = useState(props.localeCode);
-    let [textInput, setTextInput] = useState("");
+const SupportedLocaleCodes$ = bindValue<string[]>(mod.id, "SupportedLocaleCodes");
+const LocalizationUIDatas$ = bindValue<LocalizationUIData[][]>(mod.id, "LocalizationDatas");
+
+const dropDownThemes = getModule('game-ui/editor/themes/editor-dropdown.module.scss', 'classes');
+
+export const PaletteLocalizationSet = (props : { localizationData : LocalizationUIData, menu : MenuType, index: number}) => {
+
+    const SupportedLocaleCodes = useValue(SupportedLocaleCodes$);    
+    const LocalizationUIDatas = useValue(LocalizationUIDatas$);
+
+    let [localizedNameInput, setLocalizedNameInput] = useState(props.localizationData.LocalizedName);    
+    let [localizedDescriptionInput, setLocalizedDescriptionInput] = useState(props.localizationData.LocalizedDescription);
     let [validInput, setValidInput] = useState(true);
 
     function HandleTextInput () {
        setValidInput(true);
     }
 
+    function IsLocaleCodeAlreadySelected(localeCode: string) 
+    {
+        for (let i=0; i<LocalizationUIDatas[props.menu].length; i++) 
+        {
+            if (localeCode == LocalizationUIDatas[props.menu][i].LocaleCode) 
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    const { translate } = useLocalization();
+
     return (
         <>
-            <VanillaComponentResolver.instance.Section title={"Locale Code"}>
-                <StringInputField 
-                    value={localeKey.replace(/[\r\n]+/gm, '')}
-                    disabled ={false}
-                    onChange={ (e : string) => { setLocaleKey(e); }}
-                    onChangeEnd={HandleTextInput}
-                    className={validInput?  classNames(StringInputFieldStyle.textInput, styles.nameFieldInput) : classNames(StringInputFieldStyle.textInput, styles.nameFieldInput, styles.invalidFieldInput)}
-                    multiline={false}
-                    maxLength={7}
-                ></StringInputField>
+            <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[LocaleCode]" ,locale["Recolor.SECTION_TITLE[LocaleCode]"])}>
+                <Dropdown 
+                    theme = {dropDownThemes}
+                    content={                    
+                        SupportedLocaleCodes.map((localeCode) => (
+                            <>
+                                { (IsLocaleCodeAlreadySelected(localeCode) == false || LocalizationUIDatas[props.menu][props.index].LocaleCode == localeCode) && 
+                                    <DropdownItem value={localeCode} className={dropDownThemes.dropdownItem} selected={localeCode==props.localizationData.LocaleCode} onChange={(value: string) =>  trigger(mod.id, "ChangeLocaleCode", value, props.index)}>
+                                        <div className={styles.localeCodeWidth}>{localeCode}</div>
+                                    </DropdownItem>
+                                }
+                            </>
+                        ))
+                    }>
+                    <DropdownToggle disabled={false}>
+                        <div className={styles.localeCodeWidth}>{props.localizationData.LocaleCode}</div>
+                    </DropdownToggle>
+                </Dropdown>
             </VanillaComponentResolver.instance.Section>
-            <VanillaComponentResolver.instance.Section title={"Localized Name"}>
+            <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[LocalizedName]" ,locale["Recolor.SECTION_TITLE[LocalizedName]"])}>
                 <StringInputField 
-                    value={textInput.replace(/[\r\n]+/gm, '')}
+                    value={localizedNameInput.replace(/[\r\n]+/gm, '')}
                     disabled ={false}
-                    onChange={ (e : string) => { setTextInput(e); }}
+                    onChange={ (e : string) => { setLocalizedNameInput(e); }}
                     onChangeEnd={HandleTextInput}
                     className={validInput?  classNames(StringInputFieldStyle.textInput, styles.nameFieldInput) : classNames(StringInputFieldStyle.textInput, styles.nameFieldInput, styles.invalidFieldInput)}
                     multiline={false}
                     maxLength={32}
                 ></StringInputField>
             </VanillaComponentResolver.instance.Section>
-            <VanillaComponentResolver.instance.Section title={"Localized Description"}>
+            <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[LocalizedDescription]", locale["Recolor.SECTION_TITLE[LocalizedDescription]"])}>
                 <StringInputField 
-                    value={textInput}
+                    value={localizedDescriptionInput}
                     disabled ={false}
-                    onChange={ (e : string) => { setTextInput(e); }}
+                    onChange={ (e : string) => { setLocalizedDescriptionInput(e); }}
                     onChangeEnd={HandleTextInput}
                     className={validInput?  classNames(StringInputFieldStyle.textInput, styles.nameFieldInput) : classNames(StringInputFieldStyle.textInput, styles.nameFieldInput, styles.invalidFieldInput)}
                     multiline={true}

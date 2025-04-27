@@ -27,6 +27,7 @@ import { LocaleSection } from "./LocaleSection";
 import { PaletteFilterEntityUIData } from "mods/Domain/PaletteAndSwatches/PaletteFilterEntityUIData";
 import { entityEquals } from "cs2/utils";
 import { FocusDisabled } from "cs2/input";
+import { LocalizationUIData } from "mods/Domain/PaletteAndSwatches/LocalizationUIData";
 
 /*
 import closeSrc from "images/uilStandard/XClose.svg";
@@ -59,6 +60,7 @@ const ShowSubcategoryEditorMenu$ = bindValue<boolean>(mod.id, "ShowSubcategoryEd
 const SelectedFilterType$ = bindValue<PaletteFilterType>(mod.id, "SelectedFilterType");
 const FilterEntities$ = bindValue<PaletteFilterEntityUIData[]>(mod.id, "FilterEntities");
 const SelectedFilterPrefabEntities$ = bindValue<Entity[]>(mod.id, "SelectedFilterPrefabEntities");
+const LocalizationUIDatas$ = bindValue<LocalizationUIData[][]>(mod.id, "LocalizationDatas");
 
 function handleClick(event: string) {
     trigger(mod.id, event);
@@ -85,6 +87,7 @@ export const PaletteMenuComponent = () => {
     const SelectedFilterType = useValue(SelectedFilterType$);
     const FilterEntities = useValue(FilterEntities$);
     const SelectedFilterPrefabEntities = useValue(SelectedFilterPrefabEntities$);
+    const LocalizationUIDats = useValue(LocalizationUIDatas$);
     
     const { translate } = useLocalization();
 
@@ -131,11 +134,11 @@ export const PaletteMenuComponent = () => {
     }
     
 
-    let FilterTypes : string[] = [
-        "None",
-        "Theme",
-        "Pack",
-        "Zoning Type"
+    let FilterTypes : (string | null) [] = [
+        translate("Recolor.SECTION_TITLE[None]", locale["Recolor.SECTION_TITLE[None]"]),
+        translate("Toolbar.THEME_PANEL_TITLE", "Theme"),
+        translate("Toolbar.ASSET_PACKS_PANEL_TITLE", "Pack"),
+        translate("Tutorials.TITLE[ZoningTutorialZoneTypes]", "Zone Types"),
     ];
 
     return (
@@ -146,19 +149,19 @@ export const PaletteMenuComponent = () => {
                         <div className={classNames(panelStyles.panelRowGroup, panelStyles.panel, ResidentialBuildingSelected? panelStyles.residenialBuildingPosition : "")}>
                         <Panel 
                             header={(
-                                <HeaderSection title="Palette Editor Menu" icon={colorPaletteSrc} onCloseEventName={"TogglePaletteEditorMenu"}></HeaderSection>
+                                <HeaderSection title={translate("Recolor.SECTION_TITLE[PaletteEditorMenu]" ,locale["Recolor.SECTION_TITLE[PaletteEditorMenu]"])} icon={colorPaletteSrc} onCloseEventName={"TogglePaletteEditorMenu"}></HeaderSection>
                             )}
                             footer = {(
                                 <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
-                                    <VanillaComponentResolver.instance.Section title={"Palette"}>
+                                    <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Palette]" ,locale["Recolor.SECTION_TITLE[Palette]"])}>
                                         <PaletteBoxComponent Swatches={Swatches} totalWidth={80}></PaletteBoxComponent>
                                         { Swatches.length <= 3 ?
                                             <span className={panelStyles.spacer15}></span> : 
                                             <span className={panelStyles.spacer25}></span>
                                         }
-                                        <VanillaComponentResolver.instance.ToolButton src={saveToDiskSrc}          tooltip = {"Save Palette"}   onSelect={() => {handleClick("TrySavePalette")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                        <VanillaComponentResolver.instance.ToolButton src={saveToDiskSrc}          tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SavePalette]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SavePalette]"])}   onSelect={() => {handleClick("TrySavePalette")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
                                         <span className={panelStyles.wideSpacer}></span>
-                                        <VanillaComponentResolver.instance.ToolButton src={trashSrc}     tooltip = {"Delete Palette"}   onSelect={() => {handleClick("DeletePalette")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                        <VanillaComponentResolver.instance.ToolButton src={trashSrc}     tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[DeletePalette]" ,locale["Recolor.TOOLTIP_DESCRIPTION[DeletePalette]"])}   onSelect={() => {handleClick("DeletePalette")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
                                     </VanillaComponentResolver.instance.Section>
                                 </InfoSection>
                             )}>
@@ -166,13 +169,13 @@ export const PaletteMenuComponent = () => {
                                 <UniqueNameSectionComponent uniqueName={UniqueNames[MenuType.Palette]} uniqueNameType={MenuType.Palette}></UniqueNameSectionComponent>
                                 <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
                                     <CategorySection category={PaletteCategories[MenuType.Palette]} menu={MenuType.Palette}></CategorySection>
-                                    <VanillaComponentResolver.instance.Section title={"Subcategory"}>
+                                    <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Subcategory]" ,locale["Recolor.SECTION_TITLE[Subcategory]"])}>
                                         <>
                                             { (SelectedSubcategory != Subcategories[0]) && (
                                                 <VanillaComponentResolver.instance.ToolButton
                                                     src={editSrc}
                                                     focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                                    tooltip = {"Edit Subcategory"}
+                                                    tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[EditSubcategory]" ,locale["Recolor.TOOLTIP_DESCRIPTION[EditSubcategory]"])}
                                                     className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                                     selected = {UniqueNames[MenuType.Subcategory] == SelectedSubcategory && ShowSubcategoryEditorMenu}
                                                     onSelect={() => {
@@ -198,14 +201,14 @@ export const PaletteMenuComponent = () => {
                                                 </DropdownToggle>
                                             </Dropdown>
                                             <span className={panelStyles.smallSpacer}></span>
-                                            <VanillaComponentResolver.instance.ToolButton src={plusSrc}  selected={UniqueNames[MenuType.Subcategory] != SelectedSubcategory && ShowSubcategoryEditorMenu}        tooltip = {"Add Subcategory"}        className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
+                                            <VanillaComponentResolver.instance.ToolButton src={plusSrc}  selected={UniqueNames[MenuType.Subcategory] != SelectedSubcategory && ShowSubcategoryEditorMenu}        tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[AddSubcategory]" ,locale["Recolor.TOOLTIP_DESCRIPTION[AddSubcategory]"])}        className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
                                                 onSelect={() => {
                                                     if (!ShowSubcategoryEditorMenu) { trigger(mod.id, "ShowSubcategoryEditorPanel")} 
                                                     else if (UniqueNames[MenuType.Subcategory] == SelectedSubcategory) { trigger(mod.id, "GenerateNewSubcategory")}
                                                     else {trigger(mod.id, "ShowSubcategoryEditorPanel")}}} />
                                         </>
                                     </VanillaComponentResolver.instance.Section>
-                                    <VanillaComponentResolver.instance.Section title={"Filter Type"}>
+                                    <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[FilterType]", locale["Recolor.SECTION_TITLE[FilterType]"])}>
                                             <Dropdown 
                                                 theme = {dropDownThemes}
                                                 content={                    
@@ -222,7 +225,7 @@ export const PaletteMenuComponent = () => {
                                             </Dropdown>
                                     </VanillaComponentResolver.instance.Section>
                                     {FilterEntities.length > 0 && SelectedFilterPrefabEntities.length > 0 && (
-                                        <VanillaComponentResolver.instance.Section title={"Filter Choices"}>
+                                        <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[FilterChoices]", locale["Recolor.SECTION_TITLE[FilterChoices]"])}>
                                             <FocusDisabled disabled={true}>
                                                 <div className={styles.columnGroup}>
                                                     {SelectedFilterPrefabEntities.map((selectedEntity: Entity, index: number) => (
@@ -255,12 +258,12 @@ export const PaletteMenuComponent = () => {
                                                             </Dropdown>
                                                             <span className={panelStyles.smallSpacer}></span>
                                                             { SelectedFilterPrefabEntities.length < FilterEntities.length - 1 && index == SelectedFilterPrefabEntities.length - 1 && (
-                                                                <VanillaComponentResolver.instance.ToolButton src={plusSrc}  tooltip = {"Add a compatible filter"}        className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
+                                                                <VanillaComponentResolver.instance.ToolButton src={plusSrc}  tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[AddFilter]" ,locale["Recolor.TOOLTIP_DESCRIPTION[AddFilter]"])}        className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
                                                                     onSelect={() => trigger(mod.id, "AddFilterChoice")}
                                                                 />
                                                             )}
                                                             { FilterEntities.length > 2 && index != SelectedFilterPrefabEntities.length - 1 && (
-                                                                <VanillaComponentResolver.instance.ToolButton src={minusSrc}  tooltip = {"Remove a compatible filter"}        className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
+                                                                <VanillaComponentResolver.instance.ToolButton src={minusSrc}  tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[RemoveFilter]", locale["Recolor.TOOLTIP_DESCRIPTION[RemoveFilter]"])}        className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
                                                                     onSelect={() => trigger(mod.id, "RemoveFilterChoice", index)}
                                                                 />
                                                             )}
@@ -274,25 +277,25 @@ export const PaletteMenuComponent = () => {
                                         </VanillaComponentResolver.instance.Section>
                                     )}
                                 </InfoSection>
-                                <LocaleSection></LocaleSection>
+                                <LocaleSection menu={MenuType.Palette} localizations={LocalizationUIDats[MenuType.Palette]}></LocaleSection>
                                 <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
                                     { Swatches.length < 8 && (
-                                        <VanillaComponentResolver.instance.Section title={"Add a Swatch"}>
-                                            <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {"Add Swatch"}   onSelect={() => {handleClick("AddASwatch")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                        <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[AddSwatch]" ,locale["Recolor.SECTION_TITLE[AddSwatch]"])}>
+                                            <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[AddSwatch]" , locale["Recolor.TOOLTIP_DESCRIPTION[AddSwatch]"])}   onSelect={() => {handleClick("AddASwatch")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
                                         </VanillaComponentResolver.instance.Section>
                                     )}
                                     <div className={classNames(styles.rowGroup, panelStyles.subtitleRow, styles.centered)}>
                                         <span className={panelStyles.colorSpacerLeft}></span>
                                         <div className={classNames(panelStyles.centeredSubTitle, styles.colorFieldWidth)}>{translate("PhotoMode.PROPERTY_TITLE[Vignette.color]")}</div>
                                         <span className={panelStyles.sliderSpacerLeft}></span>
-                                        <div className={classNames(panelStyles.probabilityWeightWidth, panelStyles.centeredSubTitle)}>Probability Weight</div>
+                                        <div className={classNames(panelStyles.probabilityWeightWidth, panelStyles.centeredSubTitle)}>{translate("Recolor.TOOLTIP_DESCRIPTION[ProbabilityWeight]" , locale["Recolor.TOOLTIP_DESCRIPTION[ProbabilityWeight]"])}</div>
                                     </div>
                                     { Swatches.map((currentSwatch, index:number) => (
                                         <SwatchComponent info={currentSwatch} index={index}></SwatchComponent>
                                     ))}
                                     { Swatches.length >= 8 && (
-                                        <VanillaComponentResolver.instance.Section title={"Add a Swatch"}>
-                                            <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {"Add Swatch"}   onSelect={() => {handleClick("AddASwatch")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                        <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[AddSwatch]" ,locale["Recolor.SECTION_TITLE[AddSwatch]"])}>
+                                            <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[AddSwatch]" , locale["Recolor.TOOLTIP_DESCRIPTION[AddSwatch]"])}   onSelect={() => {handleClick("AddASwatch")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
                                         </VanillaComponentResolver.instance.Section>
                                     )}
                                 </InfoSection>

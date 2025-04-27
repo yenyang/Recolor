@@ -7,12 +7,16 @@ import { StringInputField, StringInputFieldStyle } from "mods/SIPColorComponent/
 import classNames from "classnames";
 import styles from "../Domain/ColorFields.module.scss";
 import { MenuType } from "mods/Domain/MenuType";
+import { useLocalization } from "cs2/l10n";
+import locale from "../lang/en-US.json";
 
 export const UniqueNameSectionComponent = (props: {uniqueName: string, uniqueNameType: MenuType}) => {
     let [uniqueNameInput, setTextInput] = useState(props.uniqueName);
     let [validInput, setValidInput] = useState(true);
     let [updateText, setUpdateText] = useState(props.uniqueName);
 
+    const { translate } = useLocalization();
+    
     function HandleTextInput () {
             setValidInput(true);
             trigger(mod.id, "ChangeUniqueName", uniqueNameInput, props.uniqueNameType);
@@ -27,7 +31,7 @@ export const UniqueNameSectionComponent = (props: {uniqueName: string, uniqueNam
     return (
         <>
             <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
-                <VanillaComponentResolver.instance.Section title={"Unique Name"}>
+                <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[UniqueName]", locale["Recolor.SECTION_TITLE[UniqueName]"])}>
                     <StringInputField 
                         value={uniqueNameInput.replace(/[\r\n]+/gm, '')}
                         disabled ={false}

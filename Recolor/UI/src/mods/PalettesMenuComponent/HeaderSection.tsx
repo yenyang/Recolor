@@ -7,13 +7,13 @@ import { getModule } from "cs2/modding";
 import { trigger } from "cs2/api";
 import mod from "../../../mod.json";
 
-
 const uilStandard =                         "coui://uil/Standard/";
 const closeSrc =         uilStandard +  "XClose.svg";
 
 const panelTheme = getModule("game-ui/common/panel/panel.module.scss", "classes");
 
-export const HeaderSection = (props: {title: string, icon: string, onCloseEventName: string}) => {
+export const HeaderSection = (props: {title: string | null, icon: string, onCloseEventName: string}) => {
+
     return (
         <div className={styles.rowGroup}>
             <div className={panelTheme.icon}>
