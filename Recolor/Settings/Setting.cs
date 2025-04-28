@@ -8,6 +8,7 @@ namespace Recolor.Settings
     using Game;
     using Game.Input;
     using Game.Modding;
+    using Game.SceneFlow;
     using Game.Settings;
     using Game.Tools;
     using Recolor.Systems.ColorVariations;
@@ -120,6 +121,12 @@ namespace Recolor.Settings
         public bool Minimized { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating the selected locale codes.
+        /// </summary>
+        [SettingsUIHidden]
+        public string[] SelectedLocaleCodes { get; set; }
+
+        /// <summary>
         /// Sets a value indicating whether: a button for Resetting the settings for keybinds.
         /// </summary>
         [SettingsUIButton]
@@ -213,6 +220,7 @@ namespace Recolor.Settings
             ShowHexaDecimals = false;
             Minimized = false;
             AlwaysMinimizedAtGameStart = false;
+            SelectedLocaleCodes = new string[] { GameManager.instance.localizationManager.activeLocaleId };
         }
 
         private bool IsNotGame()

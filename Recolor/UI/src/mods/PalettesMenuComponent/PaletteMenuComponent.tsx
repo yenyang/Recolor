@@ -87,7 +87,7 @@ export const PaletteMenuComponent = () => {
     const SelectedFilterType = useValue(SelectedFilterType$);
     const FilterEntities = useValue(FilterEntities$);
     const SelectedFilterPrefabEntities = useValue(SelectedFilterPrefabEntities$);
-    const LocalizationUIDats = useValue(LocalizationUIDatas$);
+    const LocalizationUIDatas = useValue(LocalizationUIDatas$);
     
     const { translate } = useLocalization();
 
@@ -155,7 +155,7 @@ export const PaletteMenuComponent = () => {
                                 <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
                                     <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Palette]" ,locale["Recolor.SECTION_TITLE[Palette]"])}>
                                         <PaletteBoxComponent Swatches={Swatches} totalWidth={80}></PaletteBoxComponent>
-                                        { Swatches.length <= 3 ?
+                                        { (Swatches.length <= 3 && LocalizationUIDatas[MenuType.Palette].length <= 1) ?
                                             <span className={panelStyles.spacer15}></span> : 
                                             <span className={panelStyles.spacer25}></span>
                                         }
@@ -277,7 +277,7 @@ export const PaletteMenuComponent = () => {
                                         </VanillaComponentResolver.instance.Section>
                                     )}
                                 </InfoSection>
-                                <LocaleSection menu={MenuType.Palette} localizations={LocalizationUIDats[MenuType.Palette]}></LocaleSection>
+                                <LocaleSection menu={MenuType.Palette} localizations={LocalizationUIDatas[MenuType.Palette]}></LocaleSection>
                                 <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
                                     { Swatches.length < 8 && (
                                         <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[AddSwatch]" ,locale["Recolor.SECTION_TITLE[AddSwatch]"])}>

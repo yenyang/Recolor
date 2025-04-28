@@ -118,6 +118,7 @@ namespace Recolor.Systems.Palettes
             m_PaletteCategories.Value[(int)MenuType.Palette] = PaletteCategoryData.PaletteCategory.Any;
             m_PaletteCategories.Binding.TriggerUpdate();
             m_SelectedSubcategory.Value = SIPColorFieldsSystem.NoSubcategoryName;
+            ResetToDefaultLocalizationUIDatas(MenuType.Palette);
         }
 
         private void TrySavePalette()

@@ -149,6 +149,7 @@ namespace Recolor.Settings
                 { SectionLabel("LocaleCode"), "Locale Code" },
                 { SectionLabel("LocalizedName"), "Localized Name" },
                 { SectionLabel("LocalizedDescription"), "Localized Description" },
+                { TooltipDescriptionKey("RemoveALocale"), "Remove a Locale" },
             };
         }
 

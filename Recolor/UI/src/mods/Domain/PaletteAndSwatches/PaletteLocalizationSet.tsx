@@ -11,10 +11,14 @@ import { useLocalization } from "cs2/l10n";
 import locale from "../../lang/en-US.json";
 import { LocalizationUIData } from "./LocalizationUIData";
 import { MenuType } from "../MenuType";
+import panelStyles from "../../PalettesMenuComponent/PaletteMenuStyles.module.scss";
 
 
 const SupportedLocaleCodes$ = bindValue<string[]>(mod.id, "SupportedLocaleCodes");
 const LocalizationUIDatas$ = bindValue<LocalizationUIData[][]>(mod.id, "LocalizationDatas");
+
+const uilStandard =                         "coui://uil/Standard/";
+const minusSrc =                         uilStandard + "Minus.svg";
 
 const dropDownThemes = getModule('game-ui/editor/themes/editor-dropdown.module.scss', 'classes');
 
@@ -66,6 +70,13 @@ export const PaletteLocalizationSet = (props : { localizationData : Localization
                         <div className={styles.localeCodeWidth}>{props.localizationData.LocaleCode}</div>
                     </DropdownToggle>
                 </Dropdown>
+                <span className={panelStyles.smallSpacer}></span>
+                { LocalizationUIDatas[props.menu].length > 1 ?
+                    <VanillaComponentResolver.instance.ToolButton src={minusSrc}  tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[RemoveALocale]" ,locale["Recolor.TOOLTIP_DESCRIPTION[RemoveALocale]"])}        className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
+                            onSelect={() => { trigger(mod.id, "RemoveLocale", LocalizationUIDatas[props.menu][props.index].LocaleCode); console.log(LocalizationUIDatas[props.menu][props.index].LocaleCode);}}
+                    /> : 
+                    <span className={styles.ButtonWidth}></span>
+                }
             </VanillaComponentResolver.instance.Section>
             <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[LocalizedName]" ,locale["Recolor.SECTION_TITLE[LocalizedName]"])}>
                 <StringInputField 

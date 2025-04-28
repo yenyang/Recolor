@@ -120,5 +120,6 @@
   "Recolor.TOOLTIP_DESCRIPTION[DeleteSubcategory]": "Delete Subcategory",
   "Recolor.SECTION_TITLE[LocaleCode]": "Locale Code",
   "Recolor.SECTION_TITLE[LocalizedName]": "Localized Name",
-  "Recolor.SECTION_TITLE[LocalizedDescription]": "Localized Description"
+  "Recolor.SECTION_TITLE[LocalizedDescription]": "Localized Description",
+  "Recolor.TOOLTIP_DESCRIPTION[RemoveALocale]": "Remove a Locale"
 }

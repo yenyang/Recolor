@@ -47,6 +47,7 @@ namespace Recolor.Systems.Palettes
             m_UniqueNames.Binding.TriggerUpdate();
             m_PaletteCategories.Value[(int)MenuType.Subcategory] = PaletteCategoryData.PaletteCategory.Any;
             m_PaletteCategories.Binding.TriggerUpdate();
+            ResetToDefaultLocalizationUIDatas(MenuType.Subcategory);
         }
 
         private void ChangeSubcategory(string subcategory)

@@ -29,7 +29,7 @@ namespace Recolor.Systems.Palettes
     using UnityEngine;
 
     /// <summary>
-    /// A UI System for Palettes and Swatches.
+    /// Handles the localization portions for Palettes and Subcategories.
     /// </summary>
     public partial class PalettesUISystem : ExtendedUISystemBase
     {
@@ -47,6 +47,8 @@ namespace Recolor.Systems.Palettes
                         m_LocalizationUIDatas.Binding.TriggerUpdate();
                     }
                 }
+
+                SaveSelectedLocalCodes();
             }
         }
 
@@ -63,11 +65,21 @@ namespace Recolor.Systems.Palettes
                         newLocalizationUIDatas[j] = m_LocalizationUIDatas.Value[i][j];
                     }
 
-                    newLocalizationUIDatas[m_LocalizationUIDatas.Value[i].Length] = new LocalizationUIData(localeCode, m_UniqueNames.Value[i], string.Empty);
+                    if (localeCode == GameManager.instance.localizationManager.fallbackLocaleId &&
+                        m_UniqueNames.Value.Length > i)
+                    {
+                        newLocalizationUIDatas[m_LocalizationUIDatas.Value[i].Length] = new LocalizationUIData(localeCode, m_UniqueNames.Value[i], string.Empty);
+                    }
+                    else
+                    {
+                        newLocalizationUIDatas[m_LocalizationUIDatas.Value[i].Length] = new LocalizationUIData(localeCode, string.Empty, string.Empty);
+                    }
+
                     m_LocalizationUIDatas.Value[i] = newLocalizationUIDatas;
                 }
 
                 m_LocalizationUIDatas.Binding.TriggerUpdate();
+                SaveSelectedLocalCodes();
             }
         }
 
@@ -122,6 +134,103 @@ namespace Recolor.Systems.Palettes
             }
 
             return false;
+        }
+
+        private void ResetToDefaultLocalizationUIDatas(MenuType menuType)
+        {
+            if (m_LocalizationUIDatas.Value.Length <= (int)menuType)
+            {
+                return;
+            }
+
+            for (int i = 0; i < m_LocalizationUIDatas.Value[(int)menuType].Length; i++)
+            {
+                if (m_LocalizationUIDatas.Value[(int)menuType][i].LocaleCode == GameManager.instance.localizationManager.fallbackLocaleId &&
+                    m_UniqueNames.Value.Length > (int)menuType)
+                {
+                    m_LocalizationUIDatas.Value[(int)menuType][i].LocalizedName = m_UniqueNames.Value[(int)menuType];
+                }
+                else
+                {
+                    m_LocalizationUIDatas.Value[(int)menuType][i].LocalizedName = string.Empty;
+                }
+
+                m_LocalizationUIDatas.Value[(int)menuType][i].LocalizedDescription = string.Empty;
+            }
+        }
+
+        private void InitializeLocalizationUIDatas()
+        {
+            if (m_LocalizationUIDatas.Value.Length != 2)
+            {
+                m_LocalizationUIDatas.Value = new LocalizationUIData[2][];
+            }
+
+            Dictionary<string, LocalizationUIData>[] localizationUIDatas = new Dictionary<string, LocalizationUIData>[2];
+            for (int i = 0; i < 2; i++)
+            {
+                localizationUIDatas[i] = new Dictionary<string, LocalizationUIData>();
+                for (int j = 0; j < Mod.Instance.Settings.SelectedLocaleCodes.Length; j++)
+                {
+                    if (!localizationUIDatas[i].ContainsKey(Mod.Instance.Settings.SelectedLocaleCodes[j]) &&
+                        GameManager.instance.localizationManager.GetSupportedLocales().Contains(Mod.Instance.Settings.SelectedLocaleCodes[j]) &&
+                        Mod.Instance.Settings.SelectedLocaleCodes[j] == GameManager.instance.localizationManager.fallbackLocaleId &&
+                        m_UniqueNames.Value.Length > i)
+                    {
+                        localizationUIDatas[i].Add(Mod.Instance.Settings.SelectedLocaleCodes[j], new LocalizationUIData(Mod.Instance.Settings.SelectedLocaleCodes[j], m_UniqueNames.Value[i], string.Empty));
+                    }
+                    else if (!localizationUIDatas[i].ContainsKey(Mod.Instance.Settings.SelectedLocaleCodes[j]) &&
+                                GameManager.instance.localizationManager.GetSupportedLocales().Contains(Mod.Instance.Settings.SelectedLocaleCodes[j]))
+                    {
+                        localizationUIDatas[i].Add(Mod.Instance.Settings.SelectedLocaleCodes[j], new LocalizationUIData(Mod.Instance.Settings.SelectedLocaleCodes[j], string.Empty, string.Empty));
+                    }
+                }
+
+                m_LocalizationUIDatas.Value[i] = localizationUIDatas[i].Values.ToArray();
+            }
+
+            m_LocalizationUIDatas.Binding.TriggerUpdate();
+        }
+
+        private void SaveSelectedLocalCodes()
+        {
+            if (m_LocalizationUIDatas.Value.Length > 0)
+            {
+                List<string> localeCodes = new List<string>();
+                for (int i = 0; i < m_LocalizationUIDatas.Value[0].Length; i++)
+                {
+                    if (!localeCodes.Contains(m_LocalizationUIDatas.Value[0][i].LocaleCode))
+                    {
+                        localeCodes.Add(m_LocalizationUIDatas.Value[0][i].LocaleCode);
+                    }
+                }
+
+                Mod.Instance.Settings.SelectedLocaleCodes = localeCodes.ToArray();
+                Mod.Instance.Settings.ApplyAndSave();
+            }
+        }
+
+        private void RemoveLocale(string localeCode)
+        {
+            Dictionary<string, LocalizationUIData>[] localizationUIDatas = new Dictionary<string, LocalizationUIData>[m_LocalizationUIDatas.Value.Length];
+            for (int i = 0; i < m_LocalizationUIDatas.Value.Length; i++)
+            {
+                localizationUIDatas[i] = new Dictionary<string, LocalizationUIData>();
+                for (int j = 0; j < m_LocalizationUIDatas.Value[i].Length; j++)
+                {
+                    if (m_LocalizationUIDatas.Value[i][j].LocaleCode != localeCode &&
+                        !localizationUIDatas[i].ContainsKey(m_LocalizationUIDatas.Value[i][j].LocaleCode) &&
+                        GameManager.instance.localizationManager.GetSupportedLocales().Contains(m_LocalizationUIDatas.Value[i][j].LocaleCode))
+                    {
+                        localizationUIDatas[i].Add(m_LocalizationUIDatas.Value[i][j].LocaleCode, m_LocalizationUIDatas.Value[i][j]);
+                    }
+                }
+
+                m_LocalizationUIDatas.Value[i] = localizationUIDatas[i].Values.ToArray();
+            }
+
+            m_LocalizationUIDatas.Binding.TriggerUpdate();
+            SaveSelectedLocalCodes();
         }
     }
 }
