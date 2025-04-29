@@ -120,7 +120,7 @@ export const descriptionToolTipStyle = getModule("game-ui/common/tooltip/descrip
 export const roundButtonHighlightStyle = getModule("game-ui/common/input/button/themes/round-highlight-button.module.scss", "classes");
 
 // This is working, but it's possible a better solution is possible.
-function DescriptionTooltip(tooltipTitle: string | null, tooltipDescription: string | null) : JSX.Element {
+export function DescriptionTooltip(tooltipTitle: string | null, tooltipDescription: string | null) : JSX.Element {
     return (
         <>
             <div className={descriptionToolTipStyle.title}>{tooltipTitle}</div>

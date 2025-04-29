@@ -61,6 +61,7 @@ const registryIndex = {
     assetGridTheme: ["game-ui/game/components/asset-menu/asset-grid/asset-grid.module.scss", "classes"],  
     descriptionTooltipTheme: ["game-ui/common/tooltip/description-tooltip/description-tooltip.module.scss", "classes"],
     ColorField: ["game-ui/common/input/color-picker/color-field/color-field.tsx", 'ColorField'],
+    // DescriptionTooltip: ["game-ui/common/tooltip/description-tooltip/description-tooltip.tsx", 'DescriptionTooltip']
 }
 
 export class VanillaComponentResolver {
@@ -87,6 +88,7 @@ export class VanillaComponentResolver {
     public get Section(): (props: PropsSection) => JSX.Element { return this.cachedData["Section"] ?? this.updateCache("Section") }
     public get ToolButton(): (props: PropsToolButton) => JSX.Element { return this.cachedData["ToolButton"] ?? this.updateCache("ToolButton") }
     public get ColorField(): (props: PropsColorField) => JSX.Element { return this.cachedData["ColorField"] ?? this.updateCache("ColorField") }
+    // public get DescriptionTooltip(): (props : PropsDescriptionTooltip) => JSX.Element{ return this.cachedData["DescriptionTooltip"] ?? this.updateCache("ColorField")}
 
     public get toolButtonTheme(): Theme | any { return this.cachedData["toolButtonTheme"] ?? this.updateCache("toolButtonTheme") }
     public get mouseToolOptionsTheme(): Theme | any { return this.cachedData["mouseToolOptionsTheme"] ?? this.updateCache("mouseToolOptionsTheme") }

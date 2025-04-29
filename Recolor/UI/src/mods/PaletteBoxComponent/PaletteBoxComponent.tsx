@@ -4,6 +4,8 @@ import { Color } from "cs2/bindings";
 import { ColorFieldTheme } from "mods/SIPColorComponent/SIPColorComponent";
 import classNames from "classnames";
 import boxStyles from "./PaletteBoxStyles.module.scss";
+import { Tooltip } from "cs2/ui";
+import { ReactNode } from "react";
 
 interface inLinedStyle {
     backgroundColor : string;
@@ -57,18 +59,18 @@ function generateStyles (Swatches: SwatchUIData[], widths : number[]) : inLinedS
     return inLinedStyles;
 }
 
-export const PaletteBoxComponent = (props : {Swatches : SwatchUIData[], totalWidth: number}) => {
+export const PaletteBoxComponent = (props : {Swatches : SwatchUIData[], totalWidth: number, tooltip? : ReactNode}) => {
 
     let widths : number[] = calculateWidths(props.Swatches, props.totalWidth);
     let inLinedStyles : inLinedStyle[] = generateStyles(props.Swatches, widths);
 
     return (
-        <>
+        <Tooltip tooltip={props.tooltip}>
             <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered)}> 
                 {inLinedStyles.map((swatch, index: number) => (
                     <div className={getClassNames(index, props.Swatches.length)} style={swatch}></div>
                 ))}
             </div>
-        </>
+        </Tooltip>
     );
 }

@@ -3,10 +3,10 @@ import { bindValue, trigger, useValue } from "cs2/api";
 import panelStyles from "./PaletteMenuStyles.module.scss";
 import styles from "../Domain/ColorFields.module.scss";
 import {  Entity, game, selectedInfo, tool } from "cs2/bindings";
-import {  Dropdown, DropdownItem, DropdownToggle, Panel, Portal } from "cs2/ui";
+import {  Dropdown, DropdownItem, DropdownToggle, Panel, Portal, Tooltip } from "cs2/ui";
 import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaComponentResolver";
 import { useLocalization } from "cs2/l10n";
-import { InfoSection } from "mods/RecolorMainPanel/RecolorMainPanel";
+import { DescriptionTooltip, descriptionToolTipStyle, InfoSection } from "mods/RecolorMainPanel/RecolorMainPanel";
 import mod from "../../../mod.json";
 import locale from "../lang/en-US.json";
 import { useState, version } from "react";
@@ -66,7 +66,7 @@ function handleClick(event: string) {
     trigger(mod.id, event);
 }
 
-
+// const DescriptionTooltip = getModule("game-ui/common/tooltip/description-tooltip/description-tooltip.tsx", 'DescriptionTooltip');
 
 const dropDownThemes = getModule('game-ui/editor/themes/editor-dropdown.module.scss', 'classes');
 
@@ -154,8 +154,8 @@ export const PaletteMenuComponent = () => {
                             footer = {(
                                 <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
                                     <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Palette]" ,locale["Recolor.SECTION_TITLE[Palette]"])}>
-                                        <PaletteBoxComponent Swatches={Swatches} totalWidth={80}></PaletteBoxComponent>
-                                        { (Swatches.length <= 3 && LocalizationUIDatas[MenuType.Palette].length <= 1) ?
+                                        <PaletteBoxComponent Swatches={Swatches} totalWidth={80} tooltip={DescriptionTooltip(LocalizationUIDatas[MenuType.Palette][0].LocalizedName, LocalizationUIDatas[MenuType.Palette][0].LocalizedDescription)}></PaletteBoxComponent>
+                                        { (Swatches.length <= 2 && LocalizationUIDatas[MenuType.Palette].length <= 1) ?
                                             <span className={panelStyles.spacer15}></span> : 
                                             <span className={panelStyles.spacer25}></span>
                                         }

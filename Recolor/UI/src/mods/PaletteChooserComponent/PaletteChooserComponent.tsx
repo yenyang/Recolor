@@ -15,6 +15,7 @@ import { FocusDisabled } from "cs2/input";
 import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaComponentResolver";
 import { useLocalization } from "cs2/l10n";
 import locale from "../lang/en-US.json";
+import { DescriptionTooltip } from "mods/RecolorMainPanel/RecolorMainPanel";
 
 const uilStandard =                          "coui://uil/Standard/";
 const editSrc =                        uilStandard + "PencilPaper.svg";
@@ -82,7 +83,7 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                                             </DropdownItem>
                                             {Subcategories.Palettes.map((Palette) => (
                                                 <DropdownItem value={Palette} className={basicDropDownTheme.dropdownItem} selected={entityEquals(PaletteChooserData.SelectedPaletteEntities[props.channel],Palette.PrefabEntity)} onChange={() => {assignPalette(props.channel, Palette.PrefabEntity)}}>
-                                                    <PaletteBoxComponent Swatches={Palette.Swatches} totalWidth={80}></PaletteBoxComponent>
+                                                    <PaletteBoxComponent Swatches={Palette.Swatches} totalWidth={80} tooltip={DescriptionTooltip("My Palette Name", "A very long and special description that tells a long story.")}></PaletteBoxComponent>
                                                 </DropdownItem>
                                             ))}
                                         </>

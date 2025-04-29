@@ -232,5 +232,25 @@ namespace Recolor.Systems.Palettes
             m_LocalizationUIDatas.Binding.TriggerUpdate();
             SaveSelectedLocalCodes();
         }
+
+        private void ChangeLocalizedName(int menuType, int index, string name)
+        {
+            if (m_LocalizationUIDatas.Value.Length > menuType &&
+                m_LocalizationUIDatas.Value[menuType].Length > index)
+            {
+                m_LocalizationUIDatas.Value[menuType][index].LocalizedName = name;
+                m_LocalizationUIDatas.Binding.TriggerUpdate();
+            }
+        }
+
+        private void ChangeLocalizedDescription(int menuType, int index, string name)
+        {
+            if (m_LocalizationUIDatas.Value.Length > menuType &&
+                m_LocalizationUIDatas.Value[menuType].Length > index)
+            {
+                m_LocalizationUIDatas.Value[menuType][index].LocalizedDescription = name;
+                m_LocalizationUIDatas.Binding.TriggerUpdate();
+            }
+        }
     }
 }

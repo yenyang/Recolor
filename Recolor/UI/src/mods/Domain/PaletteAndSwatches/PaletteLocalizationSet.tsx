@@ -29,11 +29,8 @@ export const PaletteLocalizationSet = (props : { localizationData : Localization
 
     let [localizedNameInput, setLocalizedNameInput] = useState(props.localizationData.LocalizedName);    
     let [localizedDescriptionInput, setLocalizedDescriptionInput] = useState(props.localizationData.LocalizedDescription);
-    let [validInput, setValidInput] = useState(true);
-
-    function HandleTextInput () {
-       setValidInput(true);
-    }
+    let [updateName, setUpdateName] = useState(props.localizationData.LocalizedName);
+    let [updateDescription, setUpdateDescription] = useState(props.localizationData.LocalizedDescription);
 
     function IsLocaleCodeAlreadySelected(localeCode: string) 
     {
@@ -46,6 +43,18 @@ export const PaletteLocalizationSet = (props : { localizationData : Localization
         }
 
         return false;
+    }
+
+    if (updateName !== props.localizationData.LocalizedName) 
+    {
+        setLocalizedNameInput(props.localizationData.LocalizedName);
+        setUpdateName(props.localizationData.LocalizedName);
+    }
+
+    if (updateDescription !== props.localizationData.LocalizedDescription) 
+    {
+        setLocalizedDescriptionInput(props.localizationData.LocalizedDescription);
+        setUpdateDescription(props.localizationData.LocalizedDescription);
     }
     
     const { translate } = useLocalization();
@@ -80,13 +89,13 @@ export const PaletteLocalizationSet = (props : { localizationData : Localization
             </VanillaComponentResolver.instance.Section>
             <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[LocalizedName]" ,locale["Recolor.SECTION_TITLE[LocalizedName]"])}>
                 <StringInputField 
-                    value={localizedNameInput.replace(/[\r\n]+/gm, '')}
+                    value={localizedNameInput?.replace(/[\r\n]+/gm, '')}
                     disabled ={false}
                     onChange={ (e : string) => { setLocalizedNameInput(e); }}
-                    onChangeEnd={HandleTextInput}
-                    className={validInput?  classNames(StringInputFieldStyle.textInput, styles.nameFieldInput) : classNames(StringInputFieldStyle.textInput, styles.nameFieldInput, styles.invalidFieldInput)}
+                    onChangeEnd={trigger(mod.id, "ChangeLocalizedName", props.menu, props.index, localizedNameInput)}
+                    className={ classNames(StringInputFieldStyle.textInput, styles.nameFieldInput)}
                     multiline={false}
-                    maxLength={32}
+                    maxLength={props.menu == MenuType.Palette? 32 : 15}
                 ></StringInputField>
             </VanillaComponentResolver.instance.Section>
             <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[LocalizedDescription]", locale["Recolor.SECTION_TITLE[LocalizedDescription]"])}>
@@ -94,10 +103,10 @@ export const PaletteLocalizationSet = (props : { localizationData : Localization
                     value={localizedDescriptionInput}
                     disabled ={false}
                     onChange={ (e : string) => { setLocalizedDescriptionInput(e); }}
-                    onChangeEnd={HandleTextInput}
-                    className={validInput?  classNames(StringInputFieldStyle.textInput, styles.nameFieldInput) : classNames(StringInputFieldStyle.textInput, styles.nameFieldInput, styles.invalidFieldInput)}
+                    onChangeEnd={trigger(mod.id, "ChangeLocalizedDescription", props.menu, props.index, localizedDescriptionInput)}
+                    className={classNames(StringInputFieldStyle.textInput, styles.descriptionFieldInput)}
                     multiline={true}
-                    maxLength={32}
+                    maxLength={128}
                 ></StringInputField>
             </VanillaComponentResolver.instance.Section>
         </>

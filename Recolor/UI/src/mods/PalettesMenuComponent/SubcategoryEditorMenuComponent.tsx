@@ -1,4 +1,4 @@
-import { Button, Panel } from "cs2/ui"
+import { Button, Panel, Tooltip } from "cs2/ui"
 import { InfoSection, roundButtonHighlightStyle } from "mods/RecolorMainPanel/RecolorMainPanel";
 import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaComponentResolver";
 import panelStyles from "./PaletteMenuStyles.module.scss";
@@ -67,7 +67,9 @@ export const SubcategoryEditorMenuComponent = () => {
                     footer={(
                         <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
                                 <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Subcategory]" , locale["Recolor.SECTION_TITLE[Subcategory]"])}>
-                                    <div className={classNames(ColorFieldTheme.colorField, boxStyles.subcategory, boxStyles.centered, styles.dropdownText, basicDropDownTheme.dropdownItem)}>{UniqueNames[MenuType.Subcategory]}</div>
+                                    <Tooltip tooltip={LocalizationUIDatas[MenuType.Subcategory][0].LocalizedDescription}>
+                                        <div className={classNames(ColorFieldTheme.colorField, boxStyles.subcategory, boxStyles.centered, styles.dropdownText, basicDropDownTheme.dropdownItem)}>{LocalizationUIDatas[MenuType.Subcategory][0].LocalizedName}</div>
+                                    </Tooltip>
                                     <span className={panelStyles.smallSpacer}></span>
                                     <VanillaComponentResolver.instance.ToolButton src={saveToDiskSrc}          tooltip = { translate("Recolor.TOOLTIP_DESCRIPTION[SaveSubcategory]" , locale["Recolor.TOOLTIP_DESCRIPTION[SaveSubcategory]"])}   onSelect={() => {handleClick("TrySaveSubcategory")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
                                     <span className={panelStyles.wideSpacer}></span>

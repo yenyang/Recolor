@@ -141,6 +141,8 @@ namespace Recolor.Systems.Palettes
             CreateTrigger<string, int>("ChangeLocaleCode", ChangeLocaleCode);
             CreateTrigger("AddLocale", AddLocale);
             CreateTrigger<string>("RemoveLocale", RemoveLocale);
+            CreateTrigger<int, int, string>("ChangeLocalizedName", ChangeLocalizedName);
+            CreateTrigger<int, int, string>("ChangeLocalizedDescription", ChangeLocalizedDescription);
 
             m_SubcategoryQuery = SystemAPI.QueryBuilder()
                 .WithAll<PaletteSubcategoryData>()
