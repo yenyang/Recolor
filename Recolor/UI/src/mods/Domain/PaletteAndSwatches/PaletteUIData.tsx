@@ -4,4 +4,7 @@ import { SwatchUIData } from "./SwatchUIData";
 export interface PaletteUIData {
     Swatches : SwatchUIData[],
     PrefabEntity : Entity,
+    NameKey: string,
+    DescriptionKey: string,
+    Name: string,
 }

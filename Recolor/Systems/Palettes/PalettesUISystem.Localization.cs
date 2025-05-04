@@ -10,6 +10,8 @@ namespace Recolor.Systems.Palettes
     using System.Linq;
     using Colossal.Entities;
     using Colossal.IO.AssetDatabase;
+    using Colossal.Json;
+    using Colossal.Localization;
     using Colossal.Logging;
     using Colossal.PSI.Environment;
     using Colossal.Serialization.Entities;
@@ -23,6 +25,7 @@ namespace Recolor.Systems.Palettes
     using Recolor.Domain.Palette;
     using Recolor.Domain.Palette.Prefabs;
     using Recolor.Extensions;
+    using Recolor.Settings;
     using Recolor.Systems.SelectedInfoPanel;
     using Unity.Collections;
     using Unity.Entities;
@@ -52,9 +55,9 @@ namespace Recolor.Systems.Palettes
             }
         }
 
-        private void AddLocale()
+        private void AddLocale(string localeCode)
         {
-            if (TryGetNewLocaleCode(out string localeCode) &&
+            if (!IsLocaleCodeSelected(localeCode) &&
                 m_LocalizationUIDatas.Value.Length > 0)
             {
                 for (int i = 0; i < m_LocalizationUIDatas.Value.Length; i++)
@@ -80,6 +83,14 @@ namespace Recolor.Systems.Palettes
 
                 m_LocalizationUIDatas.Binding.TriggerUpdate();
                 SaveSelectedLocalCodes();
+            }
+        }
+
+        private void AddLocale()
+        {
+            if (TryGetNewLocaleCode(out string localeCode))
+            {
+                AddLocale(localeCode);
             }
         }
 
@@ -250,6 +261,121 @@ namespace Recolor.Systems.Palettes
             {
                 m_LocalizationUIDatas.Value[menuType][index].LocalizedDescription = name;
                 m_LocalizationUIDatas.Binding.TriggerUpdate();
+            }
+        }
+
+        private Dictionary<string, string> CompileLocalizationDictionary(LocalizationUIData localizationUIData, MenuType menuType, string uniqueName)
+        {
+            string prefix = Mod.Id + ".";
+            prefix += menuType == MenuType.Palette ? nameof(MenuType.Palette) : nameof(MenuType.Subcategory);
+
+            return new Dictionary<string, string> { { $"{prefix}.NAME[{uniqueName}]", localizationUIData.LocalizedName }, { $"{prefix}.DESCRIPTION[{uniqueName}]", localizationUIData.LocalizedDescription } };
+        }
+
+        private bool TryExportLocalizationFile(string folderPath, string localeCode, Dictionary<string, string> localizationDictionary)
+        {
+            try
+            {
+                string json = JSON.Dump(localizationDictionary);
+                System.IO.Directory.CreateDirectory(Path.Combine(folderPath, "l10n"));
+                File.WriteAllText(Path.Combine(folderPath, "l10n", $"{localeCode}.json"), json);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                m_Log.Error($"{nameof(PalettesUISystem)}.{nameof(TryExportLocalizationFile)} Could not export localization file. Encountered Exception: {ex}. ");
+            }
+
+            return false;
+        }
+
+        private bool TryExportLocalizationFile(string folderPath, LocalizationUIData localizationUIData, MenuType menuType, string uniqueName)
+        {
+            return TryExportLocalizationFile(folderPath, localizationUIData.LocaleCode, CompileLocalizationDictionary(localizationUIData, menuType, uniqueName));
+        }
+
+        private void AddLocalization(LocalizationUIData localizationUIData, MenuType menuType, string uniqueName)
+        {
+            try
+            {
+                if (GameManager.instance.localizationManager.SupportsLocale(localizationUIData.LocaleCode))
+                {
+                        Dictionary<string, string> translations = CompileLocalizationDictionary(localizationUIData, menuType, uniqueName);
+                        GameManager.instance.localizationManager.AddSource(localizationUIData.LocaleCode, new MemorySource(translations));
+                        m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(AddLocalization)} sucessfully imported localization files for {localizationUIData.LocaleCode} and {uniqueName}.");
+                }
+                else
+                {
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(AddLocalization)} {localizationUIData.LocaleCode} is not supported");
+                }
+            }
+            catch (Exception ex)
+            {
+                m_Log.Error($"{nameof(PalettesUISystem)}.{nameof(AddLocalization)} Could not import localization file. Encountered Exception: {ex}. ");
+            }
+        }
+
+        private void EditLocalizationFiles(string folderPath, MenuType menuType, string uniqueName)
+        {
+            if (!System.IO.Directory.Exists(Path.Combine(folderPath, "l10n")))
+            {
+                return;
+            }
+
+            bool updateBinding = false;
+            string[] filePaths = Directory.GetFiles(Path.Combine(folderPath, "l10n"));
+            for (int i = 0; i < filePaths.Length; i++)
+            {
+                string fileName = filePaths[i].Remove(0, folderPath.Length + "\\l10n\\".Length);
+                string localeId = fileName.Substring(0, fileName.Length - ".json".Length);
+                m_Log.Debug($"{nameof(AddPalettePrefabsSystem)}.{nameof(EditLocalizationFiles)} found json for {localeId}");
+                try
+                {
+                    if (GameManager.instance.localizationManager.SupportsLocale(localeId))
+                    {
+                        using StreamReader reader = new StreamReader(new FileStream(filePaths[i], FileMode.Open));
+                        {
+                            string entireFile = reader.ReadToEnd();
+                            Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
+                            Dictionary<string, string> translations = varient.Make<Dictionary<string, string>>();
+                            if (!IsLocaleCodeSelected(localeId))
+                            {
+                                AddLocale(localeId);
+                            }
+
+                            for (int j = 0; j < m_LocalizationUIDatas.Value[(int)menuType].Length; j++)
+                            {
+                                if (m_LocalizationUIDatas.Value[(int)menuType][j].LocaleCode == localeId)
+                                {
+                                    if (translations.ContainsKey(LocaleEN.NameKey(menuType, uniqueName)))
+                                    {
+                                        m_LocalizationUIDatas.Value[(int)menuType][j].LocalizedName = translations[LocaleEN.NameKey(menuType, uniqueName)];
+                                        updateBinding = true;
+                                    }
+
+                                    if (translations.ContainsKey(LocaleEN.DescriptionKey(menuType, uniqueName)))
+                                    {
+                                        m_LocalizationUIDatas.Value[(int)menuType][j].LocalizedDescription = translations[LocaleEN.DescriptionKey(menuType, uniqueName)];
+                                        updateBinding = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        m_Log.Debug($"{nameof(AddPalettePrefabsSystem)}.{nameof(EditLocalizationFiles)} {localeId} is not supported");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    m_Log.Error($"{nameof(AddPalettePrefabsSystem)}.{nameof(EditLocalizationFiles)} Could not edit localization file. Encountered Exception: {ex}. ");
+                }
+
+                if (updateBinding)
+                {
+                    m_LocalizationUIDatas.Binding.TriggerUpdate();
+                }
             }
         }
     }

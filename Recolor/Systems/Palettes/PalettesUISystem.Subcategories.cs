@@ -72,6 +72,7 @@ namespace Recolor.Systems.Palettes
                 m_PaletteCategories.Binding.TriggerUpdate();
                 m_UniqueNames.Value[(int)MenuType.Subcategory] = subcategory;
                 m_UniqueNames.Binding.TriggerUpdate();
+                EditLocalizationFiles(Path.Combine(m_SubcategoryPrefabsFolder, paletteSubCategoryPrefab.name), MenuType.Subcategory, paletteSubCategoryPrefab.name);
             }
         }
 
@@ -140,6 +141,15 @@ namespace Recolor.Systems.Palettes
                     m_PaletteCategories.Value[(int)MenuType.Palette] = paletteSubcategoryPrefabBase.m_Category;
                     m_PaletteCategories.Binding.TriggerUpdate();
                     m_ShowSubcategoryEditorPanel.Value = false;
+
+                    if (m_LocalizationUIDatas.Value.Length > (int)MenuType.Subcategory)
+                    {
+                        for (int i = 0; i < m_LocalizationUIDatas.Value[(int)MenuType.Subcategory].Length; i++)
+                        {
+                            TryExportLocalizationFile(Path.Combine(m_SubcategoryPrefabsFolder, paletteSubcategoryPrefabBase.name), m_LocalizationUIDatas.Value[(int)MenuType.Subcategory][i], MenuType.Subcategory, paletteSubcategoryPrefabBase.name);
+                            AddLocalization(m_LocalizationUIDatas.Value[(int)MenuType.Subcategory][i], MenuType.Subcategory, paletteSubcategoryPrefabBase.name);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -179,6 +189,15 @@ namespace Recolor.Systems.Palettes
                 catch (Exception e)
                 {
                     m_Log.Info($"Could not remove files for {prefabBase.name} encountered exception {e}.");
+                }
+
+                try
+                {
+                    Directory.Delete(Path.Combine(m_SubcategoryPrefabsFolder, prefabBase.name, "l10n"));
+                }
+                catch (Exception e)
+                {
+                    m_Log.Info($"Could not remove directory for {prefabBase.name} encountered exception {e}.");
                 }
 
                 try

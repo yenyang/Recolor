@@ -1,6 +1,6 @@
 import { bindValue, trigger, useValue } from "cs2/api";
 import { getModule } from "cs2/modding";
-import { Dropdown, DropdownItem, DropdownToggle } from "cs2/ui";
+import { Dropdown, DropdownItem, DropdownToggle, Tooltip } from "cs2/ui";
 import mod from "../../../mod.json";
 import { PaletteBoxComponent } from "mods/PaletteBoxComponent/PaletteBoxComponent";
 import { PaletteChooserUIData } from "mods/Domain/PaletteAndSwatches/PaletteChooserUIData";
@@ -79,11 +79,13 @@ export const PaletteChooserComponent = (props: {channel : number}) => {
                                     PaletteChooserData.DropdownItems[props.channel].map((Subcategories) => (
                                         <>
                                             <DropdownItem value={Subcategories} className={basicDropDownTheme.dropdownItem} closeOnSelect={false} >
-                                                <div className={classNames(ColorFieldTheme.colorField, boxStyles.subcategory, boxStyles.centered, styles.dropdownText)}>{Subcategories.Subcategory}</div>
+                                                <Tooltip tooltip={translate("Recolor.Subcategory.DESCRIPTION["+Subcategories.Subcategory+"]")}>
+                                                    <div className={classNames(ColorFieldTheme.colorField, boxStyles.subcategory, boxStyles.centered, styles.dropdownText)}>{translate("Recolor.Subcategory.NAME["+Subcategories.Subcategory+"]" ,Subcategories.Subcategory)}</div>
+                                                </Tooltip>
                                             </DropdownItem>
                                             {Subcategories.Palettes.map((Palette) => (
-                                                <DropdownItem value={Palette} className={basicDropDownTheme.dropdownItem} selected={entityEquals(PaletteChooserData.SelectedPaletteEntities[props.channel],Palette.PrefabEntity)} onChange={() => {assignPalette(props.channel, Palette.PrefabEntity)}}>
-                                                    <PaletteBoxComponent Swatches={Palette.Swatches} totalWidth={80} tooltip={DescriptionTooltip("My Palette Name", "A very long and special description that tells a long story.")}></PaletteBoxComponent>
+                                                <DropdownItem value={Palette} className={basicDropDownTheme.dropdownItem} selected={entityEquals(PaletteChooserData.SelectedPaletteEntities[props.channel],Palette.PrefabEntity)} onChange={() => {assignPalette(props.channel, Palette.PrefabEntity); console.log(Subcategories.Subcategory)}}>
+                                                    <PaletteBoxComponent Swatches={Palette.Swatches} totalWidth={80} tooltip={DescriptionTooltip(translate(Palette.NameKey, Palette.Name), translate(Palette.DescriptionKey))}></PaletteBoxComponent>
                                                 </DropdownItem>
                                             ))}
                                         </>

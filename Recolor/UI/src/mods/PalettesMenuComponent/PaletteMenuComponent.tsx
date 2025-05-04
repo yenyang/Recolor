@@ -191,13 +191,15 @@ export const PaletteMenuComponent = () => {
                                                 content={                    
                                                     Subcategories.map((subcategory) => (
                                                         <DropdownItem value={subcategory} className={dropDownThemes.dropdownItem} selected={subcategory==SelectedSubcategory} onChange={() =>  trigger(mod.id, "ChangeSubcategory", subcategory)}>
-                                                            <div className={panelStyles.subcategoryDropwdownWidth}>{subcategory}</div>
+                                                            <Tooltip tooltip={translate("Recolor.Subcategory.DESCRIPTION["+subcategory+"]")}>
+                                                                <div className={panelStyles.subcategoryDropwdownWidth}>{translate("Recolor.Subcategory.NAME["+subcategory+"]" ,subcategory)}</div>
+                                                            </Tooltip>
                                                         </DropdownItem>
                                                     ))
                                                 }
                                             >
                                                 <DropdownToggle disabled={false}>
-                                                    <div className={panelStyles.subcategoryDropwdownWidth}>{SelectedSubcategory}</div>
+                                                    <div className={panelStyles.subcategoryDropwdownWidth}>{translate("Recolor.Subcategory.NAME["+SelectedSubcategory+"]" ,SelectedSubcategory)}</div>
                                                 </DropdownToggle>
                                             </Dropdown>
                                             <span className={panelStyles.smallSpacer}></span>

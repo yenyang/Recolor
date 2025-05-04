@@ -15,11 +15,13 @@ namespace Recolor.Systems.Palettes
     using Game;
     using Game.Common;
     using Game.Prefabs;
+    using Game.SceneFlow;
     using Game.Tools;
     using Newtonsoft.Json;
     using Recolor.Domain.Palette;
     using Recolor.Domain.Palette.Prefabs;
     using Recolor.Extensions;
+    using Recolor.Settings;
     using Recolor.Systems.SelectedInfoPanel;
     using Unity.Collections;
     using Unity.Entities;
@@ -93,6 +95,8 @@ namespace Recolor.Systems.Palettes
                 {
                     SetFilter(0);
                 }
+
+                EditLocalizationFiles(Path.Combine(m_PalettePrefabsFolder, palettePrefab.name), MenuType.Palette, palettePrefab.name);
 
                 SwatchUIData[] swatchUIDatas = new SwatchUIData[swatchDatas.Length];
                 for (int i = 0; i < swatchUIDatas.Length; i++)
@@ -190,6 +194,15 @@ namespace Recolor.Systems.Palettes
                         JsonConvert.SerializeObject(palettePrefabSerializeFormat, Formatting.Indented, settings: new JsonSerializerSettings() { ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore }));
                     m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)} Sucessfully created, initialized, and saved prefab {nameof(PalettePrefab)}:{palettePrefabBase.name}!");
                     m_SIPColorFieldsSystem.UpdatePalettes();
+
+                    if (m_LocalizationUIDatas.Value.Length > (int)MenuType.Palette)
+                    {
+                        for (int i = 0; i < m_LocalizationUIDatas.Value[(int)MenuType.Palette].Length; i++)
+                        {
+                            TryExportLocalizationFile(Path.Combine(m_PalettePrefabsFolder, palettePrefabBase.name), m_LocalizationUIDatas.Value[(int)MenuType.Palette][i], MenuType.Palette, palettePrefabBase.name);
+                            AddLocalization(m_LocalizationUIDatas.Value[(int)MenuType.Palette][i], MenuType.Palette, palettePrefabBase.name);
+                        }
+                    }
                 }
             }
             catch (Exception ex)

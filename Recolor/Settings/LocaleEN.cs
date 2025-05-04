@@ -150,6 +150,7 @@ namespace Recolor.Settings
                 { SectionLabel("LocalizedName"), "Localized Name" },
                 { SectionLabel("LocalizedDescription"), "Localized Description" },
                 { TooltipDescriptionKey("RemoveALocale"), "Remove a Locale" },
+                { "Recolor.Subcategory.NAME[No Subcategory]", "No Subcategory" },
             };
         }
 
@@ -161,6 +162,34 @@ namespace Recolor.Settings
         public static string MouseTooltipKey(string key)
         {
             return $"{Mod.Id}.MOUSE_TOOLTIP[{key}]";
+        }
+
+        /// <summary>
+        /// Returns the locale key for Palette or Subcategory prefab name.
+        /// </summary>
+        /// <param name="menuType">Palette or Subcategory.</param>
+        /// <param name="uniqueName">Prefab name.</param>
+        /// <returns>localization key.</returns>
+        public static string NameKey(Systems.Palettes.PalettesUISystem.MenuType menuType, string uniqueName)
+        {
+            string prefix = Mod.Id + ".";
+            prefix += menuType == Systems.Palettes.PalettesUISystem.MenuType.Palette ? nameof(Systems.Palettes.PalettesUISystem.MenuType.Palette) : nameof(Systems.Palettes.PalettesUISystem.MenuType.Subcategory);
+
+            return $"{prefix}.NAME[{uniqueName}]";
+        }
+
+        /// <summary>
+        /// Gets the locale key for Palette or subcategory prefab description.
+        /// </summary>
+        /// <param name="menuType">Palette or Subcategory.</param>
+        /// <param name="uniqueName">Prefab name.</param>
+        /// <returns>localization key.</returns>
+        public static string DescriptionKey(Systems.Palettes.PalettesUISystem.MenuType menuType, string uniqueName)
+        {
+            string prefix = Mod.Id + ".";
+            prefix += menuType == Systems.Palettes.PalettesUISystem.MenuType.Palette ? nameof(Systems.Palettes.PalettesUISystem.MenuType.Palette) : nameof(Systems.Palettes.PalettesUISystem.MenuType.Subcategory);
+
+            return $"{prefix}.DESCRIPTION[{uniqueName}]";
         }
 
         /// <inheritdoc/>

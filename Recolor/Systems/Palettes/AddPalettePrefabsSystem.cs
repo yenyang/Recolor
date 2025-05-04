@@ -83,6 +83,8 @@ namespace Recolor.Systems.Palettes
                                     m_Prefabs.Add(palettePrefab);
                                     m_Entities.Add(palettePrefab, palettePrefabEntity);
                                     m_Log.Info($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Sucessfully imported and partially initialized {nameof(PalettePrefab)}:{nameof(palettePrefab.name)}.");
+
+                                    ImportLocalizationFiles(directory);
                                     continue;
                                 }
                             }
@@ -128,6 +130,7 @@ namespace Recolor.Systems.Palettes
                                     subcategoryPrefab.Initialize(EntityManager, palettePrefabEntity);
                                     m_Prefabs.Add(subcategoryPrefab);
                                     m_Log.Info($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Sucessfully imported and partially initialized {nameof(PaletteSubCategoryPrefab)}:{nameof(subcategoryPrefab.name)}.");
+                                    ImportLocalizationFiles(directory);
                                     continue;
                                 }
                             }
@@ -160,6 +163,44 @@ namespace Recolor.Systems.Palettes
 
                 m_FullyInitialized = true;
                 m_SIPColorFieldsSystem.UpdatePalettes();
+            }
+        }
+
+        private void ImportLocalizationFiles(string folderPath)
+        {
+            if (!System.IO.Directory.Exists(Path.Combine(folderPath, "l10n")))
+            {
+                return;
+            }
+
+            string[] filePaths = Directory.GetFiles(Path.Combine(folderPath, "l10n"));
+            for (int i = 0; i < filePaths.Length; i++)
+            {
+                string fileName = filePaths[i].Remove(0, folderPath.Length + "\\l10n\\".Length);
+                string localeId = fileName.Substring(0, fileName.Length - ".json".Length);
+                m_Log.Debug($"{nameof(AddPalettePrefabsSystem)}.{nameof(ImportLocalizationFiles)} found json for {localeId}");
+                try
+                {
+                    if (GameManager.instance.localizationManager.SupportsLocale(localeId))
+                    {
+                        using StreamReader reader = new StreamReader(new FileStream(filePaths[i], FileMode.Open));
+                        {
+                            string entireFile = reader.ReadToEnd();
+                            Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
+                            Dictionary<string, string> translations = varient.Make<Dictionary<string, string>>();
+                            GameManager.instance.localizationManager.AddSource(localeId, new MemorySource(translations));
+                            m_Log.Debug($"{nameof(AddPalettePrefabsSystem)}.{nameof(ImportLocalizationFiles)} sucessfully imported localization files for {localeId} from this folder: {folderPath}.");
+                        }
+                    }
+                    else
+                    {
+                        m_Log.Debug($"{nameof(AddPalettePrefabsSystem)}.{nameof(ImportLocalizationFiles)} {localeId} is not supported");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    m_Log.Error($"{nameof(AddPalettePrefabsSystem)}.{nameof(ImportLocalizationFiles)} Could not import localization file. Encountered Exception: {ex}. ");
+                }
             }
         }
     }

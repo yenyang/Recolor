@@ -54,6 +54,14 @@ namespace Recolor.Systems.SelectedInfoPanel
             };
             foreach (Entity palettePrefabEntity in palettePrefabEntities)
             {
+                if (!m_PrefabSystem.TryGetPrefab(palettePrefabEntity, out PrefabBase prefabBase1) ||
+                    prefabBase1 is not PalettePrefab)
+                {
+                    continue;
+                }
+
+                PalettePrefab palettePrefabBase = prefabBase1 as PalettePrefab;
+
                 if (!EntityManager.TryGetBuffer(palettePrefabEntity, isReadOnly: true, out DynamicBuffer<SwatchData> swatches) ||
                     swatches.Length < 2)
                 {
@@ -65,8 +73,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                     continue;
                 }
 
-                if (m_PrefabSystem.TryGetPrefab(palettePrefabEntity, out PalettePrefab palettePrefabBase) &&
-                    FilterByType(palettePrefabEntity, palettePrefabBase.m_FilterType))
+                if (FilterByType(palettePrefabEntity, palettePrefabBase.m_FilterType))
                 {
                     continue;
                 }
@@ -80,7 +87,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (!EntityManager.TryGetComponent(palettePrefabEntity, out PaletteCategoryData categoryData) ||
                     categoryData.m_SubCategory == Entity.Null)
                 {
-                    paletteChooserBuilder[NoSubcategoryName].Add(new PaletteUIData(palettePrefabEntity, swatchData));
+                    paletteChooserBuilder[NoSubcategoryName].Add(new PaletteUIData(palettePrefabEntity, swatchData, palettePrefabBase.name));
                 }
                 else if (m_PrefabSystem.TryGetPrefab(categoryData.m_SubCategory, out PrefabBase prefabBase) &&
                            prefabBase is PaletteSubCategoryPrefab)
@@ -90,7 +97,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                         paletteChooserBuilder.Add(prefabBase.name, new List<PaletteUIData>());
                     }
 
-                    paletteChooserBuilder[prefabBase.name].Add(new PaletteUIData(palettePrefabEntity, swatchData));
+                    paletteChooserBuilder[prefabBase.name].Add(new PaletteUIData(palettePrefabEntity, swatchData, palettePrefabBase.name));
                 }
             }
 
