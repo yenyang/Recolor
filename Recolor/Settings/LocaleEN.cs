@@ -7,6 +7,7 @@ namespace Recolor.Settings
     using System.Collections.Generic;
     using Colossal;
     using Recolor;
+    using Recolor.Systems.SelectedInfoPanel;
 
     /// <summary>
     /// Localization for <see cref="Setting"/> in English.
@@ -150,7 +151,7 @@ namespace Recolor.Settings
                 { SectionLabel("LocalizedName"), "Localized Name" },
                 { SectionLabel("LocalizedDescription"), "Localized Description" },
                 { TooltipDescriptionKey("RemoveALocale"), "Remove a Locale" },
-                { "Recolor.Subcategory.NAME[No Subcategory]", "No Subcategory" },
+                { NameKey(Systems.Palettes.PalettesUISystem.MenuType.Subcategory, SIPColorFieldsSystem.NoSubcategoryName), $"{SIPColorFieldsSystem.NoSubcategoryName}" },
             };
         }
 

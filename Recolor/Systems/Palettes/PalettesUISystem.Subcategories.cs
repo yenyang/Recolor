@@ -191,14 +191,7 @@ namespace Recolor.Systems.Palettes
                     m_Log.Info($"Could not remove files for {prefabBase.name} encountered exception {e}.");
                 }
 
-                try
-                {
-                    Directory.Delete(Path.Combine(m_SubcategoryPrefabsFolder, prefabBase.name, "l10n"));
-                }
-                catch (Exception e)
-                {
-                    m_Log.Info($"Could not remove directory for {prefabBase.name} encountered exception {e}.");
-                }
+                DeleteLocalizationFiles(Path.Combine(m_SubcategoryPrefabsFolder, prefabBase.name));
 
                 try
                 {

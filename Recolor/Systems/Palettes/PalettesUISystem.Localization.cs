@@ -168,6 +168,8 @@ namespace Recolor.Systems.Palettes
 
                 m_LocalizationUIDatas.Value[(int)menuType][i].LocalizedDescription = string.Empty;
             }
+
+            m_LocalizationUIDatas.Binding.TriggerUpdate();
         }
 
         private void InitializeLocalizationUIDatas()
@@ -376,6 +378,36 @@ namespace Recolor.Systems.Palettes
                 {
                     m_LocalizationUIDatas.Binding.TriggerUpdate();
                 }
+            }
+        }
+
+        private void DeleteLocalizationFiles(string folderPath)
+        {
+            if (!System.IO.Directory.Exists(Path.Combine(folderPath, "l10n")))
+            {
+                return;
+            }
+
+            string[] filePaths = Directory.GetFiles(Path.Combine(folderPath, "l10n"));
+            for (int i = 0; i < filePaths.Length; i++)
+            {
+                try
+                {
+                    File.Delete(filePaths[i]);
+                }
+                catch (Exception e)
+                {
+                    m_Log.Info($"Could not remove file at {filePaths[i]} encountered exception {e}.");
+                }
+            }
+
+            try
+            {
+                Directory.Delete(Path.Combine(folderPath, "l10n"));
+            }
+            catch (Exception e)
+            {
+                m_Log.Info($"Could not remove directory at {Path.Combine(folderPath, "l10n")} encountered exception {e}.");
             }
         }
     }
