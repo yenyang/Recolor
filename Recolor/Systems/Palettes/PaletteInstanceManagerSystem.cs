@@ -125,7 +125,7 @@ namespace Recolor.Systems.Palettes
 
             m_AssignedPaletteQuery = SystemAPI.QueryBuilder()
                    .WithAll<AssignedPalette, MeshColor>()
-                   .WithNone<Temp, Deleted, Plant>()
+                   .WithNone<Deleted, Plant>()
                    .Build();
 
             RequireAnyForUpdate(m_UpdatedPaletteInstanceQuery, m_DeletedPaletteInstanceQuery);

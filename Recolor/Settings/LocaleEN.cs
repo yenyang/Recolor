@@ -152,6 +152,11 @@ namespace Recolor.Settings
                 { SectionLabel("LocalizedDescription"), "Localized Description" },
                 { TooltipDescriptionKey("RemoveALocale"), "Remove a Locale" },
                 { NameKey(Systems.Palettes.PalettesUISystem.MenuType.Subcategory, SIPColorFieldsSystem.NoSubcategoryName), $"{SIPColorFieldsSystem.NoSubcategoryName}" },
+                { TooltipDescriptionKey("SwapPalettes"), "Swap Palettes between channels." },
+                { TooltipDescriptionKey("CopyPaletteSet"), "Copies Palette assignements for all 3 channels for pasting later." },
+                { TooltipDescriptionKey("PastePaletteSet"), "Pastes Palette assignements for all 3 channels." },
+                { TooltipDescriptionKey("GenerateNewPalette"), "Generate a new Palette and open the Palette Editor Menu." },
+                { TooltipDescriptionKey("CloseEditorPanel"), "Close the Palette Editor Menu." },
             };
         }
 

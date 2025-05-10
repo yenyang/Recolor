@@ -3,7 +3,7 @@ import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaC
 import mod from "../mod.json";
 import { RecolorSelectedInfoPanelComponent } from "mods/RecolorSelectedInfoPanel/SIPcolorFields";
 import { ToolOptionsVisibility } from "mods/ToolOptionsVisible/toolOptionsVisible";
-import { ColorPainterSectionComponent } from "mods/colorPainterSection/colorPainterSection";
+import { ToolOptionsSectionComponent } from "mods/toolOptionsSection/toolOptionsSection";
 import { RecolorEditorPanel } from "mods/RecolorEditorPanel/RecolorEditorPanel";
 import { PaletteMenuComponent } from "mods/PalettesMenuComponent/PaletteMenuComponent";
 
@@ -15,7 +15,7 @@ const register: ModRegistrar = (moduleRegistry) => {
 
       
      // This extends mouse tooltip options with Anarchy section and toggle. It may or may not work with gamepads.
-     moduleRegistry.extend("game-ui/game/components/tool-options/mouse-tool-options/mouse-tool-options.tsx", 'MouseToolOptions', ColorPainterSectionComponent);
+     moduleRegistry.extend("game-ui/game/components/tool-options/mouse-tool-options/mouse-tool-options.tsx", 'MouseToolOptions', ToolOptionsSectionComponent);
      //
      
      moduleRegistry.extend("game-ui/game/components/selected-info-panel/selected-info-sections/selected-info-sections.tsx", 'selectedInfoSectionComponents', RecolorSelectedInfoPanelComponent);

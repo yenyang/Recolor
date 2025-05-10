@@ -458,7 +458,7 @@ export const RecolorMainPanelComponent = () => {
                                         )} 
                                         { (CopiedPaletteSet[0].index != 0 ||  CopiedPaletteSet[1].index != 0 || CopiedPaletteSet[2].index != 0) && (
                                         <VanillaComponentResolver.instance.ToolButton src={pasteSrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                                                                        tooltip = {"Paste Palette Set"}
+                                                                                        tooltip = {"PastePaletteSet"}
                                                                                         onSelect={() => { trigger(mod.id, "AssignPalette", 0, CopiedPaletteSet[0]); trigger(mod.id, "AssignPalette", 1, CopiedPaletteSet[1]); trigger(mod.id, "AssignPalette", 2, CopiedPaletteSet[2]);}}
                                         />
                                         )} 
@@ -478,12 +478,12 @@ export const RecolorMainPanelComponent = () => {
                         <InfoRow
                             right={
                                 <FocusDisabled>
-                                    <PaletteChooserComponent channel={0}></PaletteChooserComponent>
+                                    <PaletteChooserComponent channel={0} PaletteChooserData={PaletteChooserData}></PaletteChooserComponent>
                                     <div className={styles.columnGroup}>
                                         <VanillaComponentResolver.instance.ToolButton
                                             src={swapSrc}
                                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                            tooltip = {"Swap Palettes"}
+                                            tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SwapPalettes]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SwapPalettes]"])}
                                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                             onSelect={() => 
                                             {
@@ -496,12 +496,12 @@ export const RecolorMainPanelComponent = () => {
                                             <span className={styles.belowSwapButton}></span> : <span className={styles.belowSwapButtonSmall}></span>
                                         }
                                     </div>
-                                    <PaletteChooserComponent channel={1}></PaletteChooserComponent>
+                                    <PaletteChooserComponent channel={1}  PaletteChooserData={PaletteChooserData}></PaletteChooserComponent>
                                     <div className={styles.columnGroup}>
                                         <VanillaComponentResolver.instance.ToolButton
                                             src={swapSrc}
                                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                            tooltip = {"Swap Palettes"}
+                                            tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SwapPalettes]" ,locale["Recolor.TOOLTIP_DESCRIPTION[SwapPalettes]"])}
                                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                             onSelect={() => 
                                             {
@@ -514,7 +514,7 @@ export const RecolorMainPanelComponent = () => {
                                             <span className={styles.belowSwapButton}></span> : <span className={styles.belowSwapButtonSmall}></span>
                                         }
                                     </div>
-                                    <PaletteChooserComponent channel={2}></PaletteChooserComponent>
+                                    <PaletteChooserComponent channel={2}  PaletteChooserData={PaletteChooserData}></PaletteChooserComponent>
                                 </FocusDisabled>
                             }
                             uppercase={false}

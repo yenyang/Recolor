@@ -46,8 +46,19 @@ namespace Recolor.Systems.SelectedInfoPanel
         /// </summary>
         public void UpdatePalettes()
         {
-            NativeArray<Entity> palettePrefabEntities = m_PaletteQuery.ToEntityArray(Allocator.Temp);
+            UpdatePalettes(m_CurrentPrefabEntity, ref m_PaletteChooserData);
+        }
 
+        /// <summary>
+        /// Updates the referenced palettes binding.
+        /// </summary>
+        /// <param name="prefabEntity">prefab entity to filter for categories.</param>
+        /// <param name="paletteChooserBinding">Binding to update.</param>
+        public void UpdatePalettes(Entity prefabEntity, ref ValueBindingHelper<PaletteChooserUIData> paletteChooserBinding)
+        {
+            NativeArray<Entity> palettePrefabEntities = m_PaletteQuery.ToEntityArray(Allocator.Temp);
+            Entity[] selectedEntities = paletteChooserBinding.Value.SelectedPaletteEntities;
+            Entity[] newSelectedEntities = new Entity[3] { Entity.Null, Entity.Null, Entity.Null };
             Dictionary<string, List<PaletteUIData>> paletteChooserBuilder = new Dictionary<string, List<PaletteUIData>>
             {
                 { NoSubcategoryName, new List<PaletteUIData>() },
@@ -68,7 +79,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                     continue;
                 }
 
-                if (FilterForCategories(palettePrefabEntity))
+                if (FilterForCategories(palettePrefabEntity, prefabEntity))
                 {
                     continue;
                 }
@@ -99,65 +110,79 @@ namespace Recolor.Systems.SelectedInfoPanel
 
                     paletteChooserBuilder[prefabBase.name].Add(new PaletteUIData(palettePrefabEntity, swatchData, palettePrefabBase.name));
                 }
+
+                for (int i = 0; i < Math.Min(selectedEntities.Length, 3); i++)
+                {
+                    if (selectedEntities[i] == palettePrefabEntity)
+                    {
+                        newSelectedEntities[i] = palettePrefabEntity;
+                    }
+                }
             }
 
             if (EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<AssignedPalette> assignedPalettes) &&
                 assignedPalettes.Length > 0)
             {
-                m_PaletteChooserData.Value = new PaletteChooserUIData(paletteChooserBuilder, assignedPalettes);
+                paletteChooserBinding.Value = new PaletteChooserUIData(paletteChooserBuilder, assignedPalettes);
+            }
+            else if (m_ToolSystem.activeTool == m_DefaultToolSystem)
+            {
+                paletteChooserBinding.Value = new PaletteChooserUIData(paletteChooserBuilder);
             }
             else
             {
-                m_PaletteChooserData.Value = new PaletteChooserUIData(paletteChooserBuilder);
+                PaletteChooserUIData paletteChooserUIData = new PaletteChooserUIData(paletteChooserBuilder);
+                paletteChooserUIData.SelectedPaletteEntities = newSelectedEntities;
             }
 
-            m_PaletteChooserData.Binding.TriggerUpdate();
+            paletteChooserBinding.Binding.TriggerUpdate();
         }
 
         /// <summary>
         /// Filters for categories such as building, vehicle, or prop.
         /// </summary>
         /// <param name="palettePrefabEntity">Prefab Entity for the palette.</param>
+        /// <param name="prefabEntity">prefab entity to check against.</param>
         /// <returns>True if does not match category of current entity. False if matches category of current entity.</returns>
-        private bool FilterForCategories(Entity palettePrefabEntity)
+        public bool FilterForCategories(Entity palettePrefabEntity, Entity prefabEntity)
         {
             if (m_PrefabSystem.TryGetPrefab(palettePrefabEntity, out PrefabBase prefabBase) &&
                   prefabBase is PalettePrefab)
             {
                 PalettePrefab palettePrefab = prefabBase as PalettePrefab;
                 if ((palettePrefab.m_Category == PaletteCategoryData.PaletteCategory.Vehicles &&
-                    !EntityManager.HasComponent<Game.Vehicles.Vehicle>(m_CurrentEntity)) ||
+                    !EntityManager.HasComponent<VehicleData>(prefabEntity)) ||
                     (palettePrefab.m_Category == PaletteCategoryData.PaletteCategory.Buildings &&
-                    !EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity)) ||
+                    !EntityManager.HasComponent<BuildingData>(prefabEntity)) ||
                     (palettePrefab.m_Category == PaletteCategoryData.PaletteCategory.Props &&
-                   (!EntityManager.HasComponent<Game.Objects.Static>(m_CurrentEntity) ||
-                    !EntityManager.HasComponent<Game.Objects.Object>(m_CurrentEntity) ||
-                     EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity))))
+                   (!EntityManager.HasComponent<StaticObjectData>(prefabEntity) ||
+                    !EntityManager.HasComponent<ObjectData>(prefabEntity) ||
+                     EntityManager.HasComponent<BuildingData>(prefabEntity))))
                 {
                     return true;
                 }
 
                 if (palettePrefab.m_Category == (PaletteCategoryData.PaletteCategory.Vehicles | PaletteCategoryData.PaletteCategory.Buildings) &&
-                   !EntityManager.HasComponent<Game.Vehicles.Vehicle>(m_CurrentEntity) &&
-                   !EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity))
+                   !EntityManager.HasComponent<VehicleData>(prefabEntity) &&
+                   !EntityManager.HasComponent<BuildingData>(prefabEntity))
                 {
                     return true;
                 }
 
                 if (palettePrefab.m_Category == (PaletteCategoryData.PaletteCategory.Vehicles | PaletteCategoryData.PaletteCategory.Props) &&
-                   !EntityManager.HasComponent<Game.Vehicles.Vehicle>(m_CurrentEntity) &&
-                  (!EntityManager.HasComponent<Game.Objects.Static>(m_CurrentEntity) ||
-                   !EntityManager.HasComponent<Game.Objects.Object>(m_CurrentEntity) ||
-                    EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity)))
+                   !EntityManager.HasComponent<VehicleData>(prefabEntity) &&
+                  (!EntityManager.HasComponent<StaticObjectData>(prefabEntity) ||
+                   !EntityManager.HasComponent<ObjectData>(prefabEntity) ||
+                    EntityManager.HasComponent<BuildingData>(prefabEntity)))
                 {
                     return true;
                 }
 
                 if (palettePrefab.m_Category == (PaletteCategoryData.PaletteCategory.Buildings | PaletteCategoryData.PaletteCategory.Props) &&
-                   !EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity) &&
-                  (!EntityManager.HasComponent<Game.Objects.Static>(m_CurrentEntity) ||
-                   !EntityManager.HasComponent<Game.Objects.Object>(m_CurrentEntity) ||
-                    EntityManager.HasComponent<Game.Buildings.Building>(m_CurrentEntity)))
+                   !EntityManager.HasComponent<BuildingData>(prefabEntity) &&
+                  (!EntityManager.HasComponent<StaticObjectData>(prefabEntity) ||
+                   !EntityManager.HasComponent<ObjectData>(prefabEntity) ||
+                    EntityManager.HasComponent<BuildingData>(prefabEntity)))
                 {
                     return true;
                 }
@@ -170,14 +195,12 @@ namespace Recolor.Systems.SelectedInfoPanel
             return false;
         }
 
-        private void AssignPaletteAction(int channel, Entity prefabEntity)
-        {
-            m_PaletteChooserData.Value.SetPrefabEntity(channel, prefabEntity);
-            m_PaletteChooserData.Binding.TriggerUpdate();
-            AssignPalette(channel, m_CurrentEntity, prefabEntity);
-            m_PreviouslySelectedEntity = Entity.Null;
-        }
-
+        /// <summary>
+        /// Assigns a palette to the instance entity based on prefab entity and channel.
+        /// </summary>
+        /// <param name="channel">Channel 0 to 2.</param>
+        /// <param name="instanceEntity">The entity to add the palette to.</param>
+        /// <param name="prefabEntity">Palette prefab entity.</param>
         private void AssignPalette(int channel, Entity instanceEntity, Entity prefabEntity)
         {
             if (channel < 0 || channel > 2)
@@ -229,12 +252,11 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
         }
 
-        private void RemovePaletteAction(int channel)
-        {
-            RemovePalette(channel, m_CurrentEntity);
-            m_PreviouslySelectedEntity = Entity.Null;
-        }
-
+        /// <summary>
+        /// Removes a palette from a channel on an instance entity.
+        /// </summary>
+        /// <param name="channel">channel 0 to 2.</param>
+        /// <param name="instanceEntity">instance entity to remove a palette from.</param>
         private void RemovePalette(int channel, Entity instanceEntity)
         {
             if (channel < 0 ||
@@ -262,6 +284,25 @@ namespace Recolor.Systems.SelectedInfoPanel
                     return;
                 }
             }
+        }
+
+        private bool FilterForCategories(Entity palettePrefabEntity)
+        {
+            return FilterForCategories(palettePrefabEntity, m_CurrentEntity);
+        }
+
+        private void AssignPaletteAction(int channel, Entity prefabEntity)
+        {
+            m_PaletteChooserData.Value.SetPrefabEntity(channel, prefabEntity);
+            m_PaletteChooserData.Binding.TriggerUpdate();
+            AssignPalette(channel, m_CurrentEntity, prefabEntity);
+            m_PreviouslySelectedEntity = Entity.Null;
+        }
+
+        private void RemovePaletteAction(int channel)
+        {
+            RemovePalette(channel, m_CurrentEntity);
+            m_PreviouslySelectedEntity = Entity.Null;
         }
 
         /// <summary>

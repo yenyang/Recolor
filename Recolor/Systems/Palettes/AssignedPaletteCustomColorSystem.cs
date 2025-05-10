@@ -31,6 +31,8 @@ namespace Recolor.Systems.Palettes
         private EndFrameBarrier m_Barrier;
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
 
+        private EntityQuery m_PaletteQuery;
+
         /// <summary>
         /// Tries to get the randomized color from the palette.
         /// </summary>
@@ -116,7 +118,7 @@ namespace Recolor.Systems.Palettes
 
             m_AssignedPaletteQuery = SystemAPI.QueryBuilder()
                   .WithAll<AssignedPalette, PseudoRandomSeed, MeshColor, BatchesUpdated>()
-                  .WithNone<Deleted, Temp, Game.Objects.Plant>()
+                  .WithNone<Deleted, Game.Objects.Plant>()
                   .Build();
 
             RequireForUpdate(m_AssignedPaletteQuery);

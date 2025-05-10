@@ -15,6 +15,7 @@ namespace Recolor.Systems.Palettes
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
+    using Game.Modding.Toolchain;
     using Game.Prefabs;
     using Game.SceneFlow;
     using Game.Tools;
@@ -40,6 +41,8 @@ namespace Recolor.Systems.Palettes
         private PrefabSystem m_PrefabSystem;
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
         private PaletteInstanceManagerSystem m_PaletteInstanceManagerSystem;
+        private ObjectToolSystem m_ObjectToolSystem;
+        private ToolSystem m_ToolSystem;
         private ValueBindingHelper<SwatchUIData[]> m_Swatches;
         private ValueBindingHelper<string[]> m_UniqueNames;
         private ValueBindingHelper<PaletteCategoryData.PaletteCategory[]> m_PaletteCategories;
@@ -64,6 +67,7 @@ namespace Recolor.Systems.Palettes
         private ValueBindingHelper<string> m_ActiveLocaleCode;
         private ValueBindingHelper<string> m_FallbackLocaleCode;
         private ValueBindingHelper<LocalizationUIData[][]> m_LocalizationUIDatas;
+        private ValueBindingHelper<PaletteChooserUIData> m_PaletteChoicesDuringPlacementDatas;
 
         /// <summary>
         /// Enum for handing common events for different menus.
@@ -87,11 +91,13 @@ namespace Recolor.Systems.Palettes
             base.OnCreate();
             m_Log = Mod.Instance.Log;
             uint randomSeed = (uint)(DateTime.Now.Month + DateTime.Now.Day + DateTime.Now.Hour + DateTime.Now.Minute + DateTime.Now.Second);
-            m_Random = new(randomSeed);
+            m_Random = new (randomSeed);
 
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_SIPColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
             m_PaletteInstanceManagerSystem = World.GetOrCreateSystemManaged<PaletteInstanceManagerSystem>();
+            m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
+            m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
 
             m_PalettePrefabsFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, ".PalettePrefabs");
             System.IO.Directory.CreateDirectory(m_PalettePrefabsFolder);
@@ -114,6 +120,7 @@ namespace Recolor.Systems.Palettes
             m_ActiveLocaleCode = CreateBinding("ActiveLocale", GameManager.instance.localizationManager.activeLocaleId);
             m_FallbackLocaleCode = CreateBinding("FallbackLocale", GameManager.instance.localizationManager.fallbackLocaleId);
             m_LocalizationUIDatas = CreateBinding("LocalizationDatas", new LocalizationUIData[2][] { new LocalizationUIData[] { new LocalizationUIData(GameManager.instance.localizationManager.activeLocaleId, string.Empty, string.Empty), }, new LocalizationUIData[] { new LocalizationUIData(GameManager.instance.localizationManager.activeLocaleId, string.Empty, string.Empty), } });
+            m_PaletteChoicesDuringPlacementDatas = CreateBinding("PaletteChoicesDuringPlacement", new PaletteChooserUIData());
 
             // Listen to trigger event that are sent from the UI to the C#.
             CreateTrigger("TrySavePalette", TrySavePalette);
@@ -143,6 +150,8 @@ namespace Recolor.Systems.Palettes
             CreateTrigger<string>("RemoveLocale", RemoveLocale);
             CreateTrigger<int, int, string>("ChangeLocalizedName", ChangeLocalizedName);
             CreateTrigger<int, int, string>("ChangeLocalizedDescription", ChangeLocalizedDescription);
+            CreateTrigger<int, Entity>("AssignPaletteDuringPlacement", AssignPaletteDuringPlacementAction);
+            CreateTrigger<int>("RemovePaletteDuringPlacement", RemovePaletteDuringPlacementAction);
 
             m_SubcategoryQuery = SystemAPI.QueryBuilder()
                 .WithAll<PaletteSubcategoryData>()
