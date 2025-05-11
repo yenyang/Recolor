@@ -88,6 +88,7 @@ export const PaletteMenuComponent = () => {
     const FilterEntities = useValue(FilterEntities$);
     const SelectedFilterPrefabEntities = useValue(SelectedFilterPrefabEntities$);
     const LocalizationUIDatas = useValue(LocalizationUIDatas$);
+    const objectTool = useValue(tool.activeTool$).id == tool.OBJECT_TOOL;
     
     const { translate } = useLocalization();
 
@@ -143,7 +144,7 @@ export const PaletteMenuComponent = () => {
 
     return (
         <>
-            {ShowPaletteEditorPanel && !isPhotoMode && defaultTool && activeSelection && ShowPaletteChoices == ButtonState.On && (
+            {ShowPaletteEditorPanel && !isPhotoMode && ((defaultTool && activeSelection && ShowPaletteChoices == ButtonState.On) || objectTool) && (
                 <>
                     <Portal>
                         <div className={classNames(panelStyles.panelRowGroup, panelStyles.panel, ResidentialBuildingSelected? panelStyles.residenialBuildingPosition : "")}>

@@ -34,6 +34,8 @@ namespace Recolor.Systems.Palettes
         private AssignedPaletteCustomColorSystem m_AssignedPaletteCustomColorSystem;
         private ColorPainterToolSystem m_ColorPainterToolSystem;
         private PalettesUISystem m_UISystem;
+        private PrefabBase m_PreviousPrefabBase;
+        private PseudoRandomSeed m_PreviousPsuedoRandomSeed;
 
         /// <inheritdoc/>
         protected override void OnCreate()
@@ -74,6 +76,14 @@ namespace Recolor.Systems.Palettes
             {
                 AssignPalettes(entities[i], m_UISystem.SelectedPalettesDuringPlacement, ref buffer);
             }
+
+            if (m_ObjectToolSystem.actualMode == ObjectToolSystem.Mode.Create &&
+                entities.Length == 1 &&
+                EntityManager.TryGetBuffer(entities[0], isReadOnly: true, out DynamicBuffer<MeshColor> meshColors) &&
+                meshColors.Length > 0)
+            {
+                m_UISystem.SetNoneColors(meshColors[0].m_ColorSet);
+            }
         }
 
         private void OnToolChanged(ToolBaseSystem tool)
@@ -83,9 +93,11 @@ namespace Recolor.Systems.Palettes
 
         private void OnPrefabChanged(PrefabBase prefab)
         {
-            if (m_ToolSystem.activeTool != m_ObjectToolSystem)
+            if (m_ToolSystem.activeTool != m_ObjectToolSystem ||
+               !Mod.Instance.Settings.ShowPalettesOptionDuringPlacement)
             {
                 Enabled = false;
+                m_UISystem.ShowPaletteChooserDuringPlacement = false;
                 return;
             }
 
@@ -100,11 +112,15 @@ namespace Recolor.Systems.Palettes
                         colorVariations.Length > 0)
                     {
                         Enabled = true;
-                        m_UISystem.UpdatePaletteChoicesDuringPlacementBinding();
+                        m_UISystem.ResetNoneColors();
+                        m_UISystem.UpdatePaletteChoicesDuringPlacementBinding(Mod.Instance.Settings.ResetPaletteChoicesWhenSwitchingPrefab && m_PreviousPrefabBase != prefab);
+                        m_PreviousPrefabBase = prefab;
                         return;
                     }
                 }
             }
+
+            m_UISystem.ShowPaletteChooserDuringPlacement = false;
         }
 
         /// <summary>

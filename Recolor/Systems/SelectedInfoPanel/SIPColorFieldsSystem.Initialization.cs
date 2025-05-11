@@ -99,7 +99,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private int m_RouteColorChannel = -1;
         private List<int> m_SubMeshIndexes = new List<int>();
         private ValueBindingHelper<bool> m_CanResetOtherSubMeshes;
-        private bool m_PreferPalettes = false;
+        private bool m_PreferPalettes;
         private ValueBindingHelper<ButtonState> m_ShowPaletteChoices;
         private PalettesUISystem m_PalettesUISystem;
         private PaletteInstanceManagerSystem m_PaletteInstanceMangerSystem;
@@ -224,7 +224,8 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_CanResetOtherSubMeshes = CreateBinding("CanResetOtherSubMeshes", false);
             m_EditorVisible = CreateBinding("EditorVisible", false);
             m_PaletteChooserData = CreateBinding("PaletteChooserData", new PaletteChooserUIData());
-            m_ShowPaletteChoices = CreateBinding("ShowPaletteChoices", ButtonState.Off);
+            m_ShowPaletteChoices = CreateBinding("ShowPaletteChoices", Mod.Instance.Settings.ShowSIPPaletteOptions ? ButtonState.On : ButtonState.Off);
+            m_PreferPalettes = Mod.Instance.Settings.ShowSIPPaletteOptions;
             m_CopiedPalette = CreateBinding("CopiedPalette", Entity.Null);
             m_CopiedPaletteSet = CreateBinding("CopiedPaletteSet", new Entity[] { Entity.Null, Entity.Null, Entity.Null });
             m_ResidentialBuildingSelected = CreateBinding("ResidentialBuildingSelected", false);
@@ -294,6 +295,8 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 m_PreferPalettes = !m_PreferPalettes;
                 HandleScopeAndButtonStates();
+                Mod.Instance.Settings.ShowSIPPaletteOptions = m_PreferPalettes;
+                Mod.Instance.Settings.ApplyAndSave();
             });
             CreateTrigger<int, Entity>("AssignPalette", AssignPaletteAction);
             CreateTrigger<int>("RemovePalette", RemovePaletteAction);

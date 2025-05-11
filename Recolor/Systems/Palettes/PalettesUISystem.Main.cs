@@ -37,6 +37,7 @@ namespace Recolor.Systems.Palettes
     {
         private const string GeneratedPaletteNamePrefix = "Custom Palette ";
         private const string GeneratedSubcategoryNamePrefix = "Subcategory ";
+        private readonly Color DefaultNoneColor = new (45f / 255f, 47f / 255f, 55f / 255f);
 
         private PrefabSystem m_PrefabSystem;
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
@@ -68,6 +69,8 @@ namespace Recolor.Systems.Palettes
         private ValueBindingHelper<string> m_FallbackLocaleCode;
         private ValueBindingHelper<LocalizationUIData[][]> m_LocalizationUIDatas;
         private ValueBindingHelper<PaletteChooserUIData> m_PaletteChoicesDuringPlacementDatas;
+        private ValueBindingHelper<bool> m_ShowPaletteChooserDuringPlacement;
+        private ValueBindingHelper<Color[]> m_NonePaletteColors;
 
         /// <summary>
         /// Enum for handing common events for different menus.
@@ -121,6 +124,8 @@ namespace Recolor.Systems.Palettes
             m_FallbackLocaleCode = CreateBinding("FallbackLocale", GameManager.instance.localizationManager.fallbackLocaleId);
             m_LocalizationUIDatas = CreateBinding("LocalizationDatas", new LocalizationUIData[2][] { new LocalizationUIData[] { new LocalizationUIData(GameManager.instance.localizationManager.activeLocaleId, string.Empty, string.Empty), }, new LocalizationUIData[] { new LocalizationUIData(GameManager.instance.localizationManager.activeLocaleId, string.Empty, string.Empty), } });
             m_PaletteChoicesDuringPlacementDatas = CreateBinding("PaletteChoicesDuringPlacement", new PaletteChooserUIData());
+            m_ShowPaletteChooserDuringPlacement = CreateBinding("ShowPaletteChooserDuringPlacement", Mod.Instance.Settings.ShowPalettesOptionDuringPlacement);
+            m_NonePaletteColors = CreateBinding("NonePaletteColors", new Color[3] { DefaultNoneColor, DefaultNoneColor, DefaultNoneColor });
 
             // Listen to trigger event that are sent from the UI to the C#.
             CreateTrigger("TrySavePalette", TrySavePalette);

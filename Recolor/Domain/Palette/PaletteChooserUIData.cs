@@ -114,5 +114,21 @@ namespace Recolor.Domain.Palette
                 m_SelectedPaletteEntities[channel] = prefabEntity;
             }
         }
+
+        /// <summary>
+        /// Gets the amount of chooseable palettes.
+        /// </summary>
+        /// <returns>Amount of chooseable palettes.</returns>
+        public int GetPaletteCount()
+        {
+            int count = 0;
+            for (int i = 0; i < m_DropdownItems.Length; i++)
+            {
+                count += m_DropdownItems.Length;
+            }
+
+            return count;
+        }
+
     }
 }

@@ -2,14 +2,14 @@ import { bindValue, trigger, useValue } from "cs2/api";
 import { getModule } from "cs2/modding";
 import { Dropdown, DropdownItem, DropdownToggle, Tooltip } from "cs2/ui";
 import mod from "../../../mod.json";
-import { PaletteBoxComponent } from "mods/PaletteBoxComponent/PaletteBoxComponent";
+import { convertToBackGroundColor, PaletteBoxComponent } from "mods/PaletteBoxComponent/PaletteBoxComponent";
 import { PaletteChooserUIData } from "mods/Domain/PaletteAndSwatches/PaletteChooserUIData";
 import classNames from "classnames";
 import styles from "../Domain/ColorFields.module.scss";
 import boxStyles from "../PaletteBoxComponent/PaletteBoxStyles.module.scss";
 import { ColorFieldTheme } from "mods/SIPColorComponent/SIPColorComponent";
-import { Entity, tool } from "cs2/bindings";
-import { useState } from "react";
+import { Color, Entity, tool } from "cs2/bindings";
+import { CSSProperties, useState } from "react";
 import { entityEquals } from "cs2/utils";
 import { FocusDisabled } from "cs2/input";
 import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaComponentResolver";
@@ -26,6 +26,7 @@ const CopiedPalette$ = bindValue<Entity>(mod.id, "CopiedPalette");
 const basicDropDownTheme = getModule('game-ui/common/input/dropdown/dropdown.module.scss', 'classes');
 const EditingPrefabEntity$ = bindValue<Entity>(mod.id, "EditingPrefabEntity");
 const ShowPaletteEditorPanel$ = bindValue<boolean>(mod.id, "ShowPaletteEditorMenu");
+const NonePaletteColors$ = bindValue<Color[]>(mod.id, "NonePaletteColors");
 
 export function assignPalette(channel : number, entity : Entity, eventSuffix?: string) {
     if (eventSuffix == undefined) eventSuffix = "";
@@ -38,13 +39,26 @@ export function removePalette(channel: number, eventSuffix?: string) {
     trigger(mod.id, "RemovePalette" + eventSuffix, channel);
 }
 
-export const PaletteChooserComponent = (props: {channel : number, PaletteChooserData: PaletteChooserUIData, eventSuffix?:string}) => {
+
+export const PaletteChooserComponent = (props: {channel : number, PaletteChooserData: PaletteChooserUIData, eventSuffix?:string, noneHasColor?:boolean}) => {
     const CopiedPalette = useValue(CopiedPalette$);
     const CanPastePalette : boolean = CopiedPalette.index != 0;
     const EditingPrefabEntity = useValue(EditingPrefabEntity$);    
     const ShowPaletteEditorPanel = useValue(ShowPaletteEditorPanel$);
+    const NonePaletteColors = useValue(NonePaletteColors$);
 
     const { translate } = useLocalization();
+
+    function getStyle() : CSSProperties | undefined
+    {
+        if (props.noneHasColor == undefined) return {color: "#ffffff"};
+        let col = "#ffffff";
+        if (NonePaletteColors[props.channel].r *0.299 + NonePaletteColors[props.channel].g * 0.587 + NonePaletteColors[props.channel].b * 0.114 > 186/256) {
+            col = "#000000";
+        }
+
+        return {color: col, backgroundColor: convertToBackGroundColor(NonePaletteColors[props.channel])}
+    }   
 
     function GetCurrentSwatches() : JSX.Element {
         for (let i=0; i<props.PaletteChooserData.DropdownItems[props.channel].length; i++) 
@@ -58,7 +72,7 @@ export const PaletteChooserComponent = (props: {channel : number, PaletteChooser
             }
         }
 
-        return <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.largeDropdownText)}>None</div>;
+        return <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.largeDropdownText)} style={getStyle()}>{translate("Recolor.SECTION_TITLE[None]" , locale["Recolor.SECTION_TITLE[None]"])}</div>;
     } 
 
 
@@ -71,8 +85,8 @@ export const PaletteChooserComponent = (props: {channel : number, PaletteChooser
                             theme = {basicDropDownTheme}
                             content={
                                 <FocusDisabled>
-                                    <DropdownItem value={translate("Recolor.SECTION_TITLE[None]" , locale["Recolor.SECTION_TITLE[None]"])} className={basicDropDownTheme.dropdownItem} onChange={() => removePalette(props.channel, props.eventSuffix)}>
-                                        <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.largeDropdownText)}>{translate("Recolor.SECTION_TITLE[None]", locale["Recolor.SECTION_TITLE[None]"])}</div>
+                                    <DropdownItem value={"None"} className={basicDropDownTheme.dropdownItem} onChange={() => removePalette(props.channel, props.eventSuffix)}>
+                                        <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.largeDropdownText)} style={getStyle()}>{translate("Recolor.SECTION_TITLE[None]", locale["Recolor.SECTION_TITLE[None]"])}</div>
                                     </DropdownItem>
                                     {
                                     props.PaletteChooserData.DropdownItems[props.channel].map((Subcategories) => (

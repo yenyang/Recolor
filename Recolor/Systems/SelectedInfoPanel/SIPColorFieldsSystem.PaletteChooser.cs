@@ -54,7 +54,8 @@ namespace Recolor.Systems.SelectedInfoPanel
         /// </summary>
         /// <param name="prefabEntity">prefab entity to filter for categories.</param>
         /// <param name="paletteChooserBinding">Binding to update.</param>
-        public void UpdatePalettes(Entity prefabEntity, ref ValueBindingHelper<PaletteChooserUIData> paletteChooserBinding)
+        /// <param name="resetChoices">Reset back to three none palettes or not.</param>
+        public void UpdatePalettes(Entity prefabEntity, ref ValueBindingHelper<PaletteChooserUIData> paletteChooserBinding, bool resetChoices = false)
         {
             NativeArray<Entity> palettePrefabEntities = m_PaletteQuery.ToEntityArray(Allocator.Temp);
             Entity[] selectedEntities = paletteChooserBinding.Value.SelectedPaletteEntities;
@@ -125,7 +126,8 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 paletteChooserBinding.Value = new PaletteChooserUIData(paletteChooserBuilder, assignedPalettes);
             }
-            else if (m_ToolSystem.activeTool == m_DefaultToolSystem)
+            else if (m_ToolSystem.activeTool == m_DefaultToolSystem ||
+                     resetChoices)
             {
                 paletteChooserBinding.Value = new PaletteChooserUIData(paletteChooserBuilder);
             }
@@ -133,6 +135,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 PaletteChooserUIData paletteChooserUIData = new PaletteChooserUIData(paletteChooserBuilder);
                 paletteChooserUIData.SelectedPaletteEntities = newSelectedEntities;
+                paletteChooserBinding.Value = paletteChooserUIData;
             }
 
             paletteChooserBinding.Binding.TriggerUpdate();

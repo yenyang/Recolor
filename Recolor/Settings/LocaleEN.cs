@@ -6,6 +6,7 @@ namespace Recolor.Settings
 {
     using System.Collections.Generic;
     using Colossal;
+    using Colossal.IO.AssetDatabase.Internal;
     using Recolor;
     using Recolor.Systems.SelectedInfoPanel;
 
@@ -153,10 +154,14 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("RemoveALocale"), "Remove a Locale" },
                 { NameKey(Systems.Palettes.PalettesUISystem.MenuType.Subcategory, SIPColorFieldsSystem.NoSubcategoryName), $"{SIPColorFieldsSystem.NoSubcategoryName}" },
                 { TooltipDescriptionKey("SwapPalettes"), "Swap Palettes between channels." },
-                { TooltipDescriptionKey("CopyPaletteSet"), "Copies Palette assignements for all 3 channels for pasting later." },
-                { TooltipDescriptionKey("PastePaletteSet"), "Pastes Palette assignements for all 3 channels." },
+                { TooltipDescriptionKey("CopyPaletteSet"), "Copies Palette assignments for all 3 channels for pasting later." },
+                { TooltipDescriptionKey("PastePaletteSet"), "Pastes Palette assignments for all 3 channels." },
                 { TooltipDescriptionKey("GenerateNewPalette"), "Generate a new Palette and open the Palette Editor Menu." },
                 { TooltipDescriptionKey("CloseEditorPanel"), "Close the Palette Editor Menu." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowPalettesOptionDuringPlacement)), "Show Palette options while placing objects" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowPalettesOptionDuringPlacement)), "Toggles whether to show dropdowns for picking palettes for the three color channels while placing objects with the Object tool." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetPaletteChoicesWhenSwitchingPrefab)), "Reset Palette choices when Selecting New Asset" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetPaletteChoicesWhenSwitchingPrefab)), "Toggles whether to automatically reset palette choices to None whenever you change to a new asset selection." },
             };
         }
 

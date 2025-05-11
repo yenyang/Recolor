@@ -17,7 +17,9 @@ namespace Recolor.Systems.Palettes
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
+    using Game.Debug;
     using Game.Prefabs;
+    using Game.Rendering;
     using Game.SceneFlow;
     using Game.Tools;
     using Game.UI.InGame;
@@ -37,6 +39,15 @@ namespace Recolor.Systems.Palettes
     public partial class PalettesUISystem : ExtendedUISystemBase
     {
         /// <summary>
+        /// Gets or sets a value indicating whether to ShowPaletteChooser during placement.
+        /// </summary>
+        public bool ShowPaletteChooserDuringPlacement
+        {
+            get { return m_ShowPaletteChooserDuringPlacement.Value; }
+            set { m_ShowPaletteChooserDuringPlacement.Value = value; }
+        }
+
+        /// <summary>
         /// Gets the selected palettes during placement.
         /// </summary>
         public Entity[] SelectedPalettesDuringPlacement
@@ -47,15 +58,44 @@ namespace Recolor.Systems.Palettes
         /// <summary>
         /// Updates Palette choices during placement binding.
         /// </summary>
-        public void UpdatePaletteChoicesDuringPlacementBinding()
+        /// <param name="resetChoices">Reset choices back to three nones or not.</param>
+        public void UpdatePaletteChoicesDuringPlacementBinding(bool resetChoices = false)
         {
             if (m_ToolSystem.activeTool != m_ObjectToolSystem ||
-               !m_PrefabSystem.TryGetEntity(m_ToolSystem.activePrefab, out Entity prefabEntity))
+               !m_PrefabSystem.TryGetEntity(m_ToolSystem.activePrefab, out Entity prefabEntity) ||
+               !Mod.Instance.Settings.ShowPalettesOptionDuringPlacement)
+            {
+                m_ShowPaletteChooserDuringPlacement.Value = false;
+                return;
+            }
+
+            m_SIPColorFieldsSystem.UpdatePalettes(prefabEntity, ref m_PaletteChoicesDuringPlacementDatas, resetChoices);
+            m_ShowPaletteChooserDuringPlacement.Value = m_PaletteChoicesDuringPlacementDatas.Value.GetPaletteCount() > 0 ? true : false;
+        }
+
+        /// <summary>
+        /// Sets the none palette colors.
+        /// </summary>
+        /// <param name="colorSet">Set of three colors to set none palette colors to.</param>
+        public void SetNoneColors(ColorSet colorSet)
+        {
+            if (m_NonePaletteColors.Value[0] == colorSet.m_Channel0 &&
+                m_NonePaletteColors.Value[1] == colorSet.m_Channel1 &&
+                m_NonePaletteColors.Value[2] == colorSet.m_Channel2)
             {
                 return;
             }
 
-            m_SIPColorFieldsSystem.UpdatePalettes(prefabEntity, ref m_PaletteChoicesDuringPlacementDatas);
+            m_NonePaletteColors.Value = new Color[] { colorSet.m_Channel0, colorSet.m_Channel1, colorSet.m_Channel2 };
+            m_NonePaletteColors.Binding.TriggerUpdate();
+        }
+
+        /// <summary>
+        /// Resets the none palette colors.
+        /// </summary>
+        public void ResetNoneColors()
+        {
+            m_NonePaletteColors.Value = new Color[] { DefaultNoneColor, DefaultNoneColor, DefaultNoneColor };
         }
 
         private void AssignPaletteDuringPlacementAction(int channel, Entity prefabEntity)

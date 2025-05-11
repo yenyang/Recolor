@@ -16,6 +16,7 @@ const PaletteChooserDuringPlacementData$ = bindValue<PaletteChooserUIData>(mod.i
 
 const CopiedPaletteSet$ = bindValue<Entity[]>(mod.id, "CopiedPaletteSet");
 const CopiedPalette$ = bindValue<Entity>(mod.id, "CopiedPalette");
+const ShowPaletteChooserDuringPlacement$ = bindValue<boolean>(mod.id, "ShowPaletteChooserDuringPlacement");
 const EventSuffix = "DuringPlacement";
 
 export const PalettesDuringPlacementComponent = () => 
@@ -24,17 +25,18 @@ export const PalettesDuringPlacementComponent = () =>
     const PaletteChooserDuringPlacmeentData = useValue(PaletteChooserDuringPlacementData$);
     const CopiedPalette = useValue(CopiedPalette$);
     const CopiedPaletteSet = useValue(CopiedPaletteSet$);
+    const ShowPaletteChooserDuringPlacement = useValue(ShowPaletteChooserDuringPlacement$);
     
     const { translate } = useLocalization();
             
     return (
         <>
-            { toolActive && (
+            { toolActive && ShowPaletteChooserDuringPlacement && (
                 <>
                     <VanillaComponentResolver.instance.Section title={"Palette"}><></></VanillaComponentResolver.instance.Section>
                     <VanillaComponentResolver.instance.Section >
                             <FocusDisabled>
-                            <PaletteChooserComponent channel={0} PaletteChooserData={PaletteChooserDuringPlacmeentData} eventSuffix={EventSuffix}></PaletteChooserComponent>
+                            <PaletteChooserComponent channel={0} PaletteChooserData={PaletteChooserDuringPlacmeentData} eventSuffix={EventSuffix} noneHasColor={true}></PaletteChooserComponent>
                             <div className={styles.columnGroup}>
                                 <VanillaComponentResolver.instance.ToolButton
                                     src={swapSrc}
@@ -52,7 +54,7 @@ export const PalettesDuringPlacementComponent = () =>
                                     <span className={styles.belowSwapButton}></span> : <span className={styles.belowSwapButtonSmall}></span>
                                 }
                             </div>
-                            <PaletteChooserComponent channel={1} PaletteChooserData={PaletteChooserDuringPlacmeentData} eventSuffix="DuringPlacement"></PaletteChooserComponent>
+                            <PaletteChooserComponent channel={1} PaletteChooserData={PaletteChooserDuringPlacmeentData} eventSuffix={EventSuffix} noneHasColor={true}></PaletteChooserComponent>
                             <div className={styles.columnGroup}>
                                 <VanillaComponentResolver.instance.ToolButton
                                     src={swapSrc}
@@ -70,7 +72,7 @@ export const PalettesDuringPlacementComponent = () =>
                                     <span className={styles.belowSwapButton}></span> : <span className={styles.belowSwapButtonSmall}></span>
                                 }
                             </div>
-                            <PaletteChooserComponent channel={2} PaletteChooserData={PaletteChooserDuringPlacmeentData} eventSuffix="DuringPlacement"></PaletteChooserComponent>
+                            <PaletteChooserComponent channel={2} PaletteChooserData={PaletteChooserDuringPlacmeentData} eventSuffix={EventSuffix} noneHasColor={true}></PaletteChooserComponent>
                         </FocusDisabled>
                     </VanillaComponentResolver.instance.Section>
                 </>

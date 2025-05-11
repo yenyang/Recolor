@@ -123,5 +123,13 @@
   "Recolor.SECTION_TITLE[LocalizedDescription]": "Localized Description",
   "Recolor.TOOLTIP_DESCRIPTION[RemoveALocale]": "Remove a Locale",
   "Recolor.Subcategory.NAME[No Subcategory]": "No Subcategory",
-  "Recolor.TOOLTIP_DESCRIPTION[SwapPalettes]": "Swap Palettes between channels."
+  "Recolor.TOOLTIP_DESCRIPTION[SwapPalettes]": "Swap Palettes between channels.",
+  "Recolor.TOOLTIP_DESCRIPTION[CopyPaletteSet]": "Copies Palette assignments for all 3 channels for pasting later.",
+  "Recolor.TOOLTIP_DESCRIPTION[PastePaletteSet]": "Pastes Palette assignments for all 3 channels.",
+  "Recolor.TOOLTIP_DESCRIPTION[GenerateNewPalette]": "Generate a new Palette and open the Palette Editor Menu.",
+  "Recolor.TOOLTIP_DESCRIPTION[CloseEditorPanel]": "Close the Palette Editor Menu.",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.ShowPalettesOptionDuringPlacement]": "Show Palette options while placing objects",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ShowPalettesOptionDuringPlacement]": "Toggles whether to show dropdowns for picking palettes for the three color channels while placing objects with the Object tool.",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.ResetPaletteChoicesWhenSwitchingPrefab]": "Reset Palette choices when Selecting New Asset",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ResetPaletteChoicesWhenSwitchingPrefab]": "Toggles whether to automatically reset palette choices to None whenever you change to a new asset selection."
 }

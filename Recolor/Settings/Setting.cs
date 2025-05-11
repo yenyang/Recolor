@@ -79,6 +79,19 @@ namespace Recolor.Settings
         public bool AlwaysMinimizedAtGameStart { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to show palettes options during placement.
+        /// </summary>
+        [SettingsUISection(General, General)]
+        public bool ShowPalettesOptionDuringPlacement { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to reset palette choices when switching prefab.
+        /// </summary>
+        [SettingsUISection(General, General)]
+        [SettingsUIHideByCondition(typeof(Setting), "ShowPalettesOptionDuringPlacement", invert: true)]
+        public bool ResetPaletteChoicesWhenSwitchingPrefab { get; set; }
+
+        /// <summary>
         /// Sets a value indicating whether to reset all settings to default.
         /// </summary>
         [SettingsUIButton]
@@ -125,6 +138,12 @@ namespace Recolor.Settings
         /// </summary>
         [SettingsUIHidden]
         public string[] SelectedLocaleCodes { get; set; }
+
+        /// <summary>
+        ///  Gets or sets a value indicating whether to show palette options with SIP.
+        /// </summary>
+        [SettingsUIHidden]
+        public bool ShowSIPPaletteOptions { get; set; }
 
         /// <summary>
         /// Sets a value indicating whether: a button for Resetting the settings for keybinds.
@@ -221,6 +240,9 @@ namespace Recolor.Settings
             Minimized = false;
             AlwaysMinimizedAtGameStart = false;
             SelectedLocaleCodes = new string[] { GameManager.instance.localizationManager.activeLocaleId };
+            ShowSIPPaletteOptions = true;
+            ResetPaletteChoicesWhenSwitchingPrefab = true;
+            ShowPalettesOptionDuringPlacement = true;
         }
 
         private bool IsNotGame()
