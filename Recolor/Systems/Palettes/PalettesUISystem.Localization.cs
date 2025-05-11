@@ -321,6 +321,13 @@ namespace Recolor.Systems.Palettes
         {
             if (!System.IO.Directory.Exists(Path.Combine(folderPath, "l10n")))
             {
+                for (int j = 0; j < m_LocalizationUIDatas.Value[(int)menuType].Length; j++)
+                {
+                    m_LocalizationUIDatas.Value[(int)menuType][j].LocalizedName = uniqueName;
+                    m_LocalizationUIDatas.Value[(int)menuType][j].LocalizedDescription = string.Empty;
+                }
+
+                m_LocalizationUIDatas.Binding.TriggerUpdate();
                 return;
             }
 

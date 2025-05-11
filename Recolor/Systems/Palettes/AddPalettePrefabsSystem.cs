@@ -82,7 +82,7 @@ namespace Recolor.Systems.Palettes
                                     palettePrefab.Initialize(EntityManager, palettePrefabEntity);
                                     m_Prefabs.Add(palettePrefab);
                                     m_Entities.Add(palettePrefab, palettePrefabEntity);
-                                    m_Log.Info($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Sucessfully imported and partially initialized {nameof(PalettePrefab)}:{nameof(palettePrefab.name)}.");
+                                    m_Log.Info($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Sucessfully imported and partially initialized {nameof(PalettePrefab)}:{palettePrefab.name}.");
 
                                     ImportLocalizationFiles(directory);
                                     continue;
@@ -129,7 +129,7 @@ namespace Recolor.Systems.Palettes
                                 {
                                     subcategoryPrefab.Initialize(EntityManager, palettePrefabEntity);
                                     m_Prefabs.Add(subcategoryPrefab);
-                                    m_Log.Info($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Sucessfully imported and partially initialized {nameof(PaletteSubCategoryPrefab)}:{nameof(subcategoryPrefab.name)}.");
+                                    m_Log.Info($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Sucessfully imported and partially initialized {nameof(PaletteSubCategoryPrefab)}:{subcategoryPrefab.name}.");
                                     ImportLocalizationFiles(directory);
                                     continue;
                                 }
