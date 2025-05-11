@@ -1,0 +1,108 @@
+{
+  "m_Category": 1,
+  "m_SubCategoryPrefabName": "Walls",
+  "m_Swatches": [
+    {
+      "m_Red": 0.6666667,
+      "m_Green": 0.4509804,
+      "m_Blue": 0.286274523,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.972549,
+      "m_Green": 0.8,
+      "m_Blue": 0.4627451,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.9764706,
+      "m_Green": 0.9882353,
+      "m_Blue": 0.9529412,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.5137255,
+      "m_Green": 0.7058824,
+      "m_Blue": 0.8666667,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.2509804,
+      "m_Green": 0.545098066,
+      "m_Blue": 0.8,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.2784314,
+      "m_Green": 0.654902,
+      "m_Blue": 0.8039216,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.141176477,
+      "m_Green": 0.6392157,
+      "m_Blue": 0.6039216,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.31764707,
+      "m_Green": 0.7607843,
+      "m_Blue": 0.694117665,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.6627451,
+      "m_Green": 0.843137264,
+      "m_Blue": 0.6627451,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.8666667,
+      "m_Green": 0.870588243,
+      "m_Blue": 0.6784314,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.996078432,
+      "m_Green": 0.929411769,
+      "m_Blue": 0.8,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.894117653,
+      "m_Green": 0.8156863,
+      "m_Blue": 0.6745098,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.929411769,
+      "m_Green": 0.75686276,
+      "m_Blue": 0.6313726,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.8627451,
+      "m_Green": 0.6745098,
+      "m_Blue": 0.5019608,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "Coastal",
+  "m_Version": 1
+}

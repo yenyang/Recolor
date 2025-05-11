@@ -156,6 +156,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="ShippedPrefabs\**"></EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
 	  <EmbeddedResource Include="l10n\de-DE.json" />
 	  <EmbeddedResource Include="l10n\es-ES.json" />
 	  <EmbeddedResource Include="l10n\fr-FR.json" />

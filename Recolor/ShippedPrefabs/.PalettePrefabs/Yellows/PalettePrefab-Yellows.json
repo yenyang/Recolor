@@ -1,0 +1,45 @@
+{
+  "m_Category": 0,
+  "m_SubCategoryPrefabName": "",
+  "m_Swatches": [
+    {
+      "m_Red": 0.996078432,
+      "m_Green": 0.9607843,
+      "m_Blue": 0.454901963,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.996078432,
+      "m_Green": 0.929411769,
+      "m_Blue": 0.3254902,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.996078432,
+      "m_Green": 0.8745098,
+      "m_Blue": 0.08627451,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.996078432,
+      "m_Green": 0.831372559,
+      "m_Blue": 0.294117659,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.980392158,
+      "m_Green": 1.0,
+      "m_Blue": 0.466666669,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "Yellows",
+  "m_Version": 1
+}

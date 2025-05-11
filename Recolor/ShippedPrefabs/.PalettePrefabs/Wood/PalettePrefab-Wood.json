@@ -1,0 +1,73 @@
+{
+  "m_Category": 5,
+  "m_SubCategoryPrefabName": "Wood",
+  "m_Swatches": [
+    {
+      "m_Red": 0.243137255,
+      "m_Green": 0.109803922,
+      "m_Blue": 0.0156862754,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 50
+    },
+    {
+      "m_Red": 0.403921574,
+      "m_Green": 0.239215687,
+      "m_Blue": 0.137254909,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 125
+    },
+    {
+      "m_Red": 0.243137255,
+      "m_Green": 0.109803922,
+      "m_Blue": 0.0156862754,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 50
+    },
+    {
+      "m_Red": 0.305882365,
+      "m_Green": 0.164705887,
+      "m_Blue": 0.105882354,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.203921571,
+      "m_Green": 0.101960786,
+      "m_Blue": 0.05490196,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 50
+    },
+    {
+      "m_Red": 0.33908987,
+      "m_Green": 0.2309854,
+      "m_Blue": 0.08003712,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.920744538,
+      "m_Green": 0.768859267,
+      "m_Blue": 0.6222365,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 125
+    },
+    {
+      "m_Red": 0.711205363,
+      "m_Green": 0.6095385,
+      "m_Blue": 0.5121608,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.9390194,
+      "m_Green": 0.828427434,
+      "m_Blue": 0.6443679,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "Wood",
+  "m_Version": 1
+}

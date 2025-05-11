@@ -1,0 +1,73 @@
+{
+  "m_Category": 0,
+  "m_SubCategoryPrefabName": "",
+  "m_Swatches": [
+    {
+      "m_Red": 0.8666667,
+      "m_Green": 0.8666667,
+      "m_Blue": 0.8666667,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.8,
+      "m_Green": 0.8,
+      "m_Blue": 0.8,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.733333349,
+      "m_Green": 0.733333349,
+      "m_Blue": 0.733333349,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 150
+    },
+    {
+      "m_Red": 0.6666667,
+      "m_Green": 0.6666667,
+      "m_Blue": 0.6666667,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.466666669,
+      "m_Green": 0.466666669,
+      "m_Blue": 0.466666669,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 50
+    },
+    {
+      "m_Red": 0.78039217,
+      "m_Green": 0.78039217,
+      "m_Blue": 0.78039217,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.7529412,
+      "m_Green": 0.7529412,
+      "m_Blue": 0.7529412,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.7411765,
+      "m_Green": 0.7411765,
+      "m_Blue": 0.7411765,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 150
+    },
+    {
+      "m_Red": 0.694117665,
+      "m_Green": 0.694117665,
+      "m_Blue": 0.694117665,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "Grays",
+  "m_Version": 1
+}

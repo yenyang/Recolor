@@ -1,0 +1,45 @@
+{
+  "m_Category": 0,
+  "m_SubCategoryPrefabName": "Metals",
+  "m_Swatches": [
+    {
+      "m_Red": 0.596078455,
+      "m_Green": 0.458823532,
+      "m_Blue": 0.349019617,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.6509804,
+      "m_Green": 0.5058824,
+      "m_Blue": 0.392156869,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.6627451,
+      "m_Green": 0.521568656,
+      "m_Blue": 0.396078438,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.6,
+      "m_Green": 0.4627451,
+      "m_Blue": 0.345098048,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.5137255,
+      "m_Green": 0.392156869,
+      "m_Blue": 0.282352954,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "BronzeCopper",
+  "m_Version": 1
+}

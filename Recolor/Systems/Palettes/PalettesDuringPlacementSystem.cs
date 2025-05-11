@@ -160,7 +160,7 @@ namespace Recolor.Systems.Palettes
                 paletteAssignments.Add(newPaletteAssignment);
                 m_AssignedPaletteCustomColorSystem.TryGetColorFromPalette(instanceEntity, i, out UnityEngine.Color color);
                 recolorSet.Channels[i] = color;
-                m_Log.Debug($"{nameof(PalettesDuringPlacementSystem)}.{nameof(AssignPalettes)} assigned color {color} to channel {i} for entity {instanceEntity.Index} {instanceEntity.Version}.");
+                // m_Log.Debug($"{nameof(PalettesDuringPlacementSystem)}.{nameof(AssignPalettes)} assigned color {color} to channel {i} for entity {instanceEntity.Index} {instanceEntity.Version}.");
             }
 
             m_ColorPainterToolSystem.ChangeInstanceColorSet(recolorSet, ref buffer, instanceEntity);

@@ -1,0 +1,45 @@
+{
+  "m_Category": 1,
+  "m_SubCategoryPrefabName": "Walls",
+  "m_Swatches": [
+    {
+      "m_Red": 0.6666667,
+      "m_Green": 0.298039228,
+      "m_Blue": 0.235294119,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 75
+    },
+    {
+      "m_Red": 0.6156863,
+      "m_Green": 0.203921571,
+      "m_Blue": 0.141176477,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.56078434,
+      "m_Green": 0.0784313753,
+      "m_Blue": 0.007843138,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 125
+    },
+    {
+      "m_Red": 0.4862745,
+      "m_Green": 0.0627451,
+      "m_Blue": 0.003921569,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.4117647,
+      "m_Green": 0.0470588244,
+      "m_Blue": 0.003921569,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 75
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "RedBrick",
+  "m_Version": 1
+}

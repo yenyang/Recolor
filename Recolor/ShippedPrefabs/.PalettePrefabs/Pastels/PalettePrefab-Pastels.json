@@ -1,0 +1,80 @@
+{
+  "m_Category": 1,
+  "m_SubCategoryPrefabName": "Walls",
+  "m_Swatches": [
+    {
+      "m_Red": 0.4,
+      "m_Green": 0.772549033,
+      "m_Blue": 0.8,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.9647059,
+      "m_Green": 0.8117647,
+      "m_Blue": 0.443137258,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.972549,
+      "m_Green": 0.6117647,
+      "m_Blue": 0.454901963,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.8627451,
+      "m_Green": 0.6901961,
+      "m_Blue": 0.9490196,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.5294118,
+      "m_Green": 0.772549033,
+      "m_Blue": 0.372549027,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.619607866,
+      "m_Green": 0.7254902,
+      "m_Blue": 0.9529412,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.996078432,
+      "m_Green": 0.533333361,
+      "m_Blue": 0.694117665,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.7882353,
+      "m_Green": 0.858823538,
+      "m_Blue": 0.454901963,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.545098066,
+      "m_Green": 0.8784314,
+      "m_Blue": 0.6431373,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.7058824,
+      "m_Green": 0.5921569,
+      "m_Blue": 0.905882359,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "Pastels",
+  "m_Version": 1
+}

@@ -8,8 +8,10 @@ namespace Recolor.Systems.Palettes
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using Colossal.Entities;
     using Colossal.IO.AssetDatabase;
+    using Colossal.Localization;
     using Colossal.Logging;
     using Colossal.PSI.Environment;
     using Colossal.Serialization.Entities;
@@ -104,9 +106,20 @@ namespace Recolor.Systems.Palettes
             m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
 
             m_PalettePrefabsFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, ".PalettePrefabs");
+            bool deployPrefabs = false;
+            if (!Directory.Exists(m_PalettePrefabsFolder))
+            {
+                deployPrefabs = true;
+            }
+
             System.IO.Directory.CreateDirectory(m_PalettePrefabsFolder);
             m_SubcategoryPrefabsFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, ".SubcategoryPrefabs");
             System.IO.Directory.CreateDirectory(m_SubcategoryPrefabsFolder);
+
+            if (deployPrefabs)
+            {
+                DeployPrefabs();
+            }
 
             // Create bindings with the UI for transfering data to the UI.
             m_Swatches = CreateBinding("Swatches", new SwatchUIData[] { new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100), new SwatchUIData(new Color(m_Random.NextFloat(), m_Random.NextFloat(), m_Random.NextFloat(), 1), 100) });
@@ -294,6 +307,83 @@ namespace Recolor.Systems.Palettes
             }
 
             return prefix + i;
+        }
+
+        private void DeployPrefabs()
+        {
+            Assembly thisAssembly = Assembly.GetExecutingAssembly();
+            string[] resourceNames = thisAssembly.GetManifestResourceNames();
+            for (int i = 0; i < resourceNames.Length; i++)
+            {
+                if (resourceNames[i].Contains("Recolor.ShippedPrefabs..PalettePrefabs."))
+                {
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployPrefabs)} resourceNames[i] = {resourceNames[i]} ");
+                    string fileSubPath = resourceNames[i].Replace("Recolor.ShippedPrefabs..PalettePrefabs.", string.Empty);
+                    fileSubPath = fileSubPath.Replace(".json", string.Empty);
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployPrefabs)} fileSubPath = {fileSubPath} ");
+                    string[] subStrings = fileSubPath.Split('.');
+
+                    string nextPath = Path.Combine(m_PalettePrefabsFolder);
+                    for (int j = 0; j < subStrings.Length - 1; j++)
+                    {
+                        nextPath = Path.Combine(nextPath, subStrings[j]);
+                        m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployPrefabs)} nextPath = {nextPath} ");
+                        Directory.CreateDirectory(nextPath);
+                    }
+
+                    try
+                    {
+                        m_Log.Debug($"Reading embedded palette prefab file {resourceNames[i]}");
+
+                        // Read embedded file.
+                        using StreamReader reader = new (thisAssembly.GetManifestResourceStream(resourceNames[i]));
+                        {
+                            nextPath = Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json");
+                            string entireFile = reader.ReadToEnd();
+                            File.WriteAllText(nextPath, entireFile);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // Don't let a single failure stop us.
+                        m_Log.Error(e, $"Exception reading palette prefab from embedded file {resourceNames[i]}");
+                    }
+                }
+                if (resourceNames[i].Contains("Recolor.ShippedPrefabs..SubcategoryPrefabs."))
+                {
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployPrefabs)} resourceNames[i] = {resourceNames[i]} ");
+                    string fileSubPath = resourceNames[i].Replace("Recolor.ShippedPrefabs..SubcategoryPrefabs.", string.Empty);
+                    fileSubPath = fileSubPath.Replace(".json", string.Empty);
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployPrefabs)} fileSubPath = {fileSubPath} ");
+                    string[] subStrings = fileSubPath.Split('.');
+
+                    string nextPath = Path.Combine(m_SubcategoryPrefabsFolder);
+                    for (int j = 0; j < subStrings.Length - 1; j++)
+                    {
+                        nextPath = Path.Combine(nextPath, subStrings[j]);
+                        m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployPrefabs)} nextPath = {nextPath} ");
+                        Directory.CreateDirectory(nextPath);
+                    }
+
+                    try
+                    {
+                        m_Log.Debug($"Reading embedded subcategory prefab file {resourceNames[i]}");
+
+                        // Read embedded file.
+                        using StreamReader reader = new (thisAssembly.GetManifestResourceStream(resourceNames[i]));
+                        {
+                            nextPath = Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json");
+                            string entireFile = reader.ReadToEnd();
+                            File.WriteAllText(nextPath, entireFile);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // Don't let a single failure stop us.
+                        m_Log.Error(e, $"Exception reading subcategory prefab from embedded file {resourceNames[i]}");
+                    }
+                }
+            }
         }
     }
 }

@@ -1,0 +1,45 @@
+{
+  "m_Category": 0,
+  "m_SubCategoryPrefabName": "Metals",
+  "m_Swatches": [
+    {
+      "m_Red": 0.733333349,
+      "m_Green": 0.470588237,
+      "m_Blue": 0.356862754,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.7490196,
+      "m_Green": 0.5058824,
+      "m_Blue": 0.41568628,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.6627451,
+      "m_Green": 0.380392164,
+      "m_Blue": 0.282352954,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.698039234,
+      "m_Green": 0.470588237,
+      "m_Blue": 0.384313732,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.745098054,
+      "m_Green": 0.478431374,
+      "m_Blue": 0.34117648,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "CopperRoseGold",
+  "m_Version": 1
+}

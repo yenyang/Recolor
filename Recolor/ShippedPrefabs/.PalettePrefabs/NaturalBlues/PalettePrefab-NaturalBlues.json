@@ -1,0 +1,45 @@
+{
+  "m_Category": 0,
+  "m_SubCategoryPrefabName": "",
+  "m_Swatches": [
+    {
+      "m_Red": 0.4509804,
+      "m_Green": 0.8745098,
+      "m_Blue": 0.945098042,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.8627451,
+      "m_Green": 0.956862748,
+      "m_Blue": 0.9529412,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.007843138,
+      "m_Green": 0.3647059,
+      "m_Blue": 0.6784314,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.156862751,
+      "m_Green": 0.0,
+      "m_Blue": 0.458823532,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.215686277,
+      "m_Green": 0.58431375,
+      "m_Blue": 0.6745098,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "NaturalBlues",
+  "m_Version": 1
+}

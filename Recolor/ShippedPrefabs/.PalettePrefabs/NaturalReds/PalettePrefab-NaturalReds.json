@@ -1,0 +1,45 @@
+{
+  "m_Category": 0,
+  "m_SubCategoryPrefabName": "",
+  "m_Swatches": [
+    {
+      "m_Red": 0.7254902,
+      "m_Green": 0.1764706,
+      "m_Blue": 0.1882353,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.8039216,
+      "m_Green": 0.3647059,
+      "m_Blue": 0.3647059,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.8666667,
+      "m_Green": 0.239215687,
+      "m_Blue": 0.23137255,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.7372549,
+      "m_Green": 0.219607845,
+      "m_Blue": 0.152941182,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.9019608,
+      "m_Green": 0.360784322,
+      "m_Blue": 0.31764707,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "NaturalReds",
+  "m_Version": 1
+}
