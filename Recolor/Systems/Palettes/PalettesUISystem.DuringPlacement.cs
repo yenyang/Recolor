@@ -100,13 +100,45 @@ namespace Recolor.Systems.Palettes
 
         private void AssignPaletteDuringPlacementAction(int channel, Entity prefabEntity)
         {
-            m_PaletteChoicesDuringPlacementDatas.Value.SetPrefabEntity(channel, prefabEntity);
-            m_PaletteChoicesDuringPlacementDatas.Binding.TriggerUpdate();
+            if (prefabEntity == Entity.Null)
+            {
+                RemovePaletteDuringPlacementAction(channel);
+            }
+            else
+            {
+                m_PaletteChoicesDuringPlacementDatas.Value.SetPrefabEntity(channel, prefabEntity);
+                m_PaletteChoicesDuringPlacementDatas.Binding.TriggerUpdate();
+            }
         }
 
         private void RemovePaletteDuringPlacementAction(int channel)
         {
             AssignPaletteDuringPlacementAction(channel, Entity.Null);
+            if (m_NonePaletteColors.Value.Length > channel)
+            {
+                m_NonePaletteColors.Value[channel] = DefaultNoneColor;
+            }
+        }
+
+        private void MinimizePalettesDuringPlacement()
+        {
+            m_MinimizePaletteChooserDuringPlacement.Value = true;
+            Mod.Instance.Settings.MinimizePaletteChooserDuringPlacement = true;
+            Mod.Instance.Settings.ApplyAndSave();
+        }
+
+        private void MaximizePalettesDuringPlacement()
+        {
+            m_MinimizePaletteChooserDuringPlacement.Value = false;
+            Mod.Instance.Settings.MinimizePaletteChooserDuringPlacement = false;
+            Mod.Instance.Settings.ApplyAndSave();
+        }
+
+        private void HidePalettesDuringPlacement()
+        {
+            m_ShowPaletteChooserDuringPlacement.Value = false;
+            Mod.Instance.Settings.ShowPalettesOptionDuringPlacement = false;
+            Mod.Instance.Settings.ApplyAndSave();
         }
     }
 }

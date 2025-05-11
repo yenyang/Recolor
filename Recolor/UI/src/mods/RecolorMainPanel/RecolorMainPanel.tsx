@@ -104,7 +104,7 @@ function changeSubMeshScope(newSubMeshScope : SubMeshScopes) {
     trigger(mod.id, "ChangeSubMeshScope", newSubMeshScope);
 }
 
-function handleClick(eventName : string) {
+export function handleClick(eventName : string) {
     // This triggers an event on C# side and C# designates the method to implement.
     trigger(mod.id, eventName);
 }
@@ -448,27 +448,26 @@ export const RecolorMainPanelComponent = () => {
                         <InfoRow
                             left="Palette"
                             right={
-                                <>
-                                    <div className={styles.rowGroup}>
-                                        { (PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[1].index != 0 || PaletteChooserData.SelectedPaletteEntities[2].index != 0) && (
-                                        <VanillaComponentResolver.instance.ToolButton src={copySrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                                                                        tooltip = {"Copy Palette Set"}
-                                                                                        onSelect={() => { trigger(mod.id, "CopyPaletteSet", PaletteChooserData.SelectedPaletteEntities)}}
-                                        />
-                                        )} 
-                                        { (CopiedPaletteSet[0].index != 0 ||  CopiedPaletteSet[1].index != 0 || CopiedPaletteSet[2].index != 0) && (
-                                        <VanillaComponentResolver.instance.ToolButton src={pasteSrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                                                                        tooltip = {"PastePaletteSet"}
-                                                                                        onSelect={() => { trigger(mod.id, "AssignPalette", 0, CopiedPaletteSet[0]); trigger(mod.id, "AssignPalette", 1, CopiedPaletteSet[1]); trigger(mod.id, "AssignPalette", 2, CopiedPaletteSet[2]);}}
-                                        />
-                                        )} 
-                                        <VanillaComponentResolver.instance.ToolButton src={plusSrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                                                                      tooltip = {"Show PaletteEditorPanel"} selected={ShowPaletteEditorPanel && EditingPrefabEntity.index == 0} 
-                                                                                      onSelect={() => { if (!ShowPaletteEditorPanel || (ShowPaletteEditorPanel && EditingPrefabEntity.index == 0))  {handleClick("TogglePaletteEditorMenu"); }
-                                                                                                        if (EditingPrefabEntity.index != 0) {handleClick("GenerateNewPalette");}}}
-                                        />
-                                    </div>
-                                </>
+                                <div className={styles.rowGroup}>
+                                    { (PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[1].index != 0 || PaletteChooserData.SelectedPaletteEntities[2].index != 0) && (
+                                    <VanillaComponentResolver.instance.ToolButton src={copySrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                                                    tooltip = {translate ( "Recolor.TOOLTIP_DESCRIPTION[CopyPaletteSet]",locale["Recolor.TOOLTIP_DESCRIPTION[CopyPaletteSet]"])}
+                                                                                    onSelect={() => { trigger(mod.id, "CopyPaletteSet", PaletteChooserData.SelectedPaletteEntities)}}
+                                    />
+                                    )} 
+                                    { (CopiedPaletteSet[0].index != 0 ||  CopiedPaletteSet[1].index != 0 || CopiedPaletteSet[2].index != 0) && (
+                                    <VanillaComponentResolver.instance.ToolButton src={pasteSrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                                                    tooltip = {translate ("Recolor.TOOLTIP_DESCRIPTION[PastePaletteSet]" , locale["Recolor.TOOLTIP_DESCRIPTION[PastePaletteSet]"])}
+                                                                                    onSelect={() => { trigger(mod.id, "AssignPalette", 0, CopiedPaletteSet[0]); trigger(mod.id, "AssignPalette", 1, CopiedPaletteSet[1]); trigger(mod.id, "AssignPalette", 2, CopiedPaletteSet[2]);}}
+                                    />
+                                    )} 
+                                    <VanillaComponentResolver.instance.ToolButton src={plusSrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                                                    tooltip = {(ShowPaletteEditorPanel && EditingPrefabEntity.index == 0) ? translate("Recolor.TOOLTIP_DESCRIPTION[CloseEditorPanel]" ,locale["Recolor.TOOLTIP_DESCRIPTION[CloseEditorPanel]"])  : translate("Recolor.TOOLTIP_DESCRIPTION[GenerateNewPalette]" ,locale["Recolor.TOOLTIP_DESCRIPTION[GenerateNewPalette]"])} 
+                                                                                    selected={ShowPaletteEditorPanel && EditingPrefabEntity.index == 0} 
+                                                                                    onSelect={() => { if (!ShowPaletteEditorPanel || (ShowPaletteEditorPanel && EditingPrefabEntity.index == 0))  {handleClick("TogglePaletteEditorMenu"); }
+                                                                                                    if (EditingPrefabEntity.index != 0) {handleClick("GenerateNewPalette");}}}
+                                    />
+                                </div>
                             }
                             uppercase={false}
                             disableFocus={true}

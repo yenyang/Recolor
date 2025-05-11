@@ -69,6 +69,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (!m_PrefabSystem.TryGetPrefab(palettePrefabEntity, out PrefabBase prefabBase1) ||
                     prefabBase1 is not PalettePrefab)
                 {
+                    UnselectPalette(palettePrefabEntity, ref selectedEntities, ref paletteChooserBinding);
                     continue;
                 }
 
@@ -77,16 +78,16 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (!EntityManager.TryGetBuffer(palettePrefabEntity, isReadOnly: true, out DynamicBuffer<SwatchData> swatches) ||
                     swatches.Length < 2)
                 {
+                    UnselectPalette(palettePrefabEntity, ref selectedEntities, ref paletteChooserBinding);
                     continue;
                 }
 
-                if (FilterForCategories(palettePrefabEntity, prefabEntity))
+                if ((FilterForCategories(palettePrefabEntity, prefabEntity) ||
+                     FilterByType(palettePrefabEntity, palettePrefabBase.m_FilterType)) &&
+                   (!IsSelected(palettePrefabEntity, selectedEntities) ||
+                     m_ToolSystem.activeTool != m_DefaultToolSystem))
                 {
-                    continue;
-                }
-
-                if (FilterByType(palettePrefabEntity, palettePrefabBase.m_FilterType))
-                {
+                    UnselectPalette(palettePrefabEntity, ref selectedEntities, ref paletteChooserBinding);
                     continue;
                 }
 
@@ -147,7 +148,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         /// <param name="palettePrefabEntity">Prefab Entity for the palette.</param>
         /// <param name="prefabEntity">prefab entity to check against.</param>
         /// <returns>True if does not match category of current entity. False if matches category of current entity.</returns>
-        public bool FilterForCategories(Entity palettePrefabEntity, Entity prefabEntity)
+        private bool FilterForCategories(Entity palettePrefabEntity, Entity prefabEntity)
         {
             if (m_PrefabSystem.TryGetPrefab(palettePrefabEntity, out PrefabBase prefabBase) &&
                   prefabBase is PalettePrefab)
@@ -193,6 +194,32 @@ namespace Recolor.Systems.SelectedInfoPanel
             else
             {
                 return true;
+            }
+
+            return false;
+        }
+
+        private void UnselectPalette(Entity palettePrefabEntity, ref Entity[] selectedEntities, ref ValueBindingHelper<PaletteChooserUIData> paletteChooserUIDataBinding)
+        {
+            for (int i = 0; i < selectedEntities.Length; i++)
+            {
+                if (selectedEntities[i] == palettePrefabEntity)
+                {
+                    selectedEntities[i] = Entity.Null;
+                }
+            }
+
+            paletteChooserUIDataBinding.Value.SelectedPaletteEntities = selectedEntities;
+        }
+
+        private bool IsSelected(Entity palettePrefabEntity, Entity[] selectedEntities)
+        {
+            for (int i = 0; i < selectedEntities.Length; i++)
+            {
+                if (selectedEntities[i] == palettePrefabEntity)
+                {
+                    return true;
+                }
             }
 
             return false;

@@ -94,7 +94,9 @@ namespace Recolor.Systems.Palettes
         private void OnPrefabChanged(PrefabBase prefab)
         {
             if (m_ToolSystem.activeTool != m_ObjectToolSystem ||
-               !Mod.Instance.Settings.ShowPalettesOptionDuringPlacement)
+               !Mod.Instance.Settings.ShowPalettesOptionDuringPlacement ||
+               m_ObjectToolSystem.actualMode == ObjectToolSystem.Mode.Stamp ||
+               m_ObjectToolSystem.actualMode == ObjectToolSystem.Mode.Move)
             {
                 Enabled = false;
                 m_UISystem.ShowPaletteChooserDuringPlacement = false;
@@ -103,6 +105,7 @@ namespace Recolor.Systems.Palettes
 
             if (prefab != null &&
                 m_PrefabSystem.TryGetEntity(prefab, out Entity prefabEntity) &&
+               !EntityManager.HasComponent<Game.Prefabs.PlantData>(prefabEntity) &&
                 EntityManager.TryGetBuffer(prefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshes) &&
                 subMeshes.Length > 0)
             {

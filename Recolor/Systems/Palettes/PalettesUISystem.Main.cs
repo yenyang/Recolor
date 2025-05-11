@@ -71,6 +71,7 @@ namespace Recolor.Systems.Palettes
         private ValueBindingHelper<PaletteChooserUIData> m_PaletteChoicesDuringPlacementDatas;
         private ValueBindingHelper<bool> m_ShowPaletteChooserDuringPlacement;
         private ValueBindingHelper<Color[]> m_NonePaletteColors;
+        private ValueBindingHelper<bool> m_MinimizePaletteChooserDuringPlacement;
 
         /// <summary>
         /// Enum for handing common events for different menus.
@@ -126,6 +127,7 @@ namespace Recolor.Systems.Palettes
             m_PaletteChoicesDuringPlacementDatas = CreateBinding("PaletteChoicesDuringPlacement", new PaletteChooserUIData());
             m_ShowPaletteChooserDuringPlacement = CreateBinding("ShowPaletteChooserDuringPlacement", Mod.Instance.Settings.ShowPalettesOptionDuringPlacement);
             m_NonePaletteColors = CreateBinding("NonePaletteColors", new Color[3] { DefaultNoneColor, DefaultNoneColor, DefaultNoneColor });
+            m_MinimizePaletteChooserDuringPlacement = CreateBinding("MinimizeDuringPlacement", Mod.Instance.Settings.MinimizePaletteChooserDuringPlacement || Mod.Instance.Settings.AlwaysMinimizedAtGameStart);
 
             // Listen to trigger event that are sent from the UI to the C#.
             CreateTrigger("TrySavePalette", TrySavePalette);
@@ -157,6 +159,9 @@ namespace Recolor.Systems.Palettes
             CreateTrigger<int, int, string>("ChangeLocalizedDescription", ChangeLocalizedDescription);
             CreateTrigger<int, Entity>("AssignPaletteDuringPlacement", AssignPaletteDuringPlacementAction);
             CreateTrigger<int>("RemovePaletteDuringPlacement", RemovePaletteDuringPlacementAction);
+            CreateTrigger("MinimizePalettesDuringPlacement", MinimizePalettesDuringPlacement);
+            CreateTrigger("MaximizePalettesDuringPlacement", MaximizePalettesDuringPlacement);
+            CreateTrigger("HidePalettesDuringPlacement", HidePalettesDuringPlacement);
 
             m_SubcategoryQuery = SystemAPI.QueryBuilder()
                 .WithAll<PaletteSubcategoryData>()

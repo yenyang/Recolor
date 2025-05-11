@@ -131,5 +131,9 @@
   "Options.OPTION[Recolor.Recolor.Mod.Setting.ShowPalettesOptionDuringPlacement]": "Show Palette options while placing objects",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ShowPalettesOptionDuringPlacement]": "Toggles whether to show dropdowns for picking palettes for the three color channels while placing objects with the Object tool.",
   "Options.OPTION[Recolor.Recolor.Mod.Setting.ResetPaletteChoicesWhenSwitchingPrefab]": "Reset Palette choices when Selecting New Asset",
-  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ResetPaletteChoicesWhenSwitchingPrefab]": "Toggles whether to automatically reset palette choices to None whenever you change to a new asset selection."
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ResetPaletteChoicesWhenSwitchingPrefab]": "Toggles whether to automatically reset palette choices to None whenever you change to a new asset selection.",
+  "Recolor.TOOLTIP_DESCRIPTION[HidePalettesDuringPlacement]": "Hides the palette choosers while placing objects with the Object tool. Restore using the mod's settings.",
+  "Recolor.TOOLTIP_DESCRIPTION[MinimizeDuringPlacement]": "Minimize the palette choosers while placing objects to save space.",
+  "Recolor.TOOLTIP_DESCRIPTION[ExpandDuringPlacement]": "Expands the palette choosers while placing objects for use.",
+  "Recolor.TOOLTIP_DESCRIPTION[ResetPalettesDuringPlacement]": "Resets the palette choosers while placing objects."
 }

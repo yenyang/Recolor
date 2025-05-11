@@ -146,6 +146,12 @@ namespace Recolor.Settings
         public bool ShowSIPPaletteOptions { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to minimize the palette chooser during placement.
+        /// </summary>
+        [SettingsUIHidden]
+        public bool MinimizePaletteChooserDuringPlacement { get; set; }
+
+        /// <summary>
         /// Sets a value indicating whether: a button for Resetting the settings for keybinds.
         /// </summary>
         [SettingsUIButton]

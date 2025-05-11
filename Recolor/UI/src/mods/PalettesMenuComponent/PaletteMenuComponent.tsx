@@ -147,7 +147,7 @@ export const PaletteMenuComponent = () => {
             {ShowPaletteEditorPanel && !isPhotoMode && ((defaultTool && activeSelection && ShowPaletteChoices == ButtonState.On) || objectTool) && (
                 <>
                     <Portal>
-                        <div className={classNames(panelStyles.panelRowGroup, panelStyles.panel, ResidentialBuildingSelected? panelStyles.residenialBuildingPosition : "")}>
+                        <div className={classNames(panelStyles.panelRowGroup, panelStyles.panel, (ResidentialBuildingSelected || objectTool)? panelStyles.residenialBuildingPosition : "")}>
                         <Panel 
                             header={(
                                 <HeaderSection title={translate("Recolor.SECTION_TITLE[PaletteEditorMenu]" ,locale["Recolor.SECTION_TITLE[PaletteEditorMenu]"])} icon={colorPaletteSrc} onCloseEventName={"TogglePaletteEditorMenu"}></HeaderSection>

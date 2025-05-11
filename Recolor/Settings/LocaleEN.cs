@@ -162,6 +162,10 @@ namespace Recolor.Settings
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowPalettesOptionDuringPlacement)), "Toggles whether to show dropdowns for picking palettes for the three color channels while placing objects with the Object tool." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetPaletteChoicesWhenSwitchingPrefab)), "Reset Palette choices when Selecting New Asset" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetPaletteChoicesWhenSwitchingPrefab)), "Toggles whether to automatically reset palette choices to None whenever you change to a new asset selection." },
+                { TooltipDescriptionKey("HidePalettesDuringPlacement"), "Hides the palette choosers while placing objects with the Object tool. Restore using the mod's settings." },
+                { TooltipDescriptionKey("MinimizeDuringPlacement"), "Minimize the palette choosers while placing objects to save space." },
+                { TooltipDescriptionKey("ExpandDuringPlacement"), "Expands the palette choosers while placing objects for use." },
+                { TooltipDescriptionKey("ResetPalettesDuringPlacement"), "Resets the palette choosers while placing objects." },
             };
         }
 

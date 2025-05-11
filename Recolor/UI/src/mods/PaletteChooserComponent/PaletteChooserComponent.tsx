@@ -139,7 +139,7 @@ export const PaletteChooserComponent = (props: {channel : number, PaletteChooser
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                 tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[PastePalette]" , locale["Recolor.TOOLTIP_DESCRIPTION[PastePalette]"])}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                onSelect={() => trigger(mod.id, "AssignPalette", props.channel, CopiedPalette)}
+                                onSelect={() => assignPalette(props.channel, CopiedPalette, props.eventSuffix)}
                             />
                         )}
                         { (props.PaletteChooserData.SelectedPaletteEntities[0].index != 0 || props.PaletteChooserData.SelectedPaletteEntities[1].index != 0 || props.PaletteChooserData.SelectedPaletteEntities[2].index != 0) &&
