@@ -51,7 +51,7 @@ export const PaletteChooserComponent = (props: {channel : number, PaletteChooser
 
     function getStyle() : CSSProperties | undefined
     {
-        if (props.noneHasColor == undefined) return {color: "#ffffff"};
+        if (props.noneHasColor == undefined || props.PaletteChooserData.SelectedPaletteEntities[props.channel].index != 0) return {color: "#ffffff"};
         let col = "#ffffff";
         if (NonePaletteColors[props.channel].r *0.299 + NonePaletteColors[props.channel].g * 0.587 + NonePaletteColors[props.channel].b * 0.114 > 186/256) {
             col = "#000000";
