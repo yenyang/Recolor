@@ -100,24 +100,18 @@ namespace Recolor.Systems.Palettes
 
         private void AssignPaletteDuringPlacementAction(int channel, Entity prefabEntity)
         {
-            if (prefabEntity == Entity.Null)
+            m_PaletteChoicesDuringPlacementDatas.Value.SetPrefabEntity(channel, prefabEntity);
+            m_PaletteChoicesDuringPlacementDatas.Binding.TriggerUpdate();
+            if (prefabEntity == Entity.Null &&
+                m_NonePaletteColors.Value.Length > channel)
             {
-                RemovePaletteDuringPlacementAction(channel);
-            }
-            else
-            {
-                m_PaletteChoicesDuringPlacementDatas.Value.SetPrefabEntity(channel, prefabEntity);
-                m_PaletteChoicesDuringPlacementDatas.Binding.TriggerUpdate();
+                m_NonePaletteColors.Value[channel] = DefaultNoneColor;
             }
         }
 
         private void RemovePaletteDuringPlacementAction(int channel)
         {
             AssignPaletteDuringPlacementAction(channel, Entity.Null);
-            if (m_NonePaletteColors.Value.Length > channel)
-            {
-                m_NonePaletteColors.Value[channel] = DefaultNoneColor;
-            }
         }
 
         private void MinimizePalettesDuringPlacement()
