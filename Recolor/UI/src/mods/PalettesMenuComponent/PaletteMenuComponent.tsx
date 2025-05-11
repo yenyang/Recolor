@@ -282,11 +282,6 @@ export const PaletteMenuComponent = () => {
                                 </InfoSection>
                                 <LocaleSection menu={MenuType.Palette} localizations={LocalizationUIDatas[MenuType.Palette]}></LocaleSection>
                                 <InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} >
-                                    { Swatches.length < 8 && (
-                                        <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[AddSwatch]" ,locale["Recolor.SECTION_TITLE[AddSwatch]"])}>
-                                            <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[AddSwatch]" , locale["Recolor.TOOLTIP_DESCRIPTION[AddSwatch]"])}   onSelect={() => {handleClick("AddASwatch")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
-                                        </VanillaComponentResolver.instance.Section>
-                                    )}
                                     <div className={classNames(styles.rowGroup, panelStyles.subtitleRow, styles.centered)}>
                                         <span className={panelStyles.colorSpacerLeft}></span>
                                         <div className={classNames(panelStyles.centeredSubTitle, styles.colorFieldWidth)}>{translate("PhotoMode.PROPERTY_TITLE[Vignette.color]")}</div>
@@ -296,11 +291,9 @@ export const PaletteMenuComponent = () => {
                                     { Swatches.map((currentSwatch, index:number) => (
                                         <SwatchComponent info={currentSwatch} index={index}></SwatchComponent>
                                     ))}
-                                    { Swatches.length >= 8 && (
-                                        <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[AddSwatch]" ,locale["Recolor.SECTION_TITLE[AddSwatch]"])}>
-                                            <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[AddSwatch]" , locale["Recolor.TOOLTIP_DESCRIPTION[AddSwatch]"])}   onSelect={() => {handleClick("AddASwatch")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
-                                        </VanillaComponentResolver.instance.Section>
-                                    )}
+                                    <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[AddSwatch]" ,locale["Recolor.SECTION_TITLE[AddSwatch]"])}>
+                                        <VanillaComponentResolver.instance.ToolButton src={plusSrc}          tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[AddSwatch]" , locale["Recolor.TOOLTIP_DESCRIPTION[AddSwatch]"])}   onSelect={() => {handleClick("AddASwatch")} }     className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     />
+                                    </VanillaComponentResolver.instance.Section>
                                 </InfoSection>
                             </>
                         </Panel>

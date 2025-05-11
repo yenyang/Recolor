@@ -123,6 +123,7 @@ namespace Recolor.Systems.Palettes
                 }
             }
 
+            Enabled = false;
             m_UISystem.ShowPaletteChooserDuringPlacement = false;
         }
 
