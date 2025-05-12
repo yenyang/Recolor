@@ -61,7 +61,8 @@ namespace Recolor.Systems.Palettes
         /// <param name="resetChoices">Reset choices back to three nones or not.</param>
         public void UpdatePaletteChoicesDuringPlacementBinding(bool resetChoices = false)
         {
-            if (m_ToolSystem.activeTool != m_ObjectToolSystem ||
+            if ((m_ToolSystem.activeTool != m_ObjectToolSystem &&
+                m_ToolSystem.activeTool != m_NetToolSystem) ||
                !m_PrefabSystem.TryGetEntity(m_ToolSystem.activePrefab, out Entity prefabEntity) ||
                !Mod.Instance.Settings.ShowPalettesOptionDuringPlacement)
             {

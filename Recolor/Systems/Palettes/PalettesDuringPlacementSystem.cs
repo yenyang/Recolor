@@ -29,6 +29,7 @@ namespace Recolor.Systems.Palettes
         private NetToolSystem m_NetToolSystem;
         private ObjectToolSystem m_ObjectToolSystem;
         private EntityQuery m_TempMeshColorQuery;
+        private EntityQuery m_TempMeshColorQueryWithOwner;
         private ModificationBarrier2 m_Barrier;
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
         private PaletteInstanceManagerSystem m_PaletteInstanceManagerSystem;
@@ -63,6 +64,11 @@ namespace Recolor.Systems.Palettes
                   .WithNone<Deleted, Game.Objects.Plant, Owner>()
                   .Build();
 
+            m_TempMeshColorQueryWithOwner = SystemAPI.QueryBuilder()
+                  .WithAll<Temp, PseudoRandomSeed, MeshColor>()
+                  .WithNone<Deleted, Game.Objects.Plant>()
+                  .Build();
+
             Enabled = false;
             m_Log.Info($"{nameof(PalettesDuringPlacementSystem)}.{nameof(OnCreate)}");
         }
@@ -72,14 +78,29 @@ namespace Recolor.Systems.Palettes
         protected override void OnUpdate()
         {
             EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
+            EntityQuery entityQuery = m_TempMeshColorQuery;
+            if (m_ToolSystem.activeTool == m_NetToolSystem &&
+                true)
+            {
+                entityQuery = m_TempMeshColorQueryWithOwner;
+            }
 
-            NativeArray<Entity> entities = m_TempMeshColorQuery.ToEntityArray(Allocator.Temp);
+
+            NativeArray<Entity> entities = entityQuery.ToEntityArray(Allocator.Temp);
             for (int i = 0; i < entities.Length; i++)
             {
+                if (m_ToolSystem.activeTool == m_NetToolSystem &&
+                   (!EntityManager.TryGetComponent(entities[i], out Owner owner) ||
+                    !EntityManager.HasComponent<Game.Tools.EditorContainer>(owner.m_Owner)))
+                {
+                    continue;
+                }
+
                 AssignPalettes(entities[i], m_UISystem.SelectedPalettesDuringPlacement, ref buffer);
             }
 
-            if (m_ObjectToolSystem.actualMode == ObjectToolSystem.Mode.Create &&
+            if (m_ToolSystem.activeTool == m_ObjectToolSystem &&
+                m_ObjectToolSystem.actualMode == ObjectToolSystem.Mode.Create &&
                 entities.Length == 1 &&
                 EntityManager.TryGetBuffer(entities[0], isReadOnly: true, out DynamicBuffer<MeshColor> meshColors) &&
                 meshColors.Length > 0)
