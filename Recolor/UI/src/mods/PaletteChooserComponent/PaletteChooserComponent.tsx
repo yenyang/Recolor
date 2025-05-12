@@ -85,7 +85,7 @@ export const PaletteChooserComponent = (props: {channel : number, PaletteChooser
                             theme = {basicDropDownTheme}
                             content={
                                 <FocusDisabled>
-                                    <DropdownItem value={"None"} className={basicDropDownTheme.dropdownItem} onChange={() => removePalette(props.channel, props.eventSuffix)}>
+                                    <DropdownItem value={translate("Recolor.SECTION_TITLE[None]", locale["Recolor.SECTION_TITLE[None]"])} className={basicDropDownTheme.dropdownItem} onChange={() => removePalette(props.channel, props.eventSuffix)}>
                                         <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.largeDropdownText)} style={getStyle()}>{translate("Recolor.SECTION_TITLE[None]", locale["Recolor.SECTION_TITLE[None]"])}</div>
                                     </DropdownItem>
                                     {

@@ -45,6 +45,7 @@ namespace Recolor.Systems.Palettes
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
         private PaletteInstanceManagerSystem m_PaletteInstanceManagerSystem;
         private ObjectToolSystem m_ObjectToolSystem;
+        private NetToolSystem m_NetToolSystem;
         private ToolSystem m_ToolSystem;
         private ValueBindingHelper<SwatchUIData[]> m_Swatches;
         private ValueBindingHelper<string[]> m_UniqueNames;
@@ -104,6 +105,7 @@ namespace Recolor.Systems.Palettes
             m_PaletteInstanceManagerSystem = World.GetOrCreateSystemManaged<PaletteInstanceManagerSystem>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
+            m_NetToolSystem = World.GetOrCreateSystemManaged<NetToolSystem>();
 
             m_PalettePrefabsFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, ".PalettePrefabs");
             bool deployPrefabs = false;

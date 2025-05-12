@@ -26,6 +26,7 @@ namespace Recolor.Systems.Palettes
         private ILog m_Log;
         private ToolSystem m_ToolSystem;
         private PrefabSystem m_PrefabSystem;
+        private NetToolSystem m_NetToolSystem;
         private ObjectToolSystem m_ObjectToolSystem;
         private EntityQuery m_TempMeshColorQuery;
         private ModificationBarrier2 m_Barrier;
@@ -52,6 +53,7 @@ namespace Recolor.Systems.Palettes
             m_AssignedPaletteCustomColorSystem = World.GetOrCreateSystemManaged<AssignedPaletteCustomColorSystem>();
             m_ColorPainterToolSystem = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
             m_UISystem = World.GetOrCreateSystemManaged<PalettesUISystem>();
+            m_NetToolSystem = World.GetOrCreateSystemManaged<NetToolSystem>();
 
             m_ToolSystem.EventToolChanged += OnToolChanged;
             m_ToolSystem.EventPrefabChanged += OnPrefabChanged;
@@ -93,17 +95,19 @@ namespace Recolor.Systems.Palettes
 
         private void OnPrefabChanged(PrefabBase prefab)
         {
-            if (m_ToolSystem.activeTool != m_ObjectToolSystem ||
+            if ((m_ToolSystem.activeTool != m_NetToolSystem &&
+                m_ToolSystem.activeTool != m_ObjectToolSystem) ||
                !Mod.Instance.Settings.ShowPalettesOptionDuringPlacement ||
-               m_ObjectToolSystem.actualMode == ObjectToolSystem.Mode.Stamp ||
-               m_ObjectToolSystem.actualMode == ObjectToolSystem.Mode.Move)
+               (m_ToolSystem.activeTool == m_ObjectToolSystem &&
+               (m_ObjectToolSystem.actualMode == ObjectToolSystem.Mode.Stamp ||
+                m_ObjectToolSystem.actualMode == ObjectToolSystem.Mode.Move)))
             {
                 Enabled = false;
                 m_UISystem.ShowPaletteChooserDuringPlacement = false;
                 return;
             }
 
-            if (prefab != null &&
+            if (prefab is not null &&
                 m_PrefabSystem.TryGetEntity(prefab, out Entity prefabEntity) &&
                !EntityManager.HasComponent<Game.Prefabs.PlantData>(prefabEntity) &&
                 EntityManager.TryGetBuffer(prefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshes) &&

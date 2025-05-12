@@ -32,22 +32,23 @@ const EventSuffix = "DuringPlacement";
 
 export const PalettesDuringPlacementComponent = () => 
 {
-    const toolActive = useValue(tool.activeTool$).id == tool.OBJECT_TOOL;     
+    const objectToolActive = useValue(tool.activeTool$).id == tool.OBJECT_TOOL;     
     const PaletteChooserDuringPlacmeentData = useValue(PaletteChooserDuringPlacementData$);
     const CopiedPalette = useValue(CopiedPalette$);
     const CopiedPaletteSet = useValue(CopiedPaletteSet$);
     const ShowPaletteChooserDuringPlacement = useValue(ShowPaletteChooserDuringPlacement$);    
     const EditingPrefabEntity = useValue(EditingPrefabEntity$);
     const ShowPaletteEditorPanel = useValue(ShowPaletteEditorPanel$);    
-    const Minimized = useValue(Minimized$);
+    const Minimized = useValue(Minimized$);    
+    const netToolActive = useValue(tool.activeTool$).id == tool.NET_TOOL;    
     
     const { translate } = useLocalization();
             
     return (
         <>
-            { toolActive && ShowPaletteChooserDuringPlacement && (
+            { (objectToolActive || netToolActive) && ShowPaletteChooserDuringPlacement && (
                 <>
-                    <VanillaComponentResolver.instance.Section title={"Palette"}>
+                    <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Palette]",locale["Recolor.SECTION_TITLE[Palette]"])}>
                         <div className={styles.rowGroup}>
                                     {!Minimized && (
                                         <>
