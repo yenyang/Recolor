@@ -7,9 +7,9 @@
 		<LangVersion>9</LangVersion>
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
-		<AssemblyVersion>1.1.101</AssemblyVersion>
-		<FileVersion>1.1.101</FileVersion>
-		<Version>1.1.101</Version>
+		<AssemblyVersion>1.1.102</AssemblyVersion>
+		<FileVersion>1.1.102</FileVersion>
+		<Version>1.1.102</Version>
 	</PropertyGroup>
 	
 	<!--Imports must be after PropertyGroup block-->
