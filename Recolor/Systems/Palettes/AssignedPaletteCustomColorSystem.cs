@@ -118,7 +118,7 @@ namespace Recolor.Systems.Palettes
 
             m_AssignedPaletteQuery = SystemAPI.QueryBuilder()
                   .WithAll<AssignedPalette, PseudoRandomSeed, MeshColor, BatchesUpdated>()
-                  .WithNone<Deleted, Game.Objects.Plant>()
+                  .WithNone<Deleted, Game.Objects.Plant, Overridden>()
                   .Build();
 
             RequireForUpdate(m_AssignedPaletteQuery);
@@ -188,10 +188,23 @@ namespace Recolor.Systems.Palettes
                     }
                 }
 
-                m_ColorPainterToolSystem.ChangeInstanceColorSet(new RecolorSet(colorSet), ref buffer, entity);
-                if (m_SIPColorFieldsSystem.CurrentEntity == entity)
+                bool colorsChanged = false;
+                for (int i = 0; i < 3; i++)
                 {
-                    m_SIPColorFieldsSystem.ResetPreviouslySelectedEntity();
+                    if (colorSet[i] != meshColorBuffer[0].m_ColorSet[i])
+                    {
+                        colorsChanged = true;
+                        break;
+                    }
+                }
+
+                if (colorsChanged)
+                {
+                    m_ColorPainterToolSystem.ChangeInstanceColorSet(new RecolorSet(colorSet), ref buffer, entity);
+                    if (m_SIPColorFieldsSystem.CurrentEntity == entity)
+                    {
+                        m_SIPColorFieldsSystem.ResetPreviouslySelectedEntity();
+                    }
                 }
             }
         }
