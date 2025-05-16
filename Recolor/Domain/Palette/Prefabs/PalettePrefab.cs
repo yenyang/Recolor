@@ -132,6 +132,8 @@ namespace Recolor.Domain.Palette.Prefabs
                 prefabSystem.TryGetEntity(prefabBase, out Entity subCategoryPrefabEntity))
             {
                 paleteCategoryData.m_SubCategory = subCategoryPrefabEntity;
+                PaletteSubCategoryPrefab paletteSubCategoryPrefab = prefabBase as PaletteSubCategoryPrefab;
+                paleteCategoryData.m_Category = paletteSubCategoryPrefab.m_Category;
             }
 
             entityManager.SetComponentData(entity, paleteCategoryData);

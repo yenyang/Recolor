@@ -154,11 +154,18 @@ namespace Recolor.Systems.SelectedInfoPanel
                   prefabBase is PalettePrefab)
             {
                 PalettePrefab palettePrefab = prefabBase as PalettePrefab;
-                if ((palettePrefab.m_Category == PaletteCategoryData.PaletteCategory.Vehicles &&
+                PaletteCategoryData.PaletteCategory category = palettePrefab.m_Category;
+                if (EntityManager.TryGetComponent(palettePrefabEntity, out PaletteCategoryData paletteCategoryData) &&
+                    EntityManager.TryGetComponent(paletteCategoryData.m_SubCategory, out PaletteSubcategoryData paletteSubcategoryData))
+                {
+                    category = paletteSubcategoryData.m_Category;
+                }
+
+                if ((category == PaletteCategoryData.PaletteCategory.Vehicles &&
                     !EntityManager.HasComponent<VehicleData>(prefabEntity)) ||
-                    (palettePrefab.m_Category == PaletteCategoryData.PaletteCategory.Buildings &&
+                    (category == PaletteCategoryData.PaletteCategory.Buildings &&
                     !EntityManager.HasComponent<BuildingData>(prefabEntity)) ||
-                    (palettePrefab.m_Category == PaletteCategoryData.PaletteCategory.Props &&
+                    (category == PaletteCategoryData.PaletteCategory.Props &&
                    (!EntityManager.HasComponent<StaticObjectData>(prefabEntity) ||
                     !EntityManager.HasComponent<ObjectData>(prefabEntity) ||
                      EntityManager.HasComponent<BuildingData>(prefabEntity)) &&
@@ -167,14 +174,14 @@ namespace Recolor.Systems.SelectedInfoPanel
                     return true;
                 }
 
-                if (palettePrefab.m_Category == (PaletteCategoryData.PaletteCategory.Vehicles | PaletteCategoryData.PaletteCategory.Buildings) &&
+                if (category == (PaletteCategoryData.PaletteCategory.Vehicles | PaletteCategoryData.PaletteCategory.Buildings) &&
                    !EntityManager.HasComponent<VehicleData>(prefabEntity) &&
                    !EntityManager.HasComponent<BuildingData>(prefabEntity))
                 {
                     return true;
                 }
 
-                if (palettePrefab.m_Category == (PaletteCategoryData.PaletteCategory.Vehicles | PaletteCategoryData.PaletteCategory.Props) &&
+                if (category == (PaletteCategoryData.PaletteCategory.Vehicles | PaletteCategoryData.PaletteCategory.Props) &&
                    !EntityManager.HasComponent<VehicleData>(prefabEntity) &&
                   (!EntityManager.HasComponent<StaticObjectData>(prefabEntity) ||
                    !EntityManager.HasComponent<ObjectData>(prefabEntity) ||
@@ -184,7 +191,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                     return true;
                 }
 
-                if (palettePrefab.m_Category == (PaletteCategoryData.PaletteCategory.Buildings | PaletteCategoryData.PaletteCategory.Props) &&
+                if (category == (PaletteCategoryData.PaletteCategory.Buildings | PaletteCategoryData.PaletteCategory.Props) &&
                    !EntityManager.HasComponent<BuildingData>(prefabEntity) &&
                   (!EntityManager.HasComponent<StaticObjectData>(prefabEntity) ||
                    !EntityManager.HasComponent<ObjectData>(prefabEntity) ||

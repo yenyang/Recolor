@@ -59,17 +59,20 @@ namespace Recolor.Systems.Palettes
                 m_UniqueNames.Value[(int)MenuType.Palette] = prefabBase.name;
                 m_UniqueNames.Binding.TriggerUpdate();
                 m_PaletteCategories.Value[(int)MenuType.Palette] = palettePrefab.m_Category;
-                m_PaletteCategories.Binding.TriggerUpdate();
 
                 if (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PaletteSubCategoryPrefab), palettePrefab.m_SubCategoryPrefabName), out PrefabBase subcategoryPrefabBase) &&
                     subcategoryPrefabBase is PaletteSubCategoryPrefab)
                 {
                     m_SelectedSubcategory.Value = palettePrefab.m_SubCategoryPrefabName;
+                    PaletteSubCategoryPrefab paletteSubCategoryPrefab = subcategoryPrefabBase as PaletteSubCategoryPrefab;
+                    m_PaletteCategories.Value[(int)MenuType.Palette] = paletteSubCategoryPrefab.m_Category;
                 }
                 else
                 {
                     m_SelectedSubcategory.Value = SIPColorFieldsSystem.NoSubcategoryName;
                 }
+
+                m_PaletteCategories.Binding.TriggerUpdate();
 
                 if (palettePrefab.m_FilterType != PaletteFilterTypeData.PaletteFilterType.None &&
                     EntityManager.TryGetBuffer(prefabEntity, isReadOnly: true, out DynamicBuffer<PaletteFilterEntityData> paletteFilterEntityDatas) &&
