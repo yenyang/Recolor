@@ -11,7 +11,7 @@ import { useLocalization } from "cs2/l10n";
 import locale from "../lang/en-US.json";
 
 const invalidNames = ["CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LTP4", "LTP5", "LTP6", "LTP7", "LTP8", "LTP9"];
-const invalidCharacters = ['/', '<', '>', ':', '"', "\\", "|", "?", "*" ]
+const invalidCharacters = ['/', '<', '>', ':', '"', "\\", "|", "?", "*", "." ]
 
 export const UniqueNameSectionComponent = (props: {uniqueName: string, uniqueNameType: MenuType}) => {
     let [uniqueNameInput, setTextInput] = useState(props.uniqueName);
