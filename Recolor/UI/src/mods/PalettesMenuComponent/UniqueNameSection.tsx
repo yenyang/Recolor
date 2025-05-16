@@ -10,6 +10,9 @@ import { MenuType } from "mods/Domain/MenuType";
 import { useLocalization } from "cs2/l10n";
 import locale from "../lang/en-US.json";
 
+const invalidNames = ["CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LTP4", "LTP5", "LTP6", "LTP7", "LTP8", "LTP9"];
+const invalidCharacters = ['/', '<', '>', ':', '"', "\\", "|", "?", "*" ]
+
 export const UniqueNameSectionComponent = (props: {uniqueName: string, uniqueNameType: MenuType}) => {
     let [uniqueNameInput, setTextInput] = useState(props.uniqueName);
     let [validInput, setValidInput] = useState(true);
@@ -18,8 +21,26 @@ export const UniqueNameSectionComponent = (props: {uniqueName: string, uniqueNam
     const { translate } = useLocalization();
     
     function HandleTextInput () {
+            for (let i=0; i<invalidCharacters.length; i++) 
+            {
+                if (uniqueNameInput.includes(invalidCharacters[i])) 
+                {
+                    setValidInput(false);
+                    return;
+                }
+            }
+
+            for (let i=0; i<invalidNames.length; i++) 
+            {
+                if (uniqueNameInput.trim().toUpperCase() == invalidNames[i]) 
+                {
+                    setValidInput(false);
+                    return;
+                }
+            }
+
             setValidInput(true);
-            trigger(mod.id, "ChangeUniqueName", uniqueNameInput, props.uniqueNameType);
+            trigger(mod.id, "ChangeUniqueName", uniqueNameInput.trim(), props.uniqueNameType);
     }
         
     if (props.uniqueName !== updateText) 
