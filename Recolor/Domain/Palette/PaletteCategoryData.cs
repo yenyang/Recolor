@@ -66,6 +66,11 @@ namespace Recolor.Domain.Palette
             /// Limits to props.
             /// </summary>
             Props = 4,
+
+            /// <summary>
+            /// Limits to netlanes.
+            /// </summary>
+            NetLanes = 8,
         }
     }
 }

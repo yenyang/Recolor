@@ -108,6 +108,7 @@
   "Recolor.TOOLTIP_DESCRIPTION[BuildingCategory]": "Palette will be available to use for Buildings.",
   "Recolor.TOOLTIP_DESCRIPTION[VehicleCategory]": "Palette will be available to use for Vehicles.",
   "Recolor.TOOLTIP_DESCRIPTION[PropCategory]": "Palette will be available to use for Props.",
+  "Recolor.TOOLTIP_DESCRIPTION[NetLaneCategory]": "Palette will be available to use for Net Lane Fences and Walls.",
   "Recolor.TOOLTIP_DESCRIPTION[AllCategories]": "Palette will not be limited based on category.",
   "Recolor.TOOLTIP_DESCRIPTION[AddLocale]": "Adds another set of input fields for entering translations for another language.",
   "Recolor.SECTION_TITLE[AddALocale]": "Add a Locale",

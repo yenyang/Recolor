@@ -34,6 +34,14 @@ namespace Recolor.Systems.Palettes
         private bool m_FullyInitialized;
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
 
+        /// <summary>
+        /// Sets fully initialized to false so that it can be done again.
+        /// </summary>
+        public void ReinitializeRequired()
+        {
+            m_FullyInitialized = false;
+        }
+
         /// <inheritdoc/>
         protected override void OnCreate()
         {
@@ -140,8 +148,6 @@ namespace Recolor.Systems.Palettes
                             m_Log.Error($"{nameof(AddPalettePrefabsSystem)}.{nameof(OnUpdate)} Could not create or initialize prefab {nameof(PaletteSubCategoryPrefab)}:{fileName}. Encountered Exception: {ex}.");
                         }
                     }
-
-                    // Also handle other prefab types.
                 }
             }
 

@@ -138,6 +138,7 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("BuildingCategory"), "Palette will be available to use for Buildings." },
                 { TooltipDescriptionKey("VehicleCategory"), "Palette will be available to use for Vehicles." },
                 { TooltipDescriptionKey("PropCategory"), "Palette will be available to use for Props." },
+                { TooltipDescriptionKey("NetLaneCategory"), "Palette will be available to use for Net Lane Fences and Walls." },
                 { TooltipDescriptionKey("AllCategories"), "Palette will not be limited based on category." },
                 { TooltipDescriptionKey("AddLocale"), "Adds another set of input fields for entering translations for another language." },
                 { SectionLabel("AddALocale"), "Add a Locale" },
@@ -166,6 +167,9 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("MinimizeDuringPlacement"), "Minimize the palette choosers while placing objects to save space." },
                 { TooltipDescriptionKey("ExpandDuringPlacement"), "Expands the palette choosers while placing objects for use." },
                 { TooltipDescriptionKey("ResetPalettesDuringPlacement"), "Resets the palette choosers while placing objects." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RestoreDefaultPalettes)), "Restore Default Palettes and Subcategories." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.RestoreDefaultPalettes)), "On confirmation, will re-install original files for pre-built Palettes and Subcategories. Any edits will be lost. This cannot be undone. Custom Palettes and Subcategories with different unique names than pre-built will not be affected. Restarting the game is required afterwards." },
+                { m_Setting.GetOptionWarningLocaleID(nameof(Setting.RestoreDefaultPalettes)), "Re-install original pre-built Palettes and Subcategories? Any edits will be lost. This cannot be undone. Custom Palettes and Subcategories with different unique names than pre-built will not be affected. Restarting the game is required afterwards." },
             };
         }
 

@@ -161,42 +161,25 @@ namespace Recolor.Systems.SelectedInfoPanel
                     category = paletteSubcategoryData.m_Category;
                 }
 
-                if ((category == PaletteCategoryData.PaletteCategory.Vehicles &&
-                    !EntityManager.HasComponent<VehicleData>(prefabEntity)) ||
-                    (category == PaletteCategoryData.PaletteCategory.Buildings &&
-                    !EntityManager.HasComponent<BuildingData>(prefabEntity)) ||
-                    (category == PaletteCategoryData.PaletteCategory.Props &&
-                   (!EntityManager.HasComponent<StaticObjectData>(prefabEntity) ||
-                    !EntityManager.HasComponent<ObjectData>(prefabEntity) ||
-                     EntityManager.HasComponent<BuildingData>(prefabEntity)) &&
-                    !EntityManager.HasComponent<NetLaneGeometryData>(prefabEntity)))
+                if (category == PaletteCategoryData.PaletteCategory.Any)
                 {
-                    return true;
+                    return false;
                 }
 
-                if (category == (PaletteCategoryData.PaletteCategory.Vehicles | PaletteCategoryData.PaletteCategory.Buildings) &&
-                   !EntityManager.HasComponent<VehicleData>(prefabEntity) &&
-                   !EntityManager.HasComponent<BuildingData>(prefabEntity))
+                if (((category & PaletteCategoryData.PaletteCategory.Vehicles) == PaletteCategoryData.PaletteCategory.Vehicles &&
+                      EntityManager.HasComponent<VehicleData>(prefabEntity)) ||
+                    ((category & PaletteCategoryData.PaletteCategory.Buildings) == PaletteCategoryData.PaletteCategory.Buildings &&
+                      EntityManager.HasComponent<BuildingData>(prefabEntity)) ||
+                    ((category & PaletteCategoryData.PaletteCategory.Props) == PaletteCategoryData.PaletteCategory.Props &&
+                      EntityManager.HasComponent<StaticObjectData>(prefabEntity) &&
+                      EntityManager.HasComponent<ObjectData>(prefabEntity) &&
+                     !EntityManager.HasComponent<BuildingData>(prefabEntity)) ||
+                    ((category & PaletteCategoryData.PaletteCategory.NetLanes) == PaletteCategoryData.PaletteCategory.NetLanes &&
+                      EntityManager.HasComponent<NetLaneGeometryData>(prefabEntity)))
                 {
-                    return true;
+                    return false;
                 }
-
-                if (category == (PaletteCategoryData.PaletteCategory.Vehicles | PaletteCategoryData.PaletteCategory.Props) &&
-                   !EntityManager.HasComponent<VehicleData>(prefabEntity) &&
-                  (!EntityManager.HasComponent<StaticObjectData>(prefabEntity) ||
-                   !EntityManager.HasComponent<ObjectData>(prefabEntity) ||
-                    EntityManager.HasComponent<BuildingData>(prefabEntity)) &&
-                   !EntityManager.HasComponent<NetLaneGeometryData>(prefabEntity))
-                {
-                    return true;
-                }
-
-                if (category == (PaletteCategoryData.PaletteCategory.Buildings | PaletteCategoryData.PaletteCategory.Props) &&
-                   !EntityManager.HasComponent<BuildingData>(prefabEntity) &&
-                  (!EntityManager.HasComponent<StaticObjectData>(prefabEntity) ||
-                   !EntityManager.HasComponent<ObjectData>(prefabEntity) ||
-                    EntityManager.HasComponent<BuildingData>(prefabEntity)) &&
-                   !EntityManager.HasComponent<NetLaneGeometryData>(prefabEntity))
+                else
                 {
                     return true;
                 }
@@ -205,8 +188,6 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 return true;
             }
-
-            return false;
         }
 
         private void UnselectPalette(Entity palettePrefabEntity, ref Entity[] selectedEntities, ref ValueBindingHelper<PaletteChooserUIData> paletteChooserUIDataBinding)

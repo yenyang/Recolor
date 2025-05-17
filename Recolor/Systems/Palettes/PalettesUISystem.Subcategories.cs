@@ -165,7 +165,22 @@ namespace Recolor.Systems.Palettes
 
         private void DeleteSubcategory()
         {
-            if (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PaletteSubCategoryPrefab), m_UniqueNames.Value[(int)MenuType.Subcategory]), out PrefabBase prefabBase) &&
+            DeleteSubcategory(m_UniqueNames.Value[(int)MenuType.Subcategory]);
+        }
+
+        private void DeleteSubcategory(Entity prefabEntity)
+        {
+            if (m_PrefabSystem.TryGetPrefab(prefabEntity, out PrefabBase prefabBase) &&
+                prefabBase is not null &&
+                prefabBase is PaletteSubCategoryPrefab)
+            {
+                DeleteSubcategory(prefabBase.name);
+            }
+        }
+
+        private void DeleteSubcategory(string name)
+        {
+            if (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PaletteSubCategoryPrefab), name), out PrefabBase prefabBase) &&
                 prefabBase is PaletteSubCategoryPrefab &&
                 m_PrefabSystem.TryGetEntity(prefabBase, out Entity prefabEntity))
             {

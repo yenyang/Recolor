@@ -285,7 +285,22 @@ namespace Recolor.Systems.Palettes
 
         private void DeletePalette()
         {
-            if (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PalettePrefab), m_UniqueNames.Value[(int)MenuType.Palette]), out PrefabBase prefabBase) &&
+            DeletePalette(m_UniqueNames.Value[(int)MenuType.Palette]);
+        }
+
+        private void DeletePalette(Entity prefabEntity)
+        {
+            if (m_PrefabSystem.TryGetPrefab(prefabEntity, out PrefabBase prefabBase) &&
+                prefabBase is not null &&
+                prefabBase is PalettePrefab)
+            {
+                DeletePalette(prefabBase.name);
+            }
+        }
+
+        private void DeletePalette(string paletteName)
+        {
+            if (m_PrefabSystem.TryGetPrefab(new PrefabID(nameof(PalettePrefab), paletteName), out PrefabBase prefabBase) &&
                     prefabBase != null &&
                     prefabBase is PalettePrefab &&
                     m_PrefabSystem.TryGetEntity(prefabBase, out Entity existingPrefabEntity) &&

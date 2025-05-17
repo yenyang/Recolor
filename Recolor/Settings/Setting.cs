@@ -12,6 +12,7 @@ namespace Recolor.Settings
     using Game.Settings;
     using Game.Tools;
     using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.Palettes;
     using Recolor.Systems.SelectedInfoPanel;
     using Recolor.Systems.SingleInstance;
     using Unity.Entities;
@@ -165,6 +166,21 @@ namespace Recolor.Settings
             }
         }
 
+        /// <summary>
+        /// Sets a value indicating whether: Deploys prebuilt prefabs.
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        [SettingsUISection(General, Remove)]
+        [SettingsUIDisableByCondition(typeof(Setting), nameof(IsNotGameOrEditor), invert: true)]
+        public bool RestoreDefaultPalettes
+        {
+            set
+            {
+                PalettesUISystem palettesUISystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<PalettesUISystem>();
+                palettesUISystem.DeployPrefabs();
+            }
+        }
 
         /// <summary>
         /// Sets a value indicating whether to Reset All Single Instance Color Changes.
@@ -172,7 +188,7 @@ namespace Recolor.Settings
         [SettingsUIButton]
         [SettingsUIConfirmation]
         [SettingsUISection(General, Remove)]
-        [SettingsUIDisableByCondition(typeof(Setting), nameof(IsNotGame))]
+        [SettingsUIDisableByCondition(typeof(Setting), nameof(IsNotGameOrEditor))]
         public bool ResetAllSingleInstanceColorChanges
         {
             set
@@ -188,7 +204,7 @@ namespace Recolor.Settings
         [SettingsUIButton]
         [SettingsUIConfirmation]
         [SettingsUISection(General, Remove)]
-        [SettingsUIDisableByCondition(typeof(Setting), nameof(IsNotGame))]
+        [SettingsUIDisableByCondition(typeof(Setting), nameof(IsNotGameOrEditor))]
         public bool ResetColorVariationsInThisSaveGame
         {
             set
@@ -229,6 +245,8 @@ namespace Recolor.Settings
                 customColorVariationSystem.ResetAllCustomColorVariations();
                 SIPColorFieldsSystem selectedInfoPanelColorFieldsSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
                 selectedInfoPanelColorFieldsSystem.DeleteAllModsDataFiles();
+                PalettesUISystem palettesUISystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<PalettesUISystem>();
+                palettesUISystem.DeleteAllPalettesAndSubcategories();
             }
         }
 
@@ -251,10 +269,10 @@ namespace Recolor.Settings
             ShowPalettesOptionDuringPlacement = true;
         }
 
-        private bool IsNotGame()
+        private bool IsNotGameOrEditor()
         {
             ToolSystem toolSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ToolSystem>();
-            return !toolSystem.actionMode.IsGame();
+            return !toolSystem.actionMode.IsGameOrEditor();
         }
     }
 }

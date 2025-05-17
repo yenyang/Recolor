@@ -61,6 +61,7 @@ const SelectedFilterType$ = bindValue<PaletteFilterType>(mod.id, "SelectedFilter
 const FilterEntities$ = bindValue<PaletteFilterEntityUIData[]>(mod.id, "FilterEntities");
 const SelectedFilterPrefabEntities$ = bindValue<Entity[]>(mod.id, "SelectedFilterPrefabEntities");
 const LocalizationUIDatas$ = bindValue<LocalizationUIData[][]>(mod.id, "LocalizationDatas");
+const ShowPaletteChooserDuringPlacement$ = bindValue<boolean>( mod.id, "ShowPaletteChooserDuringPlacement");
 
 function handleClick(event: string) {
     trigger(mod.id, event);
@@ -89,7 +90,8 @@ export const PaletteMenuComponent = () => {
     const SelectedFilterPrefabEntities = useValue(SelectedFilterPrefabEntities$);
     const LocalizationUIDatas = useValue(LocalizationUIDatas$);
     const objectTool = useValue(tool.activeTool$).id == tool.OBJECT_TOOL;
-    const netTool = useValue(tool.activeTool$).id == tool.NET_TOOL;
+    const netTool = useValue(tool.activeTool$).id == tool.NET_TOOL;    
+    const ShowPaletteChooserDuringPlacement = useValue(ShowPaletteChooserDuringPlacement$);    
     
     const { translate } = useLocalization();
 
@@ -145,7 +147,7 @@ export const PaletteMenuComponent = () => {
 
     return (
         <>
-            {ShowPaletteEditorPanel && !isPhotoMode && ((defaultTool && activeSelection && ShowPaletteChoices == ButtonState.On) || objectTool || netTool) && (
+            {ShowPaletteEditorPanel && !isPhotoMode && ((defaultTool && activeSelection && ShowPaletteChoices == ButtonState.On) || ((objectTool || netTool) && ShowPaletteChooserDuringPlacement)) && (
                 <>
                     <Portal>
                         <div className={classNames(panelStyles.panelRowGroup, panelStyles.panel, (ResidentialBuildingSelected || objectTool || netTool)? panelStyles.residenialBuildingPosition : "")}>
