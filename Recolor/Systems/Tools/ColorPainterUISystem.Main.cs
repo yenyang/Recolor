@@ -11,6 +11,7 @@ namespace Recolor.Systems.Tools
     using Game.Tools;
     using Recolor;
     using Recolor.Domain;
+    using Recolor.Domain.Palette;
     using Recolor.Extensions;
     using Recolor.Systems.SelectedInfoPanel;
     using Unity.Mathematics;
@@ -33,6 +34,7 @@ namespace Recolor.Systems.Tools
         private ValueBindingHelper<int> m_Filter;
         private ValueBindingHelper<PainterToolMode> m_ToolMode;
         private ValueBindingHelper<bool> m_EditorVisible;
+        private ValueBindingHelper<PaletteChooserUIData> m_PaletteChoicesPainterDatas;
 
         /// <summary>
         /// Used for determining the mode of the painter tool.
@@ -179,6 +181,7 @@ namespace Recolor.Systems.Tools
             m_Filter = CreateBinding("Filter", (int)FilterType.Building);
             m_ToolMode = CreateBinding("PainterToolMode", PainterToolMode.Paint);
             m_EditorVisible = CreateBinding("EditorPainterToolOptions", false);
+            m_PaletteChoicesPainterDatas = CreateBinding("PaletteChoicesPainter", new PaletteChooserUIData());
 
             // These are event triggers from actions in UI.
             CreateTrigger<uint, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);

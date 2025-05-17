@@ -6,6 +6,7 @@
 namespace Recolor.Systems.Tools
 {
     using System;
+    using System.Xml;
     using Colossal.Entities;
     using Colossal.Logging;
     using Game.Buildings;
@@ -728,6 +729,48 @@ namespace Recolor.Systems.Tools
                 }
 
                 return false;
+            }
+        }
+
+        private struct CreateDefinitionJob: IJob
+        {
+            [ReadOnly]
+            public Entity m_InstanceEntity;
+            [ReadOnly]
+            public ComponentLookup<Game.Objects.Transform> m_TransformData;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            public EntityCommandBuffer m_CommandBuffer;
+
+            public void Execute()
+            {
+                Entity e = m_CommandBuffer.CreateEntity();
+                CreationDefinition creationDefinition = new ()
+                {
+                    m_Original = m_InstanceEntity,
+                    m_Flags = CreationFlags.Select,
+                };
+                if (m_PrefabRefLookup.HasComponent(m_InstanceEntity))
+                {
+                    creationDefinition.m_Prefab = m_PrefabRefLookup[m_InstanceEntity];
+                }
+
+                m_CommandBuffer.AddComponent(e, default(Updated));
+                if (m_TransformData.HasComponent(m_InstanceEntity))
+                {
+                    Game.Objects.Transform transform = m_TransformData[m_InstanceEntity];
+                    ObjectDefinition objectDefinition = new ()
+                    {
+                        m_Position = transform.m_Position,
+                        m_Rotation = transform.m_Rotation,
+                        m_ParentMesh = -1,
+                        m_Probability = 100,
+                        m_PrefabSubIndex = -1,
+                    };
+                    m_CommandBuffer.AddComponent(e, objectDefinition);
+                }
+
+                m_CommandBuffer.AddComponent(e, creationDefinition);
             }
         }
 

@@ -304,8 +304,17 @@ namespace Recolor.Systems.Tools
                (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single ||
                 m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker))
             {
-                buffer.AddComponent<BatchesUpdated>(currentRaycastEntity);
-                buffer.AddComponent<Highlighted>(currentRaycastEntity);
+                // buffer.AddComponent<BatchesUpdated>(currentRaycastEntity);
+                // buffer.AddComponent<Highlighted>(currentRaycastEntity);
+                CreateDefinitionJob createDefinitionJob = new CreateDefinitionJob()
+                {
+                    m_CommandBuffer = buffer,
+                    m_InstanceEntity = currentRaycastEntity,
+                    m_TransformData = SystemAPI.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true),
+                    m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                };
+                inputDeps = createDefinitionJob.Schedule(inputDeps);
+                m_Barrier.AddJobHandleForProducer(inputDeps);
                 m_PreviousRaycastedEntity = currentRaycastEntity;
             }
 

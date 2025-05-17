@@ -231,6 +231,14 @@ namespace Recolor.Systems.SelectedInfoPanel
         /// <inheritdoc/>
         public override GameMode gameMode => GameMode.GameOrEditor;
 
+        /// <summary>
+        /// Gets a value indicating whether Show Palette Choices is on.
+        /// </summary>
+        public bool ShowPaletteChoices
+        {
+            get { return (m_ShowPaletteChoices & ButtonState.On) == ButtonState.On; }
+        }
+
         /// <inheritdoc/>
         protected override void OnCreate()
         {

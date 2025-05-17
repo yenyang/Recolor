@@ -91,6 +91,7 @@ export const PaletteMenuComponent = () => {
     const LocalizationUIDatas = useValue(LocalizationUIDatas$);
     const objectTool = useValue(tool.activeTool$).id == tool.OBJECT_TOOL;
     const netTool = useValue(tool.activeTool$).id == tool.NET_TOOL;    
+    const painterTool = useValue(tool.activeTool$).id == "ColorPainterTool";
     const ShowPaletteChooserDuringPlacement = useValue(ShowPaletteChooserDuringPlacement$);    
     
     const { translate } = useLocalization();
@@ -147,10 +148,10 @@ export const PaletteMenuComponent = () => {
 
     return (
         <>
-            {ShowPaletteEditorPanel && !isPhotoMode && ((defaultTool && activeSelection && ShowPaletteChoices == ButtonState.On) || ((objectTool || netTool) && ShowPaletteChooserDuringPlacement)) && (
+            {ShowPaletteEditorPanel && !isPhotoMode && ((defaultTool && activeSelection && ShowPaletteChoices == ButtonState.On) || (painterTool && ShowPaletteChoices == ButtonState.On) || ((objectTool || netTool) && ShowPaletteChooserDuringPlacement)) && (
                 <>
                     <Portal>
-                        <div className={classNames(panelStyles.panelRowGroup, panelStyles.panel, (ResidentialBuildingSelected || objectTool || netTool)? panelStyles.residenialBuildingPosition : "")}>
+                        <div className={classNames(panelStyles.panelRowGroup, panelStyles.panel, (ResidentialBuildingSelected || objectTool || netTool || painterTool)? panelStyles.residenialBuildingPosition : "")}>
                         <Panel 
                             header={(
                                 <HeaderSection title={translate("Recolor.SECTION_TITLE[PaletteEditorMenu]" ,locale["Recolor.SECTION_TITLE[PaletteEditorMenu]"])} icon={colorPaletteSrc} onCloseEventName={"TogglePaletteEditorMenu"}></HeaderSection>
