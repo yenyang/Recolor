@@ -111,7 +111,11 @@ namespace Recolor.Systems.Palettes
                 EntityManager.TryGetBuffer(entities[0], isReadOnly: true, out DynamicBuffer<MeshColor> meshColors) &&
                 meshColors.Length > 0)
             {
-                m_UISystem.SetNoneColors(meshColors[0].m_ColorSet);
+                ColorSet colorSet = meshColors[0].m_ColorSet;
+                colorSet.m_Channel1.a = 1f;
+                colorSet.m_Channel2.a = 1f;
+                colorSet.m_Channel0.a = 1f;
+                m_UISystem.SetNoneColors(colorSet);
             }
         }
 
@@ -172,9 +176,9 @@ namespace Recolor.Systems.Palettes
             }
 
             if (m_UISystem.SelectedPalettesDuringPlacement.Length < 2 ||
-               (m_UISystem.SelectedPalettesDuringPlacement[0] != Entity.Null &&
-                m_UISystem.SelectedPalettesDuringPlacement[1] != Entity.Null &&
-                m_UISystem.SelectedPalettesDuringPlacement[2] != Entity.Null))
+               (m_UISystem.SelectedPalettesDuringPlacement[0] == Entity.Null &&
+                m_UISystem.SelectedPalettesDuringPlacement[1] == Entity.Null &&
+                m_UISystem.SelectedPalettesDuringPlacement[2] == Entity.Null))
             {
                 return;
             }
