@@ -303,5 +303,17 @@ namespace Recolor.Systems.Tools
                 }
             }
         }
+
+        private JobHandle UpdateDefinitions(JobHandle inputDeps)
+        {
+            JobHandle jobHandle = DestroyDefinitions(m_DefinitionGroup, m_Barrier, inputDeps);
+        }
+
+        private JobHandle Clear(JobHandle inputDeps)
+        {
+            applyMode = ApplyMode.Clear;
+            m_Barrier.CreateCommandBuffer().AddComponent<Deleted>(GetDefinitionQuery(), EntityQueryCaptureMode.AtPlayback);
+            return inputDeps;
+        }
     }
 }

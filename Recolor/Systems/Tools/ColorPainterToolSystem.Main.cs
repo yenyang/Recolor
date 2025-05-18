@@ -34,6 +34,13 @@ namespace Recolor.Systems.Tools
     /// </summary>
     public partial class ColorPainterToolSystem : ToolBaseSystem
     {
+        public enum State
+        {
+            Default,
+            MouseDown,
+
+        }
+
         private ILog m_Log;
         private Entity m_PreviousRaycastedEntity;
         private Entity m_PreviousSelectedEntity;
@@ -52,6 +59,7 @@ namespace Recolor.Systems.Tools
         private EntityQuery m_VehicleCustomMeshColorQuery;
         private EntityQuery m_ParkedVehicleCustomMeshColorQuery;
         private EntityQuery m_PropCustomMeshColorQuery;
+        private EntityQuery m_DefinitionGroup;
 
         /// <inheritdoc/>
         public override string toolID => "ColorPainterTool";
@@ -121,6 +129,7 @@ namespace Recolor.Systems.Tools
             m_CustomColorVariationSystem = World.GetOrCreateSystemManaged<CustomColorVariationSystem>();
             m_ColorPainterUISystem = World.GetOrCreateSystemManaged<ColorPainterUISystem>();
             m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
+            m_DefinitionGroup = GetDefinitionQuery();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_HighlightedQuery = SystemAPI.QueryBuilder()
                 .WithAll<Highlighted>()
@@ -232,7 +241,7 @@ namespace Recolor.Systems.Tools
                     buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
                     buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
                     m_PreviousRaycastedEntity = Entity.Null;
-                    return inputDeps;
+                    return Clear(inputDeps);
                 }
             }
             else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
@@ -265,7 +274,7 @@ namespace Recolor.Systems.Tools
                         m_GenericTooltipSystem.RemoveTooltip("HasCustomMeshColorWarning");
                     }
 
-                    return inputDeps;
+                    return Clear(inputDeps);
                 }
             }
             else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker)
@@ -277,7 +286,7 @@ namespace Recolor.Systems.Tools
                     buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
                     buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
                     m_PreviousRaycastedEntity = Entity.Null;
-                    return inputDeps;
+                    return Clear(inputDeps);
                 }
             }
 
@@ -289,7 +298,7 @@ namespace Recolor.Systems.Tools
                 buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
                 buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
                 m_PreviousRaycastedEntity = Entity.Null;
-                return inputDeps;
+                return Clear(inputDeps);
             }
 
             if (currentRaycastEntity != m_PreviousRaycastedEntity &&
@@ -304,8 +313,6 @@ namespace Recolor.Systems.Tools
                (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single ||
                 m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker))
             {
-                // buffer.AddComponent<BatchesUpdated>(currentRaycastEntity);
-                // buffer.AddComponent<Highlighted>(currentRaycastEntity);
                 CreateDefinitionJob createDefinitionJob = new CreateDefinitionJob()
                 {
                     m_CommandBuffer = buffer,
@@ -323,7 +330,7 @@ namespace Recolor.Systems.Tools
                m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius &&
                (!raycastResult || (hit.m_HitPosition.x == 0 && hit.m_HitPosition.y == 0 && hit.m_HitPosition.z == 0)))
             {
-                return inputDeps;
+                return Clear(inputDeps);
             }
 
             float radius = m_ColorPainterUISystem.Radius;
@@ -341,7 +348,7 @@ namespace Recolor.Systems.Tools
 
             if (!applyAction.WasReleasedThisFrame() && !applyAction.IsPressed() && !secondaryApplyAction.WasReleasedThisFrame() && !secondaryApplyAction.IsPressed())
             {
-                return inputDeps;
+                return Clear(inputDeps);
             }
 
             if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint &&
@@ -497,7 +504,7 @@ namespace Recolor.Systems.Tools
                 m_ColorPainterUISystem.ToolMode = ColorPainterUISystem.PainterToolMode.Paint;
             }
 
-            return inputDeps;
+            return Clear(inputDeps);
         }
     }
 }
