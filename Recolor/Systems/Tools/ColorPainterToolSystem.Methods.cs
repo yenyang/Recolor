@@ -305,19 +305,24 @@ namespace Recolor.Systems.Tools
             }
         }
 
-        private JobHandle UpdateDefinitions(JobHandle inputDeps, Entity instanceEntity, ref EntityCommandBuffer buffer)
+        private JobHandle UpdateDefinitions(JobHandle inputDeps)
         {
             JobHandle jobHandle = DestroyDefinitions(m_DefinitionGroup, m_Barrier, inputDeps);
-            CreateDefinitionJob createDefinitionJob = new CreateDefinitionJob()
+            EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
+
+            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
             {
-                m_CommandBuffer = buffer,
-                m_InstanceEntity = instanceEntity,
-                m_TransformData = SystemAPI.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true),
-                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
-            };
-            inputDeps = createDefinitionJob.Schedule(inputDeps);
-            m_Barrier.AddJobHandleForProducer(inputDeps);
-            m_PreviousRaycastedEntity = instanceEntity;
+                CreateDefinitionJob createDefinitionJob = new CreateDefinitionJob()
+                {
+                    m_CommandBuffer = buffer,
+                    m_InstanceEntity = m_PreviousRaycastedEntity,
+                    m_TransformData = SystemAPI.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true),
+                    m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                };
+                inputDeps = createDefinitionJob.Schedule(inputDeps);
+                m_Barrier.AddJobHandleForProducer(inputDeps);
+            }
+
             return inputDeps;
         }
 
@@ -325,6 +330,11 @@ namespace Recolor.Systems.Tools
         {
             applyMode = ApplyMode.Clear;
             m_Barrier.CreateCommandBuffer().AddComponent<Deleted>(GetDefinitionQuery(), EntityQueryCaptureMode.AtPlayback);
+            return inputDeps;
+        }
+
+        private JobHandle Apply(JobHandle inputDeps)
+        {
             return inputDeps;
         }
     }

@@ -146,6 +146,7 @@ namespace Recolor
             updateSystem.UpdateAfter<AssignedPaletteCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<PaletteInstanceManagerSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<PalettesDuringPlacementSystem>(SystemUpdatePhase.Modification2);
+            updateSystem.UpdateAt<ApplyColorsSystem>(SystemUpdatePhase.ApplyTool);
             Log.Info($"{nameof(OnLoad)} complete.");
         }
 
