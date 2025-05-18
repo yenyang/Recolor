@@ -169,7 +169,7 @@ export const RecolorMainPanelComponent = () => {
                                         <VanillaComponentResolver.instance.ToolButton
                                             src={colorPaletteSrc}
                                             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                            tooltip = {"Toggle Palette Options"}
+                                            tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[TogglePaletteOptions]", locale["Recolor.TOOLTIP_DESCRIPTION[TogglePaletteOptions]"])}
                                             selected={ShowPaletteChoices == ButtonState.On}
                                             className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                             onSelect={() => handleClick("ToggleShowPaletteChoices")}

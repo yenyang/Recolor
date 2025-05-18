@@ -96,7 +96,13 @@ namespace Recolor.Systems.Palettes
                     continue;
                 }
 
-                AssignPalettes(entities[i], m_UISystem.SelectedPalettesDuringPlacement, ref buffer);
+                if (m_UISystem.SelectedPalettesDuringPlacement.Length > 2 &&
+                   (m_UISystem.SelectedPalettesDuringPlacement[0] != Entity.Null ||
+                    m_UISystem.SelectedPalettesDuringPlacement[1] != Entity.Null ||
+                    m_UISystem.SelectedPalettesDuringPlacement[2] != Entity.Null))
+                {
+                    AssignPalettes(entities[i], m_UISystem.SelectedPalettesDuringPlacement, ref buffer);
+                }
             }
 
             if (m_ToolSystem.activeTool == m_ObjectToolSystem &&
@@ -159,14 +165,21 @@ namespace Recolor.Systems.Palettes
         /// <param name="prefabEntities">Palette prefab entities. Array length 3. Set entity.null if empty.</param>
         private void AssignPalettes(Entity instanceEntity, Entity[] prefabEntities, ref EntityCommandBuffer buffer)
         {
-            DynamicBuffer<AssignedPalette> paletteAssignments = buffer.AddBuffer<AssignedPalette>(instanceEntity);
-            paletteAssignments.Clear();
-
             if (!EntityManager.TryGetBuffer(instanceEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer) ||
                 meshColorBuffer.Length == 0)
             {
                 return;
             }
+
+            if (m_UISystem.SelectedPalettesDuringPlacement.Length < 2 ||
+               (m_UISystem.SelectedPalettesDuringPlacement[0] != Entity.Null &&
+                m_UISystem.SelectedPalettesDuringPlacement[1] != Entity.Null &&
+                m_UISystem.SelectedPalettesDuringPlacement[2] != Entity.Null))
+            {
+                return;
+            }
+
+            DynamicBuffer<AssignedPalette> paletteAssignments = buffer.AddBuffer<AssignedPalette>(instanceEntity);
 
             RecolorSet recolorSet = new RecolorSet(meshColorBuffer[0].m_ColorSet);
             for (int i = 0; i < System.Math.Max(prefabEntities.Length, 3); i++)
