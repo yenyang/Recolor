@@ -27,6 +27,7 @@ namespace Recolor.Systems.Tools
     using Unity.Jobs;
     using Unity.Mathematics;
     using UnityEngine;
+    using static Game.Rendering.OverlayRenderSystem;
     using static Recolor.Systems.SelectedInfoPanel.SIPColorFieldsSystem;
 
     /// <summary>
@@ -304,9 +305,20 @@ namespace Recolor.Systems.Tools
             }
         }
 
-        private JobHandle UpdateDefinitions(JobHandle inputDeps)
+        private JobHandle UpdateDefinitions(JobHandle inputDeps, Entity instanceEntity, ref EntityCommandBuffer buffer)
         {
             JobHandle jobHandle = DestroyDefinitions(m_DefinitionGroup, m_Barrier, inputDeps);
+            CreateDefinitionJob createDefinitionJob = new CreateDefinitionJob()
+            {
+                m_CommandBuffer = buffer,
+                m_InstanceEntity = instanceEntity,
+                m_TransformData = SystemAPI.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true),
+                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+            };
+            inputDeps = createDefinitionJob.Schedule(inputDeps);
+            m_Barrier.AddJobHandleForProducer(inputDeps);
+            m_PreviousRaycastedEntity = instanceEntity;
+            return inputDeps;
         }
 
         private JobHandle Clear(JobHandle inputDeps)
