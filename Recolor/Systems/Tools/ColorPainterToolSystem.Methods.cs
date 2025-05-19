@@ -310,16 +310,46 @@ namespace Recolor.Systems.Tools
             JobHandle jobHandle = DestroyDefinitions(m_DefinitionGroup, m_Barrier, inputDeps);
             EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
 
-            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
+            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single ||
+                m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker)
             {
                 CreateDefinitionJob createDefinitionJob = new CreateDefinitionJob()
                 {
-                    m_CommandBuffer = buffer,
-                    m_InstanceEntity = m_PreviousRaycastedEntity,
+                    buffer = buffer,
+                    m_InstanceEntity = m_RaycastEntity,
                     m_TransformData = SystemAPI.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true),
                     m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
                 };
                 inputDeps = createDefinitionJob.Schedule(inputDeps);
+                m_Barrier.AddJobHandleForProducer(inputDeps);
+            }
+            else
+            {
+                CreateDefinitionsWithRadiusOfTransform createDefinitionsWithRadiusOfTransform = new CreateDefinitionsWithRadiusOfTransform()
+                {
+                    m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                    m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
+                    m_Position = m_LastRaycastPosition,
+                    buffer = m_Barrier.CreateCommandBuffer(),
+                    m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                    m_Radius = m_ColorPainterUISystem.Radius,
+                    m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
+                    m_SelectedEntities = m_SelectedEntities,
+                };
+
+                if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
+                {
+                    inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_BuildingMeshColorQuery, inputDeps);
+                }
+                else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Props)
+                {
+                    inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_PropMeshColorQuery, inputDeps);
+                }
+                else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Vehicles)
+                {
+                    inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_ParkedVehicleMeshColorQuery, inputDeps);
+                }
+
                 m_Barrier.AddJobHandleForProducer(inputDeps);
             }
 
@@ -329,12 +359,28 @@ namespace Recolor.Systems.Tools
         private JobHandle Clear(JobHandle inputDeps)
         {
             applyMode = ApplyMode.Clear;
-            m_Barrier.CreateCommandBuffer().AddComponent<Deleted>(GetDefinitionQuery(), EntityQueryCaptureMode.AtPlayback);
+            inputDeps = DestroyDefinitions(m_DefinitionGroup, m_Barrier, inputDeps);
+            m_SelectedEntities.Clear();
             return inputDeps;
         }
 
         private JobHandle Apply(JobHandle inputDeps)
         {
+            if (m_State == State.Picking)
+            {
+                if (EntityManager.TryGetBuffer(m_RaycastEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer) &&
+                    meshColorBuffer.Length > 0)
+                {
+                    m_ColorPainterUISystem.ColorSet = meshColorBuffer[0].m_ColorSet;
+                    m_ColorPainterUISystem.ToolMode = ColorPainterUISystem.PainterToolMode.Paint;
+                }
+            }
+            else if (m_State == State.Reseting &&
+                     m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint)
+            {
+                m_TimeLastReset = UnityEngine.Time.time;
+            }
+
             return inputDeps;
         }
     }

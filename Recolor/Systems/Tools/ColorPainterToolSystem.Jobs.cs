@@ -28,6 +28,7 @@ namespace Recolor.Systems.Tools
     using Unity.Jobs;
     using Unity.Mathematics;
     using UnityEngine;
+    using UnityEngine.Rendering;
     using static Recolor.Systems.SelectedInfoPanel.SIPColorFieldsSystem;
 
     /// <summary>
@@ -732,7 +733,7 @@ namespace Recolor.Systems.Tools
             }
         }
 
-        private struct CreateDefinitionJob: IJob
+        private struct CreateDefinitionJob : IJob
         {
             [ReadOnly]
             public Entity m_InstanceEntity;
@@ -740,11 +741,11 @@ namespace Recolor.Systems.Tools
             public ComponentLookup<Game.Objects.Transform> m_TransformData;
             [ReadOnly]
             public ComponentLookup<PrefabRef> m_PrefabRefLookup;
-            public EntityCommandBuffer m_CommandBuffer;
+            public EntityCommandBuffer buffer;
 
             public void Execute()
             {
-                Entity e = m_CommandBuffer.CreateEntity();
+                Entity e = buffer.CreateEntity();
                 CreationDefinition creationDefinition = new ()
                 {
                     m_Original = m_InstanceEntity,
@@ -755,7 +756,7 @@ namespace Recolor.Systems.Tools
                     creationDefinition.m_Prefab = m_PrefabRefLookup[m_InstanceEntity];
                 }
 
-                m_CommandBuffer.AddComponent(e, default(Updated));
+                buffer.AddComponent(e, default(Updated));
                 if (m_TransformData.HasComponent(m_InstanceEntity))
                 {
                     Game.Objects.Transform transform = m_TransformData[m_InstanceEntity];
@@ -767,10 +768,82 @@ namespace Recolor.Systems.Tools
                         m_Probability = 100,
                         m_PrefabSubIndex = -1,
                     };
-                    m_CommandBuffer.AddComponent(e, objectDefinition);
+                    buffer.AddComponent(e, objectDefinition);
                 }
 
-                m_CommandBuffer.AddComponent(e, creationDefinition);
+                buffer.AddComponent(e, creationDefinition);
+            }
+        }
+
+        private struct CreateDefinitionsWithRadiusOfTransform : IJobChunk
+        {
+            public EntityTypeHandle m_EntityType;
+            [ReadOnly]
+            public ComponentTypeHandle<Game.Objects.Transform> m_TransformType;
+            public EntityCommandBuffer buffer;
+            [ReadOnly]
+            public BufferLookup<MeshColor> m_MeshColorLookup;
+            public float m_Radius;
+            public float3 m_Position;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            public NativeList<Entity> m_SelectedEntities;
+
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
+                NativeArray<Game.Objects.Transform> transformNativeArray = chunk.GetNativeArray(ref m_TransformType);
+                for (int i = 0; i < chunk.Count; i++)
+                {
+                    if (CheckForWithinRadius(m_Position, transformNativeArray[i].m_Position, m_Radius) &&
+                       !m_SelectedEntities.Contains(entityNativeArray[i]))
+                    {
+                        Entity e = buffer.CreateEntity();
+                        CreationDefinition creationDefinition = new ()
+                        {
+                            m_Original = entityNativeArray[i],
+                            m_Flags = CreationFlags.Select,
+                        };
+                        if (m_PrefabRefLookup.HasComponent(entityNativeArray[i]))
+                        {
+                            creationDefinition.m_Prefab = m_PrefabRefLookup[entityNativeArray[i]];
+                        }
+
+                        buffer.AddComponent(e, default(Updated));
+                        ObjectDefinition objectDefinition = new ()
+                        {
+                            m_Position = transformNativeArray[i].m_Position,
+                            m_Rotation = transformNativeArray[i].m_Rotation,
+                            m_ParentMesh = -1,
+                            m_Probability = 100,
+                            m_PrefabSubIndex = -1,
+                        };
+                        buffer.AddComponent(e, objectDefinition);
+
+                        buffer.AddComponent(e, creationDefinition);
+                        m_SelectedEntities.Add(entityNativeArray[i]);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Checks the radius and position and returns true if tree is there.
+            /// </summary>
+            /// <param name="cursorPosition">Float3 from Raycast.</param>
+            /// <param name="position">Float3 position from InterploatedTransform.</param>
+            /// <param name="radius">Radius usually passed from settings.</param>
+            /// <returns>True if tree position is within radius of position. False if not.</returns>
+            private readonly bool CheckForWithinRadius(float3 cursorPosition, float3 position, float radius)
+            {
+                float minRadius = 1f;
+                radius = Mathf.Max(radius, minRadius);
+                position.y = cursorPosition.y;
+                if (Unity.Mathematics.math.distance(cursorPosition, position) < radius)
+                {
+                    return true;
+                }
+
+                return false;
             }
         }
 
