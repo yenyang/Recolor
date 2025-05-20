@@ -257,6 +257,40 @@ namespace Recolor.Systems.Tools
                 return Clear(inputDeps);
             }
 
+            if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint &&
+                     m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
+            {
+                if (!raycastResult ||
+                    !EntityManager.HasBuffer<MeshColor>(m_RaycastEntity) ||
+                   (EntityManager.HasComponent<Plant>(m_RaycastEntity) &&
+                    m_SelectedInfoPanelColorFieldsSystem.SingleInstance) ||
+                   (EntityManager.HasBuffer<CustomMeshColor>(m_RaycastEntity) &&
+                    !m_SelectedInfoPanelColorFieldsSystem.SingleInstance))
+                    {
+                        m_TimeLastReset = 0f;
+                        if (EntityManager.HasComponent<Plant>(m_RaycastEntity) && m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
+                        {
+                            m_GenericTooltipSystem.RegisterTooltip("SingleInstancePlantWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.MouseTooltipKey("SingleInstancePlantWarning"), "Single instance color changes for plants is not currently supported.");
+                        }
+                        else
+                        {
+                            m_GenericTooltipSystem.RemoveTooltip("SingleInstancePlantWarning");
+                        }
+
+                        if (EntityManager.HasBuffer<CustomMeshColor>(m_RaycastEntity) && !m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
+                        {
+                            m_GenericTooltipSystem.RegisterTooltip("HasCustomMeshColorWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.MouseTooltipKey("HasCustomMeshColorWarning"), "Cannot change color variation on this because it has custom instance colors.");
+                        }
+                        else
+                        {
+                            m_GenericTooltipSystem.RemoveTooltip("HasCustomMeshColorWarning");
+                        }
+
+                        m_RaycastEntity = Entity.Null;
+                        return Clear(inputDeps);
+                    }
+            }
+
             if (!raycastResult ||
               (hit.m_HitPosition.x == 0 &&
                hit.m_HitPosition.y == 0 &&
@@ -308,6 +342,9 @@ namespace Recolor.Systems.Tools
                 // m_ForceUpdate = true;
                 return Clear(inputDeps);
             }
+
+            m_GenericTooltipSystem.RemoveTooltip("SingleInstancePlantWarning");
+            m_GenericTooltipSystem.RemoveTooltip("HasCustomMeshColorWarning");
 
             if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius &&
                 m_ColorPainterUISystem.ToolMode != ColorPainterUISystem.PainterToolMode.Picker)

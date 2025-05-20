@@ -366,6 +366,8 @@ namespace Recolor.Systems.Tools
 
         private JobHandle Apply(JobHandle inputDeps)
         {
+            EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
+
             if (m_State == State.Picking)
             {
                 if (EntityManager.TryGetBuffer(m_RaycastEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer) &&
@@ -379,6 +381,25 @@ namespace Recolor.Systems.Tools
                      m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint)
             {
                 m_TimeLastReset = UnityEngine.Time.time;
+            }
+
+            if (m_State == State.Painting &&
+                m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single &&
+               !m_SelectedInfoPanelColorFieldsSystem.SingleInstance &&
+                m_SelectedInfoPanelColorFieldsSystem.TryGetAssetSeasonIdentifier(m_RaycastEntity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet _))
+            {
+                ChangeColorVariation(m_ColorPainterUISystem.RecolorSet, ref buffer , m_RaycastEntity, assetSeasonIdentifier);
+                GenerateOrUpdateCustomColorVariationEntity(m_RaycastEntity, ref buffer, assetSeasonIdentifier);
+            }
+
+            if (m_State == State.Reseting &&
+                m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single &&
+               !m_SelectedInfoPanelColorFieldsSystem.SingleInstance &&
+                m_SelectedInfoPanelColorFieldsSystem.TryGetAssetSeasonIdentifier(m_RaycastEntity, out AssetSeasonIdentifier assetSeasonIdentifier1, out ColorSet _) &&
+                m_SelectedInfoPanelColorFieldsSystem.TryGetVanillaColorSet(assetSeasonIdentifier1, out ColorSet vanillaColorSet))
+            {
+                ChangeColorVariation(new RecolorSet(vanillaColorSet), ref buffer, m_RaycastEntity, assetSeasonIdentifier1);
+                DeleteCustomColorVariationEntity(m_RaycastEntity, ref buffer, assetSeasonIdentifier1);
             }
 
             return inputDeps;
