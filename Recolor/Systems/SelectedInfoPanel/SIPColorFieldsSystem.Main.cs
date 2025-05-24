@@ -189,7 +189,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
 
                 visible = false;
-                m_PreviouslySelectedEntity = Entity.Null;
+                m_State = State.NotVisible;
 
                 return;
             }
@@ -214,13 +214,14 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             if (m_CurrentEntity == Entity.Null &&
-                m_PreviouslySelectedEntity != Entity.Null)
+                m_PreviousEntity != Entity.Null)
             {
-                m_PreviouslySelectedEntity = Entity.Null;
+                m_PreviousEntity = Entity.Null;
             }
 
             if (m_CurrentEntity == Entity.Null)
             {
+                m_State = State.NotVisible;
                 visible = false;
                 if (m_ToolSystem.actionMode.IsEditor())
                 {
@@ -230,18 +231,10 @@ namespace Recolor.Systems.SelectedInfoPanel
                 return;
             }
 
-            if (m_PreviouslySelectedEntity == Entity.Null)
+            if (m_PreviousEntity != m_CurrentEntity)
             {
-                visible = false;
-                if (m_ToolSystem.actionMode.IsEditor())
-                {
-                    m_EditorVisible.Value = false;
-                }
-            }
-
-            if (m_PreviouslySelectedEntity != m_CurrentEntity)
-            {
-                m_PreviouslySelectedEntity = Entity.Null;
+                m_State = State.EntityChanged;
+                m_PreviousEntity = m_CurrentEntity;
             }
 
             bool foundClimatePrefab = true;
@@ -258,6 +251,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                     m_EditorVisible.Value = false;
                 }
 
+                m_State = State.NotVisible;
                 return;
             }
 
@@ -270,10 +264,12 @@ namespace Recolor.Systems.SelectedInfoPanel
                     m_EditorVisible.Value = false;
                 }
 
+                m_State = State.NotVisible;
+
                 return;
             }
 
-            if (m_PreviouslySelectedEntity == m_CurrentEntity &&
+            if (m_State == State.Static &&
               ((m_Matching.Value & ButtonState.On) == ButtonState.On ||
                 EntityManager.HasComponent<Game.Objects.Plant>(m_CurrentEntity)) &&
                !EntityManager.HasBuffer<CustomMeshColor>(m_CurrentEntity) &&
@@ -283,20 +279,28 @@ namespace Recolor.Systems.SelectedInfoPanel
                 ColorRefresh();
             }
 
-            if (m_PreviouslySelectedEntity == m_CurrentEntity)
+            if (m_State == State.Static)
             {
                 return;
             }
 
-            HandleScopeAndButtonStates();
+            if ((m_State & State.UpdateButtonStates) == State.UpdateButtonStates ||
+                m_State == State.EntityChanged)
+            {
+                HandleScopeAndButtonStates();
+            }
 
             if (EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer1) &&
                 subMeshBuffer1.Length > 0)
             {
-                m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex, 0, subMeshBuffer1.Length - 1);
-                m_SubMeshData.Value.SubMeshLength = subMeshBuffer1.Length;
-                m_SubMeshData.Value.SubMeshName = m_PrefabSystem.GetPrefabName(subMeshBuffer1[m_SubMeshData.Value.SubMeshIndex].m_SubMesh);
-                HandleSubMeshScopes();
+               if ((m_State & State.UpdateButtonStates) == State.UpdateButtonStates ||
+                   m_State == State.EntityChanged)
+                {
+                    m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex, 0, subMeshBuffer1.Length - 1);
+                    m_SubMeshData.Value.SubMeshLength = subMeshBuffer1.Length;
+                    m_SubMeshData.Value.SubMeshName = m_PrefabSystem.GetPrefabName(subMeshBuffer1[m_SubMeshData.Value.SubMeshIndex].m_SubMesh);
+                    HandleSubMeshScopes();
+                }
             }
             else
             {
@@ -305,10 +309,13 @@ namespace Recolor.Systems.SelectedInfoPanel
                 {
                     m_EditorVisible.Value = false;
                 }
+
+                m_State = State.NotVisible;
             }
 
             ColorSet originalMeshColor;
-            if (EntityManager.TryGetComponent(m_CurrentEntity, out Game.Objects.Tree tree))
+            if (EntityManager.TryGetComponent(m_CurrentEntity, out Game.Objects.Tree tree) &&
+                m_State == State.EntityChanged)
             {
                 if (tree.m_State == Game.Objects.TreeState.Dead || tree.m_State == Game.Objects.TreeState.Collected || tree.m_State == Game.Objects.TreeState.Stump)
                 {
@@ -318,6 +325,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                         m_EditorVisible.Value = false;
                     }
 
+                    m_State = State.NotVisible;
                     return;
                 }
 
@@ -340,23 +348,35 @@ namespace Recolor.Systems.SelectedInfoPanel
                 originalMeshColor = meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet;
             }
 
-            if (m_ResidentialBuildingSelected.Value != EntityManager.HasComponent<Game.Buildings.ResidentialProperty>(m_CurrentEntity))
+            if (m_State == State.EntityChanged &&
+                m_ResidentialBuildingSelected.Value != EntityManager.HasComponent<Game.Buildings.ResidentialProperty>(m_CurrentEntity))
             {
                 m_ResidentialBuildingSelected.Value = EntityManager.HasComponent<Game.Buildings.ResidentialProperty>(m_CurrentEntity);
             }
 
-            UpdatePalettes();
+            if (m_State == State.EntityChanged)
+            {
+                UpdatePalettes();
+            }
 
             // Service Vehicles
-            if (m_PreviouslySelectedEntity != m_CurrentEntity &&
+            if ((m_State == State.EntityChanged ||
+                (m_State & State.ColorChanged) == State.ColorChanged ||
+                (m_State & State.UpdateButtonStates) == State.UpdateButtonStates) &&
                 m_CurrentEntity != Entity.Null &&
                 m_CurrentPrefabEntity != Entity.Null &&
                 m_ServiceVehicles == ButtonState.On &&
                 EntityManager.TryGetComponent(m_CurrentEntity, out Game.Common.Owner owner) &&
                 owner.m_Owner != Entity.Null)
             {
+                visible = true;
+                if (m_ToolSystem.actionMode.IsEditor())
+                {
+                    m_EditorVisible.Value = true;
+                }
+
+                m_CanResetOtherSubMeshes.Value = false;
                 m_CurrentColorSet.Value = new RecolorSet(meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet);
-                m_PreviouslySelectedEntity = m_CurrentEntity;
                 if (!EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<ServiceVehicleColor> serviceVehicleColorBuffer) ||
                      serviceVehicleColorBuffer.Length <= m_SubMeshData.Value.SubMeshIndex ||
                      meshColorBuffer.Length <= m_SubMeshData.Value.SubMeshIndex)
@@ -375,8 +395,23 @@ namespace Recolor.Systems.SelectedInfoPanel
                     EntityManager.RemoveComponent<ServiceVehicleColor>(owner.m_Owner);
                     EntityManager.RemoveComponent<CustomMeshColor>(m_CurrentEntity);
                     EntityManager.RemoveComponent<MeshColorRecord>(m_CurrentEntity);
-                    m_PreviouslySelectedEntity = Entity.Null;
+                    m_State = State.ColorChanged | State.UpdateButtonStates;
+                    return;
                 }
+            }
+
+            // Routes
+            else if ((m_State == State.EntityChanged ||
+                     (m_State & State.ColorChanged) == State.ColorChanged ||
+                     (m_State & State.UpdateButtonStates) == State.UpdateButtonStates) &&
+                     m_CurrentEntity != Entity.Null &&
+                     m_CurrentPrefabEntity != Entity.Null &&
+                     m_Route.Value == ButtonState.On &&
+                     EntityManager.TryGetComponent(m_CurrentEntity, out Game.Routes.CurrentRoute currentRoute) &&
+                     currentRoute.m_Route != Entity.Null)
+            {
+                m_CurrentColorSet.Value = new RecolorSet(meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet);
+                m_RouteColorChannel = GetRouteColorChannel(m_CurrentPrefabEntity);
 
                 visible = true;
                 if (m_ToolSystem.actionMode.IsEditor())
@@ -385,19 +420,6 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
 
                 m_CanResetOtherSubMeshes.Value = false;
-            }
-
-            // Routes
-            else if (m_PreviouslySelectedEntity != m_CurrentEntity &&
-                     m_CurrentEntity != Entity.Null &&
-                     m_CurrentPrefabEntity != Entity.Null &&
-                     m_Route.Value == ButtonState.On &&
-                     EntityManager.TryGetComponent(m_CurrentEntity, out Game.Routes.CurrentRoute currentRoute) &&
-                     currentRoute.m_Route != Entity.Null)
-            {
-                m_CurrentColorSet.Value = new RecolorSet(meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet);
-                m_PreviouslySelectedEntity = m_CurrentEntity;
-
                 if (!EntityManager.TryGetBuffer(currentRoute.m_Route, isReadOnly: true, out DynamicBuffer<RouteVehicleColor> routeVehicleColorBuffer) ||
                      routeVehicleColorBuffer.Length <= m_SubMeshData.Value.SubMeshIndex ||
                      meshColorBuffer.Length <= m_SubMeshData.Value.SubMeshIndex)
@@ -416,22 +438,15 @@ namespace Recolor.Systems.SelectedInfoPanel
                     EntityManager.RemoveComponent<RouteVehicleColor>(currentRoute.m_Route);
                     EntityManager.RemoveComponent<CustomMeshColor>(m_CurrentEntity);
                     EntityManager.RemoveComponent<MeshColorRecord>(m_CurrentEntity);
-                    m_PreviouslySelectedEntity = Entity.Null;
+                    m_State = State.ColorChanged | State.UpdateButtonStates;
+                    return;
                 }
-
-                m_RouteColorChannel = GetRouteColorChannel(m_CurrentPrefabEntity);
-
-                visible = true;
-                if (m_ToolSystem.actionMode.IsEditor())
-                {
-                    m_EditorVisible.Value = true;
-                }
-
-                m_CanResetOtherSubMeshes.Value = false;
             }
 
             // Colors Variation
-            else if (m_PreviouslySelectedEntity != m_CurrentEntity &&
+            else if ((m_State == State.EntityChanged ||
+                     (m_State & State.ColorChanged) == State.ColorChanged ||
+                     (m_State & State.UpdateButtonStates) == State.UpdateButtonStates) &&
                      m_CurrentEntity != Entity.Null &&
                      m_CurrentPrefabEntity != Entity.Null &&
                      m_Matching.Value == ButtonState.On &&
@@ -483,8 +498,6 @@ namespace Recolor.Systems.SelectedInfoPanel
                 m_CurrentColorSet.Value = new RecolorSet(colorSet);
                 m_CanResetSingleChannels.Value = true;
 
-                m_PreviouslySelectedEntity = m_CurrentEntity;
-
                 m_MatchesVanillaColorSet.Value = MatchesVanillaColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
 
                 m_MatchesSavedOnDisk.Value = MatchesSavedOnDiskColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
@@ -492,11 +505,12 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             // Single Instance
-            else if (m_PreviouslySelectedEntity != m_CurrentEntity &&
+            else if ((m_State == State.EntityChanged ||
+                     (m_State & State.ColorChanged) == State.ColorChanged ||
+                     (m_State & State.UpdateButtonStates) == State.UpdateButtonStates) &&
                      m_SingleInstance == ButtonState.On)
             {
                 m_CurrentColorSet.Value = new RecolorSet(meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet);
-                m_PreviouslySelectedEntity = m_CurrentEntity;
                 if (!EntityManager.TryGetBuffer(m_CurrentEntity, isReadOnly: true, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer) ||
                     meshColorRecordBuffer.Length <= m_SubMeshData.Value.SubMeshIndex ||
                     meshColorBuffer.Length <= m_SubMeshData.Value.SubMeshIndex)
@@ -535,7 +549,8 @@ namespace Recolor.Systems.SelectedInfoPanel
                     {
                         EntityManager.RemoveComponent<CustomMeshColor>(m_CurrentEntity);
                         EntityManager.RemoveComponent<MeshColorRecord>(m_CurrentEntity);
-                        m_PreviouslySelectedEntity = Entity.Null;
+                        m_State = State.ColorChanged | State.UpdateButtonStates;
+                        return;
                     }
                 }
 
@@ -545,6 +560,8 @@ namespace Recolor.Systems.SelectedInfoPanel
                     m_EditorVisible.Value = true;
                 }
             }
+
+            m_State = State.Static;
         }
     }
 }

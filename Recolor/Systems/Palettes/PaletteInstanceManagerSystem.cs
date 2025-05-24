@@ -213,7 +213,8 @@ namespace Recolor.Systems.Palettes
                         m_SIPColorFieldsSystem.AddBatchesUpdatedToSubElements(entities[i], buffer);
                         if (m_SIPColorFieldsSystem.CurrentEntity == entities[i])
                         {
-                            m_SIPColorFieldsSystem.ResetPreviouslySelectedEntity();
+                            m_SIPColorFieldsSystem.UpdatePalettes();
+                            m_SIPColorFieldsSystem.CurrentState = SIPColorFieldsSystem.State.ColorChanged;
                         }
 
                         break;
@@ -255,7 +256,8 @@ namespace Recolor.Systems.Palettes
 
                 if (foundAssignedPalette && m_SIPColorFieldsSystem.CurrentEntity == entities[i])
                 {
-                    m_SIPColorFieldsSystem.ResetPreviouslySelectedEntity();
+                    m_SIPColorFieldsSystem.UpdatePalettes();
+                    m_SIPColorFieldsSystem.CurrentState = SIPColorFieldsSystem.State.ColorChanged;
                 }
 
                 if (removed == assignedPalettes.Length)

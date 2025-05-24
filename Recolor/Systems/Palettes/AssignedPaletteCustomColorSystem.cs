@@ -203,7 +203,7 @@ namespace Recolor.Systems.Palettes
                     m_ColorPainterToolSystem.ChangeInstanceColorSet(new RecolorSet(colorSet), ref buffer, entity);
                     if (m_SIPColorFieldsSystem.CurrentEntity == entity)
                     {
-                        m_SIPColorFieldsSystem.ResetPreviouslySelectedEntity();
+                        m_SIPColorFieldsSystem.CurrentState = SIPColorFieldsSystem.State.ColorChanged;
                     }
                 }
             }

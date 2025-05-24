@@ -190,7 +190,7 @@ namespace Recolor.Systems.Tools
                     buffer.AddComponent<BatchesUpdated>(entity);
                 }
 
-                m_SelectedInfoPanelColorFieldsSystem.ResetPreviouslySelectedEntity();
+                m_SelectedInfoPanelColorFieldsSystem.CurrentState = State.ColorChanged | State.UpdateButtonStates;
             }
         }
 
@@ -222,7 +222,7 @@ namespace Recolor.Systems.Tools
                     buffer.AddComponent<BatchesUpdated>(entity);
                 }
 
-                m_SelectedInfoPanelColorFieldsSystem.ResetPreviouslySelectedEntity();
+                m_SelectedInfoPanelColorFieldsSystem.CurrentState = State.ColorChanged;
             }
         }
 

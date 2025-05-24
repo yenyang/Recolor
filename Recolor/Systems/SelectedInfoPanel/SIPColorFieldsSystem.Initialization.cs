@@ -57,9 +57,11 @@ namespace Recolor.Systems.SelectedInfoPanel
         };
 
 
+
         private ILog m_Log;
         private ToolSystem m_ToolSystem;
-        private Entity m_PreviouslySelectedEntity = Entity.Null;
+        private State m_State = State.NotVisible;
+        private Entity m_PreviousEntity = Entity.Null;
         private ClimateSystem m_ClimateSystem;
         private ValueBindingHelper<RecolorSet> m_CurrentColorSet;
         private ValueBindingHelper<bool[]> m_MatchesVanillaColorSet;
@@ -190,6 +192,37 @@ namespace Recolor.Systems.SelectedInfoPanel
             Route = 3,
         }
 
+        /// <summary>
+        /// State of Recolor SIP.
+        /// </summary>
+        public enum State
+        {
+            /// <summary>
+            /// Nothing to show.
+            /// </summary>
+            NotVisible = 0,
+
+            /// <summary>
+            /// Nothing is changing.
+            /// </summary>
+            Static = 1,
+
+            /// <summary>
+            /// Color changed. Need to update colors.
+            /// </summary>
+            ColorChanged = 2,
+
+            /// <summary>
+            /// Entity Changed. Need to update everything.
+            /// </summary>
+            EntityChanged = 4,
+
+            /// <summary>
+            /// Buttons need refreshing.
+            /// </summary>
+            UpdateButtonStates = 8,
+        }
+
         /// <inheritdoc/>
         public override GameMode gameMode => GameMode.GameOrEditor;
 
@@ -274,7 +307,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 m_PreferredScope = (Scope)newScope;
                 HandleScopeAndButtonStates();
-                m_PreviouslySelectedEntity = Entity.Null;
+                m_State = State.UpdateButtonStates;
             });
             CreateTrigger("ToggleShowHexaDecimals", () =>
             {
@@ -289,7 +322,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 m_SubMeshData.Value.SubMeshScope = (SubMeshData.SubMeshScopes)newScope;
                 HandleSubMeshScopes();
-                m_PreviouslySelectedEntity = Entity.Null;
+                m_State = State.UpdateButtonStates;
             });
             CreateTrigger("ToggleShowPaletteChoices", () =>
             {

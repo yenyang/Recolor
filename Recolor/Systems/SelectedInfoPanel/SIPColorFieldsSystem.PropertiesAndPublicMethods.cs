@@ -83,19 +83,20 @@ namespace Recolor.Systems.SelectedInfoPanel
             get { return m_CopiedColor; }
         }
 
+        /// <summary>
+        /// Gets or sets the current state.
+        /// </summary>
+        public State CurrentState
+        {
+            get { return m_State; }
+            set { m_State = value; }
+        }
+
         /// <inheritdoc/>
         protected override string group => Mod.Id;
 
         /// <inheritdoc/>
         protected override bool displayForUpgrades => true;
-
-        /// <summary>
-        /// Resets the previously selected entity.
-        /// </summary>
-        public void ResetPreviouslySelectedEntity()
-        {
-            m_PreviouslySelectedEntity = Entity.Null;
-        }
 
         /// <summary>
         /// Checks if the entire color set matches vanilla.

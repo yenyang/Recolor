@@ -317,13 +317,13 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_PaletteChooserData.Value.SetPrefabEntity(channel, prefabEntity);
             m_PaletteChooserData.Binding.TriggerUpdate();
             AssignPalette(channel, m_CurrentEntity, prefabEntity);
-            m_PreviouslySelectedEntity = Entity.Null;
+            m_State = State.ColorChanged;
         }
 
         private void RemovePaletteAction(int channel)
         {
             RemovePalette(channel, m_CurrentEntity);
-            m_PreviouslySelectedEntity = Entity.Null;
+            m_State = State.ColorChanged;
         }
 
         /// <summary>

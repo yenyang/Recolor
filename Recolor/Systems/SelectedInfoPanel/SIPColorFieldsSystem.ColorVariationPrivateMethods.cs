@@ -143,7 +143,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
             }
 
-            m_PreviouslySelectedEntity = Entity.Null;
+            m_State = State.UpdateButtonStates;
 
             EntityQuery prefabRefQuery = SystemAPI.QueryBuilder()
                 .WithAll<PrefabRef>()
@@ -232,7 +232,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
             }
 
-            m_PreviouslySelectedEntity = Entity.Null;
+            m_State = State.UpdateButtonStates;
         }
 
         private void TryDeleteSavedColorSetFile(AssetSeasonIdentifier assetSeasonIdentifier)
