@@ -168,6 +168,8 @@ namespace Recolor.Systems.Palettes
                 }
 
                 m_FullyInitialized = true;
+                m_UISystem.UpdatePaletteLibrary();
+                m_UISystem.UpdateSubcategoryLibrary();
                 m_SIPColorFieldsSystem.UpdatePalettes();
             }
         }

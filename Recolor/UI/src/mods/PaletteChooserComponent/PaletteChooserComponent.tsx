@@ -16,6 +16,8 @@ import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaC
 import { useLocalization } from "cs2/l10n";
 import locale from "../lang/en-US.json";
 import { DescriptionTooltip } from "mods/RecolorMainPanel/RecolorMainPanel";
+import { PaletteUIData } from "mods/Domain/PaletteAndSwatches/PaletteUIData";
+import { PaletteSubcategoryUIData } from "mods/Domain/PaletteAndSwatches/PaletteSubCategoryUIData";
 
 const uilStandard =                          "coui://uil/Standard/";
 const editSrc =                        uilStandard + "PencilPaper.svg";
@@ -27,6 +29,10 @@ const basicDropDownTheme = getModule('game-ui/common/input/dropdown/dropdown.mod
 const EditingPrefabEntity$ = bindValue<Entity>(mod.id, "EditingPrefabEntity");
 const ShowPaletteEditorPanel$ = bindValue<boolean>(mod.id, "ShowPaletteEditorMenu");
 const NonePaletteColors$ = bindValue<Color[]>(mod.id, "NonePaletteColors");
+const PaletteLibrary$ = bindValue<PaletteUIData[]>(mod.id, "PaletteLibrary");
+const SubcategoryLibrary$ = bindValue<PaletteSubcategoryUIData[]>(mod.id, "SubcategoryLibrary");
+const PaletteLibraryVersion$ = bindValue<number>(mod.id, "PaletteLibraryVersion");
+const SubcategoryLibraryVersion$ = bindValue<number>(mod.id, "SubcategoryLibraryVersion");
 
 export function assignPalette(channel : number, entity : Entity, eventSuffix?: string) {
     if (eventSuffix == undefined) eventSuffix = "";
@@ -39,6 +45,25 @@ export function removePalette(channel: number, eventSuffix?: string) {
     trigger(mod.id, "RemovePalette" + eventSuffix, channel);
 }
 
+function updatePaletteLookup(palettes :PaletteUIData[]) 
+{
+    let lookup = [];
+    for (let i=0; i<palettes.length; i++) 
+    {
+        lookup[palettes[i].PrefabEntity.index] = palettes[i];
+    }
+    return lookup;
+}
+
+function updateSubcategoriesLookup(subcategories :PaletteSubcategoryUIData[]) 
+{
+    let lookup = [];
+    for (let i=0; i<subcategories.length; i++) 
+    {
+        lookup[subcategories[i].PrefabEntity.index] = subcategories[i];
+    }
+    return lookup;
+}
 
 export const PaletteChooserComponent = (props: {channel : number, PaletteChooserData: PaletteChooserUIData, eventSuffix?:string, noneHasColor?:boolean}) => {
     const CopiedPalette = useValue(CopiedPalette$);
@@ -46,6 +71,27 @@ export const PaletteChooserComponent = (props: {channel : number, PaletteChooser
     const EditingPrefabEntity = useValue(EditingPrefabEntity$);    
     const ShowPaletteEditorPanel = useValue(ShowPaletteEditorPanel$);
     const NonePaletteColors = useValue(NonePaletteColors$);
+    const PaletteLibrary = useValue(PaletteLibrary$);
+    const SubcategoryLibrary = useValue(SubcategoryLibrary$);
+    const PaletteLibraryVersion = useValue(PaletteLibraryVersion$);
+    const SubcategoryLibraryVersion = useValue(SubcategoryLibraryVersion$);
+
+    let [PaletteLookup, setPaletteLookup] = useState(updatePaletteLookup(PaletteLibrary));    
+    let [SubcategoriesLookup, setSubcategoriesLookup] = useState(updateSubcategoriesLookup(SubcategoryLibrary));
+    let [PalettesVersion, setPalettesVersion] = useState(PaletteLibraryVersion);
+    let [SubcategoriesVersion, setSubcategoriesVersion] = useState(SubcategoryLibraryVersion);
+
+    if (PalettesVersion !== PaletteLibraryVersion) 
+    {
+        setPaletteLookup(updatePaletteLookup(PaletteLibrary));
+        setPalettesVersion(PaletteLibraryVersion);
+    }
+
+    if (SubcategoriesVersion !== SubcategoriesVersion) 
+    {
+        setSubcategoriesLookup(updateSubcategoriesLookup(SubcategoryLibrary));
+        setSubcategoriesVersion(SubcategoryLibraryVersion);
+    }
 
     const { translate } = useLocalization();
 
@@ -61,20 +107,44 @@ export const PaletteChooserComponent = (props: {channel : number, PaletteChooser
     }   
 
     function GetCurrentSwatches() : JSX.Element {
-        for (let i=0; i<props.PaletteChooserData.DropdownItems[props.channel].length; i++) 
+        if (PaletteLookup[props.PaletteChooserData.SelectedPaletteEntities[props.channel].index] != undefined &&
+            entityEquals(PaletteLookup[props.PaletteChooserData.SelectedPaletteEntities[props.channel].index].PrefabEntity,  props.PaletteChooserData.SelectedPaletteEntities[props.channel])) 
         {
-            for (let j=0; j<props.PaletteChooserData.DropdownItems[props.channel][i].Palettes.length; j++) 
-            {
-                if (entityEquals(props.PaletteChooserData.DropdownItems[props.channel][i].Palettes[j].PrefabEntity, props.PaletteChooserData.SelectedPaletteEntities[props.channel])) 
-                {
-                    return <PaletteBoxComponent Swatches={props.PaletteChooserData.DropdownItems[props.channel][i].Palettes[j].Swatches} totalWidth={80}></PaletteBoxComponent>
-                }
-            }
+            return <PaletteBoxComponent Swatches={PaletteLookup[props.PaletteChooserData.SelectedPaletteEntities[props.channel].index].Swatches} totalWidth={80}></PaletteBoxComponent>
         }
 
         return <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.largeDropdownText)} style={getStyle()}>{translate("Recolor.SECTION_TITLE[None]" , locale["Recolor.SECTION_TITLE[None]"])}</div>;
     } 
 
+    function GetDropDown(prefabEntity: Entity) 
+    {
+        if (PaletteLookup[prefabEntity.index] != undefined &&
+            entityEquals(PaletteLookup[prefabEntity.index].PrefabEntity,  prefabEntity)) 
+        {
+            let Palette = PaletteLookup[prefabEntity.index];
+            return (
+                <DropdownItem value={prefabEntity} className={basicDropDownTheme.dropdownItem} selected={entityEquals(props.PaletteChooserData.SelectedPaletteEntities[props.channel],Palette.PrefabEntity)} onChange={() => {assignPalette(props.channel, Palette.PrefabEntity, props.eventSuffix);}}>
+                        <PaletteBoxComponent Swatches={Palette.Swatches} totalWidth={80} tooltip={DescriptionTooltip(translate(Palette.NameKey, Palette.Name), translate(Palette.DescriptionKey))}></PaletteBoxComponent>
+                </DropdownItem>
+            );
+        }
+
+        if (SubcategoriesLookup[prefabEntity.index] != undefined &&
+            entityEquals(SubcategoriesLookup[prefabEntity.index].PrefabEntity,  prefabEntity)) 
+        {
+            let Subcategory = SubcategoriesLookup[prefabEntity.index];
+            return (
+                <DropdownItem value={Subcategory} className={basicDropDownTheme.dropdownItem} closeOnSelect={false} >
+                    <Tooltip tooltip={translate("Recolor.Subcategory.DESCRIPTION["+Subcategory.Subcategory+"]")}>
+                        <div className={classNames(ColorFieldTheme.colorField, boxStyles.subcategory, boxStyles.centered, styles.dropdownText)}>{translate("Recolor.Subcategory.NAME["+Subcategory.Subcategory+"]" ,Subcategory.Subcategory)}</div>
+                    </Tooltip>
+                </DropdownItem>
+            )
+        }
+
+
+        return <></>
+    }
 
     return (
         <>
@@ -89,20 +159,13 @@ export const PaletteChooserComponent = (props: {channel : number, PaletteChooser
                                         <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.largeDropdownText)} style={getStyle()}>{translate("Recolor.SECTION_TITLE[None]", locale["Recolor.SECTION_TITLE[None]"])}</div>
                                     </DropdownItem>
                                     {
-                                    props.PaletteChooserData.DropdownItems[props.channel].map((Subcategories) => (
+
+                                    props.PaletteChooserData.DropdownItems[props.channel].map((prefabEntity) => (
                                         <>
-                                            <DropdownItem value={Subcategories} className={basicDropDownTheme.dropdownItem} closeOnSelect={false} >
-                                                <Tooltip tooltip={translate("Recolor.Subcategory.DESCRIPTION["+Subcategories.Subcategory+"]")}>
-                                                    <div className={classNames(ColorFieldTheme.colorField, boxStyles.subcategory, boxStyles.centered, styles.dropdownText)}>{translate("Recolor.Subcategory.NAME["+Subcategories.Subcategory+"]" ,Subcategories.Subcategory)}</div>
-                                                </Tooltip>
-                                            </DropdownItem>
-                                            {Subcategories.Palettes.map((Palette) => (
-                                                <DropdownItem value={Palette} className={basicDropDownTheme.dropdownItem} selected={entityEquals(props.PaletteChooserData.SelectedPaletteEntities[props.channel],Palette.PrefabEntity)} onChange={() => {assignPalette(props.channel, Palette.PrefabEntity, props.eventSuffix);}}>
-                                                    <PaletteBoxComponent Swatches={Palette.Swatches} totalWidth={80} tooltip={DescriptionTooltip(translate(Palette.NameKey, Palette.Name), translate(Palette.DescriptionKey))}></PaletteBoxComponent>
-                                                </DropdownItem>
-                                            ))}
+                                            {GetDropDown(prefabEntity)}
                                         </>
-                                    ))}
+                                    ))
+                                    }
                                 </FocusDisabled>
                             }
                         >

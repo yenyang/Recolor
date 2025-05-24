@@ -35,6 +35,7 @@ namespace Recolor.Systems.Palettes
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
         private PrefabSystem m_PrefabSystem;
         private ModificationEndBarrier m_Barrier;
+        private PalettesUISystem m_PalettesUISystem;
 
         /// <summary>
         /// Creates or updates a Palette Instance Entity.
@@ -111,6 +112,7 @@ namespace Recolor.Systems.Palettes
             m_Barrier = World.GetOrCreateSystemManaged<ModificationEndBarrier>();
             m_SIPColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
             m_PaletteInstanceMap = new NativeHashMap<Entity, Entity>(0, Allocator.Persistent);
+            m_PalettesUISystem = World.GetOrCreateSystemManaged<PalettesUISystem>();
 
             m_PaletteInstanceArchetype = EntityManager.CreateArchetype(ComponentType.ReadWrite<Swatch>(), ComponentType.ReadWrite<PrefabRef>());
 
@@ -256,6 +258,7 @@ namespace Recolor.Systems.Palettes
 
                 if (foundAssignedPalette && m_SIPColorFieldsSystem.CurrentEntity == entities[i])
                 {
+                    m_PalettesUISystem.UpdatePaletteLibrary();
                     m_SIPColorFieldsSystem.UpdatePalettes();
                     m_SIPColorFieldsSystem.CurrentState = SIPColorFieldsSystem.State.ColorChanged;
                 }

@@ -113,6 +113,45 @@ namespace Recolor.Systems.Palettes
             }
         }
 
+        /// <summary>
+        /// Updates the full Palette Library.
+        /// </summary>
+        public void UpdatePaletteLibrary()
+        {
+            NativeArray<Entity> palettes = m_PaletteQuery.ToEntityArray(Allocator.Temp);
+            List<PaletteUIData> paletteUIDatas = new List<PaletteUIData>();
+            for (int i = 0; i < palettes.Length; i++)
+            {
+                Entity palettePrefabEntity = palettes[i];
+                if (!m_PrefabSystem.TryGetPrefab(palettePrefabEntity, out PrefabBase prefabBase1) ||
+                    prefabBase1 is not PalettePrefab)
+                {
+                    continue;
+                }
+
+                PalettePrefab palettePrefabBase = prefabBase1 as PalettePrefab;
+
+                if (!EntityManager.TryGetBuffer(palettePrefabEntity, isReadOnly: true, out DynamicBuffer<SwatchData> swatches) ||
+                    swatches.Length < 2)
+                {
+                    continue;
+                }
+
+                SwatchUIData[] swatchData = new SwatchUIData[swatches.Length];
+                for (int j = 0; j < swatches.Length; j++)
+                {
+                    swatchData[j] = new SwatchUIData(swatches[j]);
+                }
+
+                paletteUIDatas.Add(new PaletteUIData(palettePrefabEntity, swatchData, palettePrefabBase.name));
+            }
+
+            m_PaletteLibrary.Value = paletteUIDatas.ToArray();
+            m_PaletteLibrary.Binding.TriggerUpdate();
+            m_PaletteLibraryVersion.Value = m_PaletteLibraryVersion + 1;
+            m_SIPColorFieldsSystem.CurrentState = SIPColorFieldsSystem.State.EntityChanged;
+        }
+
         private void GenerateNewPalette()
         {
             m_ShowPaletteEditorPanel.Value = true;
@@ -196,7 +235,7 @@ namespace Recolor.Systems.Palettes
                         Path.Combine(m_PalettePrefabsFolder, palettePrefabBase.name, $"{nameof(PalettePrefab)}-{palettePrefabBase.name}.json"),
                         JsonConvert.SerializeObject(palettePrefabSerializeFormat, Formatting.Indented, settings: new JsonSerializerSettings() { ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore }));
                     m_Log.Info($"{nameof(PalettesUISystem)}.{nameof(OnCreate)} Sucessfully created, initialized, and saved prefab {nameof(PalettePrefab)}:{palettePrefabBase.name}!");
-                    m_SIPColorFieldsSystem.UpdatePalettes();
+                    UpdatePaletteLibrary();
 
                     if (m_LocalizationUIDatas.Value.Length > (int)MenuType.Palette)
                     {
@@ -335,6 +374,7 @@ namespace Recolor.Systems.Palettes
                 }
 
                 m_SIPColorFieldsSystem.UpdatePalettes();
+                UpdatePaletteLibrary();
             }
 
             m_ShowPaletteEditorPanel.Value = false;

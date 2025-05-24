@@ -8,14 +8,13 @@ namespace Recolor.Domain.Palette
     using Recolor.Domain.Palette.Prefabs;
     using System.Collections.Generic;
     using Unity.Entities;
-    using Unity.Mathematics;
 
     /// <summary>
     /// A class for handing dropdown items, subcategories, and palettes for palette chooser.
     /// </summary>
     public class PaletteChooserUIData
     {
-        public PaletteSubcategoryUIData[][] m_DropdownItems;
+        public Entity[][] m_DropdownItems;
         public Entity[] m_SelectedPaletteEntities;
 
         /// <summary>
@@ -23,7 +22,7 @@ namespace Recolor.Domain.Palette
         /// </summary>
         public PaletteChooserUIData()
         {
-            m_DropdownItems = new PaletteSubcategoryUIData[3][];
+            m_DropdownItems = new Entity[3][];
             m_SelectedPaletteEntities = new Entity[3] { Entity.Null, Entity.Null, Entity.Null };
         }
 
@@ -31,16 +30,20 @@ namespace Recolor.Domain.Palette
         /// Initializes a new instance of the <see cref="PaletteChooserUIData"/> class.
         /// </summary>
         /// <param name="keyValuePairs">Dictionary of subcategorys and palettes.</param>
-        public PaletteChooserUIData(Dictionary<string, List<PaletteUIData>> keyValuePairs)
+        public PaletteChooserUIData(Dictionary<PaletteSubcategoryUIData, List<Entity>> keyValuePairs)
         {
-            m_DropdownItems = new PaletteSubcategoryUIData[3][];
+            m_DropdownItems = new Entity[3][];
             for (int i = 0; i < 3; i++)
             {
-                m_DropdownItems[i] = new PaletteSubcategoryUIData[keyValuePairs.Count];
+                m_DropdownItems[i] = new Entity[CalculateLength(keyValuePairs)];
                 int j = 0;
-                foreach (KeyValuePair<string, List<PaletteUIData>> keyValuePair in keyValuePairs)
+                foreach (KeyValuePair<PaletteSubcategoryUIData, List<Entity>> keyValuePair in keyValuePairs)
                 {
-                    m_DropdownItems[i][j++] = new PaletteSubcategoryUIData(keyValuePair.Key, keyValuePair.Value.ToArray());
+                    m_DropdownItems[i][j++] = keyValuePair.Key.m_PrefabEntity;
+                    for (int k = 0; k < keyValuePair.Value.Count; k++)
+                    {
+                        m_DropdownItems[i][j++] = keyValuePair.Value[k];
+                    }
                 }
             }
 
@@ -52,16 +55,20 @@ namespace Recolor.Domain.Palette
         /// </summary>
         /// <param name="keyValuePairs">Dictionary of subcategorys and palettes.</param>
         /// <param name="assignedPalettes">Buffer of Assigned palettes.</param>
-        public PaletteChooserUIData(Dictionary<string, List<PaletteUIData>> keyValuePairs, DynamicBuffer<AssignedPalette> assignedPalettes)
+        public PaletteChooserUIData(Dictionary<PaletteSubcategoryUIData, List<Entity>> keyValuePairs, DynamicBuffer<AssignedPalette> assignedPalettes)
         {
-            m_DropdownItems = new PaletteSubcategoryUIData[3][];
+            m_DropdownItems = new Entity[3][];
             for (int i = 0; i < 3; i++)
             {
-                m_DropdownItems[i] = new PaletteSubcategoryUIData[keyValuePairs.Count];
+                m_DropdownItems[i] = new Entity[CalculateLength(keyValuePairs)];
                 int j = 0;
-                foreach (KeyValuePair<string, List<PaletteUIData>> keyValuePair in keyValuePairs)
+                foreach (KeyValuePair<PaletteSubcategoryUIData, List<Entity>> keyValuePair in keyValuePairs)
                 {
-                    m_DropdownItems[i][j++] = new PaletteSubcategoryUIData(keyValuePair.Key, keyValuePair.Value.ToArray());
+                    m_DropdownItems[i][j++] = keyValuePair.Key.m_PrefabEntity;
+                    for (int k = 0; k < keyValuePair.Value.Count; k++)
+                    {
+                        m_DropdownItems[i][j++] = keyValuePair.Value[k];
+                    }
                 }
             }
 
@@ -87,7 +94,7 @@ namespace Recolor.Domain.Palette
         /// <summary>
         /// Gets or sets the dropdown items.
         /// </summary>
-        public PaletteSubcategoryUIData[][] DropdownItems
+        public Entity[][] DropdownItems
         {
             get { return m_DropdownItems; }
             set { m_DropdownItems = value; }
@@ -128,6 +135,18 @@ namespace Recolor.Domain.Palette
             }
 
             return count;
+        }
+
+        private int CalculateLength(Dictionary<PaletteSubcategoryUIData, List<Entity>> keyValuePairs)
+        {
+            int length = 0;
+            foreach (KeyValuePair<PaletteSubcategoryUIData, List<Entity>> keyValuePair in keyValuePairs)
+            {
+                length++;
+                length += keyValuePair.Value.Count;
+            }
+
+            return length;
         }
 
     }

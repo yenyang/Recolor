@@ -60,9 +60,11 @@ namespace Recolor.Systems.SelectedInfoPanel
             NativeArray<Entity> palettePrefabEntities = m_PaletteQuery.ToEntityArray(Allocator.Temp);
             Entity[] selectedEntities = paletteChooserBinding.Value.SelectedPaletteEntities;
             Entity[] newSelectedEntities = new Entity[3] { Entity.Null, Entity.Null, Entity.Null };
-            Dictionary<string, List<PaletteUIData>> paletteChooserBuilder = new Dictionary<string, List<PaletteUIData>>
+
+            PaletteSubcategoryUIData noSubcategoryGroup = new PaletteSubcategoryUIData(NoSubcategoryName, Entity.Null);
+            Dictionary<PaletteSubcategoryUIData, List<Entity>> paletteChooserBuilder = new Dictionary<PaletteSubcategoryUIData, List<Entity>>
             {
-                { NoSubcategoryName, new List<PaletteUIData>() },
+                { noSubcategoryGroup, new List<Entity>() },
             };
             foreach (Entity palettePrefabEntity in palettePrefabEntities)
             {
@@ -91,26 +93,35 @@ namespace Recolor.Systems.SelectedInfoPanel
                     continue;
                 }
 
-                SwatchUIData[] swatchData = new SwatchUIData[swatches.Length];
-                for (int i = 0; i < swatches.Length; i++)
-                {
-                    swatchData[i] = new SwatchUIData(swatches[i]);
-                }
-
                 if (!EntityManager.TryGetComponent(palettePrefabEntity, out PaletteCategoryData categoryData) ||
                     categoryData.m_SubCategory == Entity.Null)
                 {
-                    paletteChooserBuilder[NoSubcategoryName].Add(new PaletteUIData(palettePrefabEntity, swatchData, palettePrefabBase.name));
+                    paletteChooserBuilder[noSubcategoryGroup].Add(palettePrefabEntity);
                 }
                 else if (m_PrefabSystem.TryGetPrefab(categoryData.m_SubCategory, out PrefabBase prefabBase) &&
                            prefabBase is PaletteSubCategoryPrefab)
                 {
-                    if (!paletteChooserBuilder.ContainsKey(prefabBase.name))
+                    bool foundSubcategory = false;
+                    foreach (KeyValuePair<PaletteSubcategoryUIData, List<Entity>> keyValuePair in paletteChooserBuilder)
                     {
-                        paletteChooserBuilder.Add(prefabBase.name, new List<PaletteUIData>());
+                        if (keyValuePair.Key.m_PrefabEntity == categoryData.m_SubCategory)
+                        {
+                            paletteChooserBuilder[keyValuePair.Key].Add(palettePrefabEntity);
+                            foundSubcategory = true;
+                            break;
+                        }
                     }
 
-                    paletteChooserBuilder[prefabBase.name].Add(new PaletteUIData(palettePrefabEntity, swatchData, palettePrefabBase.name));
+                    if (!foundSubcategory)
+                    {
+                        PaletteSubcategoryUIData subcategoryGroup = new PaletteSubcategoryUIData(prefabBase.name, categoryData.m_SubCategory);
+                        if (!paletteChooserBuilder.ContainsKey(subcategoryGroup))
+                        {
+                            paletteChooserBuilder.Add(subcategoryGroup, new List<Entity>());
+                        }
+
+                        paletteChooserBuilder[subcategoryGroup].Add(palettePrefabEntity);
+                    }
                 }
 
                 for (int i = 0; i < Math.Min(selectedEntities.Length, 3); i++)

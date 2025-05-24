@@ -80,6 +80,8 @@ const EditingPrefabEntity$ = bindValue<Entity>(mod.id, "EditingPrefabEntity");
 const ShowPaletteEditorPanel$ = bindValue<boolean>(mod.id, "ShowPaletteEditorMenu");
 const CopiedPaletteSet$ = bindValue<Entity[]>(mod.id, "CopiedPaletteSet");
 const CopiedPalette$ = bindValue<Entity>(mod.id, "CopiedPalette");
+const PaletteLibraryVersion$ = bindValue<number>(mod.id, "PaletteLibraryVersion");
+const SubcategoryLibraryVersion$ = bindValue<number>(mod.id, "SubcategoryLibraryVersion");
 
 export const InfoRowTheme: Theme | any = getModule(
 	"game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss",
@@ -149,7 +151,9 @@ export const RecolorMainPanelComponent = () => {
     const EditingPrefabEntity = useValue(EditingPrefabEntity$);
     const ShowPaletteEditorPanel = useValue(ShowPaletteEditorPanel$);
     const CopiedPaletteSet = useValue(CopiedPaletteSet$);
-    const CopiedPalette = useValue(CopiedPalette$);
+    const CopiedPalette = useValue(CopiedPalette$);    
+    const PaletteLibraryVersion = useValue(PaletteLibraryVersion$);
+    const SubcategoryLibraryVersion = useValue(SubcategoryLibraryVersion$);
     
     // translation handling. Translates using locale keys that are defined in C# or fallback string from en-US.json.
     const { translate } = useLocalization();

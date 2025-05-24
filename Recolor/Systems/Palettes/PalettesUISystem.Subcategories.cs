@@ -40,6 +40,32 @@ namespace Recolor.Systems.Palettes
             }
         }
 
+        /// <summary>
+        /// Updates the full Subcategory Library.
+        /// </summary>
+        public void UpdateSubcategoryLibrary()
+        {
+            PaletteSubcategoryUIData noSubcategoryGroup = new PaletteSubcategoryUIData(SIPColorFieldsSystem.NoSubcategoryName, Entity.Null);
+            NativeArray<Entity> subcategories = m_SubcategoryQuery.ToEntityArray(Allocator.Temp);
+            List<PaletteSubcategoryUIData> subcategoryUIDatas = new List<PaletteSubcategoryUIData>() { noSubcategoryGroup };
+            for (int i = 0; i < subcategories.Length; i++)
+            {
+                Entity subcategoryPrefabEntity = subcategories[i];
+                if (!m_PrefabSystem.TryGetPrefab(subcategoryPrefabEntity, out PrefabBase prefabBase1) ||
+                    prefabBase1 is not PaletteSubCategoryPrefab)
+                {
+                    continue;
+                }
+
+                subcategoryUIDatas.Add(new PaletteSubcategoryUIData(prefabBase1.name, subcategoryPrefabEntity));
+            }
+
+            m_SubcategoryLibrary.Value = subcategoryUIDatas.ToArray();
+            m_SubcategoryLibrary.Binding.TriggerUpdate();
+            m_SubcategoryLibraryVersion.Value = m_SubcategoryLibraryVersion.Value + 1;
+            m_SIPColorFieldsSystem.CurrentState = SIPColorFieldsSystem.State.EntityChanged;
+        }
+
         private void GenerateNewSubcategory()
         {
             m_ShowSubcategoryEditorPanel.Value = true;
@@ -141,6 +167,7 @@ namespace Recolor.Systems.Palettes
                     m_PaletteCategories.Value[(int)MenuType.Palette] = paletteSubcategoryPrefabBase.m_Category;
                     m_PaletteCategories.Binding.TriggerUpdate();
                     m_ShowSubcategoryEditorPanel.Value = false;
+                    UpdateSubcategoryLibrary();
 
                     if (m_LocalizationUIDatas.Value.Length > (int)MenuType.Subcategory)
                     {
@@ -218,6 +245,7 @@ namespace Recolor.Systems.Palettes
                 }
 
                 UpdateSubcategories(m_PaletteCategories.Value[(int)MenuType.Palette]);
+                UpdateSubcategoryLibrary();
                 m_SIPColorFieldsSystem.UpdatePalettes();
                 if (m_SelectedSubcategory == prefabBase.name)
                 {

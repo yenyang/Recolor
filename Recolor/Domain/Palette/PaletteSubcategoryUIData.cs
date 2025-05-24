@@ -12,7 +12,7 @@ namespace Recolor.Domain.Palette
     public class PaletteSubcategoryUIData
     {
         public string m_Subcategory;
-        public PaletteUIData[] m_Palettes;
+        public Entity m_PrefabEntity;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PaletteSubcategoryUIData"/> class.
@@ -26,10 +26,10 @@ namespace Recolor.Domain.Palette
         /// </summary>
         /// <param name="subcategory">Subcategory prefab name.</param>
         /// <param name="paletteUIDatas">Array of palette ui data.</param>
-        public PaletteSubcategoryUIData(string subcategory, PaletteUIData[] paletteUIDatas)
+        public PaletteSubcategoryUIData(string subcategory, Entity prefabEntity)
         {
             m_Subcategory = subcategory;
-            m_Palettes = paletteUIDatas;
+            m_PrefabEntity = prefabEntity;
         }
 
         /// <summary>
@@ -42,12 +42,12 @@ namespace Recolor.Domain.Palette
         }
 
         /// <summary>
-        /// Gets or sets the palettes.
+        /// Gets or sets the prefab entity.
         /// </summary>
-        public PaletteUIData[] Palettes
+        public Entity PrefabEntity
         {
-            get { return m_Palettes; }
-            set { m_Palettes = value; }
+            get { return m_PrefabEntity; }
+            set { m_PrefabEntity = value; }
         }
     }
 }

@@ -1,7 +1,6 @@
-import { PaletteUIData } from "./PaletteUIData";
-import { SwatchUIData } from "./SwatchUIData";
+import { Entity } from "cs2/bindings";
 
 export interface PaletteSubcategoryUIData {
     Subcategory : string,
-    Palettes : PaletteUIData[],
+    PrefabEntity : Entity,
 }

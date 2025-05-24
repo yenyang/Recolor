@@ -76,6 +76,10 @@ namespace Recolor.Systems.Palettes
         private ValueBindingHelper<bool> m_ShowPaletteChooserDuringPlacement;
         private ValueBindingHelper<Color[]> m_NonePaletteColors;
         private ValueBindingHelper<bool> m_MinimizePaletteChooserDuringPlacement;
+        private ValueBindingHelper<PaletteUIData[]> m_PaletteLibrary;
+        private ValueBindingHelper<PaletteSubcategoryUIData[]> m_SubcategoryLibrary;
+        private ValueBindingHelper<int> m_PaletteLibraryVersion;
+        private ValueBindingHelper<int> m_SubcategoryLibraryVersion;
 
         /// <summary>
         /// Enum for handing common events for different menus.
@@ -174,6 +178,9 @@ namespace Recolor.Systems.Palettes
             }
         }
 
+        /// <summary>
+        /// Removes all palettes and subcategorie prefabs.
+        /// </summary>
         public void DeleteAllPalettesAndSubcategories()
         {
             NativeArray<Entity> palettePrefabEntities = m_PaletteQuery.ToEntityArray(Allocator.Temp);
@@ -240,6 +247,10 @@ namespace Recolor.Systems.Palettes
             m_ShowPaletteChooserDuringPlacement = CreateBinding("ShowPaletteChooserDuringPlacement", Mod.Instance.Settings.ShowPalettesOptionDuringPlacement);
             m_NonePaletteColors = CreateBinding("NonePaletteColors", new Color[3] { DefaultNoneColor, DefaultNoneColor, DefaultNoneColor });
             m_MinimizePaletteChooserDuringPlacement = CreateBinding("MinimizeDuringPlacement", Mod.Instance.Settings.MinimizePaletteChooserDuringPlacement || Mod.Instance.Settings.AlwaysMinimizedAtGameStart);
+            m_PaletteLibrary = CreateBinding("PaletteLibrary", new PaletteUIData[0]);
+            m_SubcategoryLibrary = CreateBinding("SubcategoryLibrary", new PaletteSubcategoryUIData[0]);
+            m_PaletteLibraryVersion = CreateBinding("PaletteLibraryVersion", 0);
+            m_SubcategoryLibraryVersion = CreateBinding("SubcategoryLibraryVersion", 0);
 
             // Listen to trigger event that are sent from the UI to the C#.
             CreateTrigger("TrySavePalette", TrySavePalette);
