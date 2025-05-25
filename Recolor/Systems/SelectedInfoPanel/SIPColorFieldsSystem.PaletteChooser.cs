@@ -282,6 +282,9 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 EntityManager.AddComponent<BatchesUpdated>(instanceEntity);
             }
+
+            m_PaletteChooserData.Value.SetPrefabEntity(channel, prefabEntity);
+            m_PaletteChooserData.Binding.TriggerUpdate();
         }
 
         /// <summary>
@@ -316,6 +319,9 @@ namespace Recolor.Systems.SelectedInfoPanel
                     return;
                 }
             }
+
+            m_PaletteChooserData.Value.SetPrefabEntity(channel, Entity.Null);
+            m_PaletteChooserData.Binding.TriggerUpdate();
         }
 
         private bool FilterForCategories(Entity palettePrefabEntity)
@@ -325,8 +331,6 @@ namespace Recolor.Systems.SelectedInfoPanel
 
         private void AssignPaletteAction(int channel, Entity prefabEntity)
         {
-            m_PaletteChooserData.Value.SetPrefabEntity(channel, prefabEntity);
-            m_PaletteChooserData.Binding.TriggerUpdate();
             AssignPalette(channel, m_CurrentEntity, prefabEntity);
             m_State = State.ColorChanged;
         }

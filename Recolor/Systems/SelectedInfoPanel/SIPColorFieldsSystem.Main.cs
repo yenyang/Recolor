@@ -16,6 +16,7 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Colossal.UI.Binding;
     using Game;
     using Game.Common;
+    using Game.Debug;
     using Game.Input;
     using Game.Objects;
     using Game.Prefabs;
@@ -279,13 +280,29 @@ namespace Recolor.Systems.SelectedInfoPanel
                 ColorRefresh();
             }
 
+            if (m_State == State.Static &&
+               (m_CurrentColorSet.Value.Channels[0] != meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet[0] ||
+                m_CurrentColorSet.Value.Channels[1] != meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet[1] ||
+                m_CurrentColorSet.Value.Channels[2] != meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet[2]))
+            {
+                m_CurrentColorSet.Value = new RecolorSet(meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet);
+                m_State = State.ColorChanged;
+            }
+
             if (m_State == State.Static)
             {
                 return;
             }
 
+            if ((m_State & State.ColorChangeScheduled) == State.ColorChangeScheduled)
+            {
+                m_State &= ~State.ColorChangeScheduled;
+                m_State |= State.ColorChanged;
+                return;
+            }
+
             if ((m_State & State.UpdateButtonStates) == State.UpdateButtonStates ||
-                m_State == State.EntityChanged)
+                (m_State & State.EntityChanged) == State.EntityChanged)
             {
                 HandleScopeAndButtonStates();
             }
@@ -294,7 +311,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 subMeshBuffer1.Length > 0)
             {
                if ((m_State & State.UpdateButtonStates) == State.UpdateButtonStates ||
-                   m_State == State.EntityChanged)
+                   (m_State & State.EntityChanged) == State.EntityChanged)
                 {
                     m_SubMeshData.Value.SubMeshIndex = Mathf.Clamp(m_SubMeshData.Value.SubMeshIndex, 0, subMeshBuffer1.Length - 1);
                     m_SubMeshData.Value.SubMeshLength = subMeshBuffer1.Length;
@@ -315,7 +332,7 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             ColorSet originalMeshColor;
             if (EntityManager.TryGetComponent(m_CurrentEntity, out Game.Objects.Tree tree) &&
-                m_State == State.EntityChanged)
+                 (m_State & State.EntityChanged) == State.EntityChanged)
             {
                 if (tree.m_State == Game.Objects.TreeState.Dead || tree.m_State == Game.Objects.TreeState.Collected || tree.m_State == Game.Objects.TreeState.Stump)
                 {
@@ -348,19 +365,19 @@ namespace Recolor.Systems.SelectedInfoPanel
                 originalMeshColor = meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet;
             }
 
-            if (m_State == State.EntityChanged &&
+            if ( (m_State & State.EntityChanged) == State.EntityChanged &&
                 m_ResidentialBuildingSelected.Value != EntityManager.HasComponent<Game.Buildings.ResidentialProperty>(m_CurrentEntity))
             {
                 m_ResidentialBuildingSelected.Value = EntityManager.HasComponent<Game.Buildings.ResidentialProperty>(m_CurrentEntity);
             }
 
-            if (m_State == State.EntityChanged)
+            if ( (m_State & State.EntityChanged) == State.EntityChanged)
             {
                 UpdatePalettes();
             }
 
             // Service Vehicles
-            if ((m_State == State.EntityChanged ||
+            if (( (m_State & State.EntityChanged) == State.EntityChanged ||
                 (m_State & State.ColorChanged) == State.ColorChanged ||
                 (m_State & State.UpdateButtonStates) == State.UpdateButtonStates) &&
                 m_CurrentEntity != Entity.Null &&
@@ -401,7 +418,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             // Routes
-            else if ((m_State == State.EntityChanged ||
+            else if (( (m_State & State.EntityChanged) == State.EntityChanged ||
                      (m_State & State.ColorChanged) == State.ColorChanged ||
                      (m_State & State.UpdateButtonStates) == State.UpdateButtonStates) &&
                      m_CurrentEntity != Entity.Null &&
@@ -444,7 +461,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             // Colors Variation
-            else if ((m_State == State.EntityChanged ||
+            else if (( (m_State & State.EntityChanged) == State.EntityChanged ||
                      (m_State & State.ColorChanged) == State.ColorChanged ||
                      (m_State & State.UpdateButtonStates) == State.UpdateButtonStates) &&
                      m_CurrentEntity != Entity.Null &&
@@ -505,7 +522,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             // Single Instance
-            else if ((m_State == State.EntityChanged ||
+            else if (( (m_State & State.EntityChanged) == State.EntityChanged ||
                      (m_State & State.ColorChanged) == State.ColorChanged ||
                      (m_State & State.UpdateButtonStates) == State.UpdateButtonStates) &&
                      m_SingleInstance == ButtonState.On)

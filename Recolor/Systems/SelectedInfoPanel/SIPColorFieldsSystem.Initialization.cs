@@ -221,6 +221,11 @@ namespace Recolor.Systems.SelectedInfoPanel
             /// Buttons need refreshing.
             /// </summary>
             UpdateButtonStates = 8,
+
+            /// <summary>
+            /// Color should change next frame.
+            /// </summary>
+            ColorChangeScheduled = 16,
         }
 
         /// <inheritdoc/>
