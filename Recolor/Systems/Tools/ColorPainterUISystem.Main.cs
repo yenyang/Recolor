@@ -60,11 +60,6 @@ namespace Recolor.Systems.Tools
             /// Pick a new color.
             /// </summary>
             Picker,
-
-            /// <summary>
-            /// AssignPalettes.
-            /// </summary>
-            AssignPalettes,
         }
 
         /// <summary>
@@ -177,6 +172,14 @@ namespace Recolor.Systems.Tools
         public int Radius
         {
             get { return m_Radius.Value; }
+        }
+
+        /// <summary>
+        /// Gets the selected palette entities for color painter tool.
+        /// </summary>
+        public Entity[] SelectedPaletteEntities
+        {
+            get { return m_PaletteChoicesPainterDatas.Value.SelectedPaletteEntities; }
         }
 
         /// <inheritdoc/>

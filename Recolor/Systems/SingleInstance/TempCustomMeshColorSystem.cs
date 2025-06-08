@@ -15,6 +15,7 @@ namespace Recolor.Systems.SingleInstance
     using Game.Tools;
     using Game.Vehicles;
     using Recolor.Domain;
+    using Recolor.Systems.SelectedInfoPanel;
     using Recolor.Systems.Tools;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
@@ -34,6 +35,7 @@ namespace Recolor.Systems.SingleInstance
         private ModificationEndBarrier m_Barrier;
         private ColorPainterToolSystem m_ColorPainterTool;
         private ToolSystem m_ToolSystem;
+        private SIPColorFieldsSystem m_SIPColorFieldsSystem;
         private ColorPainterUISystem m_UISystem;
 
         /// <inheritdoc/>
@@ -44,6 +46,8 @@ namespace Recolor.Systems.SingleInstance
             m_Log.Info($"{nameof(TempCustomMeshColorSystem)}.{nameof(OnCreate)}");
             m_Barrier = World.GetOrCreateSystemManaged<ModificationEndBarrier>();
             m_ColorPainterTool = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
+            m_SIPColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
+
             m_UISystem = World.GetOrCreateSystemManaged<ColorPainterUISystem>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_TempMeshColorQuery = SystemAPI.QueryBuilder()
@@ -75,6 +79,7 @@ namespace Recolor.Systems.SingleInstance
                 m_RaycastEntity = m_ColorPainterTool.RaycastEntity,
                 m_BuildingLookup = SystemAPI.GetComponentLookup<Building>(isReadOnly: true),
                 m_FilterType = m_UISystem.ColorPainterFilterType,
+                m_PalettesActive = m_SIPColorFieldsSystem.ShowPaletteChoices,
             };
             JobHandle jobHandle = tempCustomMeshColorJob.Schedule(m_TempMeshColorQuery, Dependency);
             m_Barrier.AddJobHandleForProducer(jobHandle);
@@ -109,6 +114,7 @@ namespace Recolor.Systems.SingleInstance
             public ColorPainterUISystem.FilterType m_FilterType;
             [ReadOnly]
             public ComponentLookup<Building> m_BuildingLookup;
+            public bool m_PalettesActive;
 
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
@@ -161,6 +167,7 @@ namespace Recolor.Systems.SingleInstance
                         }
                     }
                     else if (m_PainterToolActive &&
+                            !m_PalettesActive &&
                              m_State == ColorPainterToolSystem.State.Painting &&
                              m_MeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<MeshColor> originalMeshColor) &&
                            ((m_SelectionType == ColorPainterUISystem.SelectionType.Single &&

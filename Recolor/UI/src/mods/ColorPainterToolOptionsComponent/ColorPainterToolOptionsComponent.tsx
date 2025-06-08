@@ -70,7 +70,7 @@ const ShowHexaDecimals$ = bindValue<boolean>(mod.id, "ShowHexaDecimals");
 const ShowPaletteChoices$ = bindValue<ButtonState>(mod.id,"ShowPaletteChoices");
 const PainterColorSet$ = bindValue<RecolorSet>(mod.id, "PainterColorSet");
 
-const PaletteChooserDuringPlacementData$ = bindValue<PaletteChooserUIData>(mod.id, "PaletteChoicesPainter");
+const PaletteChooserPainterData$ = bindValue<PaletteChooserUIData>(mod.id, "PaletteChoicesPainter");
 const EditingPrefabEntity$ = bindValue<Entity>(mod.id, "EditingPrefabEntity");
 const ShowPaletteEditorPanel$ = bindValue<boolean>(mod.id, "ShowPaletteEditorMenu");
 const CopiedPaletteSet$ = bindValue<Entity[]>(mod.id, "CopiedPaletteSet");
@@ -126,7 +126,7 @@ export const ColorPainterToolOptionsComponent = () => {
     const toolActive = useValue(tool.activeTool$).id == "ColorPainterTool";     
     const ShowPaletteChoices = useValue(ShowPaletteChoices$);    
 
-    const PaletteChooserDuringPlacmeentData = useValue(PaletteChooserDuringPlacementData$);
+    const PaletteChooserPainterData = useValue(PaletteChooserPainterData$);
     const CopiedPalette = useValue(CopiedPalette$);
     const CopiedPaletteSet = useValue(CopiedPaletteSet$);
     const EditingPrefabEntity = useValue(EditingPrefabEntity$);
@@ -305,15 +305,15 @@ export const ColorPainterToolOptionsComponent = () => {
                                     <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Palette]",locale["Recolor.SECTION_TITLE[Palette]"])}>
                                     <div className={styles.rowGroup}>
                                                 <>
-                                                    { (PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[0].index != 0 || PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[1].index != 0 || PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[2].index != 0) && (
+                                                    { (PaletteChooserPainterData.SelectedPaletteEntities[0].index != 0 || PaletteChooserPainterData.SelectedPaletteEntities[1].index != 0 || PaletteChooserPainterData.SelectedPaletteEntities[2].index != 0) && (
                                                     <>
                                                         <VanillaComponentResolver.instance.ToolButton src={resetSrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                                                                                        tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ResetPalettesDuringPlacement]", locale["Recolor.TOOLTIP_DESCRIPTION[ResetPalettesDuringPlacement]"])}
+                                                                                                        tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ResetPaletteChoosersToNone]", locale["Recolor.TOOLTIP_DESCRIPTION[ResetPaletteChoosersToNone]"])}
                                                                                                         onSelect={() => { removePalette(0, EventSuffix); removePalette(1, EventSuffix); removePalette(2, EventSuffix);}}
                                                         />
                                                         <VanillaComponentResolver.instance.ToolButton src={copySrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                                                                                         tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[CopyPaletteSet]" ,locale["Recolor.TOOLTIP_DESCRIPTION[CopyPaletteSet]"])}
-                                                                                                        onSelect={() => { trigger(mod.id, "CopyPaletteSet", PaletteChooserDuringPlacmeentData.SelectedPaletteEntities)}}
+                                                                                                        onSelect={() => { trigger(mod.id, "CopyPaletteSet", PaletteChooserPainterData.SelectedPaletteEntities)}}
                                                         />
                                                     </>
                                                     )} 
@@ -334,7 +334,7 @@ export const ColorPainterToolOptionsComponent = () => {
                                     </VanillaComponentResolver.instance.Section>
                                     <VanillaComponentResolver.instance.Section>
                                             <FocusDisabled>
-                                            <PaletteChooserComponent channel={0} PaletteChooserData={PaletteChooserDuringPlacmeentData} eventSuffix={EventSuffix} noneHasColor={false}></PaletteChooserComponent>
+                                            <PaletteChooserComponent channel={0} PaletteChooserData={PaletteChooserPainterData} eventSuffix={EventSuffix} noneHasColor={false}></PaletteChooserComponent>
                                             <div className={styles.columnGroup}>
                                                 <VanillaComponentResolver.instance.ToolButton
                                                     src={swapSrc}
@@ -343,16 +343,16 @@ export const ColorPainterToolOptionsComponent = () => {
                                                     className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                                     onSelect={() => 
                                                     {
-                                                        let entity0 : Entity = PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[0];
-                                                        PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[1].index != 0 ? assignPalette(0, PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[1], EventSuffix) : removePalette(0, EventSuffix);
+                                                        let entity0 : Entity = PaletteChooserPainterData.SelectedPaletteEntities[0];
+                                                        PaletteChooserPainterData.SelectedPaletteEntities[1].index != 0 ? assignPalette(0, PaletteChooserPainterData.SelectedPaletteEntities[1], EventSuffix) : removePalette(0, EventSuffix);
                                                         entity0.index != 0 ? assignPalette(1, entity0, EventSuffix) : removePalette(1, EventSuffix);
                                                     }}
                                                 />
-                                                { (PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[0].index != 0 || PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[1].index != 0 || PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[2].index != 0 || CopiedPalette.index != 0)   ?
+                                                { (PaletteChooserPainterData.SelectedPaletteEntities[0].index != 0 || PaletteChooserPainterData.SelectedPaletteEntities[1].index != 0 || PaletteChooserPainterData.SelectedPaletteEntities[2].index != 0 || CopiedPalette.index != 0)   ?
                                                     <span className={styles.belowSwapButton}></span> : <span className={styles.belowSwapButtonSmall}></span>
                                                 }
                                             </div>
-                                            <PaletteChooserComponent channel={1} PaletteChooserData={PaletteChooserDuringPlacmeentData} eventSuffix={EventSuffix} noneHasColor={false}></PaletteChooserComponent>
+                                            <PaletteChooserComponent channel={1} PaletteChooserData={PaletteChooserPainterData} eventSuffix={EventSuffix} noneHasColor={false}></PaletteChooserComponent>
                                             <div className={styles.columnGroup}>
                                                 <VanillaComponentResolver.instance.ToolButton
                                                     src={swapSrc}
@@ -361,16 +361,16 @@ export const ColorPainterToolOptionsComponent = () => {
                                                     className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                                     onSelect={() => 
                                                     {
-                                                        let entity1 : Entity = PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[1];
-                                                        PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[2].index != 0 ? assignPalette(1, PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[2], EventSuffix) : removePalette(1, EventSuffix);
+                                                        let entity1 : Entity = PaletteChooserPainterData.SelectedPaletteEntities[1];
+                                                        PaletteChooserPainterData.SelectedPaletteEntities[2].index != 0 ? assignPalette(1, PaletteChooserPainterData.SelectedPaletteEntities[2], EventSuffix) : removePalette(1, EventSuffix);
                                                         entity1.index != 0 ? assignPalette(2, entity1, EventSuffix) : removePalette(2, EventSuffix);
                                                     }}
                                                 />
-                                                { (PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[0].index != 0 || PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[1].index != 0 || PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[2].index != 0 || CopiedPalette.index != 0)   ?
+                                                { (PaletteChooserPainterData.SelectedPaletteEntities[0].index != 0 || PaletteChooserPainterData.SelectedPaletteEntities[1].index != 0 || PaletteChooserPainterData.SelectedPaletteEntities[2].index != 0 || CopiedPalette.index != 0)   ?
                                                     <span className={styles.belowSwapButton}></span> : <span className={styles.belowSwapButtonSmall}></span>
                                                 }
                                             </div>
-                                            <PaletteChooserComponent channel={2} PaletteChooserData={PaletteChooserDuringPlacmeentData} eventSuffix={EventSuffix} noneHasColor={true}></PaletteChooserComponent>
+                                            <PaletteChooserComponent channel={2} PaletteChooserData={PaletteChooserPainterData} eventSuffix={EventSuffix} noneHasColor={true}></PaletteChooserComponent>
                                         </FocusDisabled>
                                     </VanillaComponentResolver.instance.Section>
                                 </>

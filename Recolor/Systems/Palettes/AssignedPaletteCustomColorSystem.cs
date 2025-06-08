@@ -117,7 +117,8 @@ namespace Recolor.Systems.Palettes
             m_SIPColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
 
             m_AssignedPaletteQuery = SystemAPI.QueryBuilder()
-                  .WithAll<AssignedPalette, PseudoRandomSeed, MeshColor, BatchesUpdated>()
+                  .WithAll<AssignedPalette, PseudoRandomSeed, MeshColor>()
+                  .WithAny<Updated, BatchesUpdated>()
                   .WithNone<Deleted, Game.Objects.Plant, Overridden>()
                   .Build();
 

@@ -1,7 +1,8 @@
-﻿// <copyright file="PalettesDuringPlacementSystem.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="TempAssignedPalettesSystem.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
+#define BURST
 namespace Recolor.Systems.Palettes
 {
     using Colossal.Entities;
@@ -15,13 +16,18 @@ namespace Recolor.Systems.Palettes
     using Recolor.Domain.Palette;
     using Recolor.Systems.SelectedInfoPanel;
     using Recolor.Systems.Tools;
+    using Unity.Burst;
+    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Entities.UniversalDelegates;
+    using Unity.Jobs;
+    using UnityEngine.Assertions.Must;
 
     /// <summary>
-    /// Game system to handle assigning palette to Temp object entities during placement.
+    /// Game system to handle assigning palette to Temp object entities when appropriate.
     /// </summary>
-    public partial class PalettesDuringPlacementSystem : GameSystemBase
+    public partial class TempAssignedPalettesSystem : GameSystemBase
     {
         private ILog m_Log;
         private ToolSystem m_ToolSystem;
@@ -35,7 +41,8 @@ namespace Recolor.Systems.Palettes
         private PaletteInstanceManagerSystem m_PaletteInstanceManagerSystem;
         private AssignedPaletteCustomColorSystem m_AssignedPaletteCustomColorSystem;
         private ColorPainterToolSystem m_ColorPainterToolSystem;
-        private PalettesUISystem m_UISystem;
+        private PalettesUISystem m_PalettesUISystem;
+        private ColorPainterUISystem m_ColorPainterUISystem;
         private PrefabBase m_PreviousPrefabBase;
         private PseudoRandomSeed m_PreviousPsuedoRandomSeed;
 
@@ -53,7 +60,8 @@ namespace Recolor.Systems.Palettes
             m_PaletteInstanceManagerSystem = World.GetOrCreateSystemManaged<PaletteInstanceManagerSystem>();
             m_AssignedPaletteCustomColorSystem = World.GetOrCreateSystemManaged<AssignedPaletteCustomColorSystem>();
             m_ColorPainterToolSystem = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
-            m_UISystem = World.GetOrCreateSystemManaged<PalettesUISystem>();
+            m_PalettesUISystem = World.GetOrCreateSystemManaged<PalettesUISystem>();
+            m_ColorPainterUISystem = World.GetOrCreateSystemManaged<ColorPainterUISystem>();
             m_NetToolSystem = World.GetOrCreateSystemManaged<NetToolSystem>();
 
             m_ToolSystem.EventToolChanged += OnToolChanged;
@@ -61,50 +69,71 @@ namespace Recolor.Systems.Palettes
 
             m_TempMeshColorQuery = SystemAPI.QueryBuilder()
                   .WithAll<Temp, PseudoRandomSeed, MeshColor>()
-                  .WithNone<Deleted, Game.Objects.Plant, Owner>()
+                  .WithNone<Deleted, Game.Objects.Plant, Owner, AssignedPalette>()
                   .Build();
 
             m_TempMeshColorQueryWithOwner = SystemAPI.QueryBuilder()
                   .WithAll<Temp, PseudoRandomSeed, MeshColor>()
-                  .WithNone<Deleted, Game.Objects.Plant>()
+                  .WithNone<Deleted, Game.Objects.Plant, AssignedPalette>()
                   .Build();
 
             Enabled = false;
-            m_Log.Info($"{nameof(PalettesDuringPlacementSystem)}.{nameof(OnCreate)}");
+            m_Log.Info($"{nameof(TempAssignedPalettesSystem)}.{nameof(OnCreate)}");
         }
 
 
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
             EntityQuery entityQuery = m_TempMeshColorQuery;
-            if (m_ToolSystem.activeTool == m_NetToolSystem &&
-                true)
+            if (m_ToolSystem.activeTool == m_NetToolSystem || m_ToolSystem.activeTool == m_ColorPainterToolSystem)
             {
                 entityQuery = m_TempMeshColorQueryWithOwner;
             }
 
-
-            NativeArray<Entity> entities = entityQuery.ToEntityArray(Allocator.Temp);
-            for (int i = 0; i < entities.Length; i++)
+            Entity[] selectedPalettesArray;
+            if (m_ToolSystem.activeTool == m_ColorPainterToolSystem)
             {
-                if (m_ToolSystem.activeTool == m_NetToolSystem &&
-                   (!EntityManager.TryGetComponent(entities[i], out Owner owner) ||
-                    !EntityManager.HasComponent<Game.Tools.EditorContainer>(owner.m_Owner)))
-                {
-                    continue;
-                }
-
-                if (m_UISystem.SelectedPalettesDuringPlacement.Length > 2 &&
-                   (m_UISystem.SelectedPalettesDuringPlacement[0] != Entity.Null ||
-                    m_UISystem.SelectedPalettesDuringPlacement[1] != Entity.Null ||
-                    m_UISystem.SelectedPalettesDuringPlacement[2] != Entity.Null))
-                {
-                    AssignPalettes(entities[i], m_UISystem.SelectedPalettesDuringPlacement, ref buffer);
-                }
+                selectedPalettesArray = m_ColorPainterUISystem.SelectedPaletteEntities;
+            }
+            else
+            {
+                selectedPalettesArray = m_PalettesUISystem.SelectedPalettesDuringPlacement;
             }
 
+            if (selectedPalettesArray.Length < 2 ||
+               (selectedPalettesArray[0] == Entity.Null &&
+                selectedPalettesArray[1] == Entity.Null &&
+                selectedPalettesArray[2] == Entity.Null))
+            {
+                return;
+            }
+
+            NativeArray<Entity> selectedPalettePrefabEntities = new NativeArray<Entity>(selectedPalettesArray, Allocator.TempJob);
+            NativeArray<Entity> paletteInstanceEntities = new NativeArray<Entity>(3, Allocator.TempJob);
+
+            for (int i = 0; i < 3; i++)
+            {
+                 paletteInstanceEntities[i] = m_PaletteInstanceManagerSystem.GetOrCreatePaletteInstanceEntity(selectedPalettePrefabEntities[i]);
+            }
+
+            AssignPalettesJob assignPalettesJob = new AssignPalettesJob()
+            {
+                m_EditorContainerLookup = SystemAPI.GetComponentLookup<Game.Tools.EditorContainer>(isReadOnly: true),
+                m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                m_NetToolActive = m_ToolSystem.activeTool == m_NetToolSystem,
+                m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
+                m_PaletteInstanceEntities = paletteInstanceEntities,
+                m_PrefabEntities = selectedPalettePrefabEntities,
+                buffer = m_Barrier.CreateCommandBuffer(),
+            };
+
+            Dependency = assignPalettesJob.Schedule(entityQuery, Dependency);
+            m_Barrier.AddJobHandleForProducer(Dependency);
+            selectedPalettePrefabEntities.Dispose(Dependency);
+            paletteInstanceEntities.Dispose(Dependency);
+
+            NativeArray<Entity> entities = entityQuery.ToEntityArray(Allocator.Temp);
             if (m_ToolSystem.activeTool == m_ObjectToolSystem &&
                 m_ObjectToolSystem.actualMode == ObjectToolSystem.Mode.Create &&
                 entities.Length == 1 &&
@@ -115,7 +144,7 @@ namespace Recolor.Systems.Palettes
                 colorSet.m_Channel1.a = 1f;
                 colorSet.m_Channel2.a = 1f;
                 colorSet.m_Channel0.a = 1f;
-                m_UISystem.SetNoneColors(colorSet);
+                m_PalettesUISystem.SetNoneColors(colorSet);
             }
         }
 
@@ -127,6 +156,7 @@ namespace Recolor.Systems.Palettes
         private void OnPrefabChanged(PrefabBase prefab)
         {
             if ((m_ToolSystem.activeTool != m_NetToolSystem &&
+                m_ToolSystem.activeTool != m_ColorPainterToolSystem &&
                 m_ToolSystem.activeTool != m_ObjectToolSystem) ||
                !Mod.Instance.Settings.ShowPalettesOptionDuringPlacement ||
                (m_ToolSystem.activeTool == m_ObjectToolSystem &&
@@ -134,7 +164,7 @@ namespace Recolor.Systems.Palettes
                 m_ObjectToolSystem.actualMode == ObjectToolSystem.Mode.Move)))
             {
                 Enabled = false;
-                m_UISystem.ShowPaletteChooserDuringPlacement = false;
+                m_PalettesUISystem.ShowPaletteChooserDuringPlacement = false;
                 return;
             }
 
@@ -150,18 +180,85 @@ namespace Recolor.Systems.Palettes
                         colorVariations.Length > 0)
                     {
                         Enabled = true;
-                        m_UISystem.ResetNoneColors();
-                        m_UISystem.UpdatePaletteChoicesDuringPlacementBinding(Mod.Instance.Settings.ResetPaletteChoicesWhenSwitchingPrefab && m_PreviousPrefabBase != prefab);
+                        m_PalettesUISystem.ResetNoneColors();
+                        m_PalettesUISystem.UpdatePaletteChoicesDuringPlacementBinding(Mod.Instance.Settings.ResetPaletteChoicesWhenSwitchingPrefab && m_PreviousPrefabBase != prefab);
                         m_PreviousPrefabBase = prefab;
                         return;
                     }
                 }
             }
+            else if (m_ToolSystem.activeTool == m_ColorPainterToolSystem)
+            {
+                Enabled = true;
+                return;
+            }
 
             Enabled = false;
-            m_UISystem.ShowPaletteChooserDuringPlacement = false;
+            m_PalettesUISystem.ShowPaletteChooserDuringPlacement = false;
         }
 
+#if BURST
+        [BurstCompile]
+#endif
+        private struct AssignPalettesJob : IJobChunk
+        {
+            [ReadOnly]
+            public ComponentLookup<Owner> m_OwnerLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Tools.EditorContainer> m_EditorContainerLookup;
+            public EntityCommandBuffer buffer;
+            public NativeArray<Entity> m_PrefabEntities;
+            [ReadOnly]
+            public EntityTypeHandle m_EntityType;
+            public bool m_NetToolActive;
+            [ReadOnly]
+            public NativeArray<Entity> m_PaletteInstanceEntities;
+
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
+                if (m_PrefabEntities.Length < 2 ||
+                        m_PaletteInstanceEntities.Length < 2 ||
+                       (m_PrefabEntities[0] == Entity.Null &&
+                        m_PrefabEntities[1] == Entity.Null &&
+                        m_PrefabEntities[2] == Entity.Null))
+                {
+                    return;
+                }
+
+                for (int i = 0; i < chunk.Count; i++)
+                {
+                    Entity instanceEntity = entityNativeArray[i];
+                    if (m_NetToolActive &&
+                       (!m_OwnerLookup.TryGetComponent(instanceEntity, out Owner owner) ||
+                        !m_EditorContainerLookup.HasComponent(owner.m_Owner)))
+                    {
+                        continue;
+                    }
+
+                    DynamicBuffer<AssignedPalette> paletteAssignments = buffer.AddBuffer<AssignedPalette>(instanceEntity);
+
+                    for (int j = 0; j < System.Math.Max(m_PrefabEntities.Length, 3); j++)
+                    {
+                        if (m_PrefabEntities[j] == Entity.Null)
+                        {
+                            continue;
+                        }
+
+                        AssignedPalette newPaletteAssignment = new AssignedPalette()
+                        {
+                            m_Channel = j,
+                            m_PaletteInstanceEntity = m_PaletteInstanceEntities[j],
+                        };
+
+                        paletteAssignments.Add(newPaletteAssignment);
+                    }
+                }
+            }
+        }
+
+
+        /*
         /// <summary>
         /// Assigns a palette to the instance entity based on prefab entity and channel.
         /// </summary>
@@ -207,6 +304,7 @@ namespace Recolor.Systems.Palettes
 
             m_ColorPainterToolSystem.ChangeInstanceColorSet(recolorSet, ref buffer, instanceEntity);
         }
+        */
     }
 
 }

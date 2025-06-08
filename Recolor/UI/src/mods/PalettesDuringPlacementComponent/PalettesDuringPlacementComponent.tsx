@@ -55,7 +55,7 @@ export const PalettesDuringPlacementComponent = () =>
                                             { (PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[0].index != 0 || PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[1].index != 0 || PaletteChooserDuringPlacmeentData.SelectedPaletteEntities[2].index != 0) && (
                                             <>
                                                 <VanillaComponentResolver.instance.ToolButton src={resetSrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                                                                                tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ResetPalettesDuringPlacement]", locale["Recolor.TOOLTIP_DESCRIPTION[ResetPalettesDuringPlacement]"])}
+                                                                                                tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[ResetPaletteChoosersToNone]", locale["Recolor.TOOLTIP_DESCRIPTION[ResetPaletteChoosersToNone]"])}
                                                                                                 onSelect={() => { removePalette(0, EventSuffix); removePalette(1, EventSuffix); removePalette(2, EventSuffix);}}
                                                 />
                                                 <VanillaComponentResolver.instance.ToolButton src={copySrc}  className = {VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
