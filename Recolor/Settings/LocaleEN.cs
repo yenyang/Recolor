@@ -166,7 +166,7 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("HidePalettesDuringPlacement"), "Hides the palette choosers while placing objects with the Object tool. Restore using the mod's settings." },
                 { TooltipDescriptionKey("MinimizeDuringPlacement"), "Minimize the palette choosers while placing objects to save space." },
                 { TooltipDescriptionKey("ExpandDuringPlacement"), "Expands the palette choosers while placing objects for use." },
-                { TooltipDescriptionKey("ResetPalettesDuringPlacement"), "Resets the palette choosers while placing objects." },
+                { TooltipDescriptionKey("ResetPaletteChoosersToNone"), "Resets the palette choosers channels to all be None." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RestoreDefaultPalettes)), "Restore Default Palettes and Subcategories." },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.RestoreDefaultPalettes)), "On confirmation, will re-install original files for pre-built Palettes and Subcategories. Any edits will be lost. This cannot be undone. Custom Palettes and Subcategories with different unique names than pre-built will not be affected. Restarting the game is required afterwards." },
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.RestoreDefaultPalettes)), "Re-install original pre-built Palettes and Subcategories? Any edits will be lost. This cannot be undone. Custom Palettes and Subcategories with different unique names than pre-built will not be affected. Restarting the game is required afterwards." },

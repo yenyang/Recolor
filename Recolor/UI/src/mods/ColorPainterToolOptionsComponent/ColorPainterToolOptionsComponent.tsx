@@ -70,12 +70,12 @@ const ShowHexaDecimals$ = bindValue<boolean>(mod.id, "ShowHexaDecimals");
 const ShowPaletteChoices$ = bindValue<ButtonState>(mod.id,"ShowPaletteChoices");
 const PainterColorSet$ = bindValue<RecolorSet>(mod.id, "PainterColorSet");
 
-const PaletteChooserDuringPlacementData$ = bindValue<PaletteChooserUIData>(mod.id, "PaletteChoicesDuringPlacement");
+const PaletteChooserDuringPlacementData$ = bindValue<PaletteChooserUIData>(mod.id, "PaletteChoicesPainter");
 const EditingPrefabEntity$ = bindValue<Entity>(mod.id, "EditingPrefabEntity");
 const ShowPaletteEditorPanel$ = bindValue<boolean>(mod.id, "ShowPaletteEditorMenu");
 const CopiedPaletteSet$ = bindValue<Entity[]>(mod.id, "CopiedPaletteSet");
 const CopiedPalette$ = bindValue<Entity>(mod.id, "CopiedPalette");
-const EventSuffix = "DuringPlacement";
+const EventSuffix = "Painter";
 
  
 
@@ -300,62 +300,7 @@ export const ColorPainterToolOptionsComponent = () => {
                     )}
                     { ToolMode == PainterToolMode.Paint && (
                         <>
-                            <VanillaComponentResolver.instance.Section title={""/*translate("Recolor.SECTION_TITLE[ColorSet]", locale["Recolor.SECTION_TITLE[ColorSet]"])*/}>
-                                <>
-                                    <ColorPainterFieldComponent channel={0}></ColorPainterFieldComponent>
-                                    { (PainterColorSet.States[0] && PainterColorSet.States[1])? (
-                                        <div className={styles.columnGroup}>
-                                            <VanillaComponentResolver.instance.ToolButton
-                                                src={swapSrc}
-                                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                                multiSelect = {false}   // I haven't tested any other value here
-                                                disabled = {false}      
-                                                tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SwapColors]", locale["Recolor.TOOLTIP_DESCRIPTION[SwapColors]"])}
-                                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                                onSelect={() => 
-                                                {
-                                                    let channel0 : Color = PainterColorSet.Channels[0];
-                                                    changeColor(0, PainterColorSet.Channels[1]);
-                                                    changeColor(1, channel0);
-                                                }}
-                                            />                                              
-                                            <span className={styles.belowSwapButton}></span>  
-                                            {ShowHexaDecimals && (
-                                                <span className={styles.inputHeight}></span>
-                                            )}
-                                        </div>
-                                    ):(
-                                        <span className={styles.swapButtonWidth}></span>
-                                    )}
-                                    <ColorPainterFieldComponent channel={1}></ColorPainterFieldComponent>
-                                    { (PainterColorSet.States[1] && PainterColorSet.States[2])? (
-                                        <div className={styles.columnGroup}>
-                                            <VanillaComponentResolver.instance.ToolButton
-                                                src={swapSrc}
-                                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
-                                                multiSelect = {false}   // I haven't tested any other value here
-                                                disabled = {false}      
-                                                tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SwapColors]", locale["Recolor.TOOLTIP_DESCRIPTION[SwapColors]"])}
-                                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                                onSelect={() => 
-                                                {
-                                                    let channel1 : Color = PainterColorSet.Channels[1];
-                                                    changeColor(1, PainterColorSet.Channels[2]);
-                                                    changeColor(2, channel1);
-                                                }}
-                                            />                                              
-                                            <span className={styles.belowSwapButton}></span>  
-                                            {ShowHexaDecimals && (
-                                                <span className={styles.inputHeight}></span>
-                                            )}
-                                        </div>
-                                    ):(
-                                        <span className={styles.swapButtonWidth}></span>
-                                    )}
-                                    <ColorPainterFieldComponent channel={2}></ColorPainterFieldComponent>
-                                </>
-                            </VanillaComponentResolver.instance.Section> 
-                            { ShowPaletteChoices && (
+                            {ShowPaletteChoices ? 
                                 <>
                                     <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Palette]",locale["Recolor.SECTION_TITLE[Palette]"])}>
                                     <div className={styles.rowGroup}>
@@ -389,7 +334,7 @@ export const ColorPainterToolOptionsComponent = () => {
                                     </VanillaComponentResolver.instance.Section>
                                     <VanillaComponentResolver.instance.Section>
                                             <FocusDisabled>
-                                            <PaletteChooserComponent channel={0} PaletteChooserData={PaletteChooserDuringPlacmeentData} eventSuffix={EventSuffix} noneHasColor={true}></PaletteChooserComponent>
+                                            <PaletteChooserComponent channel={0} PaletteChooserData={PaletteChooserDuringPlacmeentData} eventSuffix={EventSuffix} noneHasColor={false}></PaletteChooserComponent>
                                             <div className={styles.columnGroup}>
                                                 <VanillaComponentResolver.instance.ToolButton
                                                     src={swapSrc}
@@ -407,7 +352,7 @@ export const ColorPainterToolOptionsComponent = () => {
                                                     <span className={styles.belowSwapButton}></span> : <span className={styles.belowSwapButtonSmall}></span>
                                                 }
                                             </div>
-                                            <PaletteChooserComponent channel={1} PaletteChooserData={PaletteChooserDuringPlacmeentData} eventSuffix={EventSuffix} noneHasColor={true}></PaletteChooserComponent>
+                                            <PaletteChooserComponent channel={1} PaletteChooserData={PaletteChooserDuringPlacmeentData} eventSuffix={EventSuffix} noneHasColor={false}></PaletteChooserComponent>
                                             <div className={styles.columnGroup}>
                                                 <VanillaComponentResolver.instance.ToolButton
                                                     src={swapSrc}
@@ -429,7 +374,63 @@ export const ColorPainterToolOptionsComponent = () => {
                                         </FocusDisabled>
                                     </VanillaComponentResolver.instance.Section>
                                 </>
-                            )}
+                                :
+                                <VanillaComponentResolver.instance.Section title={""/*translate("Recolor.SECTION_TITLE[ColorSet]", locale["Recolor.SECTION_TITLE[ColorSet]"])*/}>
+                                    <>
+                                        <ColorPainterFieldComponent channel={0}></ColorPainterFieldComponent>
+                                        { (PainterColorSet.States[0] && PainterColorSet.States[1])? (
+                                            <div className={styles.columnGroup}>
+                                                <VanillaComponentResolver.instance.ToolButton
+                                                    src={swapSrc}
+                                                    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                    multiSelect = {false}   // I haven't tested any other value here
+                                                    disabled = {false}      
+                                                    tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SwapColors]", locale["Recolor.TOOLTIP_DESCRIPTION[SwapColors]"])}
+                                                    className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                    onSelect={() => 
+                                                    {
+                                                        let channel0 : Color = PainterColorSet.Channels[0];
+                                                        changeColor(0, PainterColorSet.Channels[1]);
+                                                        changeColor(1, channel0);
+                                                    }}
+                                                />                                              
+                                                <span className={styles.belowSwapButton}></span>  
+                                                {ShowHexaDecimals && (
+                                                    <span className={styles.inputHeight}></span>
+                                                )}
+                                            </div>
+                                        ):(
+                                            <span className={styles.swapButtonWidth}></span>
+                                        )}
+                                        <ColorPainterFieldComponent channel={1}></ColorPainterFieldComponent>
+                                        { (PainterColorSet.States[1] && PainterColorSet.States[2])? (
+                                            <div className={styles.columnGroup}>
+                                                <VanillaComponentResolver.instance.ToolButton
+                                                    src={swapSrc}
+                                                    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                                    multiSelect = {false}   // I haven't tested any other value here
+                                                    disabled = {false}      
+                                                    tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[SwapColors]", locale["Recolor.TOOLTIP_DESCRIPTION[SwapColors]"])}
+                                                    className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                                    onSelect={() => 
+                                                    {
+                                                        let channel1 : Color = PainterColorSet.Channels[1];
+                                                        changeColor(1, PainterColorSet.Channels[2]);
+                                                        changeColor(2, channel1);
+                                                    }}
+                                                />                                              
+                                                <span className={styles.belowSwapButton}></span>  
+                                                {ShowHexaDecimals && (
+                                                    <span className={styles.inputHeight}></span>
+                                                )}
+                                            </div>
+                                        ):(
+                                            <span className={styles.swapButtonWidth}></span>
+                                        )}
+                                        <ColorPainterFieldComponent channel={2}></ColorPainterFieldComponent>
+                                    </>
+                                </VanillaComponentResolver.instance.Section> 
+                            }
                         </>
                     )}
                 </>

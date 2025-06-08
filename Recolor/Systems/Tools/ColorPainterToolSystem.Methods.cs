@@ -319,6 +319,7 @@ namespace Recolor.Systems.Tools
                     m_InstanceEntity = m_RaycastEntity,
                     m_TransformData = SystemAPI.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true),
                     m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                    m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
                 };
                 inputDeps = createDefinitionJob.Schedule(inputDeps);
                 m_Barrier.AddJobHandleForProducer(inputDeps);
@@ -335,6 +336,8 @@ namespace Recolor.Systems.Tools
                     m_Radius = m_ColorPainterUISystem.Radius,
                     m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
                     m_SelectedEntities = m_SelectedEntities,
+                    m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
+                    m_TransformLookup = SystemAPI.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true),
                 };
 
                 if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
@@ -348,6 +351,21 @@ namespace Recolor.Systems.Tools
                 else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Vehicles)
                 {
                     inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_ParkedVehicleMeshColorQuery, inputDeps);
+
+                    CreateDefinitionsWithRadiusOfInterpolatedTransform createDefinitionsWithRadiusOfInterpolatedTransform = new CreateDefinitionsWithRadiusOfInterpolatedTransform()
+                    {
+                        m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                        m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
+                        m_Position = m_LastRaycastPosition,
+                        buffer = m_Barrier.CreateCommandBuffer(),
+                        m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                        m_Radius = m_ColorPainterUISystem.Radius,
+                        m_InterpolatedTransformType = SystemAPI.GetComponentTypeHandle<InterpolatedTransform>(isReadOnly: true),
+                        m_SelectedEntities = m_SelectedEntities,
+                        m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
+                    };
+
+                    inputDeps = createDefinitionsWithRadiusOfInterpolatedTransform.Schedule(m_VehicleMeshColorQuery, inputDeps);
                 }
 
                 m_Barrier.AddJobHandleForProducer(inputDeps);
@@ -366,6 +384,7 @@ namespace Recolor.Systems.Tools
 
         private JobHandle Apply(JobHandle inputDeps)
         {
+            applyMode = ApplyMode.Apply;
             EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
 
             if (m_State == State.Picking)
@@ -381,6 +400,11 @@ namespace Recolor.Systems.Tools
                      m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint)
             {
                 m_TimeLastReset = UnityEngine.Time.time;
+            }
+
+            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius)
+            {
+                m_TimeLastApplied = UnityEngine.Time.time;
             }
 
             if (m_State == State.Painting &&

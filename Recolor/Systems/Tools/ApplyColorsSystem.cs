@@ -45,7 +45,8 @@ namespace Recolor.Systems.Tools
             m_ToolSystem.EventToolChanged += OnToolChanged;
 
             m_TempCustomMeshColorQuery = SystemAPI.QueryBuilder()
-                .WithAll<Temp, MeshColor>()
+                .WithAllRW<MeshColor>()
+                .WithAll<Temp>()
                 .WithNone<Deleted, Game.Common.Overridden>()
                 .Build();
 
@@ -64,8 +65,6 @@ namespace Recolor.Systems.Tools
                 m_EntityType = SystemAPI.GetEntityTypeHandle(),
                 m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(),
                 m_MeshColorRecordLookup = SystemAPI.GetBufferLookup<MeshColorRecord>(),
-                m_SubLaneLookup = SystemAPI.GetBufferLookup<Game.Net.SubLane>(),
-                m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(),
                 m_TempType = SystemAPI.GetComponentTypeHandle<Temp>(),
                 buffer = m_Barrier.CreateCommandBuffer(),
             };
@@ -94,10 +93,6 @@ namespace Recolor.Systems.Tools
             public EntityTypeHandle m_EntityType;
             [ReadOnly]
             public ComponentTypeHandle<Temp> m_TempType;
-            [ReadOnly]
-            public BufferLookup<Game.Objects.SubObject> m_SubObjectLookup;
-            [ReadOnly]
-            public BufferLookup<Game.Net.SubLane> m_SubLaneLookup;
             [ReadOnly]
             public BufferLookup<MeshColor> m_MeshColorLookup;
             [ReadOnly]
@@ -136,7 +131,6 @@ namespace Recolor.Systems.Tools
                     {
                         buffer.RemoveComponent<CustomMeshColor>(originalEntity);
                         buffer.RemoveComponent<MeshColorRecord>(originalEntity);
-                        buffer.AddComponent<BatchesUpdated>(originalEntity);
                     }
                     else
                     {
@@ -149,7 +143,7 @@ namespace Recolor.Systems.Tools
                             }
                         }
 
-                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(originalEntity);
+                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(originalEntity);
                         DynamicBuffer<CustomMeshColor> customMeshColors = buffer.AddBuffer<CustomMeshColor>(originalEntity);
                         for (int j = 0; j < originalMeshColors.Length; j++)
                         {
@@ -164,78 +158,7 @@ namespace Recolor.Systems.Tools
                                 customMeshColors.Add(new CustomMeshColor { m_ColorSet = defaultColorSet });
                             }
                         }
-
-                        buffer.AddComponent<BatchesUpdated>(originalEntity);
                     }
-
-                    // Add batches updated to subobjects.
-                    if (m_SubObjectLookup.TryGetBuffer(originalEntity, out DynamicBuffer<Game.Objects.SubObject> subObjectBuffer))
-                    {
-                        foreach (Game.Objects.SubObject subObject in subObjectBuffer)
-                        {
-                            ProcessSubObject(subObject);
-
-                            if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
-                            {
-                                continue;
-                            }
-
-                            foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
-                            {
-                                ProcessSubObject(deepSubObject);
-
-                                if (!m_SubObjectLookup.TryGetBuffer(deepSubObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer2))
-                                {
-                                    continue;
-                                }
-
-                                foreach (Game.Objects.SubObject deepSubObject2 in deepSubObjectBuffer2)
-                                {
-                                    ProcessSubObject(deepSubObject2);
-
-                                    if (!m_SubObjectLookup.TryGetBuffer(deepSubObject2.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer3))
-                                    {
-                                        continue;
-                                    }
-
-                                    foreach (Game.Objects.SubObject deepSubObject3 in deepSubObjectBuffer3)
-                                    {
-                                        ProcessSubObject(deepSubObject3);
-
-                                        if (!m_SubObjectLookup.TryGetBuffer(deepSubObject3.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer4))
-                                        {
-                                            continue;
-                                        }
-
-                                        foreach (Game.Objects.SubObject deepSubObject4 in deepSubObjectBuffer4)
-                                        {
-                                            ProcessSubObject(deepSubObject4);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Add batches updated to sublanes.
-                    if (m_SubLaneLookup.TryGetBuffer(originalEntity, out DynamicBuffer<Game.Net.SubLane> subLaneBuffer))
-                    {
-                        foreach (Game.Net.SubLane subLane in subLaneBuffer)
-                        {
-                            if (m_MeshColorLookup.HasBuffer(subLane.m_SubLane) && !m_CustomMeshColorLookup.HasBuffer(subLane.m_SubLane))
-                            {
-                                buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
-                            }
-                        }
-                    }
-                }
-            }
-
-            private void ProcessSubObject(Game.Objects.SubObject subObject)
-            {
-                if (m_MeshColorLookup.HasBuffer(subObject.m_SubObject) && !m_CustomMeshColorLookup.HasBuffer(subObject.m_SubObject))
-                {
-                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
                 }
             }
         }

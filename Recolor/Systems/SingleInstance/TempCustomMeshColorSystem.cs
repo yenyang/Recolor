@@ -2,16 +2,18 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-#define BURST
+// #define BURST
 namespace Recolor.Systems.SingleInstance
 {
     using Colossal.Logging;
     using Game;
+    using Game.Buildings;
     using Game.Common;
     using Game.Objects;
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
+    using Game.Vehicles;
     using Recolor.Domain;
     using Recolor.Systems.Tools;
     using Unity.Burst;
@@ -69,6 +71,10 @@ namespace Recolor.Systems.SingleInstance
                 m_Toggles = m_UISystem.RecolorSet.GetChannelToggles(),
                 m_State = m_ColorPainterTool.CurrentState,
                 m_MeshColorRecordLookup = SystemAPI.GetBufferLookup<MeshColorRecord>(isReadOnly: true),
+                m_SelectionType = m_UISystem.CurrentSelectionType,
+                m_RaycastEntity = m_ColorPainterTool.RaycastEntity,
+                m_BuildingLookup = SystemAPI.GetComponentLookup<Building>(isReadOnly: true),
+                m_FilterType = m_UISystem.ColorPainterFilterType,
             };
             JobHandle jobHandle = tempCustomMeshColorJob.Schedule(m_TempMeshColorQuery, Dependency);
             m_Barrier.AddJobHandleForProducer(jobHandle);
@@ -98,6 +104,12 @@ namespace Recolor.Systems.SingleInstance
             public ColorSet m_ColorSet;
             public bool3 m_Toggles;
             public ColorPainterToolSystem.State m_State;
+            public ColorPainterUISystem.SelectionType m_SelectionType;
+            public Entity m_RaycastEntity;
+            public ColorPainterUISystem.FilterType m_FilterType;
+            [ReadOnly]
+            public ComponentLookup<Building> m_BuildingLookup;
+
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
@@ -114,9 +126,14 @@ namespace Recolor.Systems.SingleInstance
 
                     if (m_CustomMeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) &&
                        (!m_PainterToolActive ||
-                        m_State == ColorPainterToolSystem.State.Picking))
+                        m_State == ColorPainterToolSystem.State.Picking ||
+                       (m_SelectionType == ColorPainterUISystem.SelectionType.Single &&
+                        m_RaycastEntity != temp.m_Original) ||
+                       (m_SelectionType == ColorPainterUISystem.SelectionType.Radius &&
+                        m_FilterType == ColorPainterUISystem.FilterType.Building &&
+                       !m_BuildingLookup.HasComponent(entityNativeArray[i]))))
                     {
-                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(entityNativeArray[i]);
+                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(entityNativeArray[i]);
                         for (int j = 0; j < subMeshBuffer.Length; j++)
                         {
                             if (customMeshColorBuffer.Length > j)
@@ -145,9 +162,14 @@ namespace Recolor.Systems.SingleInstance
                     }
                     else if (m_PainterToolActive &&
                              m_State == ColorPainterToolSystem.State.Painting &&
-                             m_MeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<MeshColor> originalMeshColor))
+                             m_MeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<MeshColor> originalMeshColor) &&
+                           ((m_SelectionType == ColorPainterUISystem.SelectionType.Single &&
+                             m_RaycastEntity == temp.m_Original) ||
+                            (m_SelectionType == ColorPainterUISystem.SelectionType.Radius &&
+                            (m_FilterType != ColorPainterUISystem.FilterType.Building ||
+                             m_BuildingLookup.HasComponent(entityNativeArray[i])))))
                     {
-                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(entityNativeArray[i]);
+                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(entityNativeArray[i]);
                         DynamicBuffer<CustomMeshColor> newCustomMeshColorBuffer = buffer.AddBuffer<CustomMeshColor>(entityNativeArray[i]);
                         for (int j = 0; j < subMeshBuffer.Length; j++)
                         {
@@ -172,9 +194,14 @@ namespace Recolor.Systems.SingleInstance
                              m_State == ColorPainterToolSystem.State.Reseting &&
                              m_MeshColorRecordLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<MeshColorRecord> meshColorRecord) &&
                              m_MeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<MeshColor> originalMeshColor2) &&
-                             (m_Toggles[0] == false ||
-                              m_Toggles[1] == false ||
-                              m_Toggles[2] == false))
+                           ((m_SelectionType == ColorPainterUISystem.SelectionType.Single &&
+                             m_RaycastEntity == temp.m_Original) ||
+                            (m_SelectionType == ColorPainterUISystem.SelectionType.Radius &&
+                            (m_FilterType != ColorPainterUISystem.FilterType.Building ||
+                             m_BuildingLookup.HasComponent(entityNativeArray[i])))) &&
+                            (m_Toggles[0] == false ||
+                             m_Toggles[1] == false ||
+                             m_Toggles[2] == false))
                     {
                         bool completeMatch = true;
                         if (meshColorRecord.Length > 0 &&
@@ -200,7 +227,7 @@ namespace Recolor.Systems.SingleInstance
                             continue;
                         }
 
-                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(entityNativeArray[i]);
+                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(entityNativeArray[i]);
                         DynamicBuffer<CustomMeshColor> newCustomMeshColorBuffer = buffer.AddBuffer<CustomMeshColor>(entityNativeArray[i]);
 
                         for (int j = 0; j < subMeshBuffer.Length; j++)
@@ -231,8 +258,6 @@ namespace Recolor.Systems.SingleInstance
                     {
                         continue;
                     }
-
-                    buffer.AddComponent<BatchesUpdated>(entityNativeArray[i]);
                 }
             }
         }

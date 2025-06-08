@@ -7,6 +7,8 @@ namespace Recolor.Systems.Tools
     using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Game;
+    using Game.Common;
+    using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
     using Recolor;
@@ -14,6 +16,7 @@ namespace Recolor.Systems.Tools
     using Recolor.Domain.Palette;
     using Recolor.Extensions;
     using Recolor.Systems.SelectedInfoPanel;
+    using Unity.Entities;
     using Unity.Mathematics;
 
     /// <summary>
@@ -25,6 +28,7 @@ namespace Recolor.Systems.Tools
         private ILog m_Log;
         private ValueBindingHelper<RecolorSet> m_PainterColorSet;
         private SIPColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
+        private PrefabSystem m_PrefabSystem;
         private DefaultToolSystem m_DefaultToolSystem;
         private ToolSystem m_ToolSystem;
         private ValueBindingHelper<int> m_SelectionType;
@@ -35,6 +39,7 @@ namespace Recolor.Systems.Tools
         private ValueBindingHelper<PainterToolMode> m_ToolMode;
         private ValueBindingHelper<bool> m_EditorVisible;
         private ValueBindingHelper<PaletteChooserUIData> m_PaletteChoicesPainterDatas;
+        private EntityQuery m_PaletteQuery;
 
         /// <summary>
         /// Used for determining the mode of the painter tool.
@@ -55,6 +60,11 @@ namespace Recolor.Systems.Tools
             /// Pick a new color.
             /// </summary>
             Picker,
+
+            /// <summary>
+            /// AssignPalettes.
+            /// </summary>
+            AssignPalettes,
         }
 
         /// <summary>
@@ -101,6 +111,15 @@ namespace Recolor.Systems.Tools
         {
             get { return m_ToolMode; }
             set { m_ToolMode.Value = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the Selection Type.
+        /// </summary>
+        public SelectionType CurrentSelectionType
+        {
+            get { return (SelectionType)m_SelectionType.Value; }
+            set { m_SelectionType.Value = (int)value; }
         }
 
         /// <summary>
@@ -170,6 +189,7 @@ namespace Recolor.Systems.Tools
             m_ColorPainterToolSystem = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
             m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ToolSystem.EventToolChanged += OnToolChanged;
 
             // These establish bindings between UI and C#.
@@ -185,8 +205,8 @@ namespace Recolor.Systems.Tools
 
             // These are event triggers from actions in UI.
             CreateTrigger<uint, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
-            CreateTrigger("ColorPainterSingleSelection", () => m_SelectionType.Value = (int)SelectionType.Single);
-            CreateTrigger("ColorPainterRadiusSelection", () => m_SelectionType.Value = (int)SelectionType.Radius);
+            CreateTrigger("ColorPainterSingleSelection", () => ChangeSelectionMode(SelectionType.Single));
+            CreateTrigger("ColorPainterRadiusSelection", () => ChangeSelectionMode(SelectionType.Radius));
             CreateTrigger("CopyColor", (UnityEngine.Color color) => m_CopiedColor.Value = color);
             CreateTrigger("ColorPainterPasteColor", (uint value) => ChangePainterColor(value, m_SelectedInfoPanelColorFieldsSystem.CopiedColor));
             CreateTrigger("ColorPainterPasteColorSet", () =>
@@ -202,15 +222,23 @@ namespace Recolor.Systems.Tools
             });
             CreateTrigger("IncreaseRadius", IncreaseRadius);
             CreateTrigger("DecreaseRadius", DecreaseRadius);
-            CreateTrigger("BuildingFilter", () => m_Filter.Value = (int)FilterType.Building);
-            CreateTrigger("PropFilter", () => m_Filter.Value = (int)FilterType.Props);
-            CreateTrigger("VehicleFilter", () => m_Filter.Value = (int)FilterType.Vehicles);
+            CreateTrigger("BuildingFilter", () => FilterToggled(FilterType.Building));
+            CreateTrigger("PropFilter", () => FilterToggled(FilterType.Props));
+            CreateTrigger("VehicleFilter", () => FilterToggled(FilterType.Vehicles));
             CreateTrigger("ChangeToolMode", (int toolMode) => m_ToolMode.Value = (PainterToolMode)toolMode);
             CreateTrigger("ToggleChannel", (uint channel) =>
             {
                 m_PainterColorSet.Value.ToggleChannel(channel);
                 m_PainterColorSet.Binding.TriggerUpdate();
             });
+            CreateTrigger<int, Entity>("AssignPalettePainter", AssignPalettePainterAction);
+            CreateTrigger<int>("RemovePalettePainter", RemovePalettePainterAction);
+
+
+            m_PaletteQuery = SystemAPI.QueryBuilder()
+                  .WithAll<SwatchData>()
+                  .WithNone<Deleted, Temp>()
+                  .Build();
 
             Enabled = false;
         }
@@ -220,6 +248,8 @@ namespace Recolor.Systems.Tools
         {
             base.OnGameLoadingComplete(purpose, mode);
             m_EditorVisible.Value = false;
+
+            UpdatePalettes();
         }
 
         private void ChangePainterColor(uint channel, UnityEngine.Color color)
@@ -280,6 +310,24 @@ namespace Recolor.Systems.Tools
             else if (m_Radius.Value > 1)
             {
                 m_Radius.Value -= 1;
+            }
+        }
+
+        private void FilterToggled(FilterType filterType)
+        {
+            m_Filter.Value = (int)filterType;
+            if (m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices)
+            {
+                UpdatePalettes();
+            }
+        }
+
+        private void ChangeSelectionMode(SelectionType selectionType)
+        {
+            m_SelectionType.Value = (int)selectionType;
+            if (m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices)
+            {
+                UpdatePalettes();
             }
         }
     }
