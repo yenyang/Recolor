@@ -92,12 +92,8 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
   <!--Dependency for the mod, can be set multiple times-->
   <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.12" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Patch v1.1.1
-* Fix stroke dash array UI warning logs from loading color painter svg image. Fixes lag spike from opening panel.
-* Added hidden setting that minimizes panel on game load if it was minimized when game was previously closed.
-* Added setting that always minimizes panel on game load.
-* Updated Localization.
-* Prevent color picker and painter from selecting Creatures including Citizens.</ChangeLog>
+  <ChangeLog># Patch v1.1.2
+* Fix issue with seasonal color groups from game update.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=2FX0UDSThmQ" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />

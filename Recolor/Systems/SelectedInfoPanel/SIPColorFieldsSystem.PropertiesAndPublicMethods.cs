@@ -114,7 +114,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         public bool TryGetSeasonFromColorGroupID(ColorGroupID colorGroupID, out Season season)
         {
             season = Season.None;
-            for (int i = 0; i <= 3; i++)
+            for (int i = (int)Season.Spring; i <= (int)Season.Winter; i++)
             {
                 if (colorGroupID == new ColorGroupID(i))
                 {
