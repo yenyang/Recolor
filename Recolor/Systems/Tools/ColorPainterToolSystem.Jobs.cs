@@ -82,9 +82,8 @@ namespace Recolor.Systems.Tools
 
                 if (m_OwnerLookup.TryGetComponent(m_InstanceEntity, out Owner owner))
                 {
-                    creationDefinition.m_Owner = owner.m_Owner;
+                    // creationDefinition.m_Owner = owner.m_Owner;
                 }
-
 
                 buffer.AddComponent(e, default(Updated));
                 if (m_TransformData.HasComponent(m_InstanceEntity))

@@ -12,6 +12,7 @@ namespace Recolor.Systems.Tools
     using Game.Tools;
     using Game.Vehicles;
     using Recolor.Domain;
+    using Recolor.Domain.Palette;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -21,7 +22,7 @@ namespace Recolor.Systems.Tools
     using UnityEngine;
 
     /// <summary>
-    /// A system to apply colors from color painter tool.
+    /// A system to apply colors or palettes from color painter tool.
     /// </summary>
     public partial class ApplyColorsSystem : GameSystemBase
     {
@@ -66,6 +67,7 @@ namespace Recolor.Systems.Tools
                 m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(),
                 m_MeshColorRecordLookup = SystemAPI.GetBufferLookup<MeshColorRecord>(),
                 m_TempType = SystemAPI.GetComponentTypeHandle<Temp>(),
+                m_AssignedPaletteLookup = SystemAPI.GetBufferLookup<AssignedPalette>(isReadOnly: true),
                 buffer = m_Barrier.CreateCommandBuffer(),
             };
 
@@ -99,6 +101,8 @@ namespace Recolor.Systems.Tools
             public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;
             [ReadOnly]
             public BufferLookup<MeshColorRecord> m_MeshColorRecordLookup;
+            [ReadOnly]
+            public BufferLookup<AssignedPalette> m_AssignedPaletteLookup;
             public EntityCommandBuffer buffer;
 
             /// <summary>
@@ -158,6 +162,20 @@ namespace Recolor.Systems.Tools
                                 customMeshColors.Add(new CustomMeshColor { m_ColorSet = defaultColorSet });
                             }
                         }
+                    }
+
+                    if ((!m_AssignedPaletteLookup.HasBuffer(tempEntity) &&
+                         m_AssignedPaletteLookup.HasBuffer(originalEntity)) ||
+                        (m_AssignedPaletteLookup.TryGetBuffer(tempEntity, out DynamicBuffer<AssignedPalette> newPalleteAssignment) &&
+                         newPalleteAssignment.Length == 0))
+                    {
+                        buffer.RemoveComponent<AssignedPalette>(originalEntity);
+                    }
+                    else if (m_AssignedPaletteLookup.TryGetBuffer(tempEntity, out DynamicBuffer<AssignedPalette> newPalleteAssignment1) &&
+                             newPalleteAssignment.Length > 0)
+                    {
+                        DynamicBuffer<AssignedPalette> assignedPalettes = buffer.AddBuffer<AssignedPalette>(originalEntity);
+                        assignedPalettes.CopyFrom(newPalleteAssignment1);
                     }
                 }
             }
