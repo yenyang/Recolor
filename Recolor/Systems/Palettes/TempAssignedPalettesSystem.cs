@@ -8,6 +8,7 @@ namespace Recolor.Systems.Palettes
     using Colossal.Entities;
     using Colossal.Logging;
     using Game;
+    using Game.Buildings;
     using Game.Common;
     using Game.Prefabs;
     using Game.Rendering;
@@ -126,6 +127,14 @@ namespace Recolor.Systems.Palettes
                 m_PaletteInstanceEntities = paletteInstanceEntities,
                 m_PrefabEntities = selectedPalettePrefabEntities,
                 buffer = m_Barrier.CreateCommandBuffer(),
+                m_BuildingLookup = SystemAPI.GetComponentLookup<Building>(isReadOnly: true),
+                m_FilterType = m_ColorPainterUISystem.ColorPainterFilterType,
+                m_PainterToolActive = m_ToolSystem.activeTool == m_ColorPainterToolSystem,
+                m_SelectionType = m_ColorPainterUISystem.CurrentSelectionType,
+                m_State = m_ColorPainterToolSystem.CurrentState,
+                m_RaycastEntity = m_ColorPainterToolSystem.RaycastEntity,
+                m_TempType = SystemAPI.GetComponentTypeHandle<Temp>(isReadOnly: true),
+                m_PalettesActive = m_SIPColorFieldsSystem.ShowPaletteChoices,
             };
 
             Dependency = assignPalettesJob.Schedule(entityQuery, Dependency);
@@ -213,9 +222,20 @@ namespace Recolor.Systems.Palettes
             public bool m_NetToolActive;
             [ReadOnly]
             public NativeArray<Entity> m_PaletteInstanceEntities;
+            public bool m_PainterToolActive;
+            public ColorPainterToolSystem.State m_State;
+            public ColorPainterUISystem.SelectionType m_SelectionType;
+            public ColorPainterUISystem.FilterType m_FilterType;
+            public Entity m_RaycastEntity;
+            [ReadOnly]
+            public ComponentLookup<Building> m_BuildingLookup;
+            [ReadOnly]
+            public ComponentTypeHandle<Temp> m_TempType;
+            public bool m_PalettesActive;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
+                NativeArray<Temp> tempNativeArray = chunk.GetNativeArray(ref m_TempType);
                 NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
                 if (m_PrefabEntities.Length < 2 ||
                         m_PaletteInstanceEntities.Length < 2 ||
@@ -228,10 +248,23 @@ namespace Recolor.Systems.Palettes
 
                 for (int i = 0; i < chunk.Count; i++)
                 {
+                    Temp temp = tempNativeArray[i];
                     Entity instanceEntity = entityNativeArray[i];
                     if (m_NetToolActive &&
                        (!m_OwnerLookup.TryGetComponent(instanceEntity, out Owner owner) ||
                         !m_EditorContainerLookup.HasComponent(owner.m_Owner)))
+                    {
+                        continue;
+                    }
+
+                    if (m_PainterToolActive &&
+                       ((m_SelectionType == ColorPainterUISystem.SelectionType.Single &&
+                        m_RaycastEntity != temp.m_Original) ||
+                        m_State == ColorPainterToolSystem.State.Reseting ||
+                       !m_PalettesActive ||
+                       (m_SelectionType == ColorPainterUISystem.SelectionType.Radius &&
+                        m_FilterType == ColorPainterUISystem.FilterType.Building &&
+                        !m_BuildingLookup.HasComponent(entityNativeArray[i]))))
                     {
                         continue;
                     }
