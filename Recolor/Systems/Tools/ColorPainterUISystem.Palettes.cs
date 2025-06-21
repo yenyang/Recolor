@@ -31,7 +31,7 @@ namespace Recolor.Systems.Tools
         /// <summary>
         /// Updates the referenced palettes binding.
         /// </summary>
-        private void UpdatePalettes()
+        public void UpdatePalettes()
         {
             NativeArray<Entity> palettePrefabEntities = m_PaletteQuery.ToEntityArray(Allocator.Temp);
             Entity[] selectedEntities = m_PaletteChoicesPainterDatas.Value.SelectedPaletteEntities;
@@ -131,7 +131,7 @@ namespace Recolor.Systems.Tools
                     category = paletteSubcategoryData.m_Category;
                 }
 
-                if (category == PaletteCategoryData.PaletteCategory.Any || ColorPainterSelectionType == SelectionType.Single)
+                if (category == PaletteCategoryData.PaletteCategory.Any)
                 {
                     return false;
                 }
@@ -142,7 +142,9 @@ namespace Recolor.Systems.Tools
                     ((category & PaletteCategoryData.PaletteCategory.Buildings) == PaletteCategoryData.PaletteCategory.Buildings &&
                       ColorPainterFilterType == FilterType.Building) ||
                     ((category & PaletteCategoryData.PaletteCategory.Props) == PaletteCategoryData.PaletteCategory.Props &&
-                      ColorPainterFilterType == FilterType.Props))
+                      ColorPainterFilterType == FilterType.Props) ||
+                    ((category & PaletteCategoryData.PaletteCategory.NetLanes) == PaletteCategoryData.PaletteCategory.NetLanes &&
+                      ColorPainterFilterType == FilterType.NetLanes))
                 {
                     return false;
                 }

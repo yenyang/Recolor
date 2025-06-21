@@ -13,6 +13,7 @@ namespace Recolor.Systems.Tools
     using Game.Common;
     using Game.Creatures;
     using Game.Input;
+    using Game.Net;
     using Game.Objects;
     using Game.Prefabs;
     using Game.Rendering;
@@ -39,7 +40,7 @@ namespace Recolor.Systems.Tools
     {
         private ILog m_Log;
         private Entity m_RaycastEntity;
-        private Entity m_PreviousSelectedEntity;
+        private Entity m_PreviousRaycastEntity;
         private SIPColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
         private CustomColorVariationSystem m_CustomColorVariationSystem;
         private OverlayRenderSystem m_OverlayRenderSystem;
@@ -49,6 +50,7 @@ namespace Recolor.Systems.Tools
         private EntityQuery m_BuildingMeshColorQuery;
         private EntityQuery m_VehicleMeshColorQuery;
         private EntityQuery m_ParkedVehicleMeshColorQuery;
+        private EntityQuery m_NetLanesMeshColorQuery;
         private EntityQuery m_PropMeshColorQuery;
         private EntityQuery m_DefinitionGroup;
         private State m_State;
@@ -142,7 +144,17 @@ namespace Recolor.Systems.Tools
         public override void InitializeRaycast()
         {
             base.InitializeRaycast();
-            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single || m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker)
+            if ((m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single ||
+                 m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker) &&
+                 m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.NetLanes)
+            {
+                m_ToolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Overground;
+                m_ToolRaycastSystem.typeMask = TypeMask.Lanes;
+                m_ToolRaycastSystem.netLayerMask = Layer.Fence;
+                m_ToolRaycastSystem.utilityTypeMask = UtilityTypes.Fence;
+                m_ToolRaycastSystem.raycastFlags |= RaycastFlags.SubElements | RaycastFlags.NoMainElements;
+            }
+            else if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single || m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker)
             {
                 m_ToolRaycastSystem.collisionMask = Game.Common.CollisionMask.OnGround | Game.Common.CollisionMask.Overground;
                 m_ToolRaycastSystem.typeMask = Game.Common.TypeMask.MovingObjects | Game.Common.TypeMask.StaticObjects | TypeMask.Lanes;
@@ -198,6 +210,10 @@ namespace Recolor.Systems.Tools
                 .WithNone<Temp, Deleted, Game.Common.Overridden>()
                 .Build();
 
+            m_NetLanesMeshColorQuery = SystemAPI.QueryBuilder()
+               .WithAll<Game.Net.Curve, MeshColor, Owner>()
+               .WithNone<Temp, Deleted, Game.Common.Overridden>()
+               .Build();
 
             m_PropMeshColorQuery = GetEntityQuery(new EntityQueryDesc
             {
@@ -414,8 +430,16 @@ namespace Recolor.Systems.Tools
                      (!applyAction.IsPressed() &&
                       !secondaryApplyAction.IsPressed()))
             {
-                UpdateDefinitions(inputDeps);
-                return Clear(inputDeps);
+                if (m_RaycastEntity != m_PreviousRaycastEntity)
+                {
+                    m_PreviousRaycastEntity = m_RaycastEntity;
+                    return UpdateDefinitions(inputDeps);
+                }
+                else
+                {
+                    applyMode = ApplyMode.None;
+                    return inputDeps;
+                }
             }
             else
             {

@@ -337,13 +337,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 HandleSubMeshScopes();
                 m_State = State.UpdateButtonStates;
             });
-            CreateTrigger("ToggleShowPaletteChoices", () =>
-            {
-                m_PreferPalettes = !m_PreferPalettes;
-                HandleScopeAndButtonStates();
-                Mod.Instance.Settings.ShowSIPPaletteOptions = m_PreferPalettes;
-                Mod.Instance.Settings.ApplyAndSave();
-            });
+            CreateTrigger("ToggleShowPaletteChoices", ToggleShowPaletteChoices);
             CreateTrigger<int, Entity>("AssignPalette", AssignPaletteAction);
             CreateTrigger<int>("RemovePalette", RemovePaletteAction);
             CreateTrigger("CopyPalette", (Entity prefabEntity) => m_CopiedPalette.Value = prefabEntity);

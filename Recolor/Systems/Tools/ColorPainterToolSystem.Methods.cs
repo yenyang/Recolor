@@ -320,6 +320,8 @@ namespace Recolor.Systems.Tools
                     m_TransformData = SystemAPI.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true),
                     m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
                     m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
+                    m_CurveLookup = SystemAPI.GetComponentLookup<Game.Net.Curve>(isReadOnly: true),
+                    m_EditorContainterLookup = SystemAPI.GetComponentLookup<Game.Tools.EditorContainer>(isReadOnly: true),
                 };
                 inputDeps = createDefinitionJob.Schedule(inputDeps);
                 m_Barrier.AddJobHandleForProducer(inputDeps);
@@ -379,12 +381,14 @@ namespace Recolor.Systems.Tools
             applyMode = ApplyMode.Clear;
             inputDeps = DestroyDefinitions(m_DefinitionGroup, m_Barrier, inputDeps);
             m_SelectedEntities.Clear();
+            m_PreviousRaycastEntity = Entity.Null;
             return inputDeps;
         }
 
         private JobHandle Apply(JobHandle inputDeps)
         {
             applyMode = ApplyMode.Apply;
+            m_PreviousRaycastEntity = Entity.Null;
             EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
 
             if (m_State == State.Picking)

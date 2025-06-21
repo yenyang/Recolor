@@ -17,6 +17,8 @@ import paintSrc from "images/format_painter.svg";
 import { assignPalette, PaletteChooserComponent, removePalette } from "mods/PaletteChooserComponent/PaletteChooserComponent";
 import { PaletteChooserUIData } from "mods/Domain/PaletteAndSwatches/PaletteChooserUIData";
 import { FocusDisabled } from "cs2/input";
+import { PaletteCategory } from "mods/Domain/PaletteAndSwatches/PaletteCategoryType";
+import { MenuType } from "mods/Domain/MenuType";
 /*
 import resetSrc from "images/uilStandard/Reset.svg";
 import singleSrc from "images/uilStandard/SingleRhombus.svg";
@@ -56,6 +58,7 @@ const colorPickerSrc =                  uilStandard + "PickerPipette.svg";
 const colorPaletteSrc =                 uilColored + "ColorPalette.svg";
 const arrowDownSrc =         uilStandard +  "ArrowDownThickStroke.svg";
 const arrowUpSrc =           uilStandard +  "ArrowUpThickStroke.svg";
+const netLanesSrc =                         uilStandard + "FenceIsometric.svg";
 const plusSrc =                         uilStandard + "Plus.svg";
 
 
@@ -110,6 +113,11 @@ function DescriptionTooltip(tooltipTitle: string | null, tooltipDescription: str
         </>
     );
 }
+
+function handleCategoryClick(category : PaletteCategory) {
+    trigger(mod.id, "ToggleCategoryForPainter", category as number);
+}
+
 
 export const ColorPainterToolOptionsComponent = () => {
     
@@ -264,7 +272,7 @@ export const ColorPainterToolOptionsComponent = () => {
                             />
                         </VanillaComponentResolver.instance.Section>
                     )}
-                    {ColorPainterSelectionType == 1 && ToolMode != PainterToolMode.Picker &&(
+                    { (ColorPainterSelectionType == 1 || (ShowPaletteChoices & ButtonState.On) == ButtonState.On) && ToolMode != PainterToolMode.Picker  && (
                         <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Filter]", locale["Recolor.SECTION_TITLE[Filter]"])}>
                             <VanillaComponentResolver.instance.ToolButton
                                 src={buildingSrc}
@@ -296,11 +304,21 @@ export const ColorPainterToolOptionsComponent = () => {
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                 onSelect={() => handleClick("VehicleFilter")}
                             />
+                            <VanillaComponentResolver.instance.ToolButton
+                                src={netLanesSrc}
+                                selected={Filter == 3}
+                                focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
+                                multiSelect = {false}   // I haven't tested any other value here
+                                disabled = {false}      
+                                tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[NetLaneFilter]", locale["Recolor.TOOLTIP_TITLE[NetLaneFilter]"]) ,translate("Recolor.TOOLTIP_DESCRIPTION[NetLaneFilter]", locale["Recolor.TOOLTIP_DESCRIPTION[NetLaneFilter]"]))}
+                                className = {VanillaComponentResolver.instance.toolButtonTheme.button}
+                                onSelect={() => handleClick("NetLanesFilter")}
+                            />
                         </VanillaComponentResolver.instance.Section>
                     )}
                     { ToolMode == PainterToolMode.Paint && (
                         <>
-                            {ShowPaletteChoices ? 
+                            {(ShowPaletteChoices & ButtonState.On) == ButtonState.On ? 
                                 <>
                                     <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Palette]",locale["Recolor.SECTION_TITLE[Palette]"])}>
                                     <div className={styles.rowGroup}>

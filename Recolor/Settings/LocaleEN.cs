@@ -65,6 +65,8 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("PropFilter"), "Color Painter tool will change single instance colors of props." },
                 { TooltipTitleKey("VehicleFilter"), "Vehicle Filter" },
                 { TooltipDescriptionKey("VehicleFilter"), "Color Painter tool will change single instance colors of vehicles." },
+                { TooltipTitleKey("NetLaneFilter"), "Net Lane Filter" },
+                { TooltipDescriptionKey("NetLaneFilter"), "Color Painter tool will change single instance colors of Net Lane Fences and Walls" },
                 { TooltipTitleKey("PaintToolMode"), "Paint" },
                 { TooltipDescriptionKey("PaintToolMode"), "Left Click: Changes single instance colors or matching color variations on a selection. Right Click: Resets single instance colors back to color variation or custom color variations back to originals." },
                 { TooltipTitleKey("ResetToolMode"), "Reset" },

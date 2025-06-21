@@ -35,6 +35,8 @@
   "Recolor.TOOLTIP_DESCRIPTION[PropFilter]": "Color Painter tool will change single instance colors of props.",
   "Recolor.TOOLTIP_TITLE[VehicleFilter]": "Vehicle Filter",
   "Recolor.TOOLTIP_DESCRIPTION[VehicleFilter]": "Color Painter tool will change single instance colors of vehicles.",
+  "Recolor.TOOLTIP_TITLE[NetLaneFilter]": "Net Lane Filter",
+  "Recolor.TOOLTIP_DESCRIPTION[NetLaneFilter]": "Color Painter tool will change single instance colors of Net Lane Fences and Walls",
   "Recolor.TOOLTIP_TITLE[PaintToolMode]": "Paint",
   "Recolor.TOOLTIP_DESCRIPTION[PaintToolMode]": "Left Click: Changes single instance colors or matching color variations on a selection. Right Click: Resets single instance colors back to color variation or custom color variations back to originals.",
   "Recolor.TOOLTIP_TITLE[ResetToolMode]": "Reset",

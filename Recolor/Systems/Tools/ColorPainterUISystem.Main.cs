@@ -97,6 +97,11 @@ namespace Recolor.Systems.Tools
             /// Vehicles.
             /// </summary>
             Vehicles,
+
+            /// <summary>
+            /// Net lane fences.
+            /// </summary>
+            NetLanes,
         }
 
         /// <summary>
@@ -228,6 +233,7 @@ namespace Recolor.Systems.Tools
             CreateTrigger("BuildingFilter", () => FilterToggled(FilterType.Building));
             CreateTrigger("PropFilter", () => FilterToggled(FilterType.Props));
             CreateTrigger("VehicleFilter", () => FilterToggled(FilterType.Vehicles));
+            CreateTrigger("NetLanesFilter", () => FilterToggled(FilterType.NetLanes));
             CreateTrigger("ChangeToolMode", (int toolMode) => m_ToolMode.Value = (PainterToolMode)toolMode);
             CreateTrigger("ToggleChannel", (uint channel) =>
             {
@@ -251,8 +257,6 @@ namespace Recolor.Systems.Tools
         {
             base.OnGameLoadingComplete(purpose, mode);
             m_EditorVisible.Value = false;
-
-            UpdatePalettes();
         }
 
         private void ChangePainterColor(uint channel, UnityEngine.Color color)
@@ -275,6 +279,11 @@ namespace Recolor.Systems.Tools
                 if (m_ToolSystem.actionMode.IsEditor())
                 {
                     m_EditorVisible.Value = true;
+                }
+
+                if (m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices)
+                {
+                    UpdatePalettes();
                 }
             }
             else if (m_ToolSystem.actionMode.IsEditor() &&

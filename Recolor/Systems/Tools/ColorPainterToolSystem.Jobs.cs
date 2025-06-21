@@ -2,16 +2,19 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-#define BURST
+// #define BURST
 namespace Recolor.Systems.Tools
 {
     using System;
     using System.Xml;
+    using Colossal;
     using Colossal.Entities;
     using Colossal.Logging;
+    using Colossal.Mathematics;
     using Game.Buildings;
     using Game.Common;
     using Game.Input;
+    using Game.Net;
     using Game.Objects;
     using Game.Prefabs;
     using Game.Rendering;
@@ -25,6 +28,7 @@ namespace Recolor.Systems.Tools
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Entities.Serialization;
     using Unity.Entities.UniversalDelegates;
     using Unity.Jobs;
     using Unity.Mathematics;
@@ -55,6 +59,9 @@ namespace Recolor.Systems.Tools
             }
         }
 
+#if BURST
+        [BurstCompile]
+#endif
         private struct CreateDefinitionJob : IJob
         {
             [ReadOnly]
@@ -66,6 +73,10 @@ namespace Recolor.Systems.Tools
             public EntityCommandBuffer buffer;
             [ReadOnly]
             public ComponentLookup<Owner> m_OwnerLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Net.Curve> m_CurveLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Tools.EditorContainer> m_EditorContainterLookup;
 
             public void Execute()
             {
@@ -77,12 +88,16 @@ namespace Recolor.Systems.Tools
                 };
                 if (m_PrefabRefLookup.HasComponent(m_InstanceEntity))
                 {
-                    creationDefinition.m_Prefab = m_PrefabRefLookup[m_InstanceEntity];
-                }
-
-                if (m_OwnerLookup.TryGetComponent(m_InstanceEntity, out Owner owner))
-                {
-                    // creationDefinition.m_Owner = owner.m_Owner;
+                    if (m_OwnerLookup.TryGetComponent(m_InstanceEntity, out Owner owner) &&
+                        m_EditorContainterLookup.HasComponent(owner.m_Owner))
+                    {
+                        creationDefinition.m_Prefab = m_PrefabRefLookup[owner.m_Owner];
+                        creationDefinition.m_SubPrefab = m_PrefabRefLookup[m_InstanceEntity];
+                    }
+                    else
+                    {
+                        creationDefinition.m_Prefab = m_PrefabRefLookup[m_InstanceEntity];
+                    }
                 }
 
                 buffer.AddComponent(e, default(Updated));
@@ -98,7 +113,7 @@ namespace Recolor.Systems.Tools
                         m_PrefabSubIndex = -1,
                     };
 
-                    if (owner.m_Owner != Entity.Null &&
+                    if (m_OwnerLookup.TryGetComponent(m_InstanceEntity, out Owner owner) &&
                         m_TransformData.TryGetComponent(m_InstanceEntity, out Game.Objects.Transform subobjectTransform) &&
                         m_TransformData.TryGetComponent(owner.m_Owner, out Game.Objects.Transform ownerTransform))
                     {
@@ -112,10 +127,48 @@ namespace Recolor.Systems.Tools
                     buffer.AddComponent(e, objectDefinition);
                 }
 
+                if (m_CurveLookup.TryGetComponent(m_InstanceEntity, out Game.Net.Curve curve))
+                {
+                    NetCourse netCourse = new NetCourse()
+                    {
+                        m_Curve = curve.m_Bezier,
+                        m_Elevation = default,
+                        m_EndPosition = new CoursePos()
+                        {
+                            m_Entity = Entity.Null,
+                            m_Elevation = default,
+                            m_Flags = CoursePosFlags.IsLast | CoursePosFlags.IsLeft | CoursePosFlags.IsRight,
+                            m_ParentMesh = -1,
+                            m_Position = curve.m_Bezier.d,
+                            m_SplitPosition = 0,
+                            m_Rotation = NetUtils.GetNodeRotation(MathUtils.EndTangent(curve.m_Bezier)),
+                            m_CourseDelta = 1,
+                        },
+                        m_FixedIndex = -1,
+                        m_Length = curve.m_Length,
+                        m_StartPosition = new CoursePos()
+                        {
+                            m_Entity = Entity.Null,
+                            m_Elevation = default,
+                            m_Flags = CoursePosFlags.IsFirst | CoursePosFlags.IsLeft | CoursePosFlags.IsRight,
+                            m_ParentMesh = -1,
+                            m_Position = curve.m_Bezier.a,
+                            m_SplitPosition = 0,
+                            m_Rotation = NetUtils.GetNodeRotation(MathUtils.StartTangent(curve.m_Bezier)),
+                            m_CourseDelta = 0,
+                        },
+                    };
+
+                    buffer.AddComponent(e, netCourse);
+                }
+
                 buffer.AddComponent(e, creationDefinition);
             }
         }
 
+#if BURST
+        [BurstCompile]
+#endif
         private struct CreateDefinitionsWithRadiusOfTransform : IJobChunk
         {
             public EntityTypeHandle m_EntityType;
@@ -154,11 +207,6 @@ namespace Recolor.Systems.Tools
                             creationDefinition.m_Prefab = m_PrefabRefLookup[entityNativeArray[i]];
                         }
 
-                        if (m_OwnerLookup.TryGetComponent(entityNativeArray[i], out Owner owner))
-                        {
-                            creationDefinition.m_Owner = owner.m_Owner;
-                        }
-
                         buffer.AddComponent(e, default(Updated));
                         ObjectDefinition objectDefinition = new()
                         {
@@ -169,7 +217,7 @@ namespace Recolor.Systems.Tools
                             m_PrefabSubIndex = -1,
                         };
 
-                        if (owner.m_Owner != Entity.Null &&
+                        if (m_OwnerLookup.TryGetComponent(entityNativeArray[i], out Owner owner) &&
                             m_TransformLookup.TryGetComponent(owner.m_Owner, out Game.Objects.Transform ownerTransform))
                         {
                             Game.Objects.Transform inverseParentTransform = ObjectUtils.InverseTransform(ownerTransform);
@@ -208,6 +256,9 @@ namespace Recolor.Systems.Tools
             }
         }
 
+#if BURST
+        [BurstCompile]
+#endif
         private struct CreateDefinitionsWithRadiusOfInterpolatedTransform : IJobChunk
         {
             public EntityTypeHandle m_EntityType;
@@ -242,11 +293,6 @@ namespace Recolor.Systems.Tools
                         if (m_PrefabRefLookup.HasComponent(entityNativeArray[i]))
                         {
                             creationDefinition.m_Prefab = m_PrefabRefLookup[entityNativeArray[i]];
-                        }
-
-                        if (m_OwnerLookup.TryGetComponent(entityNativeArray[i], out Owner owner))
-                        {
-                            creationDefinition.m_Owner = owner.m_Owner;
                         }
 
                         buffer.AddComponent(e, default(Updated));

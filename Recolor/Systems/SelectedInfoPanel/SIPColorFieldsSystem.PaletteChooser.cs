@@ -404,5 +404,17 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             return true;
         }
+
+        private void ToggleShowPaletteChoices()
+        {
+            m_PreferPalettes = !m_PreferPalettes;
+            HandleScopeAndButtonStates();
+            Mod.Instance.Settings.ShowSIPPaletteOptions = m_PreferPalettes;
+            Mod.Instance.Settings.ApplyAndSave();
+            if (m_ToolSystem.activeTool == m_ColorPainterTool)
+            {
+                m_ColorPainterUISystem.UpdatePalettes();
+            }
+        }
     }
 }

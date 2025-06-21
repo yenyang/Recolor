@@ -80,6 +80,9 @@ namespace Recolor.Systems.SingleInstance
                 m_BuildingLookup = SystemAPI.GetComponentLookup<Building>(isReadOnly: true),
                 m_FilterType = m_UISystem.ColorPainterFilterType,
                 m_PalettesActive = m_SIPColorFieldsSystem.ShowPaletteChoices,
+                m_EditorContainerLookup = SystemAPI.GetComponentLookup<Game.Tools.EditorContainer>(isReadOnly: true),
+                m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
+                m_TempLookup = SystemAPI.GetComponentLookup<Temp>(isReadOnly: true),
             };
             JobHandle jobHandle = tempCustomMeshColorJob.Schedule(m_TempMeshColorQuery, Dependency);
             m_Barrier.AddJobHandleForProducer(jobHandle);
@@ -114,6 +117,12 @@ namespace Recolor.Systems.SingleInstance
             public ColorPainterUISystem.FilterType m_FilterType;
             [ReadOnly]
             public ComponentLookup<Building> m_BuildingLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Tools.EditorContainer> m_EditorContainerLookup;
+            [ReadOnly]
+            public ComponentLookup<Owner> m_OwnerLookup;
+            [ReadOnly]
+            public ComponentLookup<Temp> m_TempLookup;
             public bool m_PalettesActive;
 
 
@@ -124,6 +133,19 @@ namespace Recolor.Systems.SingleInstance
                 for (int i = 0; i < chunk.Count; i++)
                 {
                     Temp temp = tempNativeArray[i];
+                    if (temp.m_Original == Entity.Null &&
+                        m_PainterToolActive &&
+                        m_OwnerLookup.TryGetComponent(entityNativeArray[i], out Owner owner) &&
+                        m_EditorContainerLookup.HasComponent(owner.m_Owner) &&
+                        m_TempLookup.TryGetComponent(owner.m_Owner, out Temp ownerTemp) &&
+                        m_OwnerLookup.TryGetComponent(ownerTemp.m_Original, out Owner originalOwner))
+                    {
+                        temp.m_Original = ownerTemp.m_Original;
+                        buffer.SetComponent(entityNativeArray[i], temp);
+                        ownerTemp.m_Original = originalOwner.m_Owner;
+                        buffer.SetComponent(owner.m_Owner, ownerTemp);
+                    }
+
                     if (!m_PrefabRefLookup.TryGetComponent(temp.m_Original, out PrefabRef prefabRef) ||
                         !m_SubMeshLookup.TryGetBuffer(prefabRef.m_Prefab, out DynamicBuffer<SubMesh> subMeshBuffer))
                     {
@@ -196,6 +218,7 @@ namespace Recolor.Systems.SingleInstance
                             meshColorBuffer.Add(new () { m_ColorSet = newColorSet });
                             newCustomMeshColorBuffer.Add(new () { m_ColorSet = newColorSet });
                         }
+
                     }
                     else if (m_PainterToolActive &&
                              m_State == ColorPainterToolSystem.State.Reseting &&
