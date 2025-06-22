@@ -135,6 +135,7 @@ namespace Recolor.Systems.Palettes
                 m_RaycastEntity = m_ColorPainterToolSystem.RaycastEntity,
                 m_TempType = SystemAPI.GetComponentTypeHandle<Temp>(isReadOnly: true),
                 m_PalettesActive = m_SIPColorFieldsSystem.ShowPaletteChoices,
+                m_TempLookup = SystemAPI.GetComponentLookup<Temp>(isReadOnly: true),
             };
 
             Dependency = assignPalettesJob.Schedule(entityQuery, Dependency);
@@ -232,6 +233,8 @@ namespace Recolor.Systems.Palettes
             [ReadOnly]
             public ComponentTypeHandle<Temp> m_TempType;
             public bool m_PalettesActive;
+            [ReadOnly]
+            public ComponentLookup<Temp> m_TempLookup;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
@@ -255,6 +258,21 @@ namespace Recolor.Systems.Palettes
                         !m_EditorContainerLookup.HasComponent(owner.m_Owner)))
                     {
                         continue;
+                    }
+
+                    // This section is necessary to fix the temp components with netlanes.
+                    if (temp.m_Original == Entity.Null &&
+                        m_PainterToolActive &&
+                        m_OwnerLookup.TryGetComponent(entityNativeArray[i], out Owner owner2) &&
+                        m_EditorContainerLookup.HasComponent(owner2.m_Owner) &&
+                        m_TempLookup.TryGetComponent(owner2.m_Owner, out Temp ownerTemp) &&
+                        m_OwnerLookup.TryGetComponent(ownerTemp.m_Original, out Owner originalOwner))
+                    {
+                        temp.m_Original = ownerTemp.m_Original;
+                        buffer.SetComponent(entityNativeArray[i], temp);
+                        ownerTemp.m_Original = originalOwner.m_Owner;
+                        buffer.SetComponent(owner2.m_Owner, ownerTemp);
+                        buffer.AddComponent<Hidden>(temp.m_Original);
                     }
 
                     if (m_PainterToolActive &&

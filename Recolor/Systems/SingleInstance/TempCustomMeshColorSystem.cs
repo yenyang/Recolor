@@ -2,7 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-// #define BURST
+#define BURST
 namespace Recolor.Systems.SingleInstance
 {
     using Colossal.Logging;
@@ -125,7 +125,6 @@ namespace Recolor.Systems.SingleInstance
             public ComponentLookup<Temp> m_TempLookup;
             public bool m_PalettesActive;
 
-
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 NativeArray<Temp> tempNativeArray = chunk.GetNativeArray(ref m_TempType);
@@ -133,6 +132,8 @@ namespace Recolor.Systems.SingleInstance
                 for (int i = 0; i < chunk.Count; i++)
                 {
                     Temp temp = tempNativeArray[i];
+
+                    // This section is necessary to fix the temp components with netlanes.
                     if (temp.m_Original == Entity.Null &&
                         m_PainterToolActive &&
                         m_OwnerLookup.TryGetComponent(entityNativeArray[i], out Owner owner) &&
@@ -144,6 +145,7 @@ namespace Recolor.Systems.SingleInstance
                         buffer.SetComponent(entityNativeArray[i], temp);
                         ownerTemp.m_Original = originalOwner.m_Owner;
                         buffer.SetComponent(owner.m_Owner, ownerTemp);
+                        buffer.AddComponent<Hidden>(temp.m_Original);
                     }
 
                     if (!m_PrefabRefLookup.TryGetComponent(temp.m_Original, out PrefabRef prefabRef) ||
@@ -218,7 +220,6 @@ namespace Recolor.Systems.SingleInstance
                             meshColorBuffer.Add(new () { m_ColorSet = newColorSet });
                             newCustomMeshColorBuffer.Add(new () { m_ColorSet = newColorSet });
                         }
-
                     }
                     else if (m_PainterToolActive &&
                              m_State == ColorPainterToolSystem.State.Reseting &&

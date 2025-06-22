@@ -8,6 +8,7 @@ namespace Recolor.Systems.Palettes
     using System.Collections.Generic;
     using Colossal.Entities;
     using Colossal.Logging;
+    using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
     using Game.Objects;
@@ -30,6 +31,7 @@ namespace Recolor.Systems.Palettes
         private NativeHashMap<Entity, Entity> m_PaletteInstanceMap;
         private EntityQuery m_UpdatedPaletteInstanceQuery;
         private EntityQuery m_DeletedPaletteInstanceQuery;
+        private EntityQuery m_PaletteInstanceQuery;
         private EntityQuery m_AssignedPaletteQuery;
         private EntityArchetype m_PaletteInstanceArchetype;
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
@@ -130,9 +132,38 @@ namespace Recolor.Systems.Palettes
                    .WithNone<Deleted, Plant>()
                    .Build();
 
+            m_PaletteInstanceQuery = SystemAPI.QueryBuilder()
+                   .WithAll<Swatch, PrefabRef>()
+                   .WithNone<Deleted>()
+                   .Build();
+
             RequireAnyForUpdate(m_UpdatedPaletteInstanceQuery, m_DeletedPaletteInstanceQuery);
 
             m_Log.Info($"{nameof(PaletteInstanceManagerSystem)}.{nameof(OnCreate)} Created.");
+        }
+
+        /// <inheritdoc/>
+        protected override void OnGamePreload(Purpose purpose, GameMode mode)
+        {
+            base.OnGamePreload(purpose, mode);
+            m_PaletteInstanceMap.Clear();
+        }
+
+        /// <inheritdoc/>
+        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
+        {
+            base.OnGameLoadingComplete(purpose, mode);
+
+            NativeArray<Entity> entities = m_PaletteInstanceQuery.ToEntityArray(Allocator.Temp);
+            for (int i = 0; i < entities.Length; i++)
+            {
+                if (!m_PaletteInstanceMap.ContainsKey(entities[i]) &&
+                     EntityManager.TryGetComponent(entities[i], out PrefabRef prefabRef))
+                {
+                    m_PaletteInstanceMap.Add(prefabRef.m_Prefab, entities[i]);
+                    m_Log.Debug($"{nameof(PaletteInstanceManagerSystem)}.{nameof(OnGameLoadingComplete)} Recorded Palette Instance Entity {entities[i].Index}.{entities[i].Version}.");
+                }
+            }
         }
 
         /// <inheritdoc/>
