@@ -142,10 +142,13 @@ namespace Recolor.Systems.SingleInstance
                         m_OwnerLookup.TryGetComponent(ownerTemp.m_Original, out Owner originalOwner))
                     {
                         temp.m_Original = ownerTemp.m_Original;
+                        temp.m_Flags |= TempFlags.Essential;
                         buffer.SetComponent(entityNativeArray[i], temp);
+                        ownerTemp.m_Flags |= TempFlags.Essential;
                         ownerTemp.m_Original = originalOwner.m_Owner;
                         buffer.SetComponent(owner.m_Owner, ownerTemp);
                         buffer.AddComponent<Hidden>(temp.m_Original);
+                        buffer.AddComponent<Hidden>(ownerTemp.m_Original);
                     }
 
                     if (!m_PrefabRefLookup.TryGetComponent(temp.m_Original, out PrefabRef prefabRef) ||

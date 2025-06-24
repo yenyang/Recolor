@@ -430,7 +430,9 @@ namespace Recolor.Systems.Tools
                      (!applyAction.IsPressed() &&
                       !secondaryApplyAction.IsPressed()))
             {
-                if (m_RaycastEntity != m_PreviousRaycastEntity)
+                if (m_RaycastEntity != m_PreviousRaycastEntity &&
+                   (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker ||
+                    m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single))
                 {
                     m_PreviousRaycastEntity = m_RaycastEntity;
                     return UpdateDefinitions(inputDeps);

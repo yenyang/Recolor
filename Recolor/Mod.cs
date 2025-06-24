@@ -130,7 +130,6 @@ namespace Recolor
             Log.Info($"{nameof(OnLoad)} Initalizing systems");
             updateSystem.UpdateAt<SIPColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<TempCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
-            updateSystem.UpdateAfter<CustomMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<ColorPickerToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<ColorPainterToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<ColorPainterUISystem>(SystemUpdatePhase.UIUpdate);
@@ -144,6 +143,7 @@ namespace Recolor
             updateSystem.UpdateAt<PalettesUISystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<AddPalettePrefabsSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAfter<AssignedPaletteCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateAfter<CustomMeshColorSystem, AssignedPaletteCustomColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<PaletteInstanceManagerSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<TempAssignedPalettesSystem>(SystemUpdatePhase.Modification2);
             updateSystem.UpdateAt<ApplyColorsSystem>(SystemUpdatePhase.ApplyTool);

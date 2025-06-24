@@ -322,6 +322,7 @@ namespace Recolor.Systems.Tools
                     m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
                     m_CurveLookup = SystemAPI.GetComponentLookup<Game.Net.Curve>(isReadOnly: true),
                     m_EditorContainterLookup = SystemAPI.GetComponentLookup<Game.Tools.EditorContainer>(isReadOnly: true),
+                    m_PseudoRandomSeedLookup = SystemAPI.GetComponentLookup<Game.Common.PseudoRandomSeed>(isReadOnly: true),
                 };
                 inputDeps = createDefinitionJob.Schedule(inputDeps);
                 m_Barrier.AddJobHandleForProducer(inputDeps);
@@ -331,7 +332,6 @@ namespace Recolor.Systems.Tools
                 CreateDefinitionsWithRadiusOfTransform createDefinitionsWithRadiusOfTransform = new CreateDefinitionsWithRadiusOfTransform()
                 {
                     m_EntityType = SystemAPI.GetEntityTypeHandle(),
-                    m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
                     m_Position = m_LastRaycastPosition,
                     buffer = m_Barrier.CreateCommandBuffer(),
                     m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
@@ -340,6 +340,7 @@ namespace Recolor.Systems.Tools
                     m_SelectedEntities = m_SelectedEntities,
                     m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
                     m_TransformLookup = SystemAPI.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true),
+                    m_PseudoRandomSeedLookup = SystemAPI.GetComponentLookup<Game.Common.PseudoRandomSeed>(isReadOnly: true),
                 };
 
                 if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
@@ -357,7 +358,6 @@ namespace Recolor.Systems.Tools
                     CreateDefinitionsWithRadiusOfInterpolatedTransform createDefinitionsWithRadiusOfInterpolatedTransform = new CreateDefinitionsWithRadiusOfInterpolatedTransform()
                     {
                         m_EntityType = SystemAPI.GetEntityTypeHandle(),
-                        m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
                         m_Position = m_LastRaycastPosition,
                         buffer = m_Barrier.CreateCommandBuffer(),
                         m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
@@ -365,9 +365,28 @@ namespace Recolor.Systems.Tools
                         m_InterpolatedTransformType = SystemAPI.GetComponentTypeHandle<InterpolatedTransform>(isReadOnly: true),
                         m_SelectedEntities = m_SelectedEntities,
                         m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
+                        m_PseudoRandomSeedLookup = SystemAPI.GetComponentLookup<Game.Common.PseudoRandomSeed>(isReadOnly: true),
                     };
 
                     inputDeps = createDefinitionsWithRadiusOfInterpolatedTransform.Schedule(m_VehicleMeshColorQuery, inputDeps);
+                }
+                else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.NetLanes)
+                {
+                    CreateDefinitionsWithinRadiusOfCurve createDefinitionsWithinRadiusOfCurve = new CreateDefinitionsWithinRadiusOfCurve()
+                    {
+                        m_CurveType = SystemAPI.GetComponentTypeHandle<Game.Net.Curve>(isReadOnly: true),
+                        m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                        m_EditorContainerLookup = SystemAPI.GetComponentLookup<Game.Tools.EditorContainer>(isReadOnly: true),
+                        m_OwnerLookup = SystemAPI.GetComponentLookup<Game.Common.Owner>(isReadOnly: true),
+                        m_SelectedEntities = m_SelectedEntities,
+                        m_Position = m_LastRaycastPosition,
+                        m_PrefabRefLookup = SystemAPI.GetComponentLookup<Game.Prefabs.PrefabRef>(isReadOnly: true),
+                        m_PseudoRandomSeedLookup = SystemAPI.GetComponentLookup<Game.Common.PseudoRandomSeed>(isReadOnly: true),
+                        m_Radius = m_ColorPainterUISystem.Radius,
+                        buffer = m_Barrier.CreateCommandBuffer(),
+                    };
+
+                    inputDeps = createDefinitionsWithinRadiusOfCurve.Schedule(m_NetLanesMeshColorQuery, inputDeps);
                 }
 
                 m_Barrier.AddJobHandleForProducer(inputDeps);
