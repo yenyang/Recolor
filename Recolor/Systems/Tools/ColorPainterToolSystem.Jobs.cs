@@ -138,7 +138,6 @@ namespace Recolor.Systems.Tools
 
                 if (m_CurveLookup.TryGetComponent(m_InstanceEntity, out Game.Net.Curve curve))
                 {
-
                     NetCourse netCourse = new NetCourse()
                     {
                         m_Curve = curve.m_Bezier,

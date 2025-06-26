@@ -451,5 +451,36 @@ namespace Recolor.Systems.Tools
 
             return inputDeps;
         }
+
+        private bool PassesFilters()
+        {
+            if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building &&
+                EntityManager.HasComponent<Building>(m_RaycastEntity))
+            {
+                return true;
+            }
+
+            if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Vehicles &&
+                EntityManager.HasComponent<Vehicle>(m_RaycastEntity))
+            {
+                return true;
+            }
+
+            if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.NetLanes &&
+                EntityManager.HasComponent<Game.Net.Curve>(m_RaycastEntity))
+            {
+                return true;
+            }
+
+            if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Props &&
+                EntityManager.HasComponent<Game.Objects.Object>(m_RaycastEntity) &&
+                EntityManager.HasComponent<Game.Objects.Static>(m_RaycastEntity) &&
+               !EntityManager.HasComponent<Building>(m_RaycastEntity))
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }
