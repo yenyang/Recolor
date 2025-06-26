@@ -1,7 +1,6 @@
 ﻿// <copyright file="AssignedPaletteCustomColorSystem.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
-
 namespace Recolor.Systems.Palettes
 {
     using System.Collections.Generic;
@@ -143,6 +142,7 @@ namespace Recolor.Systems.Palettes
                 }
 
                 ColorSet colorSet = meshColorBuffer[0].m_ColorSet;
+
                 for (int i = 0; i < palettes.Length; i++)
                 {
                     if (!EntityManager.TryGetBuffer(palettes[i].m_PaletteInstanceEntity, isReadOnly: true, out DynamicBuffer<Swatch> swatches))

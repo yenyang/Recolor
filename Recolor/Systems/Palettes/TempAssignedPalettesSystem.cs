@@ -21,9 +21,7 @@ namespace Recolor.Systems.Palettes
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Entities.UniversalDelegates;
     using Unity.Jobs;
-    using UnityEngine.Assertions.Must;
 
     /// <summary>
     /// Game system to handle assigning palette to Temp object entities when appropriate.
@@ -136,6 +134,10 @@ namespace Recolor.Systems.Palettes
                 m_TempType = SystemAPI.GetComponentTypeHandle<Temp>(isReadOnly: true),
                 m_PalettesActive = m_SIPColorFieldsSystem.ShowPaletteChoices,
                 m_TempLookup = SystemAPI.GetComponentLookup<Temp>(isReadOnly: true),
+                m_MeshColorType = SystemAPI.GetBufferTypeHandle<MeshColor>(isReadOnly: true),
+                m_PseudoRandomSeedType = SystemAPI.GetComponentTypeHandle<PseudoRandomSeed>(isReadOnly: true),
+                m_SwatchLookup = SystemAPI.GetBufferLookup<Swatch>(isReadOnly: true),
+                m_PseudoRandomSeedLookup = SystemAPI.GetComponentLookup<PseudoRandomSeed>(isReadOnly: true),
             };
 
             Dependency = assignPalettesJob.Schedule(entityQuery, Dependency);
@@ -235,11 +237,21 @@ namespace Recolor.Systems.Palettes
             public bool m_PalettesActive;
             [ReadOnly]
             public ComponentLookup<Temp> m_TempLookup;
+            [ReadOnly]
+            public BufferTypeHandle<MeshColor> m_MeshColorType;
+            [ReadOnly]
+            public ComponentTypeHandle<PseudoRandomSeed> m_PseudoRandomSeedType;
+            [ReadOnly]
+            public BufferLookup<Swatch> m_SwatchLookup;
+            [ReadOnly]
+            public ComponentLookup<PseudoRandomSeed> m_PseudoRandomSeedLookup;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 NativeArray<Temp> tempNativeArray = chunk.GetNativeArray(ref m_TempType);
                 NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
+                BufferAccessor<MeshColor> meshColorAccessor = chunk.GetBufferAccessor(ref m_MeshColorType);
+                NativeArray<PseudoRandomSeed> pseudoRandomSeedArray = chunk.GetNativeArray(ref m_PseudoRandomSeedType);
                 if (m_PrefabEntities.Length < 2 ||
                         m_PaletteInstanceEntities.Length < 2 ||
                        (m_PrefabEntities[0] == Entity.Null &&
@@ -278,6 +290,14 @@ namespace Recolor.Systems.Palettes
                         buffer.AddComponent<Hidden>(ownerTemp.m_Original);
                     }
 
+                    PseudoRandomSeed seed = pseudoRandomSeedArray[i];
+                    if (m_PseudoRandomSeedLookup.TryGetComponent(temp.m_Original, out PseudoRandomSeed originalSeed) &&
+                        originalSeed.m_Seed != seed.m_Seed)
+                    {
+                        buffer.SetComponent(instanceEntity, originalSeed);
+                        seed = originalSeed;
+                    }
+
                     if (m_PainterToolActive &&
                        ((m_SelectionType == ColorPainterUISystem.SelectionType.Single &&
                         m_RaycastEntity != temp.m_Original) ||
@@ -307,8 +327,111 @@ namespace Recolor.Systems.Palettes
 
                         paletteAssignments.Add(newPaletteAssignment);
                     }
+
+                    AssignColorFromPalette(instanceEntity, seed, paletteAssignments, meshColorAccessor[i], ref buffer);
                 }
             }
+
+
+            private void AssignColorFromPalette(Entity instanceEntity, PseudoRandomSeed pseudoRandomSeed, DynamicBuffer<AssignedPalette> palettes, DynamicBuffer<MeshColor> meshColorBuffer, ref EntityCommandBuffer buffer)
+            {
+                if (palettes.Length == 0 ||
+                    meshColorBuffer.Length == 0)
+                {
+                    return;
+                }
+
+                ColorSet colorSet = meshColorBuffer[0].m_ColorSet;
+                ColorSet originalColorSet = colorSet;
+                for (int channel = 0; channel <= 2; channel++)
+                {
+                    for (int i = 0; i < palettes.Length; i++)
+                    {
+                        if (!m_SwatchLookup.TryGetBuffer(palettes[i].m_PaletteInstanceEntity, out DynamicBuffer<Swatch> swatches) ||
+                            palettes[i].m_Channel != channel)
+                        {
+                            continue;
+                        }
+
+                        int totalProbabilityWeight = 0;
+                        NativeHashMap<UnityEngine.Color, int> probabilityWeights = new (swatches.Length, Allocator.TempJob);
+                        foreach (Swatch swatch in swatches)
+                        {
+                            if (!probabilityWeights.ContainsKey(swatch.m_SwatchColor))
+                            {
+                                probabilityWeights.Add(swatch.m_SwatchColor, swatch.m_ProbabilityWeight);
+                            }
+                            else
+                            {
+                                probabilityWeights[swatch.m_SwatchColor] += swatch.m_ProbabilityWeight;
+                            }
+
+                            totalProbabilityWeight += swatch.m_ProbabilityWeight;
+                        }
+
+                        if (totalProbabilityWeight == 0)
+                        {
+                            probabilityWeights.Dispose();
+                            continue;
+                        }
+
+                        int probabilityResult = GetProbabilityResult(totalProbabilityWeight, pseudoRandomSeed.m_Seed, channel);
+
+                        foreach (Unity.Collections.KVPair<UnityEngine.Color, int> kVPair in probabilityWeights)
+                        {
+                            if (kVPair.Value > probabilityResult)
+                            {
+                                colorSet[palettes[i].m_Channel] = kVPair.Key;
+                                break;
+                            }
+                            else
+                            {
+                                probabilityResult -= kVPair.Value;
+                            }
+                        }
+
+                        probabilityWeights.Dispose();
+                    }
+                }
+
+                if (originalColorSet.m_Channel0 == colorSet.m_Channel0 &&
+                    originalColorSet.m_Channel1 == colorSet.m_Channel1 &&
+                    originalColorSet.m_Channel2 == colorSet.m_Channel2)
+                {
+                    return;
+                }
+
+                DynamicBuffer<MeshColor> newMeshColorBuffer = buffer.SetBuffer<MeshColor>(instanceEntity);
+                DynamicBuffer<CustomMeshColor> customMeshColorBuffer = buffer.AddBuffer<CustomMeshColor>(instanceEntity);
+                DynamicBuffer<MeshColorRecord> meshColorRecordBuffer = buffer.AddBuffer<MeshColorRecord>(instanceEntity);
+                for (int i = 0; i < meshColorBuffer.Length; i++)
+                {
+                    newMeshColorBuffer.Add(new MeshColor() { m_ColorSet = colorSet });
+                    customMeshColorBuffer.Add(new CustomMeshColor() { m_ColorSet = colorSet });
+                    meshColorRecordBuffer.Add(new MeshColorRecord() { m_ColorSet = meshColorBuffer[i].m_ColorSet });
+                }
+
+                buffer.AddComponent<BatchesUpdated>(instanceEntity);
+            }
+
+            /// <summary>
+            /// This method controls the final color for all palettes. After release DO NOT CHANGE THIS!.
+            /// </summary>
+            /// <param name="totalProbabilityWeight">Total weight of all swatch probabilities.</param>
+            /// <param name="seed">PsudorandomSeed.m_seed</param>
+            /// <param name="channel">channel 0-2.</param>
+            /// <returns>Random Int between 0 and probability weight that should be sufficiently different between the 3 channels.</returns>
+            private readonly int GetProbabilityResult(int totalProbabilityWeight, ushort seed, int channel)
+            {
+                Unity.Mathematics.Random random = new(seed);
+                for (int j = 0; j < channel * 10; j++)
+                {
+                    random.NextInt(totalProbabilityWeight);
+                }
+
+                return random.NextInt(totalProbabilityWeight);
+            }
+
         }
 
 
