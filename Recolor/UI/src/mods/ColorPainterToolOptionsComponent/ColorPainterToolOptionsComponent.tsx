@@ -19,6 +19,11 @@ import { PaletteChooserUIData } from "mods/Domain/PaletteAndSwatches/PaletteChoo
 import { FocusDisabled } from "cs2/input";
 import { PaletteCategory } from "mods/Domain/PaletteAndSwatches/PaletteCategoryType";
 import { MenuType } from "mods/Domain/MenuType";
+import { Dropdown, DropdownItem, DropdownToggle } from "cs2/ui";
+import panelStyles from "../PalettesMenuComponent/PaletteMenuStyles.module.scss";
+import { PaletteFilterEntityUIData } from "mods/Domain/PaletteAndSwatches/PaletteFilterEntityUIData";
+import { entityEquals } from "cs2/utils";
+import { PaletteFilterType } from "mods/Domain/PaletteAndSwatches/PaletteFilterType";
 /*
 import resetSrc from "images/uilStandard/Reset.svg";
 import singleSrc from "images/uilStandard/SingleRhombus.svg";
@@ -61,7 +66,6 @@ const arrowUpSrc =           uilStandard +  "ArrowUpThickStroke.svg";
 const netLanesSrc =                         uilStandard + "FenceIsometric.svg";
 const plusSrc =                         uilStandard + "Plus.svg";
 
-
 const ColorPainterSelectionType$ = bindValue<number>(mod.id, "ColorPainterSelectionType");
 const SingleInstance$ = bindValue<ButtonState>(mod.id, 'SingleInstance');
 const Matching$ = bindValue<ButtonState>(mod.id, 'Matching');
@@ -72,6 +76,10 @@ const ToolMode$ = bindValue<PainterToolMode>(mod.id, "PainterToolMode");
 const ShowHexaDecimals$ = bindValue<boolean>(mod.id, "ShowHexaDecimals");
 const ShowPaletteChoices$ = bindValue<ButtonState>(mod.id,"ShowPaletteChoices");
 const PainterColorSet$ = bindValue<RecolorSet>(mod.id, "PainterColorSet");
+
+const SelectedFilterType$ = bindValue<PaletteFilterType>(mod.id, "ColorPainterPaletteFilterType");
+const FilterEntities$ = bindValue<PaletteFilterEntityUIData[]>(mod.id, "ColorPainterPaletteFilterEntities");
+const SelectedFilterPrefabEntity$ = bindValue<Entity>(mod.id, "ColorPainterPaletteFilterPrefabEntity");
 
 const PaletteChooserPainterData$ = bindValue<PaletteChooserUIData>(mod.id, "PaletteChoicesPainter");
 const EditingPrefabEntity$ = bindValue<Entity>(mod.id, "EditingPrefabEntity");
@@ -119,6 +127,11 @@ function handleCategoryClick(category : PaletteCategory) {
 }
 
 
+
+const dropDownThemes = getModule('game-ui/editor/themes/editor-dropdown.module.scss', 'classes');
+
+
+
 export const ColorPainterToolOptionsComponent = () => {
     
     // These get the value of the bindings.
@@ -134,6 +147,9 @@ export const ColorPainterToolOptionsComponent = () => {
     const toolActive = useValue(tool.activeTool$).id == "ColorPainterTool";     
     const ShowPaletteChoices = useValue(ShowPaletteChoices$);    
 
+    const SelectedFilterType = useValue(SelectedFilterType$);
+    const FilterEntities = useValue(FilterEntities$);
+    const SelectedFilterPrefabEntity = useValue(SelectedFilterPrefabEntity$);
     const PaletteChooserPainterData = useValue(PaletteChooserPainterData$);
     const CopiedPalette = useValue(CopiedPalette$);
     const CopiedPaletteSet = useValue(CopiedPaletteSet$);
@@ -142,6 +158,55 @@ export const ColorPainterToolOptionsComponent = () => {
 
     // translation handling. Translates using locale keys that are defined in C# or fallback string here.
     const { translate } = useLocalization();
+
+    
+    function IsSelected(prefabEntity: Entity) 
+    {
+        if (entityEquals(prefabEntity, SelectedFilterPrefabEntity)) 
+        {
+            return true;
+        }
+
+        return false;
+    }
+       
+    
+    function GetFilterUIData(prefabEntity : Entity) 
+    {
+        for (let i=0; i<FilterEntities.length; i++) 
+        {
+            if (entityEquals(FilterEntities[i].FilterPrefabEntity, prefabEntity)) 
+            {
+                return FilterEntities[i];
+            }
+        }
+
+        if (FilterEntities.length > 0) 
+        {
+            return FilterEntities[0];
+        }
+
+        const nullEntity : Entity = {
+            index: 0,
+            version: 0,
+        }
+
+        const defaultData : PaletteFilterEntityUIData = {
+            FilterPrefabEntity:  nullEntity,
+            Src: "",
+            LocaleKey: "",
+        };
+
+        return defaultData;
+    }
+
+
+    let FilterTypes : (string | null) [] = [
+        translate("Recolor.SECTION_TITLE[None]", locale["Recolor.SECTION_TITLE[None]"]),
+        translate("Toolbar.THEME_PANEL_TITLE", "Theme"),
+        translate("Toolbar.ASSET_PACKS_PANEL_TITLE", "Pack"),
+        translate("Tutorials.TITLE[ZoningTutorialZoneTypes]", "Zone Types"),
+    ];
 
     return (
         <>
@@ -273,14 +338,14 @@ export const ColorPainterToolOptionsComponent = () => {
                         </VanillaComponentResolver.instance.Section>
                     )}
                     { (ColorPainterSelectionType == 1 || (ShowPaletteChoices & ButtonState.On) == ButtonState.On) && ToolMode != PainterToolMode.Picker  && (
-                        <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Filter]", locale["Recolor.SECTION_TITLE[Filter]"])}>
+                        <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Category]", locale["Recolor.SECTION_TITLE[Category]"])}>
                             <VanillaComponentResolver.instance.ToolButton
                                 src={buildingSrc}
                                 selected={Filter == 0}
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                 multiSelect = {false}   // I haven't tested any other value here
                                 disabled = {false}      
-                                tooltip = {DescriptionTooltip( translate("Recolor.TOOLTIP_TITLE[BuildingFilter]",locale["Recolor.TOOLTIP_TITLE[BuildingFilter]"]), translate("Recolor.TOOLTIP_DESCRIPTION[BuildingFilter]", locale["Recolor.TOOLTIP_DESCRIPTION[BuildingFilter]"]))}
+                                tooltip = {DescriptionTooltip( translate("Recolor.TOOLTIP_TITLE[BuildingFilter]" ,locale["Recolor.TOOLTIP_TITLE[BuildingFilter]"]), translate("Recolor.TOOLTIP_DESCRIPTION[BuildingFilter]", locale["Recolor.TOOLTIP_DESCRIPTION[BuildingFilter]"]))}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                 onSelect={() => handleClick("BuildingFilter")}
                             />
@@ -310,11 +375,63 @@ export const ColorPainterToolOptionsComponent = () => {
                                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
                                 multiSelect = {false}   // I haven't tested any other value here
                                 disabled = {false}      
-                                tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[NetLaneFilter]", locale["Recolor.TOOLTIP_TITLE[NetLaneFilter]"]) ,translate("Recolor.TOOLTIP_DESCRIPTION[NetLaneFilter]", locale["Recolor.TOOLTIP_DESCRIPTION[NetLaneFilter]"]))}
+                                tooltip = {DescriptionTooltip(translate("Recolor.TOOLTIP_TITLE[NetLanePainterCategory]", locale["Recolor.TOOLTIP_TITLE[NetLanePainterCategory]"]) ,translate("Recolor.TOOLTIP_DESCRIPTION[NetLanePainterCategory]", locale["Recolor.TOOLTIP_DESCRIPTION[NetLanePainterCategory]"]))}
                                 className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                                 onSelect={() => handleClick("NetLanesFilter")}
                             />
                         </VanillaComponentResolver.instance.Section>
+                    )}
+                    {(ShowPaletteChoices & ButtonState.On) == ButtonState.On && ToolMode != PainterToolMode.Picker && (
+                        <>
+                            <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[FilterType]", locale["Recolor.SECTION_TITLE[FilterType]"])}>
+                                    <Dropdown 
+                                        theme = {dropDownThemes}
+                                        content={                    
+                                            FilterTypes.map((type, index: number) => (
+                                                <DropdownItem value={type} className={dropDownThemes.dropdownItem} selected={SelectedFilterType==index} onChange={() => trigger(mod.id, "SetColorPainterPaletteFilter", index)}>
+                                                    <div className={panelStyles.filterTypeWidth}>{type}</div>
+                                                </DropdownItem>
+                                            ))
+                                        }
+                                    >
+                                        <DropdownToggle disabled={false}>
+                                            <div className={panelStyles.filterTypeWidth}>{FilterTypes[SelectedFilterType]}</div>
+                                        </DropdownToggle>
+                                    </Dropdown>
+                            </VanillaComponentResolver.instance.Section>
+                            {FilterEntities.length > 0 && SelectedFilterPrefabEntity.index != 0 && (
+                                <VanillaComponentResolver.instance.Section title={""}>
+                                    <FocusDisabled disabled={true}>
+                                        <div className={styles.columnGroup}>
+                                                <div className={styles.rowGroup}>
+                                                    <Dropdown 
+                                                        theme = {dropDownThemes}
+                                                        content={         
+                                                            FilterEntities.map((entityData: PaletteFilterEntityUIData) => (
+                                                                <DropdownItem value={entityData} className={dropDownThemes.dropdownItem} onChange={() => trigger(mod.id, "SetColorPainterPaletteFilterChoice", entityData.FilterPrefabEntity)}>
+                                                                    <div className={classNames(panelStyles.filterChoicesDropdownToolOptions, panelStyles.filterRowGroup)}>
+                                                                        <img src={entityData.Src} className={panelStyles.filterChoicesIcon}></img>
+                                                                        <span className={panelStyles.smallSpacer}></span>
+                                                                        <div>{translate(entityData.LocaleKey)}</div>
+                                                                    </div>
+                                                                </DropdownItem>
+                                                            ))
+                                                        }
+                                                        >
+                                                        <DropdownToggle disabled={false}>
+                                                            <div className={classNames(panelStyles.filterChoicesDropdownToolOptions, panelStyles.filterRowGroup)}>
+                                                                <img src={GetFilterUIData(SelectedFilterPrefabEntity).Src} className={panelStyles.filterChoicesIcon}></img>
+                                                                <span className={panelStyles.smallSpacer}></span>
+                                                                <div>{translate(GetFilterUIData(SelectedFilterPrefabEntity).LocaleKey)}</div>
+                                                            </div>
+                                                        </DropdownToggle>
+                                                    </Dropdown>
+                                                </div>
+                                        </div>        
+                                    </FocusDisabled>                                        
+                                </VanillaComponentResolver.instance.Section>
+                            )}
+                        </>
                     )}
                     { ToolMode == PainterToolMode.Paint && (
                         <>

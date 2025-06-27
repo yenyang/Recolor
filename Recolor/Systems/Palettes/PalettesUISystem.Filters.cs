@@ -22,6 +22,7 @@ namespace Recolor.Systems.Palettes
     using Recolor.Domain.Palette.Prefabs;
     using Recolor.Extensions;
     using Recolor.Systems.SelectedInfoPanel;
+    using Recolor.Systems.Tools;
     using Unity.Collections;
     using Unity.Entities;
     using UnityEngine;

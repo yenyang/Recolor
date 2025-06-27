@@ -9,9 +9,6 @@ namespace Recolor.Systems.Palettes
     using System.IO;
     using System.Linq;
     using Colossal.Entities;
-    using Colossal.Logging;
-    using Colossal.PSI.Environment;
-    using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
     using Game.Prefabs;
@@ -23,6 +20,7 @@ namespace Recolor.Systems.Palettes
     using Recolor.Extensions;
     using Recolor.Settings;
     using Recolor.Systems.SelectedInfoPanel;
+    using Recolor.Systems.Tools;
     using Unity.Collections;
     using Unity.Entities;
     using UnityEngine;
@@ -150,6 +148,10 @@ namespace Recolor.Systems.Palettes
             m_PaletteLibrary.Binding.TriggerUpdate();
             m_PaletteLibraryVersion.Value = m_PaletteLibraryVersion + 1;
             m_SIPColorFieldsSystem.CurrentState = SIPColorFieldsSystem.State.EntityChanged;
+            if (m_ToolSystem.activeTool == m_ColorPainterToolSystem)
+            {
+                m_ColorPainterUISystem.UpdatePalettes();
+            }
         }
 
         private void GenerateNewPalette()

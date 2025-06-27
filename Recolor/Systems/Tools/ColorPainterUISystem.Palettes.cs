@@ -66,6 +66,12 @@ namespace Recolor.Systems.Tools
                     continue;
                 }
 
+                if (FilterByType(palettePrefabEntity, m_PaletteFilterType.Value))
+                {
+                    UnselectPalette(palettePrefabEntity, ref selectedEntities, ref m_PaletteChoicesPainterDatas);
+                    continue;
+                }
+
                 if (!EntityManager.TryGetComponent(palettePrefabEntity, out PaletteCategoryData categoryData) ||
                     categoryData.m_SubCategory == Entity.Null)
                 {
@@ -159,6 +165,112 @@ namespace Recolor.Systems.Tools
             }
         }
 
+        /// <summary>
+        /// Filter by different types of filters.
+        /// </summary>
+        /// <param name="palettePrefabEntity">Prefab entity for the palette.</param>
+        /// <param name="paletteFilterType">type of filter to check for.</param>
+        /// <returns>True if current entity does not match filter type. false if matches filter type.</returns>
+        private bool FilterByType(Entity palettePrefabEntity, PaletteFilterTypeData.PaletteFilterType paletteFilterType)
+        {
+            if (paletteFilterType == PaletteFilterTypeData.PaletteFilterType.None)
+            {
+                return false;
+            }
+
+            if (!EntityManager.TryGetBuffer(palettePrefabEntity, isReadOnly: true, out DynamicBuffer<PaletteFilterEntityData> paletteFilterEntityDatas))
+            {
+                return true;
+            }
+
+            for (int i = 0; i < paletteFilterEntityDatas.Length; i++)
+            {
+                if (paletteFilterEntityDatas[i].m_PrefabEntity == m_SelectedFilterPrefabEntity.Value)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+
+        private void SetFilter(int filterType)
+        {
+            PaletteFilterTypeData.PaletteFilterType paletteFilterType = (PaletteFilterTypeData.PaletteFilterType)filterType;
+            m_PaletteFilterType.Value = paletteFilterType;
+
+            EntityQuery filterQuery;
+
+            switch (paletteFilterType)
+            {
+                case PaletteFilterTypeData.PaletteFilterType.None:
+                    m_FilterEntities.Value = new PaletteFilterEntityUIData[0];
+                    m_FilterEntities.Binding.TriggerUpdate();
+                    m_SelectedFilterPrefabEntity.Value = Entity.Null;
+                    UpdatePalettes();
+                    return;
+                case PaletteFilterTypeData.PaletteFilterType.Theme:
+                    filterQuery = m_ThemePrefabEntityQuery;
+                    break;
+                case PaletteFilterTypeData.PaletteFilterType.Pack:
+                    filterQuery = m_AssetPackQuery;
+                    break;
+                case PaletteFilterTypeData.PaletteFilterType.ZoningType:
+                    filterQuery = m_ZonePrefabEntityQuery;
+                    break;
+                default:
+                    m_FilterEntities.Value = new PaletteFilterEntityUIData[0];
+                    m_FilterEntities.Binding.TriggerUpdate();
+                    m_SelectedFilterPrefabEntity.Value = Entity.Null;
+                    UpdatePalettes();
+                    return;
+            }
+
+            NativeArray<Entity> prefabEntities = filterQuery.ToEntityArray(Allocator.Temp);
+            PaletteFilterEntityUIData[] paletteFilterEntityUIDatas = new PaletteFilterEntityUIData[prefabEntities.Length];
+            for (int i = 0; i < prefabEntities.Length; i++)
+            {
+                paletteFilterEntityUIDatas[i] = new PaletteFilterEntityUIData(prefabEntities[i], GetLocaleKey(prefabEntities[i], paletteFilterType));
+            }
+
+            m_FilterEntities.Value = paletteFilterEntityUIDatas;
+            m_FilterEntities.Binding.TriggerUpdate();
+            if (paletteFilterEntityUIDatas.Length > 0)
+            {
+                SetFilterChoice(paletteFilterEntityUIDatas[0].FilterPrefabEntity);
+            }
+        }
+
+
+        private string GetLocaleKey(Entity prefabEntity, PaletteFilterTypeData.PaletteFilterType paletteFilterType)
+        {
+            if (m_PrefabSystem.TryGetPrefab(prefabEntity, out PrefabBase prefabBase))
+            {
+                switch (paletteFilterType)
+                {
+                    case PaletteFilterTypeData.PaletteFilterType.None:
+                        return string.Empty;
+                    case PaletteFilterTypeData.PaletteFilterType.Theme:
+                        return $"Assets.THEME[{prefabBase.name}]";
+                    case PaletteFilterTypeData.PaletteFilterType.Pack:
+                        return $"Assets.NAME[{prefabBase.name}]";
+                    case PaletteFilterTypeData.PaletteFilterType.ZoningType:
+                        return $"Assets.NAME[{prefabBase.name}]";
+                    default:
+                        return string.Empty;
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private void SetFilterChoice(Entity prefabEntity)
+        {
+            m_SelectedFilterPrefabEntity.Value = prefabEntity;
+            UpdatePalettes();
+        }
+
         private void UnselectPalette(Entity palettePrefabEntity, ref Entity[] selectedEntities, ref ValueBindingHelper<PaletteChooserUIData> paletteChooserUIDataBinding)
         {
             for (int i = 0; i < selectedEntities.Length; i++)
@@ -183,70 +295,6 @@ namespace Recolor.Systems.Tools
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Filter by different types of filters.
-        /// </summary>
-        /// <param name="palettePrefabEntity">Prefab entity for the palette.</param>
-        /// <param name="paletteFilterType">type of filter to check for.</param>
-        /// <returns>True if current entity does not match filter type. false if matches filter type.</returns>
-        private bool FilterByType(Entity palettePrefabEntity, PaletteFilterTypeData.PaletteFilterType paletteFilterType, Entity prefabEntity)
-        {
-            if (paletteFilterType == PaletteFilterTypeData.PaletteFilterType.None ||
-               !EntityManager.TryGetBuffer(palettePrefabEntity, isReadOnly: true, out DynamicBuffer<PaletteFilterEntityData> paletteFilterEntityDatas))
-            {
-                return false;
-            }
-
-            if (paletteFilterType == PaletteFilterTypeData.PaletteFilterType.Theme &&
-                EntityManager.TryGetComponent(prefabEntity, out SpawnableBuildingData spawnableBuildingData) &&
-                m_PrefabSystem.TryGetPrefab(spawnableBuildingData.m_ZonePrefab, out PrefabBase zonePrefabBase) &&
-                zonePrefabBase is ZonePrefab)
-            {
-                ZonePrefab zonePrefab = zonePrefabBase as ZonePrefab;
-                if (!zonePrefab.TryGet(out ThemeObject themeObject) ||
-                     themeObject == null ||
-                    !m_PrefabSystem.TryGetEntity(themeObject.m_Theme, out Entity themeEntity))
-                {
-                    return true;
-                }
-
-                for (int i = 0; i < paletteFilterEntityDatas.Length; i++)
-                {
-                    if (paletteFilterEntityDatas[i].m_PrefabEntity == themeEntity)
-                    {
-                        return false;
-                    }
-                }
-            }
-            else if (paletteFilterType == PaletteFilterTypeData.PaletteFilterType.ZoningType &&
-                     EntityManager.TryGetComponent(prefabEntity, out SpawnableBuildingData spawnableBuildingData2))
-            {
-                for (int i = 0; i < paletteFilterEntityDatas.Length; i++)
-                {
-                    if (paletteFilterEntityDatas[i].m_PrefabEntity == spawnableBuildingData2.m_ZonePrefab)
-                    {
-                        return false;
-                    }
-                }
-            }
-            else if (paletteFilterType == PaletteFilterTypeData.PaletteFilterType.Pack &&
-                     EntityManager.TryGetBuffer(prefabEntity, isReadOnly: true, out DynamicBuffer<AssetPackElement> assetPackElements))
-            {
-                for (int i = 0; i < paletteFilterEntityDatas.Length; i++)
-                {
-                    for (int j = 0; j < assetPackElements.Length; j++)
-                    {
-                        if (assetPackElements[j].m_Pack == paletteFilterEntityDatas[i].m_PrefabEntity)
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            return true;
         }
 
         private void AssignPalettePainterAction(int channel, Entity prefabEntity)

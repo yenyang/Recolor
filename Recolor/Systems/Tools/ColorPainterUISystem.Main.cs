@@ -11,6 +11,7 @@ namespace Recolor.Systems.Tools
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
+    using Game.UI.Menu;
     using Recolor;
     using Recolor.Domain;
     using Recolor.Domain.Palette;
@@ -39,6 +40,12 @@ namespace Recolor.Systems.Tools
         private ValueBindingHelper<PainterToolMode> m_ToolMode;
         private ValueBindingHelper<bool> m_EditorVisible;
         private ValueBindingHelper<PaletteChooserUIData> m_PaletteChoicesPainterDatas;
+        private ValueBindingHelper<PaletteFilterTypeData.PaletteFilterType> m_PaletteFilterType;
+        private ValueBindingHelper<PaletteFilterEntityUIData[]> m_FilterEntities;
+        private ValueBindingHelper<Entity> m_SelectedFilterPrefabEntity;
+        private EntityQuery m_AssetPackQuery;
+        private EntityQuery m_ZonePrefabEntityQuery;
+        private EntityQuery m_ThemePrefabEntityQuery;
         private EntityQuery m_PaletteQuery;
 
         /// <summary>
@@ -210,6 +217,9 @@ namespace Recolor.Systems.Tools
             m_ToolMode = CreateBinding("PainterToolMode", PainterToolMode.Paint);
             m_EditorVisible = CreateBinding("EditorPainterToolOptions", false);
             m_PaletteChoicesPainterDatas = CreateBinding("PaletteChoicesPainter", new PaletteChooserUIData());
+            m_PaletteFilterType = CreateBinding("ColorPainterPaletteFilterType", PaletteFilterTypeData.PaletteFilterType.None);
+            m_FilterEntities = CreateBinding("ColorPainterPaletteFilterEntities", new PaletteFilterEntityUIData[0]);
+            m_SelectedFilterPrefabEntity = CreateBinding("ColorPainterPaletteFilterPrefabEntity", Entity.Null);
 
             // These are event triggers from actions in UI.
             CreateTrigger<uint, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
@@ -242,12 +252,29 @@ namespace Recolor.Systems.Tools
             });
             CreateTrigger<int, Entity>("AssignPalettePainter", AssignPalettePainterAction);
             CreateTrigger<int>("RemovePalettePainter", RemovePalettePainterAction);
+            CreateTrigger<int>("SetColorPainterPaletteFilter", SetFilter);
+            CreateTrigger<Entity>("SetColorPainterPaletteFilterChoice", SetFilterChoice);
 
 
             m_PaletteQuery = SystemAPI.QueryBuilder()
                   .WithAll<SwatchData>()
                   .WithNone<Deleted, Temp>()
                   .Build();
+
+            m_AssetPackQuery = SystemAPI.QueryBuilder()
+                .WithAll<AssetPackData>()
+                .WithNone<Deleted, Temp>()
+                .Build();
+
+            m_ThemePrefabEntityQuery = SystemAPI.QueryBuilder()
+                .WithAll<ThemeData>()
+                .WithNone<Deleted, Temp>()
+                .Build();
+
+            m_ZonePrefabEntityQuery = SystemAPI.QueryBuilder()
+                .WithAll<ZoneData, UIObjectData>()
+                .WithNone<Deleted, Temp>()
+                .Build();
 
             Enabled = false;
         }

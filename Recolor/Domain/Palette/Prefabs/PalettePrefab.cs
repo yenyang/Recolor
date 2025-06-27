@@ -51,6 +51,7 @@ namespace Recolor.Domain.Palette.Prefabs
                 m_FilterNames.Length > 0)
             {
                 components.Add(ComponentType.ReadWrite<PaletteFilterEntityData>());
+                components.Add(ComponentType.ReadWrite<PaletteFilterTypeData>());
             }
         }
 
@@ -120,7 +121,12 @@ namespace Recolor.Domain.Palette.Prefabs
                 if (paleteFilterDatas.Length == 0)
                 {
                     entityManager.RemoveComponent<PaletteFilterEntityData>(entity);
+                    entityManager.RemoveComponent<PaletteFilterTypeData>(entity);
                     m_FilterType = PaletteFilterTypeData.PaletteFilterType.None;
+                }
+                else
+                {
+                    entityManager.SetComponentData(entity, new PaletteFilterTypeData() { m_FilterType = m_FilterType });
                 }
             }
 
