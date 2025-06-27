@@ -187,11 +187,20 @@ namespace Recolor.Systems.Tools
         }
 
         /// <summary>
-        /// Gets the selected palette entities for color painter tool.
+        /// Gets or sets the selected palette entities for color painter tool.
         /// </summary>
         public Entity[] SelectedPaletteEntities
         {
-            get { return m_PaletteChoicesPainterDatas.Value.SelectedPaletteEntities; }
+            get
+            {
+                return m_PaletteChoicesPainterDatas.Value.SelectedPaletteEntities; 
+            }
+
+            set
+            {
+                m_PaletteChoicesPainterDatas.Value.SelectedPaletteEntities = value;
+                m_PaletteChoicesPainterDatas.Binding.TriggerUpdate();
+            }
         }
 
         /// <inheritdoc/>

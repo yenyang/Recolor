@@ -308,6 +308,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (Mod.Instance.Settings.ColorPainterAutomaticCopyColor)
                 {
                     m_ColorPainterUISystem.ColorSet = m_CurrentColorSet.Value.GetColorSet();
+                    m_ColorPainterUISystem.SelectedPaletteEntities = m_PaletteChooserData.Value.m_SelectedPaletteEntities;
                 }
             });
             CreateTrigger("Minimize", () =>
