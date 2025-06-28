@@ -173,9 +173,15 @@ namespace Recolor.Systems.Tools
         /// <returns>True if current entity does not match filter type. false if matches filter type.</returns>
         private bool FilterByType(Entity palettePrefabEntity, PaletteFilterTypeData.PaletteFilterType paletteFilterType)
         {
-            if (paletteFilterType == PaletteFilterTypeData.PaletteFilterType.None)
+            if (!EntityManager.HasComponent<PaletteFilterTypeData>(palettePrefabEntity))
             {
                 return false;
+            }
+
+            if (paletteFilterType == PaletteFilterTypeData.PaletteFilterType.None &&
+                EntityManager.HasComponent<PaletteFilterTypeData>(palettePrefabEntity))
+            {
+                return true;
             }
 
             if (!EntityManager.TryGetBuffer(palettePrefabEntity, isReadOnly: true, out DynamicBuffer<PaletteFilterEntityData> paletteFilterEntityDatas))
@@ -308,5 +314,7 @@ namespace Recolor.Systems.Tools
             m_PaletteChoicesPainterDatas.Value.SetPrefabEntity(channel, Entity.Null);
             m_PaletteChoicesPainterDatas.Binding.TriggerUpdate();
         }
+
+
     }
 }

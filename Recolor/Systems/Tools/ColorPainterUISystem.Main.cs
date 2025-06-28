@@ -1,4 +1,4 @@
-﻿// <copyright file="ColorPainterUISystem.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="ColorPainterUISystem.Main.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
@@ -200,6 +200,28 @@ namespace Recolor.Systems.Tools
             {
                 m_PaletteChoicesPainterDatas.Value.SelectedPaletteEntities = value;
                 m_PaletteChoicesPainterDatas.Binding.TriggerUpdate();
+            }
+        }
+
+        /// <summary>
+        /// Gets the Palette Filter Type for Color painter tool.
+        /// </summary>
+        public PaletteFilterTypeData.PaletteFilterType PaletteFilterType
+        {
+            get
+            {
+                return m_PaletteFilterType.Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the prefab entity for palette filter for color painter tool.
+        /// </summary>
+        public Entity PaletteFilterEntity
+        {
+            get
+            {
+                return m_SelectedFilterPrefabEntity;
             }
         }
 

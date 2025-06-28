@@ -17,6 +17,7 @@ namespace Recolor.Systems.Tools
     using Game.Tools;
     using Game.Vehicles;
     using Recolor.Domain;
+    using Recolor.Domain.Palette;
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;
     using Recolor.Systems.SelectedInfoPanel;
@@ -28,6 +29,7 @@ namespace Recolor.Systems.Tools
     using Unity.Mathematics;
     using UnityEngine;
     using static Game.Rendering.OverlayRenderSystem;
+    using static Recolor.Domain.Palette.PaletteFilterTypeData;
     using static Recolor.Systems.SelectedInfoPanel.SIPColorFieldsSystem;
 
     /// <summary>
@@ -452,7 +454,7 @@ namespace Recolor.Systems.Tools
             return inputDeps;
         }
 
-        private bool PassesFilters()
+        private bool MatchingCategory()
         {
             if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building &&
                 EntityManager.HasComponent<Building>(m_RaycastEntity))
@@ -478,6 +480,59 @@ namespace Recolor.Systems.Tools
                !EntityManager.HasComponent<Building>(m_RaycastEntity))
             {
                 return true;
+            }
+
+            return false;
+        }
+
+        private bool MatchingFilter()
+        {
+            if (m_ColorPainterUISystem.PaletteFilterType == PaletteFilterTypeData.PaletteFilterType.None)
+            {
+                return true;
+            }
+
+            if (!EntityManager.TryGetComponent(m_RaycastEntity, out PrefabRef prefabRef))
+            {
+                return false;
+            }
+
+            if (m_ColorPainterUISystem.PaletteFilterType == PaletteFilterTypeData.PaletteFilterType.Theme &&
+                EntityManager.TryGetComponent(prefabRef.m_Prefab, out SpawnableBuildingData spawnableBuildingData) &&
+                m_PrefabSystem.TryGetPrefab(spawnableBuildingData.m_ZonePrefab, out PrefabBase zonePrefabBase) &&
+                zonePrefabBase is ZonePrefab)
+            {
+                ZonePrefab zonePrefab = zonePrefabBase as ZonePrefab;
+                if (!zonePrefab.TryGet(out ThemeObject themeObject) ||
+                     themeObject == null ||
+                    !m_PrefabSystem.TryGetEntity(themeObject.m_Theme, out Entity themeEntity))
+                {
+                    return false;
+                }
+
+                if (m_ColorPainterUISystem.PaletteFilterEntity == themeEntity)
+                {
+                    return true;
+                }
+            }
+            else if (m_ColorPainterUISystem.PaletteFilterType == PaletteFilterTypeData.PaletteFilterType.ZoningType &&
+                     EntityManager.TryGetComponent(prefabRef.m_Prefab, out SpawnableBuildingData spawnableBuildingData2))
+            {
+                if (m_ColorPainterUISystem.PaletteFilterEntity == spawnableBuildingData2.m_ZonePrefab)
+                {
+                    return true;
+                }
+            }
+            else if (m_ColorPainterUISystem.PaletteFilterType == PaletteFilterTypeData.PaletteFilterType.Pack &&
+                     EntityManager.TryGetBuffer(prefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<AssetPackElement> assetPackElements))
+        {
+                for (int j = 0; j < assetPackElements.Length; j++)
+                {
+                    if (assetPackElements[j].m_Pack == m_ColorPainterUISystem.PaletteFilterEntity)
+                    {
+                        return true;
+                    }
+                }
             }
 
             return false;

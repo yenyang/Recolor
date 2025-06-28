@@ -434,7 +434,8 @@ namespace Recolor.Systems.Tools
                    (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker ||
                     m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single) &&
                    (!m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices ||
-                    PassesFilters()))
+                   (MatchingCategory() &&
+                    MatchingFilter())))
                 {
                     m_PreviousRaycastEntity = m_RaycastEntity;
                     return UpdateDefinitions(inputDeps);
