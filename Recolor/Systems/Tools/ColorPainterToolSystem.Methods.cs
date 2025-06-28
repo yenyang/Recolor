@@ -28,6 +28,7 @@ namespace Recolor.Systems.Tools
     using Unity.Jobs;
     using Unity.Mathematics;
     using UnityEngine;
+    using UnityEngine.Windows;
     using static Game.Rendering.OverlayRenderSystem;
     using static Recolor.Domain.Palette.PaletteFilterTypeData;
     using static Recolor.Systems.SelectedInfoPanel.SIPColorFieldsSystem;
@@ -441,11 +442,39 @@ namespace Recolor.Systems.Tools
 
             if (m_State == State.Picking)
             {
+                m_Log.Debug($"{nameof(ColorPainterToolSystem)}.{nameof(Apply)} Picking.");
+                if (m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices &&
+                    EntityManager.TryGetBuffer(m_RaycastEntity, isReadOnly: true, out DynamicBuffer<AssignedPalette> paletteBuffer) &&
+                    paletteBuffer.Length > 0)
+                {
+                    m_Log.Debug($"{nameof(ColorPainterToolSystem)}.{nameof(Apply)} paletteBuffer length = {paletteBuffer.Length}.");
+                    Entity[] newPalettePrefabEntities = new Entity[3] { Entity.Null, Entity.Null, Entity.Null };
+                    for (int i = 0; i < paletteBuffer.Length; i++)
+                    {
+                        m_Log.Debug($"{nameof(ColorPainterToolSystem)}.{nameof(Apply)} paletteBuffer[i].m_PaletteInstanceEntity = {paletteBuffer[i].m_PaletteInstanceEntity.Index}:{paletteBuffer[i].m_PaletteInstanceEntity.Version}.");
+                        if (paletteBuffer[i].m_PaletteInstanceEntity != Entity.Null &&
+                            EntityManager.TryGetComponent(paletteBuffer[i].m_PaletteInstanceEntity, out PrefabRef palettePrefabEntity) &&
+                            EntityManager.TryGetBuffer(palettePrefabEntity.m_Prefab, isReadOnly: true, out DynamicBuffer<SwatchData> swatches) &&
+                            swatches.Length >= 2)
+                        {
+                            m_Log.Debug($"{nameof(ColorPainterToolSystem)}.{nameof(Apply)} paletteBuffer[i].m_Channel = {paletteBuffer[i].m_Channel}.");
+                            newPalettePrefabEntities[Math.Clamp(paletteBuffer[i].m_Channel, 0, 2)] = palettePrefabEntity.m_Prefab;
+                            m_Log.Debug($"{nameof(ColorPainterToolSystem)}.{nameof(Apply)} newPalettePrefabEntities[Math.Clamp(paletteBuffer[i].m_Channel, 0, 2)] = {newPalettePrefabEntities[Math.Clamp(paletteBuffer[i].m_Channel, 0, 2)].Index}:{newPalettePrefabEntities[Math.Clamp(paletteBuffer[i].m_Channel, 0, 2)].Version}.");
+                        }
+                    }
+
+                    m_ColorPainterUISystem.SelectedPaletteEntities = newPalettePrefabEntities;
+                    m_ColorPainterUISystem.ToolMode = ColorPainterUISystem.PainterToolMode.Paint;
+                    m_Log.Debug($"{nameof(ColorPainterToolSystem)}.{nameof(Apply)} set mode back to paint.");
+                    return inputDeps;
+                }
+
                 if (EntityManager.TryGetBuffer(m_RaycastEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer) &&
                     meshColorBuffer.Length > 0)
                 {
                     m_ColorPainterUISystem.ColorSet = meshColorBuffer[0].m_ColorSet;
                     m_ColorPainterUISystem.ToolMode = ColorPainterUISystem.PainterToolMode.Paint;
+                    return inputDeps;
                 }
             }
             else if (m_State == State.Reseting &&

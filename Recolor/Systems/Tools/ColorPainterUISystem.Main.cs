@@ -193,13 +193,14 @@ namespace Recolor.Systems.Tools
         {
             get
             {
-                return m_PaletteChoicesPainterDatas.Value.SelectedPaletteEntities; 
+                return m_PaletteChoicesPainterDatas.Value.SelectedPaletteEntities;
             }
 
             set
             {
                 m_PaletteChoicesPainterDatas.Value.SelectedPaletteEntities = value;
                 m_PaletteChoicesPainterDatas.Binding.TriggerUpdate();
+                UpdatePalettes();
             }
         }
 

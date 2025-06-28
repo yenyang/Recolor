@@ -128,8 +128,9 @@ namespace Recolor.Systems.Tools
             if (currentRaycastEntity != m_PreviousRaycastedEntity)
             {
                 m_PreviousRaycastedEntity = currentRaycastEntity;
-                buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtRecord);
-                buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtRecord);
+                NativeArray<Entity> entities = m_HighlightedQuery.ToEntityArray(Allocator.Temp);
+                buffer.AddComponent<BatchesUpdated>(entities);
+                buffer.RemoveComponent<Highlighted>(entities);
             }
 
             if (m_HighlightedQuery.IsEmptyIgnoreFilter)

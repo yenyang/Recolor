@@ -20,6 +20,7 @@ namespace Recolor.Systems.Tools
     using Game.Tools;
     using Game.Vehicles;
     using Recolor.Domain;
+    using Recolor.Domain.Palette;
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;
     using Recolor.Systems.SelectedInfoPanel;
@@ -488,7 +489,9 @@ namespace Recolor.Systems.Tools
                 else if (m_PreviousRaycastEntity == Entity.Null &&
                        (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker ||
                         m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single) &&
-                       (m_State == State.Picking ||
+                      ((m_State == State.Picking &&
+                      (!m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices ||
+                        EntityManager.HasBuffer<AssignedPalette>(m_RaycastEntity))) ||
                         m_State == State.Painting ||
                        (m_State == State.Reseting &&
                         EntityManager.HasComponent<CustomMeshColor>(m_RaycastEntity))) &&
