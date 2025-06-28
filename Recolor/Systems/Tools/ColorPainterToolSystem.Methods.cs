@@ -347,16 +347,28 @@ namespace Recolor.Systems.Tools
 
                 if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
                 {
-                    inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_BuildingMeshColorQuery, inputDeps);
+                    if (m_State == State.Painting)
+                    {
+                        inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_BuildingMeshColorQuery, inputDeps);
+                    }
+                    else if (m_State == State.Reseting)
+                    {
+                        inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_ResetBuildingMeshColorQuery, inputDeps);
+                    }
                 }
                 else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Props)
                 {
-                    inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_PropMeshColorQuery, inputDeps);
+                    if (m_State == State.Painting)
+                    {
+                        inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_PropMeshColorQuery, inputDeps);
+                    }
+                    else if (m_State == State.Reseting)
+                    {
+                        inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_ResetPropMeshColorQuery, inputDeps);
+                    }
                 }
                 else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Vehicles)
                 {
-                    inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_ParkedVehicleMeshColorQuery, inputDeps);
-
                     CreateDefinitionsWithRadiusOfInterpolatedTransform createDefinitionsWithRadiusOfInterpolatedTransform = new CreateDefinitionsWithRadiusOfInterpolatedTransform()
                     {
                         m_EntityType = SystemAPI.GetEntityTypeHandle(),
@@ -369,8 +381,16 @@ namespace Recolor.Systems.Tools
                         m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
                         m_PseudoRandomSeedLookup = SystemAPI.GetComponentLookup<Game.Common.PseudoRandomSeed>(isReadOnly: true),
                     };
-
-                    inputDeps = createDefinitionsWithRadiusOfInterpolatedTransform.Schedule(m_VehicleMeshColorQuery, inputDeps);
+                    if (m_State == State.Painting)
+                    {
+                        inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_ParkedVehicleMeshColorQuery, inputDeps);
+                        inputDeps = createDefinitionsWithRadiusOfInterpolatedTransform.Schedule(m_VehicleMeshColorQuery, inputDeps);
+                    }
+                    else if (m_State == State.Reseting)
+                    {
+                        inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_ResetParkedVehicleMeshColorQuery, inputDeps);
+                        inputDeps = createDefinitionsWithRadiusOfInterpolatedTransform.Schedule(m_ResetVehicleMeshColorQuery, inputDeps);
+                    }
                 }
                 else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.NetLanes)
                 {
@@ -388,7 +408,14 @@ namespace Recolor.Systems.Tools
                         buffer = m_Barrier.CreateCommandBuffer(),
                     };
 
-                    inputDeps = createDefinitionsWithinRadiusOfCurve.Schedule(m_NetLanesMeshColorQuery, inputDeps);
+                    if (m_State == State.Painting)
+                    {
+                        inputDeps = createDefinitionsWithinRadiusOfCurve.Schedule(m_NetLanesMeshColorQuery, inputDeps);
+                    }
+                    else if (m_State == State.Reseting)
+                    {
+                        inputDeps = createDefinitionsWithinRadiusOfCurve.Schedule(m_ResetNetLanesMeshColorQuery, inputDeps);
+                    }
                 }
 
                 m_Barrier.AddJobHandleForProducer(inputDeps);

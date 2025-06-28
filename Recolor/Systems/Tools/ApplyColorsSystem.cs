@@ -13,6 +13,7 @@ namespace Recolor.Systems.Tools
     using Game.Vehicles;
     using Recolor.Domain;
     using Recolor.Domain.Palette;
+    using Recolor.Systems.SelectedInfoPanel;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -32,6 +33,7 @@ namespace Recolor.Systems.Tools
         private ColorPainterToolSystem m_ColorPainterToolSystem;
         private ColorPainterUISystem m_UISystem;
         private ToolOutputBarrier m_Barrier;
+        private SIPColorFieldsSystem m_SIPColorFieldsSystem;
 
         /// <inheritdoc/>
         protected override void OnCreate ()
@@ -42,6 +44,7 @@ namespace Recolor.Systems.Tools
             m_ColorPainterToolSystem = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
             m_UISystem = World.GetOrCreateSystemManaged<ColorPainterUISystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
+            m_SIPColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
 
             m_ToolSystem.EventToolChanged += OnToolChanged;
 
@@ -60,6 +63,11 @@ namespace Recolor.Systems.Tools
         protected override void OnUpdate()
         {
             m_Log.Debug($"{nameof(ApplyColorsSystem)}.{nameof(OnUpdate)} ");
+            if (!m_SIPColorFieldsSystem.SingleInstance)
+            {
+                return;
+            }
+
             ChangeMeshColorJob changeMeshColorJob = new ChangeMeshColorJob()
             {
                 m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(),

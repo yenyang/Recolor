@@ -58,6 +58,11 @@ namespace Recolor.Systems.Tools
         private float m_TimeLastApplied;
         private float3 m_LastRaycastPosition;
         private NativeList<Entity> m_SelectedEntities;
+        private EntityQuery m_ResetBuildingMeshColorQuery;
+        private EntityQuery m_ResetVehicleMeshColorQuery;
+        private EntityQuery m_ResetParkedVehicleMeshColorQuery;
+        private EntityQuery m_ResetNetLanesMeshColorQuery;
+        private EntityQuery m_ResetPropMeshColorQuery;
 
 
         /// <summary>
@@ -235,6 +240,49 @@ namespace Recolor.Systems.Tools
                     ComponentType.ReadOnly<Owner>(),
                 },
             });
+
+            m_ResetBuildingMeshColorQuery = SystemAPI.QueryBuilder()
+               .WithAll<Building, MeshColor, Game.Objects.Transform, CustomMeshColor>()
+               .WithNone<Temp, Deleted, Game.Common.Overridden>()
+               .Build();
+
+            m_ResetVehicleMeshColorQuery = SystemAPI.QueryBuilder()
+                .WithAll<Vehicle, MeshColor, InterpolatedTransform, CustomMeshColor>()
+                .WithNone<Temp, Deleted, Game.Common.Overridden>()
+                .Build();
+
+            m_ResetParkedVehicleMeshColorQuery = SystemAPI.QueryBuilder()
+                .WithAll<Vehicle, MeshColor, Game.Objects.Transform, ParkedCar, CustomMeshColor>()
+                .WithNone<Temp, Deleted, Game.Common.Overridden>()
+                .Build();
+
+            m_ResetNetLanesMeshColorQuery = SystemAPI.QueryBuilder()
+               .WithAll<Game.Net.Curve, MeshColor, Owner, CustomMeshColor>()
+               .WithNone<Temp, Deleted, Game.Common.Overridden>()
+               .Build();
+
+            m_ResetPropMeshColorQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                All = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<Game.Objects.Object>(),
+                    ComponentType.ReadOnly<MeshColor>(),
+                    ComponentType.ReadOnly<Game.Objects.Static>(),
+                    ComponentType.ReadOnly<Game.Objects.Transform>(),
+                    ComponentType.ReadOnly<CustomMeshColor>(),
+                },
+                None = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<Temp>(),
+                    ComponentType.ReadOnly<Deleted>(),
+                    ComponentType.ReadOnly<Game.Common.Overridden>(),
+                    ComponentType.ReadOnly<Plant>(),
+                    ComponentType.ReadOnly<Building>(),
+                    ComponentType.ReadOnly<Quantity>(),
+                    ComponentType.ReadOnly<Owner>(),
+                },
+            });
+
         }
 
         /// <inheritdoc/>
@@ -433,6 +481,10 @@ namespace Recolor.Systems.Tools
                 if (m_RaycastEntity != m_PreviousRaycastEntity &&
                    (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker ||
                     m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single) &&
+                   (m_State == State.Picking ||
+                    m_State == State.Painting ||
+                   (m_State == State.Reseting &&
+                    EntityManager.HasComponent<CustomMeshColor>(m_RaycastEntity))) &&
                    (!m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices ||
                    (MatchingCategory() &&
                     MatchingFilter())))
