@@ -446,10 +446,16 @@ namespace Recolor.Systems.Tools
                     return inputDeps;
                 }
             }
-            else
+            else if (applyAction.IsPressed() ||
+                    (secondaryApplyAction.IsPressed() && m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint))
             {
                 applyMode = ApplyMode.None;
                 return UpdateDefinitions(inputDeps);
+            }
+            else
+            {
+                applyMode = ApplyMode.None;
+                return inputDeps;
             }
         }
     }
