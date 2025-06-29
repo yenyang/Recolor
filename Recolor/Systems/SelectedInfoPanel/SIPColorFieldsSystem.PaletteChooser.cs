@@ -85,7 +85,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
 
                 if ((FilterForCategories(palettePrefabEntity, prefabEntity) ||
-                     FilterByType(palettePrefabEntity, palettePrefabBase.m_FilterType)) &&
+                     FilterByType(palettePrefabEntity, palettePrefabBase.m_FilterType, prefabEntity)) &&
                    (!IsSelected(palettePrefabEntity, selectedEntities) ||
                      m_ToolSystem.activeTool != m_DefaultToolSystem))
                 {
@@ -347,7 +347,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         /// <param name="palettePrefabEntity">Prefab entity for the palette.</param>
         /// <param name="paletteFilterType">type of filter to check for.</param>
         /// <returns>True if current entity does not match filter type. false if matches filter type.</returns>
-        private bool FilterByType(Entity palettePrefabEntity, PaletteFilterTypeData.PaletteFilterType paletteFilterType)
+        private bool FilterByType(Entity palettePrefabEntity, PaletteFilterTypeData.PaletteFilterType paletteFilterType, Entity prefabEntity)
         {
             if (paletteFilterType == PaletteFilterTypeData.PaletteFilterType.None ||
                !EntityManager.TryGetBuffer(palettePrefabEntity, isReadOnly: true, out DynamicBuffer<PaletteFilterEntityData> paletteFilterEntityDatas))
@@ -356,7 +356,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             if (paletteFilterType == PaletteFilterTypeData.PaletteFilterType.Theme &&
-                EntityManager.TryGetComponent(m_CurrentPrefabEntity, out SpawnableBuildingData spawnableBuildingData) &&
+                EntityManager.TryGetComponent(prefabEntity, out SpawnableBuildingData spawnableBuildingData) &&
                 m_PrefabSystem.TryGetPrefab(spawnableBuildingData.m_ZonePrefab, out PrefabBase zonePrefabBase) &&
                 zonePrefabBase is ZonePrefab)
             {
@@ -377,7 +377,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
             }
             else if (paletteFilterType == PaletteFilterTypeData.PaletteFilterType.ZoningType &&
-                     EntityManager.TryGetComponent(m_CurrentPrefabEntity, out SpawnableBuildingData spawnableBuildingData2))
+                     EntityManager.TryGetComponent(prefabEntity, out SpawnableBuildingData spawnableBuildingData2))
             {
                 for (int i = 0; i < paletteFilterEntityDatas.Length; i++)
                 {
@@ -388,7 +388,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
             }
             else if (paletteFilterType == PaletteFilterTypeData.PaletteFilterType.Pack &&
-                     EntityManager.TryGetBuffer(m_CurrentPrefabEntity, isReadOnly: true, out DynamicBuffer<AssetPackElement> assetPackElements))
+                     EntityManager.TryGetBuffer(prefabEntity, isReadOnly: true, out DynamicBuffer<AssetPackElement> assetPackElements))
             {
                 for (int i = 0; i < paletteFilterEntityDatas.Length; i++)
                 {
@@ -403,6 +403,18 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             return true;
+        }
+
+        private void ToggleShowPaletteChoices()
+        {
+            m_PreferPalettes = !m_PreferPalettes;
+            HandleScopeAndButtonStates();
+            Mod.Instance.Settings.ShowSIPPaletteOptions = m_PreferPalettes;
+            Mod.Instance.Settings.ApplyAndSave();
+            if (m_ToolSystem.activeTool == m_ColorPainterTool)
+            {
+                m_ColorPainterUISystem.UpdatePalettes();
+            }
         }
     }
 }

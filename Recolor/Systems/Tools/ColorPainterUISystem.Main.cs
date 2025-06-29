@@ -1,4 +1,4 @@
-﻿// <copyright file="ColorPainterUISystem.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="ColorPainterUISystem.Main.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
@@ -7,12 +7,17 @@ namespace Recolor.Systems.Tools
     using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Game;
+    using Game.Common;
+    using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
+    using Game.UI.Menu;
     using Recolor;
     using Recolor.Domain;
+    using Recolor.Domain.Palette;
     using Recolor.Extensions;
     using Recolor.Systems.SelectedInfoPanel;
+    using Unity.Entities;
     using Unity.Mathematics;
 
     /// <summary>
@@ -24,6 +29,7 @@ namespace Recolor.Systems.Tools
         private ILog m_Log;
         private ValueBindingHelper<RecolorSet> m_PainterColorSet;
         private SIPColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
+        private PrefabSystem m_PrefabSystem;
         private DefaultToolSystem m_DefaultToolSystem;
         private ToolSystem m_ToolSystem;
         private ValueBindingHelper<int> m_SelectionType;
@@ -33,6 +39,14 @@ namespace Recolor.Systems.Tools
         private ValueBindingHelper<int> m_Filter;
         private ValueBindingHelper<PainterToolMode> m_ToolMode;
         private ValueBindingHelper<bool> m_EditorVisible;
+        private ValueBindingHelper<PaletteChooserUIData> m_PaletteChoicesPainterDatas;
+        private ValueBindingHelper<PaletteFilterTypeData.PaletteFilterType> m_PaletteFilterType;
+        private ValueBindingHelper<PaletteFilterEntityUIData[]> m_FilterEntities;
+        private ValueBindingHelper<Entity> m_SelectedFilterPrefabEntity;
+        private EntityQuery m_AssetPackQuery;
+        private EntityQuery m_ZonePrefabEntityQuery;
+        private EntityQuery m_ThemePrefabEntityQuery;
+        private EntityQuery m_PaletteQuery;
 
         /// <summary>
         /// Used for determining the mode of the painter tool.
@@ -90,6 +104,11 @@ namespace Recolor.Systems.Tools
             /// Vehicles.
             /// </summary>
             Vehicles,
+
+            /// <summary>
+            /// Net lane fences.
+            /// </summary>
+            NetLanes,
         }
 
         /// <summary>
@@ -99,6 +118,15 @@ namespace Recolor.Systems.Tools
         {
             get { return m_ToolMode; }
             set { m_ToolMode.Value = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the Selection Type.
+        /// </summary>
+        public SelectionType CurrentSelectionType
+        {
+            get { return (SelectionType)m_SelectionType.Value; }
+            set { m_SelectionType.Value = (int)value; }
         }
 
         /// <summary>
@@ -158,6 +186,46 @@ namespace Recolor.Systems.Tools
             get { return m_Radius.Value; }
         }
 
+        /// <summary>
+        /// Gets or sets the selected palette entities for color painter tool.
+        /// </summary>
+        public Entity[] SelectedPaletteEntities
+        {
+            get
+            {
+                return m_PaletteChoicesPainterDatas.Value.SelectedPaletteEntities;
+            }
+
+            set
+            {
+                m_PaletteChoicesPainterDatas.Value.SelectedPaletteEntities = value;
+                m_PaletteChoicesPainterDatas.Binding.TriggerUpdate();
+                UpdatePalettes();
+            }
+        }
+
+        /// <summary>
+        /// Gets the Palette Filter Type for Color painter tool.
+        /// </summary>
+        public PaletteFilterTypeData.PaletteFilterType PaletteFilterType
+        {
+            get
+            {
+                return m_PaletteFilterType.Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the prefab entity for palette filter for color painter tool.
+        /// </summary>
+        public Entity PaletteFilterEntity
+        {
+            get
+            {
+                return m_SelectedFilterPrefabEntity;
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnCreate()
         {
@@ -168,6 +236,7 @@ namespace Recolor.Systems.Tools
             m_ColorPainterToolSystem = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
             m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ToolSystem.EventToolChanged += OnToolChanged;
 
             // These establish bindings between UI and C#.
@@ -179,11 +248,15 @@ namespace Recolor.Systems.Tools
             m_Filter = CreateBinding("Filter", (int)FilterType.Building);
             m_ToolMode = CreateBinding("PainterToolMode", PainterToolMode.Paint);
             m_EditorVisible = CreateBinding("EditorPainterToolOptions", false);
+            m_PaletteChoicesPainterDatas = CreateBinding("PaletteChoicesPainter", new PaletteChooserUIData());
+            m_PaletteFilterType = CreateBinding("ColorPainterPaletteFilterType", PaletteFilterTypeData.PaletteFilterType.None);
+            m_FilterEntities = CreateBinding("ColorPainterPaletteFilterEntities", new PaletteFilterEntityUIData[0]);
+            m_SelectedFilterPrefabEntity = CreateBinding("ColorPainterPaletteFilterPrefabEntity", Entity.Null);
 
             // These are event triggers from actions in UI.
             CreateTrigger<uint, UnityEngine.Color>("ChangePainterColor", ChangePainterColor);
-            CreateTrigger("ColorPainterSingleSelection", () => m_SelectionType.Value = (int)SelectionType.Single);
-            CreateTrigger("ColorPainterRadiusSelection", () => m_SelectionType.Value = (int)SelectionType.Radius);
+            CreateTrigger("ColorPainterSingleSelection", () => ChangeSelectionMode(SelectionType.Single));
+            CreateTrigger("ColorPainterRadiusSelection", () => ChangeSelectionMode(SelectionType.Radius));
             CreateTrigger("CopyColor", (UnityEngine.Color color) => m_CopiedColor.Value = color);
             CreateTrigger("ColorPainterPasteColor", (uint value) => ChangePainterColor(value, m_SelectedInfoPanelColorFieldsSystem.CopiedColor));
             CreateTrigger("ColorPainterPasteColorSet", () =>
@@ -199,15 +272,41 @@ namespace Recolor.Systems.Tools
             });
             CreateTrigger("IncreaseRadius", IncreaseRadius);
             CreateTrigger("DecreaseRadius", DecreaseRadius);
-            CreateTrigger("BuildingFilter", () => m_Filter.Value = (int)FilterType.Building);
-            CreateTrigger("PropFilter", () => m_Filter.Value = (int)FilterType.Props);
-            CreateTrigger("VehicleFilter", () => m_Filter.Value = (int)FilterType.Vehicles);
+            CreateTrigger("BuildingFilter", () => FilterToggled(FilterType.Building));
+            CreateTrigger("PropFilter", () => FilterToggled(FilterType.Props));
+            CreateTrigger("VehicleFilter", () => FilterToggled(FilterType.Vehicles));
+            CreateTrigger("NetLanesFilter", () => FilterToggled(FilterType.NetLanes));
             CreateTrigger("ChangeToolMode", (int toolMode) => m_ToolMode.Value = (PainterToolMode)toolMode);
             CreateTrigger("ToggleChannel", (uint channel) =>
             {
                 m_PainterColorSet.Value.ToggleChannel(channel);
                 m_PainterColorSet.Binding.TriggerUpdate();
             });
+            CreateTrigger<int, Entity>("AssignPalettePainter", AssignPalettePainterAction);
+            CreateTrigger<int>("RemovePalettePainter", RemovePalettePainterAction);
+            CreateTrigger<int>("SetColorPainterPaletteFilter", SetFilter);
+            CreateTrigger<Entity>("SetColorPainterPaletteFilterChoice", SetFilterChoice);
+
+
+            m_PaletteQuery = SystemAPI.QueryBuilder()
+                  .WithAll<SwatchData>()
+                  .WithNone<Deleted, Temp>()
+                  .Build();
+
+            m_AssetPackQuery = SystemAPI.QueryBuilder()
+                .WithAll<AssetPackData>()
+                .WithNone<Deleted, Temp>()
+                .Build();
+
+            m_ThemePrefabEntityQuery = SystemAPI.QueryBuilder()
+                .WithAll<ThemeData>()
+                .WithNone<Deleted, Temp>()
+                .Build();
+
+            m_ZonePrefabEntityQuery = SystemAPI.QueryBuilder()
+                .WithAll<ZoneData, UIObjectData>()
+                .WithNone<Deleted, Temp>()
+                .Build();
 
             Enabled = false;
         }
@@ -239,6 +338,11 @@ namespace Recolor.Systems.Tools
                 if (m_ToolSystem.actionMode.IsEditor())
                 {
                     m_EditorVisible.Value = true;
+                }
+
+                if (m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices)
+                {
+                    UpdatePalettes();
                 }
             }
             else if (m_ToolSystem.actionMode.IsEditor() &&
@@ -277,6 +381,24 @@ namespace Recolor.Systems.Tools
             else if (m_Radius.Value > 1)
             {
                 m_Radius.Value -= 1;
+            }
+        }
+
+        private void FilterToggled(FilterType filterType)
+        {
+            m_Filter.Value = (int)filterType;
+            if (m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices)
+            {
+                UpdatePalettes();
+            }
+        }
+
+        private void ChangeSelectionMode(SelectionType selectionType)
+        {
+            m_SelectionType.Value = (int)selectionType;
+            if (m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices)
+            {
+                UpdatePalettes();
             }
         }
     }

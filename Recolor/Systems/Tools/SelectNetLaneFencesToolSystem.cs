@@ -150,6 +150,7 @@ namespace Recolor.Systems.Tools
             if (applyAction.WasPressedThisFrame())
             {
                 m_ToolSystem.selected = currentRaycastEntity;
+                m_ToolSystem.activeTool = m_DefaultToolSystem;
             }
 
             return inputDeps;

@@ -231,6 +231,14 @@ namespace Recolor.Systems.SelectedInfoPanel
         /// <inheritdoc/>
         public override GameMode gameMode => GameMode.GameOrEditor;
 
+        /// <summary>
+        /// Gets a value indicating whether Show Palette Choices is on.
+        /// </summary>
+        public bool ShowPaletteChoices
+        {
+            get { return (m_ShowPaletteChoices & ButtonState.On) == ButtonState.On; }
+        }
+
         /// <inheritdoc/>
         protected override void OnCreate()
         {
@@ -300,6 +308,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (Mod.Instance.Settings.ColorPainterAutomaticCopyColor)
                 {
                     m_ColorPainterUISystem.ColorSet = m_CurrentColorSet.Value.GetColorSet();
+                    m_ColorPainterUISystem.SelectedPaletteEntities = m_PaletteChooserData.Value.m_SelectedPaletteEntities;
                 }
             });
             CreateTrigger("Minimize", () =>
@@ -329,13 +338,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 HandleSubMeshScopes();
                 m_State = State.UpdateButtonStates;
             });
-            CreateTrigger("ToggleShowPaletteChoices", () =>
-            {
-                m_PreferPalettes = !m_PreferPalettes;
-                HandleScopeAndButtonStates();
-                Mod.Instance.Settings.ShowSIPPaletteOptions = m_PreferPalettes;
-                Mod.Instance.Settings.ApplyAndSave();
-            });
+            CreateTrigger("ToggleShowPaletteChoices", ToggleShowPaletteChoices);
             CreateTrigger<int, Entity>("AssignPalette", AssignPaletteAction);
             CreateTrigger<int>("RemovePalette", RemovePaletteAction);
             CreateTrigger("CopyPalette", (Entity prefabEntity) => m_CopiedPalette.Value = prefabEntity);

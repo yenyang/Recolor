@@ -17,16 +17,14 @@ namespace Recolor.Systems.Palettes
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
-    using Game.Modding.Toolchain;
     using Game.Prefabs;
     using Game.SceneFlow;
     using Game.Tools;
-    using Game.UI.InGame;
-    using Newtonsoft.Json;
     using Recolor.Domain.Palette;
     using Recolor.Domain.Palette.Prefabs;
     using Recolor.Extensions;
     using Recolor.Systems.SelectedInfoPanel;
+    using Recolor.Systems.Tools;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Entities.Serialization;
@@ -47,6 +45,8 @@ namespace Recolor.Systems.Palettes
         private ObjectToolSystem m_ObjectToolSystem;
         private NetToolSystem m_NetToolSystem;
         private ToolSystem m_ToolSystem;
+        private ColorPainterToolSystem m_ColorPainterToolSystem;
+        private ColorPainterUISystem m_ColorPainterUISystem;
         private ValueBindingHelper<SwatchUIData[]> m_Swatches;
         private ValueBindingHelper<string[]> m_UniqueNames;
         private ValueBindingHelper<PaletteCategoryData.PaletteCategory[]> m_PaletteCategories;
@@ -210,6 +210,8 @@ namespace Recolor.Systems.Palettes
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
             m_NetToolSystem = World.GetOrCreateSystemManaged<NetToolSystem>();
+            m_ColorPainterToolSystem = World.GetOrCreateSystemManaged<ColorPainterToolSystem>();
+            m_ColorPainterUISystem = World.GetOrCreateSystemManaged<ColorPainterUISystem>();
 
             m_PalettePrefabsFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, ".PalettePrefabs");
             bool deployPrefabs = false;
