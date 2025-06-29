@@ -21,6 +21,7 @@ namespace Recolor.Systems.Palettes
     using Recolor.Systems.SelectedInfoPanel;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Entities.UniversalDelegates;
 
     /// <summary>
     /// System that handles palette instance entities.
@@ -37,6 +38,7 @@ namespace Recolor.Systems.Palettes
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
         private PrefabSystem m_PrefabSystem;
         private ModificationEndBarrier m_Barrier;
+        private EndFrameBarrier m_EndFrameBarrier;
         private PalettesUISystem m_PalettesUISystem;
 
         /// <summary>
@@ -113,6 +115,7 @@ namespace Recolor.Systems.Palettes
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ModificationEndBarrier>();
             m_SIPColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
+            m_EndFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
             m_PaletteInstanceMap = new NativeHashMap<Entity, Entity>(0, Allocator.Persistent);
             m_PalettesUISystem = World.GetOrCreateSystemManaged<PalettesUISystem>();
 
@@ -152,17 +155,62 @@ namespace Recolor.Systems.Palettes
         /// <inheritdoc/>
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
+            m_Log.Debug($"{nameof(PaletteInstanceManagerSystem)}.{nameof(OnGameLoadingComplete)}");
             base.OnGameLoadingComplete(purpose, mode);
-
+            EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
             NativeArray<Entity> entities = m_PaletteInstanceQuery.ToEntityArray(Allocator.Temp);
+            NativeHashSet<Entity> redundantPaletteInstances = new NativeHashSet<Entity>(0, Allocator.Temp);
             for (int i = 0; i < entities.Length; i++)
             {
-                if (!m_PaletteInstanceMap.ContainsKey(entities[i]) &&
-                     EntityManager.TryGetComponent(entities[i], out PrefabRef prefabRef))
+                if (!EntityManager.TryGetComponent(entities[i], out PrefabRef prefabRef))
+                {
+                    buffer.DestroyEntity(entities[i]);
+                }
+
+                if (!m_PaletteInstanceMap.ContainsKey(prefabRef.m_Prefab))
                 {
                     m_PaletteInstanceMap.Add(prefabRef.m_Prefab, entities[i]);
                     m_Log.Debug($"{nameof(PaletteInstanceManagerSystem)}.{nameof(OnGameLoadingComplete)} Recorded Palette Instance Entity {entities[i].Index}.{entities[i].Version}.");
                 }
+                else if (!redundantPaletteInstances.Contains(entities[i]))
+                {
+                    redundantPaletteInstances.Add(entities[i]);
+                }
+            }
+
+            if (redundantPaletteInstances.Count > 0)
+            {
+                NativeArray<Entity> assignPaletteEntities = m_AssignedPaletteQuery.ToEntityArray(Allocator.Temp);
+                for (int i = 0; i < assignPaletteEntities.Length; i++)
+                {
+                    if (EntityManager.TryGetBuffer(assignPaletteEntities[i], isReadOnly: true, out DynamicBuffer<AssignedPalette> assignedPaletteBuffer))
+                    {
+                        DynamicBuffer<AssignedPalette> newAssignedPaletteBuffer = buffer.SetBuffer<AssignedPalette>(assignPaletteEntities[i]);
+                        for (int j = 0; j < assignedPaletteBuffer.Length; j++)
+                        {
+                            if (redundantPaletteInstances.Contains(assignedPaletteBuffer[j].m_PaletteInstanceEntity) &&
+                                EntityManager.TryGetComponent(entities[i], out PrefabRef prefabRef) &&
+                                TryGetPaletteInstanceEntity(prefabRef.m_Prefab, out Entity replacementInstanceEntity))
+                            {
+                                m_Log.Info($"{nameof(PaletteInstanceManagerSystem)}.{nameof(OnGameLoadingComplete)} Replaced redundant Palette Instance Entity {assignedPaletteBuffer[j].m_PaletteInstanceEntity.Index}.{assignedPaletteBuffer[j].m_PaletteInstanceEntity.Version} with {replacementInstanceEntity.Index}.{replacementInstanceEntity.Version}.");
+                                AssignedPalette assignedPalette = assignedPaletteBuffer[j];
+                                assignedPalette.m_PaletteInstanceEntity = replacementInstanceEntity;
+                                newAssignedPaletteBuffer.Add(assignedPalette);
+                            }
+                            else if (!redundantPaletteInstances.Contains(assignedPaletteBuffer[j].m_PaletteInstanceEntity) &&
+                                     assignedPaletteBuffer[j].m_PaletteInstanceEntity != Entity.Null)
+                            {
+                                newAssignedPaletteBuffer.Add(assignedPaletteBuffer[j]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach (Entity entity in redundantPaletteInstances)
+            {
+                m_Log.Info($"{nameof(PaletteInstanceManagerSystem)}.{nameof(OnGameLoadingComplete)} Destroyed redundant Palette Instance Entity {entity.Index}.{entity.Version}.");
+                buffer.DestroyEntity(entity);
             }
         }
 
