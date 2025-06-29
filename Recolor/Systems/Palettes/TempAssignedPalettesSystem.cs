@@ -113,7 +113,14 @@ namespace Recolor.Systems.Palettes
 
             for (int i = 0; i < 3; i++)
             {
-                 paletteInstanceEntities[i] = m_PaletteInstanceManagerSystem.GetOrCreatePaletteInstanceEntity(selectedPalettePrefabEntities[i]);
+                if (m_PaletteInstanceManagerSystem.TryGetOrCreatePaletteInstanceEntity(selectedPalettePrefabEntities[i], out Entity paletteInstanceEntity))
+                {
+                    paletteInstanceEntities[i] = paletteInstanceEntity;
+                }
+                else
+                {
+                    paletteInstanceEntities[i] = Entity.Null;
+                }
             }
 
             AssignPalettesJob assignPalettesJob = new AssignPalettesJob()

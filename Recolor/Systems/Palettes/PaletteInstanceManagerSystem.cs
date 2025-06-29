@@ -46,17 +46,18 @@ namespace Recolor.Systems.Palettes
         /// </summary>
         /// <param name="prefabEntity">Palette Prefab entity.</param>
         /// <returns>Instance Entity for palette.</returns>
-        public Entity GetOrCreatePaletteInstanceEntity(Entity prefabEntity)
+        public bool TryGetOrCreatePaletteInstanceEntity(Entity prefabEntity, out Entity paletteInstanceEntity)
         {
             if (!EntityManager.TryGetBuffer(prefabEntity, isReadOnly: true, out DynamicBuffer<SwatchData> swatchDatas) ||
                 swatchDatas.Length < 2)
             {
-                return Entity.Null;
+                paletteInstanceEntity = Entity.Null;
+                return false;
             }
 
             if (!m_PaletteInstanceMap.ContainsKey(prefabEntity))
             {
-                Entity paletteInstanceEntity = EntityManager.CreateEntity(m_PaletteInstanceArchetype);
+                paletteInstanceEntity = EntityManager.CreateEntity(m_PaletteInstanceArchetype);
                 EntityManager.SetComponentData(paletteInstanceEntity, new PrefabRef(prefabEntity));
                 DynamicBuffer<Swatch> swatches = EntityManager.GetBuffer<Swatch>(paletteInstanceEntity, isReadOnly: false);
                 for (int i = 0; i < swatchDatas.Length; i++)
@@ -66,12 +67,13 @@ namespace Recolor.Systems.Palettes
 
                 EntityManager.AddComponent<Updated>(paletteInstanceEntity);
                 m_PaletteInstanceMap.Add(prefabEntity, paletteInstanceEntity);
-                m_Log.Debug($"{nameof(PaletteInstanceManagerSystem)}.{nameof(GetOrCreatePaletteInstanceEntity)} Created Palette Instance Entity {paletteInstanceEntity.Index}.{paletteInstanceEntity.Version}.");
-                return paletteInstanceEntity;
+                m_Log.Debug($"{nameof(PaletteInstanceManagerSystem)}.{nameof(TryGetOrCreatePaletteInstanceEntity)} Created Palette Instance Entity {paletteInstanceEntity.Index}.{paletteInstanceEntity.Version}.");
+                return true;
             }
             else
             {
-                return m_PaletteInstanceMap[prefabEntity];
+                paletteInstanceEntity = m_PaletteInstanceMap[prefabEntity];
+                return true;
             }
         }
 

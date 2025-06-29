@@ -245,6 +245,12 @@ namespace Recolor.Systems.SelectedInfoPanel
                 EntityManager.AddBuffer<AssignedPalette>(instanceEntity);
             }
 
+            if (!m_PaletteInstanceMangerSystem.TryGetOrCreatePaletteInstanceEntity(prefabEntity, out Entity paletteInstanceEntity))
+            {
+                m_Log.Warn($"{nameof(SIPColorFieldsSystem)}.{nameof(AssignedPalette)} Could not get or create palette instance entity.");
+                return;
+            }
+
             DynamicBuffer<AssignedPalette> paletteAssignments = EntityManager.GetBuffer<AssignedPalette>(instanceEntity, isReadOnly: false);
 
             for (int i = 0; i < paletteAssignments.Length; i++)
@@ -252,7 +258,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (paletteAssignments[i].m_Channel == channel)
                 {
                     AssignedPalette paletteAssignment = paletteAssignments[i];
-                    paletteAssignment.m_PaletteInstanceEntity = m_PaletteInstanceMangerSystem.GetOrCreatePaletteInstanceEntity(prefabEntity);
+                    paletteAssignment.m_PaletteInstanceEntity = paletteInstanceEntity;
                     paletteAssignments[i] = paletteAssignment;
                     if (m_AssignedPaletteCustomColorSystem.TryGetColorFromPalette(instanceEntity, channel, out UnityEngine.Color newColor))
                     {
@@ -263,6 +269,9 @@ namespace Recolor.Systems.SelectedInfoPanel
                         EntityManager.AddComponent<BatchesUpdated>(instanceEntity);
                     }
 
+                    m_PaletteChooserData.Value.SetPrefabEntity(channel, prefabEntity);
+                    m_PaletteChooserData.Binding.TriggerUpdate();
+
                     return;
                 }
             }
@@ -270,7 +279,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             AssignedPalette newPaletteAssignment = new AssignedPalette()
             {
                 m_Channel = channel,
-                m_PaletteInstanceEntity = m_PaletteInstanceMangerSystem.GetOrCreatePaletteInstanceEntity(prefabEntity),
+                m_PaletteInstanceEntity = paletteInstanceEntity,
             };
 
             paletteAssignments.Add(newPaletteAssignment);
