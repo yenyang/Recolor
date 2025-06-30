@@ -163,8 +163,6 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("CloseEditorPanel"), "Close the Palette Editor Menu." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowPalettesOptionDuringPlacement)), "Show Palette options while placing objects" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowPalettesOptionDuringPlacement)), "Toggles whether to show dropdowns for picking palettes for the three color channels while placing objects with the Object tool." },
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.PaletteChooserBehaviorWhenSwitchingPrefab)), "Reset Palette choices when Selecting New Asset" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.PaletteChooserBehaviorWhenSwitchingPrefab)), "Toggles whether to automatically reset palette choices to None whenever you change to a new asset selection." },
                 { TooltipDescriptionKey("HidePalettesDuringPlacement"), "Hides the palette choosers while placing objects with the Object tool. Restore using the mod's settings." },
                 { TooltipDescriptionKey("MinimizeDuringPlacement"), "Minimize the palette choosers while placing objects to save space." },
                 { TooltipDescriptionKey("ExpandDuringPlacement"), "Expands the palette choosers while placing objects for use." },
@@ -173,6 +171,11 @@ namespace Recolor.Settings
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.RestoreDefaultPalettes)), "On confirmation, will re-install original files for pre-built Palettes and Subcategories. Any edits will be lost. This cannot be undone. Custom Palettes and Subcategories with different unique names than pre-built will not be affected. Restarting the game is required afterwards." },
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.RestoreDefaultPalettes)), "Re-install original pre-built Palettes and Subcategories? Any edits will be lost. This cannot be undone. Custom Palettes and Subcategories with different unique names than pre-built will not be affected. Restarting the game is required afterwards." },
                 { TooltipDescriptionKey("TogglePaletteOptions"), "Toggle showing Palette Options." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.PaletteChooserBehaviorWhenSwitchingPrefab)), "Palette Chooser Bevavior When Switching Prefab" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.PaletteChooserBehaviorWhenSwitchingPrefab)), "Changes the bevavior of the Palette Chooser when Switching Prefabs. Do Not Change: Keeps Chosen Palettes. Reset: Sets all palette choices to None. Remember Previous: Records what palettes were chosen previously for each prefab in each save file and will default to that." },
+                { m_Setting.GetEnumValueLocaleID(Setting.PaletteChooserBehavior.NoChange), "Do Not Change" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PaletteChooserBehavior.Reset), "Reset" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PaletteChooserBehavior.RememberPrevious), "Remember Previous" },
             };
         }
 

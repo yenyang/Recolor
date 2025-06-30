@@ -25,6 +25,7 @@ namespace Recolor
     using Recolor.Systems.SingleInstance;
     using Recolor.Systems.Tools;
     using Recolor.Systems.Vehicles;
+    using Unity.Entities;
 
 #if DEBUG
     using Newtonsoft.Json;

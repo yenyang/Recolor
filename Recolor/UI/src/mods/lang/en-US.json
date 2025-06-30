@@ -133,8 +133,6 @@
   "Recolor.TOOLTIP_DESCRIPTION[CloseEditorPanel]": "Close the Palette Editor Menu.",
   "Options.OPTION[Recolor.Recolor.Mod.Setting.ShowPalettesOptionDuringPlacement]": "Show Palette options while placing objects",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ShowPalettesOptionDuringPlacement]": "Toggles whether to show dropdowns for picking palettes for the three color channels while placing objects with the Object tool.",
-  "Options.OPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "Reset Palette choices when Selecting New Asset",
-  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "Toggles whether to automatically reset palette choices to None whenever you change to a new asset selection.",
   "Recolor.TOOLTIP_DESCRIPTION[HidePalettesDuringPlacement]": "Hides the palette choosers while placing objects with the Object tool. Restore using the mod's settings.",
   "Recolor.TOOLTIP_DESCRIPTION[MinimizeDuringPlacement]": "Minimize the palette choosers while placing objects to save space.",
   "Recolor.TOOLTIP_DESCRIPTION[ExpandDuringPlacement]": "Expands the palette choosers while placing objects for use.",
@@ -142,5 +140,10 @@
   "Options.OPTION[Recolor.Recolor.Mod.Setting.RestoreDefaultPalettes]": "Restore Default Palettes and Subcategories.",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.RestoreDefaultPalettes]": "On confirmation, will re-install original files for pre-built Palettes and Subcategories. Any edits will be lost. This cannot be undone. Custom Palettes and Subcategories with different unique names than pre-built will not be affected. Restarting the game is required afterwards.",
   "Options.WARNING[Recolor.Recolor.Mod.Setting.RestoreDefaultPalettes]": "Re-install original pre-built Palettes and Subcategories? Any edits will be lost. This cannot be undone. Custom Palettes and Subcategories with different unique names than pre-built will not be affected. Restarting the game is required afterwards.",
-  "Recolor.TOOLTIP_DESCRIPTION[TogglePaletteOptions]": "Toggle showing Palette Options."
+  "Recolor.TOOLTIP_DESCRIPTION[TogglePaletteOptions]": "Toggle showing Palette Options.",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "Palette Chooser Bevavior When Switching Prefab",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "Changes the bevavior of the Palette Chooser when Switching Prefabs. Do Not Change: Keeps Chosen Palettes. Reset: Sets all palette choices to None. Remember Previous: Records what palettes were chosen previously for each prefab in each save file and will default to that.",
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[NoChange]": "Do Not Change",
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Reset",
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "Remember Previous"
 }
