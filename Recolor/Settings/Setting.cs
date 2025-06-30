@@ -49,12 +49,31 @@ namespace Recolor.Settings
         /// </summary>
         public const string ActivateColorPainterActionName = "ActivateColorPainter";
 
-
         /// <summary>
         /// The action name for activate fence selector mode.
         /// </summary>
         public const string FenceSelectorModeActionName = "FenceSelectorMode";
 
+        /// <summary>
+        /// An enum for palette chooser behavior while changing prefabs.
+        /// </summary>
+        public enum PaletteChooserBehavior
+        {
+            /// <summary>
+            /// Keep same palette choices if valid.
+            /// </summary>
+            NoChange,
+
+            /// <summary>
+            /// Reset to none palette.
+            /// </summary>
+            Reset,
+
+            /// <summary>
+            /// Record previous palette choices for each prefab and use the previous ones.
+            /// </summary>
+            RememberPrevious,
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Setting"/> class.
@@ -90,7 +109,7 @@ namespace Recolor.Settings
         /// </summary>
         [SettingsUISection(General, General)]
         [SettingsUIHideByCondition(typeof(Setting), "ShowPalettesOptionDuringPlacement", invert: true)]
-        public bool ResetPaletteChoicesWhenSwitchingPrefab { get; set; }
+        public PaletteChooserBehavior PaletteChooserBehaviorWhenSwitchingPrefab { get; set; }
 
         /// <summary>
         /// Sets a value indicating whether to reset all settings to default.
@@ -265,7 +284,7 @@ namespace Recolor.Settings
             AlwaysMinimizedAtGameStart = false;
             SelectedLocaleCodes = new string[] { GameManager.instance.localizationManager.activeLocaleId };
             ShowSIPPaletteOptions = true;
-            ResetPaletteChoicesWhenSwitchingPrefab = true;
+            PaletteChooserBehaviorWhenSwitchingPrefab = PaletteChooserBehavior.RememberPrevious;
             ShowPalettesOptionDuringPlacement = true;
         }
 

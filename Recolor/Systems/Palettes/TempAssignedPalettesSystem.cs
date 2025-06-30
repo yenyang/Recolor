@@ -200,7 +200,7 @@ namespace Recolor.Systems.Palettes
                     {
                         Enabled = true;
                         m_PalettesUISystem.ResetNoneColors();
-                        m_PalettesUISystem.UpdatePaletteChoicesDuringPlacementBinding(Mod.Instance.Settings.ResetPaletteChoicesWhenSwitchingPrefab && m_PreviousPrefabBase != prefab);
+                        m_PalettesUISystem.UpdatePaletteChoicesDuringPlacementBinding(Mod.Instance.Settings.PaletteChooserBehaviorWhenSwitchingPrefab == Settings.Setting.PaletteChooserBehavior.Reset && m_PreviousPrefabBase != prefab);
                         m_PreviousPrefabBase = prefab;
                         return;
                     }

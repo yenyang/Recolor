@@ -1,4 +1,4 @@
-﻿// <copyright file="PalettesUISystem.Localization.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="PalettesUISystem.DuringPlacement.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
@@ -71,6 +71,19 @@ namespace Recolor.Systems.Palettes
                 return;
             }
 
+            if (resetChoices == false &&
+                Mod.Instance.Settings.PaletteChooserBehaviorWhenSwitchingPrefab == Setting.PaletteChooserBehavior.RememberPrevious)
+            {
+                if (m_PalettePreferenceSystem.TryGetPalettePrefabPreference(prefabEntity, out Entity[] newPalettePrefabEntities))
+                {
+                    m_PaletteChoicesDuringPlacementDatas.Value.SelectedPaletteEntities = newPalettePrefabEntities;
+                }
+                else
+                {
+                    resetChoices = true;
+                }
+            }
+
             m_SIPColorFieldsSystem.UpdatePalettes(prefabEntity, ref m_PaletteChoicesDuringPlacementDatas, resetChoices);
             m_ShowPaletteChooserDuringPlacement.Value = m_PaletteChoicesDuringPlacementDatas.Value.GetPaletteCount() > 0 ? true : false;
         }
@@ -100,14 +113,20 @@ namespace Recolor.Systems.Palettes
             m_NonePaletteColors.Value = new Color[] { DefaultNoneColor, DefaultNoneColor, DefaultNoneColor };
         }
 
-        private void AssignPaletteDuringPlacementAction(int channel, Entity prefabEntity)
+        private void AssignPaletteDuringPlacementAction(int channel, Entity palettePrefabEntity)
         {
-            m_PaletteChoicesDuringPlacementDatas.Value.SetPrefabEntity(channel, prefabEntity);
+            m_PaletteChoicesDuringPlacementDatas.Value.SetPrefabEntity(channel, palettePrefabEntity);
             m_PaletteChoicesDuringPlacementDatas.Binding.TriggerUpdate();
-            if (prefabEntity == Entity.Null &&
+            if (palettePrefabEntity == Entity.Null &&
                 m_NonePaletteColors.Value.Length > channel)
             {
                 m_NonePaletteColors.Value[channel] = DefaultNoneColor;
+            }
+
+            if (m_PrefabSystem.TryGetEntity(m_ToolSystem.activePrefab, out Entity prefabEntity) &&
+                Mod.Instance.Settings.PaletteChooserBehaviorWhenSwitchingPrefab == Setting.PaletteChooserBehavior.RememberPrevious)
+            {
+                m_PalettePreferenceSystem.RegisterPalettePreference(prefabEntity, m_PaletteChoicesDuringPlacementDatas.Value.SelectedPaletteEntities);
             }
         }
 
