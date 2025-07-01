@@ -154,6 +154,86 @@ namespace Recolor.Systems.SelectedInfoPanel
         }
 
         /// <summary>
+        /// Sets the palette chooser data to a prefab entity for a specific channel.
+        /// </summary>
+        /// <param name="channel">Channel 0-2.</param>
+        /// <param name="prefabEntity">Palette Prefab Entity.</param>
+        public void SetPalettePrefabEntity(int channel, Entity prefabEntity)
+        {
+            m_PaletteChooserData.Value.SetPrefabEntity(channel, prefabEntity);
+            m_PaletteChooserData.Binding.TriggerUpdate();
+        }
+
+        /// <summary>
+        /// Assigns a palette to the instance entity based on prefab entity and channel.
+        /// </summary>
+        /// <param name="channel">Channel 0 to 2.</param>
+        /// <param name="instanceEntity">The entity to add the palette to.</param>
+        /// <param name="prefabEntity">Palette prefab entity.</param>
+        private void AssignPalette(int channel, Entity instanceEntity, Entity prefabEntity)
+        {
+            if (channel < 0 || channel > 2)
+            {
+                return;
+            }
+
+            if (!EntityManager.HasBuffer<AssignedPalette>(instanceEntity))
+            {
+                EntityManager.AddBuffer<AssignedPalette>(instanceEntity);
+            }
+
+            if (!m_PaletteInstanceMangerSystem.TryGetOrCreatePaletteInstanceEntity(prefabEntity, out Entity paletteInstanceEntity))
+            {
+                m_Log.Warn($"{nameof(SIPColorFieldsSystem)}.{nameof(AssignedPalette)} Could not get or create palette instance entity.");
+                return;
+            }
+
+            DynamicBuffer<AssignedPalette> paletteAssignments = EntityManager.GetBuffer<AssignedPalette>(instanceEntity, isReadOnly: false);
+
+            for (int i = 0; i < paletteAssignments.Length; i++)
+            {
+                if (paletteAssignments[i].m_Channel == channel)
+                {
+                    AssignedPalette paletteAssignment = paletteAssignments[i];
+                    paletteAssignment.m_PaletteInstanceEntity = paletteInstanceEntity;
+                    paletteAssignments[i] = paletteAssignment;
+                    if (m_AssignedPaletteCustomColorSystem.TryGetColorFromPalette(instanceEntity, channel, out UnityEngine.Color newColor))
+                    {
+                        ChangeColor(channel, newColor);
+                    }
+                    else
+                    {
+                        EntityManager.AddComponent<BatchesUpdated>(instanceEntity);
+                    }
+
+                    m_PaletteChooserData.Value.SetPrefabEntity(channel, prefabEntity);
+                    m_PaletteChooserData.Binding.TriggerUpdate();
+
+                    return;
+                }
+            }
+
+            AssignedPalette newPaletteAssignment = new AssignedPalette()
+            {
+                m_Channel = channel,
+                m_PaletteInstanceEntity = paletteInstanceEntity,
+            };
+
+            paletteAssignments.Add(newPaletteAssignment);
+            if (m_AssignedPaletteCustomColorSystem.TryGetColorFromPalette(instanceEntity, channel, out UnityEngine.Color color))
+            {
+                ChangeColor(channel, color);
+            }
+            else
+            {
+                EntityManager.AddComponent<BatchesUpdated>(instanceEntity);
+            }
+
+            m_PaletteChooserData.Value.SetPrefabEntity(channel, prefabEntity);
+            m_PaletteChooserData.Binding.TriggerUpdate();
+        }
+
+        /// <summary>
         /// Filters for categories such as building, vehicle, or prop.
         /// </summary>
         /// <param name="palettePrefabEntity">Prefab Entity for the palette.</param>
@@ -225,75 +305,6 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Assigns a palette to the instance entity based on prefab entity and channel.
-        /// </summary>
-        /// <param name="channel">Channel 0 to 2.</param>
-        /// <param name="instanceEntity">The entity to add the palette to.</param>
-        /// <param name="prefabEntity">Palette prefab entity.</param>
-        private void AssignPalette(int channel, Entity instanceEntity, Entity prefabEntity)
-        {
-            if (channel < 0 || channel > 2)
-            {
-                return;
-            }
-
-            if (!EntityManager.HasBuffer<AssignedPalette>(instanceEntity))
-            {
-                EntityManager.AddBuffer<AssignedPalette>(instanceEntity);
-            }
-
-            if (!m_PaletteInstanceMangerSystem.TryGetOrCreatePaletteInstanceEntity(prefabEntity, out Entity paletteInstanceEntity))
-            {
-                m_Log.Warn($"{nameof(SIPColorFieldsSystem)}.{nameof(AssignedPalette)} Could not get or create palette instance entity.");
-                return;
-            }
-
-            DynamicBuffer<AssignedPalette> paletteAssignments = EntityManager.GetBuffer<AssignedPalette>(instanceEntity, isReadOnly: false);
-
-            for (int i = 0; i < paletteAssignments.Length; i++)
-            {
-                if (paletteAssignments[i].m_Channel == channel)
-                {
-                    AssignedPalette paletteAssignment = paletteAssignments[i];
-                    paletteAssignment.m_PaletteInstanceEntity = paletteInstanceEntity;
-                    paletteAssignments[i] = paletteAssignment;
-                    if (m_AssignedPaletteCustomColorSystem.TryGetColorFromPalette(instanceEntity, channel, out UnityEngine.Color newColor))
-                    {
-                        ChangeColor(channel, newColor);
-                    }
-                    else
-                    {
-                        EntityManager.AddComponent<BatchesUpdated>(instanceEntity);
-                    }
-
-                    m_PaletteChooserData.Value.SetPrefabEntity(channel, prefabEntity);
-                    m_PaletteChooserData.Binding.TriggerUpdate();
-
-                    return;
-                }
-            }
-
-            AssignedPalette newPaletteAssignment = new AssignedPalette()
-            {
-                m_Channel = channel,
-                m_PaletteInstanceEntity = paletteInstanceEntity,
-            };
-
-            paletteAssignments.Add(newPaletteAssignment);
-            if (m_AssignedPaletteCustomColorSystem.TryGetColorFromPalette(instanceEntity, channel, out UnityEngine.Color color))
-            {
-                ChangeColor(channel, color);
-            }
-            else
-            {
-                EntityManager.AddComponent<BatchesUpdated>(instanceEntity);
-            }
-
-            m_PaletteChooserData.Value.SetPrefabEntity(channel, prefabEntity);
-            m_PaletteChooserData.Binding.TriggerUpdate();
         }
 
         /// <summary>

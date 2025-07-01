@@ -45,7 +45,8 @@ namespace Recolor.Systems.Palettes
         /// Creates or updates a Palette Instance Entity.
         /// </summary>
         /// <param name="prefabEntity">Palette Prefab entity.</param>
-        /// <returns>Instance Entity for palette.</returns>
+        /// <param name="paletteInstanceEntity">Palette instance entity or Entity.Null.</param>
+        /// <returns>True if found, False if Entity.Null..</returns>
         public bool TryGetOrCreatePaletteInstanceEntity(Entity prefabEntity, out Entity paletteInstanceEntity)
         {
             if (!EntityManager.TryGetBuffer(prefabEntity, isReadOnly: true, out DynamicBuffer<SwatchData> swatchDatas) ||
@@ -164,9 +165,12 @@ namespace Recolor.Systems.Palettes
             NativeHashSet<Entity> redundantPaletteInstances = new NativeHashSet<Entity>(0, Allocator.Temp);
             for (int i = 0; i < entities.Length; i++)
             {
-                if (!EntityManager.TryGetComponent(entities[i], out PrefabRef prefabRef))
+                if (!EntityManager.TryGetComponent(entities[i], out PrefabRef prefabRef) ||
+                    prefabRef.m_Prefab == Entity.Null)
                 {
                     buffer.DestroyEntity(entities[i]);
+                    m_Log.Warn($"{nameof(PaletteInstanceManagerSystem)}.{nameof(OnGameLoadingComplete)} Invalide Palette Instance Entity {entities[i].Index}.{entities[i].Version}.");
+                    continue;
                 }
 
                 if (!m_PaletteInstanceMap.ContainsKey(prefabRef.m_Prefab))
@@ -191,7 +195,8 @@ namespace Recolor.Systems.Palettes
                         for (int j = 0; j < assignedPaletteBuffer.Length; j++)
                         {
                             if (redundantPaletteInstances.Contains(assignedPaletteBuffer[j].m_PaletteInstanceEntity) &&
-                                EntityManager.TryGetComponent(entities[i], out PrefabRef prefabRef) &&
+                                EntityManager.TryGetComponent(assignedPaletteBuffer[j].m_PaletteInstanceEntity, out PrefabRef prefabRef) &&
+                                prefabRef.m_Prefab != Entity.Null &&
                                 TryGetPaletteInstanceEntity(prefabRef.m_Prefab, out Entity replacementInstanceEntity))
                             {
                                 m_Log.Info($"{nameof(PaletteInstanceManagerSystem)}.{nameof(OnGameLoadingComplete)} Replaced redundant Palette Instance Entity {assignedPaletteBuffer[j].m_PaletteInstanceEntity.Index}.{assignedPaletteBuffer[j].m_PaletteInstanceEntity.Version} with {replacementInstanceEntity.Index}.{replacementInstanceEntity.Version}.");
@@ -207,12 +212,12 @@ namespace Recolor.Systems.Palettes
                         }
                     }
                 }
-            }
 
-            foreach (Entity entity in redundantPaletteInstances)
-            {
-                m_Log.Info($"{nameof(PaletteInstanceManagerSystem)}.{nameof(OnGameLoadingComplete)} Destroyed redundant Palette Instance Entity {entity.Index}.{entity.Version}.");
-                buffer.DestroyEntity(entity);
+                foreach (Entity entity in redundantPaletteInstances)
+                {
+                    m_Log.Info($"{nameof(PaletteInstanceManagerSystem)}.{nameof(OnGameLoadingComplete)} Destroyed redundant Palette Instance Entity {entity.Index}.{entity.Version}.");
+                    buffer.DestroyEntity(entity);
+                }
             }
         }
 
