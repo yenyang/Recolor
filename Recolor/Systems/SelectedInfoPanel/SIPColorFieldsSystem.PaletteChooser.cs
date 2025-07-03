@@ -336,7 +336,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 {
                     paletteAssignments.RemoveAt(i);
                     ResetColor(channel);
-                    return;
+                    break;
                 }
             }
 

@@ -237,7 +237,7 @@ namespace Recolor.Systems.Palettes
             public PalettePreferencePrefabIDs(Entity[] palettePrefabEntities)
             {
                 m_PalettePreferences = new List<PalettePreference>();
-                for (int i = 0; i < Math.Max(palettePrefabEntities.Length, 3); i++)
+                for (int i = 0; i < Math.Min(palettePrefabEntities.Length, 3); i++)
                 {
                     if (TryConvertToPrefabID(palettePrefabEntities[i], out PrefabID prefabID))
                     {
@@ -259,18 +259,20 @@ namespace Recolor.Systems.Palettes
             public Entity[] GetPrefabEntities()
             {
                 Entity[] prefabEntities = new Entity[3] { Entity.Null, Entity.Null, Entity.Null };
-                for (int i = 0; i < Math.Max(m_PalettePreferences.Count, prefabEntities.Length); i++)
+                for (int i = 0; i < Math.Min(m_PalettePreferences.Count, prefabEntities.Length); i++)
                 {
                     PrefabSystem prefabSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PrefabSystem>();
                     if (prefabSystem.TryGetPrefab(m_PalettePreferences[i].PrefabID, out PrefabBase prefabBase) &&
                         prefabBase is not null &&
-                        prefabSystem.TryGetEntity(prefabBase, out Entity prefabEntity))
+                        prefabSystem.TryGetEntity(prefabBase, out Entity prefabEntity) &&
+                        m_PalettePreferences[i].Channel >= 0 &&
+                        m_PalettePreferences[i].Channel <= 2)
                     {
-                        prefabEntities[i] = prefabEntity;
+                        prefabEntities[m_PalettePreferences[i].Channel] = prefabEntity;
+                        Mod.Instance.Log.Debug($"{nameof(PalettePreferencePrefabIDs)}.{nameof(GetPrefabEntities)} Palette Prefab Entity: Channel: {m_PalettePreferences[i].Channel} [{prefabEntity.Index}:{prefabEntity.Version},");
                     }
                 }
 
-                Mod.Instance.Log.Debug($"{nameof(PalettePreferencePrefabIDs)}.{nameof(GetPrefabEntities)} Palette Prefab Entities [{prefabEntities[0].Index}:{prefabEntities[0].Version}, {prefabEntities[1].Index}:{prefabEntities[1].Version}, {prefabEntities[2].Index}:{prefabEntities[2].Version}]");
                 return prefabEntities;
             }
 
