@@ -78,7 +78,7 @@ namespace Recolor.Systems.Palettes
             m_Log.Debug($"{nameof(PalettePreferenceSystem)}.{nameof(Deserialize)}");
 
             // Version number
-            reader.Read(out int _);
+            reader.Read(out int version);
 
             reader.Read(out int count);
 
@@ -86,15 +86,51 @@ namespace Recolor.Systems.Palettes
             {
                 reader.Read(out PrefabID prefabEntityID);
                 m_Log.Debug($"{nameof(PalettePreferenceSystem)}.{nameof(Deserialize)} PrefabID: {prefabEntityID}");
-                PrefabID[] prefabIDs = new PrefabID[3] { default, default, default };
-                reader.Read(out prefabIDs[0]);
-                reader.Read(out prefabIDs[1]);
-                reader.Read(out prefabIDs[2]);
-                if (!m_PalettePreferencePrefabIDsMap.ContainsKey(prefabEntityID))
+                List<PalettePreference> palettePreferences = new List<PalettePreference>();
+
+                if (version >= 2)
                 {
-                    PalettePreferencePrefabIDs data = new PalettePreferencePrefabIDs(prefabIDs);
-                    m_PalettePreferencePrefabIDsMap.Add(prefabEntityID, data);
-                    data.LogPalettePreference();
+                    reader.Read(out int preferenceCount);
+
+                    for (int j = 0; j < preferenceCount; j++)
+                    {
+                        reader.Read(out int channel);
+                        reader.Read(out PrefabID prefabID);
+                        if (j < 3 &&
+                            channel >= 0 &&
+                            channel <= 2)
+                        {
+                            palettePreferences.Add(new PalettePreference(channel, prefabID));
+                        }
+                    }
+
+                    if (!m_PalettePreferencePrefabIDsMap.ContainsKey(prefabEntityID) &&
+                        palettePreferences.Count > 0 &&
+                        palettePreferences.Count <= 3)
+                    {
+                        PalettePreferencePrefabIDs data = new PalettePreferencePrefabIDs(palettePreferences);
+                        m_PalettePreferencePrefabIDsMap.Add(prefabEntityID, data);
+                        data.LogPalettePreference();
+                    }
+                }
+                else if (version == 1)
+                {
+                    m_Log.Info($"{nameof(PalettePreferenceSystem)}.{nameof(Deserialize)} Version 1 detected.");
+
+                    // Version 1 couldn't handle no palette assigned.
+                    for (int j = 0; j < 3; j++)
+                    {
+                        reader.Read(out PrefabID prefabID);
+                        palettePreferences.Add(new PalettePreference(j, prefabID));
+                    }
+
+                    if (!m_PalettePreferencePrefabIDsMap.ContainsKey(prefabEntityID))
+                    {
+                        PalettePreferencePrefabIDs data = new PalettePreferencePrefabIDs(palettePreferences);
+                        m_PalettePreferencePrefabIDsMap.Add(prefabEntityID, data);
+                        data.LogPalettePreference();
+                    }
+
                 }
             }
         }
@@ -106,7 +142,7 @@ namespace Recolor.Systems.Palettes
             m_Log.Debug($"{nameof(PalettePreferenceSystem)}.{nameof(Serialize)}");
 
             // Version number
-            writer.Write(1);
+            writer.Write(2);
 
             // Count of palette preference map
             writer.Write(m_PalettePreferencePrefabIDsMap.Count);
@@ -114,9 +150,13 @@ namespace Recolor.Systems.Palettes
             foreach (KeyValuePair<PrefabID, PalettePreferencePrefabIDs> keyValuePair in m_PalettePreferencePrefabIDsMap)
             {
                 writer.Write(keyValuePair.Key);
-                writer.Write(keyValuePair.Value.PalettePrefabIDs[0]);
-                writer.Write(keyValuePair.Value.PalettePrefabIDs[1]);
-                writer.Write(keyValuePair.Value.PalettePrefabIDs[2]);
+                writer.Write(keyValuePair.Value.PalettePreferences.Count);
+                for (int i = 0; i < keyValuePair.Value.PalettePreferences.Count; i++)
+                {
+                    writer.Write(keyValuePair.Value.PalettePreferences[i].Channel);
+                    writer.Write(keyValuePair.Value.PalettePreferences[i].PrefabID);
+                }
+
                 keyValuePair.Value.LogPalettePreference();
             }
         }
@@ -137,38 +177,6 @@ namespace Recolor.Systems.Palettes
             Enabled = false;
             m_Log = Mod.Instance.Log;
             m_Log.Info($"{nameof(PalettePreferenceSystem)}.{nameof(OnCreate)}");
-        }
-
-        /// <inheritdoc/>
-        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
-        {
-            base.OnGameLoadingComplete(purpose, mode);
-            m_Log.Debug($"{nameof(PalettePreferenceSystem)}.{nameof(OnGameLoadingComplete)}");
-            foreach (KeyValuePair<PrefabID, PalettePreferencePrefabIDs> keyValuePair in m_PalettePreferencePrefabIDsMap)
-            {
-                if (m_PrefabSystem.TryGetPrefab(keyValuePair.Key, out PrefabBase prefabBase) &&
-                    prefabBase is not null)
-                {
-                    PrefabID prefabID = prefabBase.GetPrefabID();
-                    m_Log.Debug($"{nameof(PalettePreferenceSystem)}.{nameof(OnGameLoadingComplete)} prefabID is {prefabID}.");
-                    PrefabID[] prefabIDs = new PrefabID[3] { default, default, default };
-                    for (int i = 0; i < Math.Max(prefabIDs.Length, keyValuePair.Value.PalettePrefabIDs.Length); i++)
-                    {
-                        if (m_PrefabSystem.TryGetPrefab(keyValuePair.Value.PalettePrefabIDs[i], out PrefabBase palettePrefabBase) &&
-                            palettePrefabBase is not null)
-                        {
-                            prefabIDs[i] = palettePrefabBase.GetPrefabID();
-                        }
-                    }
-
-                    if (!m_PalettePreferencePrefabIDsMap.ContainsKey(prefabID))
-                    {
-                       PalettePreferencePrefabIDs preferencePrefabIDs = new PalettePreferencePrefabIDs(prefabIDs);
-                       m_PalettePreferencePrefabIDsMap.Add(prefabID, preferencePrefabIDs);
-                       preferencePrefabIDs.LogPalettePreference();
-                    }
-                }
-            }
         }
 
         /// <inheritdoc/>
@@ -197,46 +205,64 @@ namespace Recolor.Systems.Palettes
             return default;
         }
 
+        private struct PalettePreference
+        {
+            private int m_Channel;
+            private PrefabID m_PrefabID;
+
+            public PalettePreference (int channel, PrefabID prefabID)
+            {
+                m_Channel = channel;
+                m_PrefabID = prefabID;
+            }
+
+            public int Channel => m_Channel;
+
+            public PrefabID PrefabID => m_PrefabID;
+        }
+
         private struct PalettePreferencePrefabIDs
         {
-            private PrefabID[] m_PrefabIDs;
+            private List<PalettePreference> m_PalettePreferences;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="PalettePreferencePrefabIDs"/> struct.
             /// </summary>
             /// <param name="palettePrefabIDs">Palette Prefab IDs.</param>
-            public PalettePreferencePrefabIDs(PrefabID[] palettePrefabIDs)
+            public PalettePreferencePrefabIDs(List<PalettePreference> palettePreferences)
             {
-                m_PrefabIDs = new PrefabID[3] { default, default, default };
-                for (int i = 0; i < Math.Max(palettePrefabIDs.Length, m_PrefabIDs.Length); i++)
-                {
-                    m_PrefabIDs[i] = palettePrefabIDs[i];
-                }
+                m_PalettePreferences = palettePreferences;
             }
 
             public PalettePreferencePrefabIDs(Entity[] palettePrefabEntities)
             {
-                m_PrefabIDs = new PrefabID[3] { default, default, default };
-                for (int i = 0; i < Math.Max(palettePrefabEntities.Length, m_PrefabIDs.Length); i++)
+                m_PalettePreferences = new List<PalettePreference>();
+                for (int i = 0; i < Math.Max(palettePrefabEntities.Length, 3); i++)
                 {
-                    m_PrefabIDs[i] = ConvertToPrefabID(palettePrefabEntities[i]);
+                    if (TryConvertToPrefabID(palettePrefabEntities[i], out PrefabID prefabID))
+                    {
+                        m_PalettePreferences.Add(new PalettePreference(i, prefabID));
+                    }
                 }
             }
 
-            public PrefabID[] PalettePrefabIDs => m_PrefabIDs;
+            public List<PalettePreference> PalettePreferences => m_PalettePreferences;
 
             public void LogPalettePreference()
             {
-                Mod.Instance.Log.Debug($"{nameof(PalettePreferencePrefabIDs)}.{nameof(LogPalettePreference)} Palette Prefab IDs [{m_PrefabIDs[0]}, {m_PrefabIDs[1]}, {m_PrefabIDs[2]}]");
+                foreach (PalettePreference palettePreference in m_PalettePreferences)
+                {
+                    Mod.Instance.Log.Debug($"{nameof(PalettePreferencePrefabIDs)}.{nameof(LogPalettePreference)} Palette Prefernce Channel: {palettePreference.Channel} PrefabID: {palettePreference.PrefabID}]");
+                }
             }
 
             public Entity[] GetPrefabEntities()
             {
                 Entity[] prefabEntities = new Entity[3] { Entity.Null, Entity.Null, Entity.Null };
-                for (int i = 0; i < Math.Max(m_PrefabIDs.Length, prefabEntities.Length); i++)
+                for (int i = 0; i < Math.Max(m_PalettePreferences.Count, prefabEntities.Length); i++)
                 {
                     PrefabSystem prefabSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PrefabSystem>();
-                    if (prefabSystem.TryGetPrefab(m_PrefabIDs[i], out PrefabBase prefabBase) &&
+                    if (prefabSystem.TryGetPrefab(m_PalettePreferences[i].PrefabID, out PrefabBase prefabBase) &&
                         prefabBase is not null &&
                         prefabSystem.TryGetEntity(prefabBase, out Entity prefabEntity))
                     {
@@ -248,18 +274,18 @@ namespace Recolor.Systems.Palettes
                 return prefabEntities;
             }
 
-            private PrefabID ConvertToPrefabID(Entity prefabEntity)
+            private bool TryConvertToPrefabID(Entity prefabEntity, out PrefabID prefabID)
             {
                 PrefabSystem prefabSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PrefabSystem>();
                 if (prefabSystem.TryGetPrefab(prefabEntity, out PrefabBase prefabBase) &&
                     prefabBase is not null)
                 {
-                    PrefabID prefabID = prefabBase.GetPrefabID();
+                    prefabID = prefabBase.GetPrefabID();
                     Mod.Instance.Log.Debug($"{nameof(PalettePreferenceSystem)}.{nameof(ConvertToPrefabID)} Prefab ID: {prefabID}");
-                    return prefabID;
+                    return true;
                 }
 
-                return default;
+                return false;
             }
         }
     }

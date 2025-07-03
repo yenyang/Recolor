@@ -155,7 +155,11 @@ namespace Recolor.Systems.Palettes
             m_PaletteInstanceMap.Clear();
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// This is needed to address redundant instnace entities created in a publicly available beta version of the mod.
+        /// </summary>
+        /// <param name="purpose">Part of loading.</param>
+        /// <param name="mode">Part of loading2.</param>
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
             m_Log.Debug($"{nameof(PaletteInstanceManagerSystem)}.{nameof(OnGameLoadingComplete)}");
