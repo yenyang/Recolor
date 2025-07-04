@@ -118,7 +118,7 @@ namespace Recolor.Systems.Palettes
             m_AssignedPaletteQuery = SystemAPI.QueryBuilder()
                   .WithAll<AssignedPalette, PseudoRandomSeed, MeshColor>()
                   .WithAny<Updated, BatchesUpdated>()
-                  .WithNone<Deleted, Game.Objects.Plant, Overridden>()
+                  .WithNone<Deleted, Game.Objects.Plant, Overridden, Game.Citizens.Citizen, Game.Creatures.Creature>()
                   .Build();
 
             RequireForUpdate(m_AssignedPaletteQuery);

@@ -9,7 +9,6 @@ namespace Recolor.Systems.Palettes
     using System.IO;
     using System.Linq;
     using Colossal.Entities;
-    using Colossal.IO.AssetDatabase;
     using Colossal.Json;
     using Colossal.Localization;
     using Colossal.Logging;
@@ -65,7 +64,8 @@ namespace Recolor.Systems.Palettes
             if ((m_ToolSystem.activeTool != m_ObjectToolSystem &&
                 m_ToolSystem.activeTool != m_NetToolSystem) ||
                !m_PrefabSystem.TryGetEntity(m_ToolSystem.activePrefab, out Entity prefabEntity) ||
-               !Mod.Instance.Settings.ShowPalettesOptionDuringPlacement)
+               !Mod.Instance.Settings.ShowPalettesOptionDuringPlacement ||
+               EntityManager.HasComponent<Game.Prefabs.CreatureData>(prefabEntity))
             {
                 m_ShowPaletteChooserDuringPlacement.Value = false;
                 return;

@@ -68,12 +68,12 @@ namespace Recolor.Systems.Palettes
 
             m_TempMeshColorQuery = SystemAPI.QueryBuilder()
                   .WithAll<Temp, PseudoRandomSeed, MeshColor>()
-                  .WithNone<Deleted, Game.Objects.Plant, Owner, AssignedPalette>()
+                  .WithNone<Deleted, Game.Objects.Plant, Owner, AssignedPalette, Game.Creatures.Creature>()
                   .Build();
 
             m_TempMeshColorQueryWithOwner = SystemAPI.QueryBuilder()
                   .WithAll<Temp, PseudoRandomSeed, MeshColor>()
-                  .WithNone<Deleted, Game.Objects.Plant, AssignedPalette>()
+                  .WithNone<Deleted, Game.Objects.Plant, AssignedPalette, Game.Creatures.Creature>()
                   .Build();
 
             Enabled = false;

@@ -47,7 +47,7 @@ namespace Recolor.Systems.SingleInstance
             m_CustomMeshColorQuery = SystemAPI.QueryBuilder()
                    .WithAllRW<MeshColor>()
                    .WithAll<BatchesUpdated, CustomMeshColor>()
-                   .WithNone<Deleted, Game.Common.Overridden, Plant>()
+                   .WithNone<Deleted, Game.Common.Overridden, Plant, Game.Creatures.Creature>()
                    .Build();
 
             m_CustomMeshColorAndSubObjectsQuery = SystemAPI.QueryBuilder()
