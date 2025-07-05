@@ -22,7 +22,6 @@ namespace Recolor.Systems.Tools
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
-    using static Game.Rendering.OverlayRenderSystem;
     using static Recolor.Systems.SelectedInfoPanel.SIPColorFieldsSystem;
 
     /// <summary>
