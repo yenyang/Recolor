@@ -29,9 +29,14 @@
   "Recolor.TOOLTIP_DESCRIPTION[DecreaseRadius]": "Zmniejsz promień.",
   "Recolor.SECTION_TITLE[Radius]": "Promień",
   "Recolor.SECTION_TITLE[Filter]": "Filtr",
+  "Recolor.TOOLTIP_TITLE[BuildingFilter]": "Budynki",
   "Recolor.TOOLTIP_DESCRIPTION[BuildingFilter]": "Narzędzie do malowania zmieni indywidualne kolory budynków.",
+  "Recolor.TOOLTIP_TITLE[PropFilter]": "Rekwizyty",
   "Recolor.TOOLTIP_DESCRIPTION[PropFilter]": "Narzędzie do malowania zmieni indywidualne kolory rekwizytów.",
+  "Recolor.TOOLTIP_TITLE[VehicleFilter]": "Pojazdy",
   "Recolor.TOOLTIP_DESCRIPTION[VehicleFilter]": "Narzędzie do malowania zmieni indywidualne kolory pojazdów.",
+  "Recolor.TOOLTIP_TITLE[NetLanePainterCategory]": "Net Lanes",
+  "Recolor.TOOLTIP_DESCRIPTION[NetLanePainterCategory]": "Narzędzie do malowania zmieni indywidualne kolory ogrodzeń i ścian Net Lanes.",
   "Recolor.TOOLTIP_TITLE[PaintToolMode]": "Maluj",
   "Recolor.TOOLTIP_DESCRIPTION[PaintToolMode]": "LPM: Zmienia indywidualne kolory lub dopasowane warianty kolorystyczne przy wyborze. PPM: Przywraca indywidualne kolory z powrotem do oryginalnych wariantów kolorystycznych lub niestandardowych wariantów kolorystycznych.",
   "Recolor.TOOLTIP_TITLE[ResetToolMode]": "Zresetuj",
@@ -85,5 +90,7 @@
   "Recolor.TOOLTIP_TITLE[AllSubmeshes]": "Wszystkie Submeshe",
   "Recolor.TOOLTIP_DESCRIPTION[AllSubmeshes]": "Zmienia kolory wszystkich submeshy.",
   "Recolor.SECTION_TITLE[SubMeshes]": "SubMeshe",
+  "Recolor.SECTION_TITLE[PaletteEditorMenu]": "Edytor Palet",
+  "Recolor.SECTION_TITLE[Palette]": "Paleta",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Zresetuj"
 }
