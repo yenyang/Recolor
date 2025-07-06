@@ -1,0 +1,5 @@
+files:
+  - source: '**/en-US.json'
+    ignore:
+      - UI*
+    translation: '%original_path%/%locale%.json'
