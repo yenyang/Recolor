@@ -142,7 +142,7 @@
   "Options.WARNING[Recolor.Recolor.Mod.Setting.RestoreDefaultPalettes]": "Zainstalować ponownie oryginalne wbudowane Palety i Podkategorie? Wszelkie zmiany zostaną utracone. Tej operacji nie można cofnąć. Niestandardowe Palety i Podkategorie o unikalnych nazwach (różnych od wbudowanych) nie zostaną zmienione. Wymagane jest ponowne uruchomienie gry.",
   "Recolor.TOOLTIP_DESCRIPTION[TogglePaletteOptions]": "Przełącz wyświetlanie opcji Palet.",
   "Options.OPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "Zachowanie panelu wyboru Palet przy zmianie Prefabów",
-  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "Zmienia zachowanie wyboru palety podczas zmiany Prefabów. Nie zmieniaj — zachowuje wybrane Palety. Resetuj — ustawia wszystkie wybory palet na Brak. Zapamiętaj poprzednie — zapisuje, jakie palety były wcześniej wybrane dla każdego prefabu w każdym pliku zapisu i ustawia je jako domyślne.",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "Zmienia zachowanie wyboru palety podczas zmiany Prefabów.\nNie zmieniaj — zachowuje wybrane Palety. \nZresetuj — ustawia wszystkie wybory palet na Brak. \nZapamiętaj poprzednie — zapisuje, jakie palety były wcześniej wybrane dla każdego prefabu w każdym pliku zapisu i ustawia je jako domyślne.",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[NoChange]": "Nie zmieniaj",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Zresetuj",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "Zapamiętaj poprzednie"
