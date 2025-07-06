@@ -83,5 +83,19 @@
   "Recolor.TOOLTIP_TITLE[AllSubmeshes]": "Todas las Submallas",
   "Recolor.TOOLTIP_DESCRIPTION[AllSubmeshes]": "Cambia los colores de todas las submallas.",
   "Recolor.SECTION_TITLE[SubMeshes]": "Submallas",
-  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Restablecer"
+  "Recolor.SECTION_TITLE[Palette]": "Paleta",
+  "Recolor.TOOLTIP_DESCRIPTION[SavePalette]": "Guardar Paleta",
+  "Recolor.TOOLTIP_DESCRIPTION[DeletePalette]": "Eliminar Paleta",
+  "Recolor.SECTION_TITLE[Subcategory]": "Subcategoría",
+  "Recolor.TOOLTIP_DESCRIPTION[EditSubcategory]": "Editar Subcategoría",
+  "Recolor.SECTION_TITLE[FilterType]": "Tipo de Filtro",
+  "Recolor.TOOLTIP_DESCRIPTION[AddFilter]": "Añadir un filtro compatible.",
+  "Recolor.TOOLTIP_DESCRIPTION[RemoveFilter]": "Eliminar un filtro compatible.",
+  "Recolor.SECTION_TITLE[Category]": "Categoría",
+  "Recolor.TOOLTIP_DESCRIPTION[EditPalette]": "Editar la paleta seleccionada.",
+  "Recolor.TOOLTIP_DESCRIPTION[PastePalette]": "Pegar la paleta copiada.",
+  "Recolor.TOOLTIP_DESCRIPTION[SaveSubcategory]": "Guardar Subcategoría",
+  "Recolor.TOOLTIP_DESCRIPTION[DeleteSubcategory]": "Eliminar Subcategoría",
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Restablecer",
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "Recordar Anterior"
 }
