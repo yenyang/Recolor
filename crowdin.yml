@@ -3,3 +3,5 @@ files:
     ignore:
       - UI*
     translation: '%original_path%/%locale%.json'
+  - source: Recolor/ShippedPrefabs/*/*/l10n/en-US.json
+    translation: '%original_path%/%locale%.json'
