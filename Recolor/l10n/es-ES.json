@@ -43,7 +43,7 @@
   "Recolor.TOOLTIP_DESCRIPTION[ResetToolMode]": "Restablece los colores de un objeto único de vuelta a la variación de color o las variaciones de color personalizadas de vuelta a los originales.",
   "Recolor.TOOLTIP_TITLE[PickerToolMode]": "Selector de color",
   "Recolor.TOOLTIP_DESCRIPTION[PickerToolMode]": "Selector de color dentro de la herramienta de brocha.",
-  "Options.OPTION[Recolor.Recolor.Mod.Setting.ColorPainterAutomaticCopyColor]": "Copiar automáticamente el set de colores al activar el pintor de color",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.ColorPainterAutomaticCopyColor]": "Copiar automáticamente el set de colores al activar la brocha",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ColorPainterAutomaticCopyColor]": "Copia y pega el conjunto de tres colores del recurso seleccionado, cada vez que la herramienta de brocha se activa desde el botón del panel de información seleccionado.",
   "Options.OPTION[Recolor.Recolor.Mod.Setting.ResetSettings]": "Restablecer ajustes de Recolor",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ResetSettings]": "Al confirmar se restablecerán todos los ajustes iniciales de Recolor.",
