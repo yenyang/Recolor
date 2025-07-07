@@ -337,7 +337,7 @@ export const ColorPainterToolOptionsComponent = () => {
                             />
                         </VanillaComponentResolver.instance.Section>
                     )}
-                    { (ColorPainterSelectionType == 1 || (ShowPaletteChoices & ButtonState.On) == ButtonState.On) && ToolMode != PainterToolMode.Picker  && (
+                    { (ColorPainterSelectionType == 1 || (ShowPaletteChoices & ButtonState.On) == ButtonState.On) && ToolMode == PainterToolMode.Paint  && (
                         <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[Category]", locale["Recolor.SECTION_TITLE[Category]"])}>
                             <VanillaComponentResolver.instance.ToolButton
                                 src={buildingSrc}
@@ -381,7 +381,7 @@ export const ColorPainterToolOptionsComponent = () => {
                             />
                         </VanillaComponentResolver.instance.Section>
                     )}
-                    {(ShowPaletteChoices & ButtonState.On) == ButtonState.On && ToolMode != PainterToolMode.Picker && (
+                    {(ShowPaletteChoices & ButtonState.On) == ButtonState.On && ToolMode == PainterToolMode.Paint && (
                         <>
                             <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[FilterType]", locale["Recolor.SECTION_TITLE[FilterType]"])}>
                                     <Dropdown 

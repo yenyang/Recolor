@@ -154,6 +154,7 @@ namespace Recolor.Systems.Tools
             base.InitializeRaycast();
             if ((m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single ||
                  m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker) &&
+                 m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices &&
                  m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.NetLanes)
             {
                 m_ToolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Overground;
@@ -167,8 +168,6 @@ namespace Recolor.Systems.Tools
                 m_ToolRaycastSystem.collisionMask = Game.Common.CollisionMask.OnGround | Game.Common.CollisionMask.Overground;
                 m_ToolRaycastSystem.typeMask = Game.Common.TypeMask.MovingObjects | Game.Common.TypeMask.StaticObjects | TypeMask.Lanes;
                 m_ToolRaycastSystem.raycastFlags |= RaycastFlags.SubBuildings | RaycastFlags.SubElements;
-                m_ToolRaycastSystem.netLayerMask = Game.Net.Layer.Fence;
-                m_ToolRaycastSystem.utilityTypeMask = Game.Net.UtilityTypes.Fence;
             }
             else if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius)
             {
@@ -389,17 +388,6 @@ namespace Recolor.Systems.Tools
                     }
             }
 
-            if (!raycastResult ||
-              (hit.m_HitPosition.x == 0 &&
-               hit.m_HitPosition.y == 0 &&
-               hit.m_HitPosition.z == 0 &&
-               m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius))
-            {
-                m_TimeLastReset = 0f;
-                applyMode = ApplyMode.Clear;
-                return Clear(inputDeps);
-            }
-
             State previousState = m_State;
             if (m_State != State.Canceling &&
                 applyAction.IsPressed() &&
@@ -434,6 +422,18 @@ namespace Recolor.Systems.Tools
             {
                 m_State = State.Painting;
             }
+
+            if (!raycastResult ||
+              (hit.m_HitPosition.x == 0 &&
+               hit.m_HitPosition.y == 0 &&
+               hit.m_HitPosition.z == 0 &&
+               m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius))
+            {
+                m_TimeLastReset = 0f;
+                applyMode = ApplyMode.Clear;
+                return Clear(inputDeps);
+            }
+
 
             if (m_State != previousState)
             {
@@ -492,12 +492,12 @@ namespace Recolor.Systems.Tools
                       ((m_State == State.Picking &&
                       (!m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices ||
                         EntityManager.HasBuffer<AssignedPalette>(m_RaycastEntity))) ||
-                        m_State == State.Painting ||
-                       (m_State == State.Reseting &&
-                        EntityManager.HasComponent<CustomMeshColor>(m_RaycastEntity))) &&
+                        (m_State == State.Reseting &&
+                        EntityManager.HasComponent<CustomMeshColor>(m_RaycastEntity)) ||
+                       (m_State == State.Painting &&
                        (!m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices ||
                        (MatchingCategory() &&
-                        MatchingFilter())))
+                        MatchingFilter())))))
                 {
                     m_PreviousRaycastEntity = m_RaycastEntity;
                     return UpdateDefinitions(inputDeps);
