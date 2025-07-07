@@ -116,6 +116,14 @@ namespace Recolor
             {
                 Log.Error(ex.ToString());
             }
+            try
+            {
+                File.WriteAllText($"C:\\Users\\TJ\\source\\repos\\{Id}\\{Id}\\l10n\\en-US.json", str);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.ToString());
+            }
 #endif
 #if DUMP_VANILLA_LOCALIZATION
             var strings = GameManager.instance.localizationManager.activeDictionary.entries
