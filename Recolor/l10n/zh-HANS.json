@@ -1,6 +1,6 @@
 {
   "Options.SECTION[Recolor.Recolor.Mod]": "Recolor",
-  "Recolor.SECTION_TITLE[InfoRowTitle]": "调整颜色",
+  "Recolor.SECTION_TITLE[InfoRowTitle]": "Recolor",
   "Recolor.TOOLTIP_DESCRIPTION[InfoRowTooltip]": "用于更改资产的颜色。",
   "Recolor.SECTION_TITLE[ColorSet]": "颜色集",
   "Recolor.TOOLTIP_DESCRIPTION[Minimize]": "最小化 Recolor 模组的面板以节省空间。",
@@ -87,5 +87,6 @@
   "Recolor.TOOLTIP_DESCRIPTION[MatchingSubmeshes]": "更改符合名称的子网格的颜色。",
   "Recolor.TOOLTIP_TITLE[AllSubmeshes]": "所有子网格",
   "Recolor.TOOLTIP_DESCRIPTION[AllSubmeshes]": "更改所有子网格的颜色。",
-  "Recolor.SECTION_TITLE[SubMeshes]": "子网格"
+  "Recolor.SECTION_TITLE[SubMeshes]": "子网格",
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "重置"
 }
