@@ -164,7 +164,7 @@ namespace Recolor.Settings
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowPalettesOptionDuringPlacement)), "Show Palette options while placing objects" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowPalettesOptionDuringPlacement)), "Toggles whether to show dropdowns for picking palettes for the three color channels while placing compatible prefabs." },
                 { TooltipDescriptionKey("HidePalettesDuringPlacement"), "Hides the palette choosers while placing compatible prefabs. Restore using the mod's settings." },
-                { TooltipDescriptionKey("MinimizeDuringPlacement"), "Minimize the palette choosers while  while placing compatible prefabs to save space." },
+                { TooltipDescriptionKey("MinimizeDuringPlacement"), "Minimize the palette choosers while placing compatible prefabs to save space." },
                 { TooltipDescriptionKey("ExpandDuringPlacement"), "Expands the palette choosers while placing compatible prefabs for use." },
                 { TooltipDescriptionKey("ResetPaletteChoosersToNone"), "Resets the palette choosers channels to all be None." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RestoreDefaultPalettes)), "Restore Default Palettes and Subcategories." },

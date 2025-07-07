@@ -450,7 +450,7 @@ export const RecolorMainPanelComponent = () => {
                     { !Minimized && ShowPaletteChoices == ButtonState.On && (
                         <>
                         <InfoRow
-                            left="Palette"
+                            left={translate("Recolor.SECTION_TITLE[Palette]", locale["Recolor.SECTION_TITLE[Palette]"])}
                             right={
                                 <div className={styles.rowGroup}>
                                     { (PaletteChooserData.SelectedPaletteEntities[0].index != 0 || PaletteChooserData.SelectedPaletteEntities[1].index != 0 || PaletteChooserData.SelectedPaletteEntities[2].index != 0) && (

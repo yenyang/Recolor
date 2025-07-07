@@ -2,7 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-// #define BURST
+#define BURST
 namespace Recolor.Systems.Tools
 {
     using System;
@@ -136,7 +136,10 @@ namespace Recolor.Systems.Tools
                     buffer.AddComponent(e, objectDefinition);
                 }
 
-                if (m_CurveLookup.TryGetComponent(m_InstanceEntity, out Game.Net.Curve curve))
+                if (m_CurveLookup.TryGetComponent(m_InstanceEntity, out Game.Net.Curve curve) &&
+                    m_OwnerLookup.TryGetComponent(m_InstanceEntity, out Owner owner1) &&
+                    owner1.m_Owner != Entity.Null &&
+                    m_EditorContainterLookup.HasComponent(owner1.m_Owner))
                 {
                     NetCourse netCourse = new NetCourse()
                     {

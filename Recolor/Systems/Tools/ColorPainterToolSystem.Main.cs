@@ -210,7 +210,7 @@ namespace Recolor.Systems.Tools
 
             m_VehicleMeshColorQuery = SystemAPI.QueryBuilder()
                 .WithAll<Vehicle, MeshColor, InterpolatedTransform>()
-                .WithNone<Temp, Deleted, Game.Common.Overridden> ()
+                .WithNone<Temp, Deleted, Game.Common.Overridden>()
                 .Build();
 
             m_ParkedVehicleMeshColorQuery = SystemAPI.QueryBuilder()
@@ -446,7 +446,7 @@ namespace Recolor.Systems.Tools
             if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius &&
                 m_ColorPainterUISystem.ToolMode != ColorPainterUISystem.PainterToolMode.Picker)
             {
-                ToolRadiusJob toolRadiusJob = new()
+                ToolRadiusJob toolRadiusJob = new ()
                 {
                     m_OverlayBuffer = m_OverlayRenderSystem.GetBuffer(out JobHandle outJobHandle),
                     m_Position = new Vector3(hit.m_HitPosition.x, hit.m_Position.y, hit.m_HitPosition.z),
@@ -483,7 +483,7 @@ namespace Recolor.Systems.Tools
                     m_PreviousRaycastEntity != Entity.Null)
                 {
                     m_State = State.Default;
-                    m_RaycastEntity = m_PreviousRaycastEntity;
+                    m_PreviousRaycastEntity = Entity.Null;
                     return Clear(inputDeps);
                 }
                 else if (m_PreviousRaycastEntity == Entity.Null &&
