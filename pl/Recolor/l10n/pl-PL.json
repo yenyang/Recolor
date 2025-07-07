@@ -134,7 +134,6 @@
   "Options.OPTION[Recolor.Recolor.Mod.Setting.ShowPalettesOptionDuringPlacement]": "Pokaż opcje Palety przy umieszczaniu obiektów",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ShowPalettesOptionDuringPlacement]": "Przełącza widoczność panel wyboru palet dla trzech kanałów kolorów podczas umieszczania kompatybilnych prefabów.",
   "Recolor.TOOLTIP_DESCRIPTION[HidePalettesDuringPlacement]": "Ukrywa panel wyboru palet przy umieszczaniu kompatybilnych prefabów. Przywróć za pomocą ustawień moda.",
-  "Recolor.TOOLTIP_DESCRIPTION[MinimizeDuringPlacement]": "Zwiń panel wyboru palet przy umieszczaniu kompatybilnych prefabów, żeby zaoszczędzić miejsce.",
   "Recolor.TOOLTIP_DESCRIPTION[ExpandDuringPlacement]": "Rozwiń panel wyboru palet przy umieszczaniu kompatybilnych prefabów.",
   "Recolor.TOOLTIP_DESCRIPTION[ResetPaletteChoosersToNone]": "Zresetuj kanały wyboru palet na Brak.",
   "Options.OPTION[Recolor.Recolor.Mod.Setting.RestoreDefaultPalettes]": "Przywróć domyślne Palety i Podkategorie.",
