@@ -88,5 +88,8 @@
   "Recolor.TOOLTIP_TITLE[AllSubmeshes]": "所有子网格",
   "Recolor.TOOLTIP_DESCRIPTION[AllSubmeshes]": "更改所有子网格的颜色。",
   "Recolor.SECTION_TITLE[SubMeshes]": "子网格",
+  "Recolor.SECTION_TITLE[Palette]": "调色板",
+  "Recolor.TOOLTIP_DESCRIPTION[SavePalette]": "保存调色板",
+  "Recolor.TOOLTIP_DESCRIPTION[DeletePalette]": "删除调色板",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "重置"
 }
