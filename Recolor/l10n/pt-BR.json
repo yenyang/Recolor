@@ -68,5 +68,6 @@
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Após confirmação, as teclas de atalho para o mod Recolor serão redefinidas.",
   "Options.WARNING[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Redefinir as Teclas de Atalho para o mod Recolor?",
   "Recolor.MOUSE_TOOLTIP[SingleInstancePlantWarning]": "A alteração de cores individuais para plantas ainda não é suportada.",
-  "Recolor.MOUSE_TOOLTIP[HasCustomMeshColorWarning]": "Não é possível alterar a variação de cores neste item, pois ele tem cores customizadas."
+  "Recolor.MOUSE_TOOLTIP[HasCustomMeshColorWarning]": "Não é possível alterar a variação de cores neste item, pois ele tem cores customizadas.",
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Redefinir"
 }

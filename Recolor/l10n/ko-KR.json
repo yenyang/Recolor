@@ -1,6 +1,6 @@
 {
   "Options.SECTION[Recolor.Recolor.Mod]": "재색상(RECOLOR)",
-  "Recolor.SECTION_TITLE[InfoRowTitle]": "재색상",
+  "Recolor.SECTION_TITLE[InfoRowTitle]": "재색상(RECOLOR)",
   "Recolor.TOOLTIP_DESCRIPTION[InfoRowTooltip]": "커스텀 색상을 고르려면 선택하세요",
   "Recolor.SECTION_TITLE[ColorSet]": "색상 세트",
   "Recolor.TOOLTIP_DESCRIPTION[Minimize]": "재색상 패널을 최소화하여 공간을 절약하세요.",
@@ -64,7 +64,7 @@
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ActivateColorPainter]": "색상 페인터 도구를 활성화하는 키 바인드.",
   "Options.OPTION[Recolor.Recolor.Mod.Setting.FenceSelectorMode]": "넷라인 울타리/덤불 선택모드 활성화",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.FenceSelectorMode]": "넷라인 울타리 및 덤불 선택 도구 모드를 활성화하는 키보드 단축키.",
-  "Options.INPUT_MAP[Recolor.Recolor.Mod]": "재색상",
+  "Options.INPUT_MAP[Recolor.Recolor.Mod]": "재색상(RECOLOR)",
   "Options.OPTION[Recolor.Recolor.Mod/ActivateColorPainter/binding]": "색상 페인터 도구 활성화 키",
   "Options.OPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "재색상 모드 키 바인딩 초기화",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "확인을 누르면 재색상 모드의 키 바인딩이 초기화됩니다.",
@@ -85,5 +85,6 @@
   "Recolor.TOOLTIP_DESCRIPTION[MatchingSubmeshes]": "일치하는 이름의 서브메시만 색상을 변경합니다.",
   "Recolor.TOOLTIP_TITLE[AllSubmeshes]": "모든 서브메시",
   "Recolor.TOOLTIP_DESCRIPTION[AllSubmeshes]": "모든 서브메시의 색상을 변경합니다.",
-  "Recolor.SECTION_TITLE[SubMeshes]": "서브메시"
+  "Recolor.SECTION_TITLE[SubMeshes]": "서브메시",
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "초기화"
 }

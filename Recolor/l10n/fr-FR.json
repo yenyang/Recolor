@@ -1,6 +1,6 @@
 {
   "Options.SECTION[Recolor.Recolor.Mod]": "Recolor",
-  "Recolor.SECTION_TITLE[InfoRowTitle]": "Recolorer",
+  "Recolor.SECTION_TITLE[InfoRowTitle]": "Recolor",
   "Recolor.TOOLTIP_DESCRIPTION[InfoRowTooltip]": "Choisissez des couleurs personnalisées.",
   "Recolor.SECTION_TITLE[ColorSet]": "Jeu de couleurs",
   "Recolor.TOOLTIP_DESCRIPTION[Minimize]": "Réduire le panneau de Recolor pour économiser de l’espace.",
@@ -69,11 +69,24 @@
   "Options.OPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Réinitialiser les raccourcis clavier",
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Après confirmation, cela réinitialisera les raccourcis clavier personnalisés pour le mod Recolor.",
   "Options.WARNING[Recolor.Recolor.Mod.Setting.ResetKeybindSettings]": "Réinitialiser les raccourcis clavier de Recolor ?",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.AlwaysMinimizedAtGameStart]": "Toujours minimiser lors de l'ouverture du jeu",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.AlwaysMinimizedAtGameStart]": "Si activé, le panneau Recolor sera toujours minimisé au démarrage. Si désactivé, le panneau Recolor sera minimisé ou non en fonction de son état lors de la dernière fermeture du jeu.",
   "Recolor.MOUSE_TOOLTIP[SingleInstancePlantWarning]": "Le changement de couleur d’instance n’est pas encore pris en charge pour la végétation.",
   "Recolor.MOUSE_TOOLTIP[HasCustomMeshColorWarning]": "Impossible de modifier la variation de couleur par correspondance sur cet objet car il a des couleurs d’instance personnalisées.",
   "Recolor.MOUSE_TOOLTIP[SelectANetLaneFence]": "Sélectionnez une NetLane d'une clôture ou d'une haie.",
   "Recolor.TOOLTIP_DESCRIPTION[ToggleChannel]": "Active/désactive le canal.",
   "Recolor.TOOLTIP_DESCRIPTION[ShowHexaDecimals]": "Affiche les champs de saisie Hexadécimale ou non.",
   "Recolor.TOOLTIP_DESCRIPTION[SwapColors]": "Échange les couleurs entre deux canaux.",
-  "Recolor.TOOLTIP_TITLE[ServiceVehicles]": "Véhicules de services"
+  "Recolor.TOOLTIP_TITLE[ServiceVehicles]": "Véhicules de services",
+  "Recolor.TOOLTIP_DESCRIPTION[ServiceVehicles]": "Modifie les couleurs de tous les véhicules de service appartenant au même bâtiment de service. Les nouveaux véhicules de service créés pour ce bâtiment auront également le même jeu de couleurs.",
+  "Recolor.TOOLTIP_TITLE[RouteVehicles]": "Véhicules sur la route",
+  "Recolor.TOOLTIP_DESCRIPTION[RouteVehicles]": "Modifie les couleurs de tous les véhicules affectés à une route. Les nouveaux véhicules créés pour cette route auront également le même jeu de couleurs.",
+  "Recolor.TOOLTIP_TITLE[SingleSubMesh]": "Sous-objet individuel",
+  "Recolor.TOOLTIP_DESCRIPTION[SingleSubMesh]": "Modifie les couleurs du sous-objet sélectionné.",
+  "Recolor.TOOLTIP_TITLE[MatchingSubmeshes]": "Sous-objets correspondants",
+  "Recolor.TOOLTIP_DESCRIPTION[MatchingSubmeshes]": "Change les couleurs de tous les sous-objets du même nom.",
+  "Recolor.TOOLTIP_TITLE[AllSubmeshes]": "Tous les sous-objets",
+  "Recolor.TOOLTIP_DESCRIPTION[AllSubmeshes]": "Change les couleurs de tous les sous-objets.",
+  "Recolor.SECTION_TITLE[SubMeshes]": "Sous-objets",
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Réinitialiser"
 }
