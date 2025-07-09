@@ -131,5 +131,19 @@
   "Recolor.TOOLTIP_DESCRIPTION[PastePaletteSet]": "Colle les attributions de palette pour les 3 canaux.",
   "Recolor.TOOLTIP_DESCRIPTION[GenerateNewPalette]": "Générer une nouvelle palette et ouvrir le menu de l’Éditeur de palette.",
   "Recolor.TOOLTIP_DESCRIPTION[CloseEditorPanel]": "Fermer le menu de l’Éditeur de palette.",
-  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Réinitialiser"
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.ShowPalettesOptionDuringPlacement]": "Afficher les options de la palette en plaçant des objets",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.ShowPalettesOptionDuringPlacement]": "Active ou désactive l’affichage de menus déroulants pour choisir les palettes des trois canaux de couleur lors du placement de préfabs compatibles.",
+  "Recolor.TOOLTIP_DESCRIPTION[HidePalettesDuringPlacement]": "Masque les sélecteurs de palette lors du placement de préfabs compatibles. Rétablir via les paramètres du mod.",
+  "Recolor.TOOLTIP_DESCRIPTION[MinimizeDuringPlacement]": "Réduire les sélecteurs de palette lors du placement de préfabs compatibles pour économiser de l’espace.",
+  "Recolor.TOOLTIP_DESCRIPTION[ExpandDuringPlacement]": "Développe les sélecteurs de palette lors du placement de préfabs compatibles.",
+  "Recolor.TOOLTIP_DESCRIPTION[ResetPaletteChoosersToNone]": "Réinitialise les canaux des sélecteurs de palette pour qu’ils soient tous à Aucun.",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.RestoreDefaultPalettes]": "Restaurer les palettes et sous-catégories par défaut.",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.RestoreDefaultPalettes]": "Après confirmation, réinstallera les fichiers originaux pour les palettes et sous-catégories par défaut. Toute modification sera perdue. Cette action est irréversible. Les palettes et sous-catégories personnalisées avec des noms uniques différents de ceux des versions préconstruites ne seront pas affectées. Un redémarrage du jeu est requis par la suite.",
+  "Options.WARNING[Recolor.Recolor.Mod.Setting.RestoreDefaultPalettes]": "Réinstaller les palettes et sous-catégories par défaut ? Toute modification sera perdue. Cette action est irréversible. Les palettes et sous-catégories personnalisées avec des noms uniques différents de ceux des versions préconstruites ne seront pas affectées. Un redémarrage du jeu est requis par la suite.",
+  "Recolor.TOOLTIP_DESCRIPTION[TogglePaletteOptions]": "Afficher ou masquer les options de palette.",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "Comportement du sélecteur de palette lors du changement de préfab",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "Modifie le comportement du sélecteur de palette en changeant de préfab. Ne pas changer : conserve les palettes choisies. Réinitialiser : définit tous les choix de palette sur Aucun. Mémoriser : enregistre les palettes précédemment choisies pour chaque préfab dans chaque fichier de sauvegarde et les utilisera par défaut.",
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[NoChange]": "Ne pas changer",
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Réinitialiser",
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "Mémoriser"
 }
