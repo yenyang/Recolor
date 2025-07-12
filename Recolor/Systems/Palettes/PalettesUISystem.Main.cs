@@ -28,6 +28,7 @@ namespace Recolor.Systems.Palettes
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Entities.Serialization;
+    using Unity.Entities.UniversalDelegates;
     using UnityEngine;
 
     /// <summary>
@@ -132,7 +133,23 @@ namespace Recolor.Systems.Palettes
                         {
                             nextPath = Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json");
                             string entireFile = reader.ReadToEnd();
-                            File.WriteAllText(nextPath, entireFile);
+                            if (subStrings[subStrings.Length - 2] == "l10n")
+                            {
+                                Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
+                                Dictionary<string, string> translations = varient.Make<Dictionary<string, string>>();
+                                if (translations.Count == 0)
+                                {
+                                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployPrefabs)} Localization files for {resourceNames[i]} : is empty.");
+                                }
+                                else
+                                {
+                                    File.WriteAllText(nextPath, entireFile);
+                                }
+                            }
+                            else
+                            {
+                                File.WriteAllText(nextPath, entireFile);
+                            }
                         }
                     }
                     catch (Exception e)
@@ -167,7 +184,23 @@ namespace Recolor.Systems.Palettes
                         {
                             nextPath = Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json");
                             string entireFile = reader.ReadToEnd();
-                            File.WriteAllText(nextPath, entireFile);
+                            if (subStrings[subStrings.Length - 2] == "l10n")
+                            {
+                                Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
+                                Dictionary<string, string> translations = varient.Make<Dictionary<string, string>>();
+                                if (translations.Count == 0)
+                                {
+                                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployPrefabs)} Localization files for {resourceNames[i]}: is empty.");
+                                }
+                                else
+                                {
+                                    File.WriteAllText(nextPath, entireFile);
+                                }
+                            }
+                            else
+                            {
+                                File.WriteAllText(nextPath, entireFile);
+                            }
                         }
                     }
                     catch (Exception e)
@@ -176,6 +209,12 @@ namespace Recolor.Systems.Palettes
                         m_Log.Error(e, $"Exception reading subcategory prefab from embedded file {resourceNames[i]}");
                     }
                 }
+            }
+
+            if (Mod.Instance.Settings.PreviousVersion != Mod.Instance.Settings.Version)
+            {
+                Mod.Instance.Settings.PreviousVersion = Mod.Instance.Settings.Version;
+                Mod.Instance.Settings.ApplyAndSave();
             }
         }
 
@@ -229,6 +268,10 @@ namespace Recolor.Systems.Palettes
             if (deployPrefabs)
             {
                 DeployPrefabs();
+            }
+            else if (Mod.Instance.Settings.PreviousVersion != Mod.Instance.Settings.Version)
+            {
+                DeployAdditionalTranslations();
             }
 
             // Create bindings with the UI for transfering data to the UI.
@@ -383,6 +426,127 @@ namespace Recolor.Systems.Palettes
             }
 
             m_PaletteCategories.Binding.TriggerUpdate();
+        }
+
+        /// <summary>
+        /// Deploys missing localization files.
+        /// </summary>
+        private void DeployAdditionalTranslations()
+        {
+            m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployAdditionalTranslations)}");
+            Assembly thisAssembly = Assembly.GetExecutingAssembly();
+            string[] resourceNames = thisAssembly.GetManifestResourceNames();
+            for (int i = 0; i < resourceNames.Length; i++)
+            {
+                if (resourceNames[i].Contains("Recolor.ShippedPrefabs..PalettePrefabs."))
+                {
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployAdditionalTranslations)} resourceNames[i] = {resourceNames[i]} ");
+                    string fileSubPath = resourceNames[i].Replace("Recolor.ShippedPrefabs..PalettePrefabs.", string.Empty);
+                    fileSubPath = fileSubPath.Replace(".json", string.Empty);
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployAdditionalTranslations)} fileSubPath = {fileSubPath} ");
+                    string[] subStrings = fileSubPath.Split('.');
+
+                    string nextPath = Path.Combine(m_PalettePrefabsFolder);
+                    for (int j = 0; j < subStrings.Length - 1; j++)
+                    {
+                        nextPath = Path.Combine(nextPath, subStrings[j]);
+                    }
+
+                    if (subStrings[subStrings.Length - 2] != "l10n" ||
+                    !Directory.Exists(nextPath) ||
+                    File.Exists(Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json")))
+                    {
+                        m_Log.Debug($"l10n?: {subStrings[subStrings.Length - 2]}");
+                        m_Log.Debug($"Directory Exits: {Directory.Exists(nextPath)}");
+                        m_Log.Debug($"File Exists: {File.Exists(Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json"))}");
+                        m_Log.Debug($"nextPath: {nextPath}");
+                        m_Log.Debug($"filePath: {Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json")}");
+
+                        continue;
+                    }
+
+                    try
+                    {
+                        m_Log.Debug($"Reading embedded palette prefab file {resourceNames[i]}");
+
+                        // Read embedded file.
+                        using StreamReader reader = new(thisAssembly.GetManifestResourceStream(resourceNames[i]));
+                        {
+                            nextPath = Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json");
+                            string entireFile = reader.ReadToEnd();
+                            Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
+                            Dictionary<string, string> translations = varient.Make<Dictionary<string, string>>();
+                            if (translations.Count == 0)
+                            {
+                                m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployAdditionalTranslations)} Localization files for {resourceNames[i]} : is empty.");
+                            }
+                            else
+                            {
+                                File.WriteAllText(nextPath, entireFile);
+                                m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployAdditionalTranslations)} Localization file for {resourceNames[i]} added.");
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // Don't let a single failure stop us.
+                        m_Log.Error(e, $"Exception reading palette prefab from embedded file {resourceNames[i]}");
+                    }
+                }
+
+                if (resourceNames[i].Contains("Recolor.ShippedPrefabs..SubcategoryPrefabs."))
+                {
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployAdditionalTranslations)} resourceNames[i] = {resourceNames[i]} ");
+                    string fileSubPath = resourceNames[i].Replace("Recolor.ShippedPrefabs..SubcategoryPrefabs.", string.Empty);
+                    fileSubPath = fileSubPath.Replace(".json", string.Empty);
+                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployAdditionalTranslations)} fileSubPath = {fileSubPath} ");
+                    string[] subStrings = fileSubPath.Split('.');
+
+                    string nextPath = Path.Combine(m_SubcategoryPrefabsFolder);
+                    for (int j = 0; j < subStrings.Length - 1; j++)
+                    {
+                        nextPath = Path.Combine(nextPath, subStrings[j]);
+                    }
+
+                    if (subStrings[subStrings.Length - 2] != "l10n" ||
+                        !Directory.Exists(nextPath) ||
+                        File.Exists(Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json")))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        m_Log.Debug($"Reading embedded subcategory prefab file {resourceNames[i]}");
+
+                        // Read embedded file.
+                        using StreamReader reader = new(thisAssembly.GetManifestResourceStream(resourceNames[i]));
+                        {
+                            nextPath = Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json");
+                            string entireFile = reader.ReadToEnd();
+                            Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
+                            Dictionary<string, string> translations = varient.Make<Dictionary<string, string>>();
+                            if (translations.Count == 0)
+                            {
+                                m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployAdditionalTranslations)} Localization files for {resourceNames[i]} : is empty.");
+                            }
+                            else
+                            {
+                                File.WriteAllText(nextPath, entireFile);
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // Don't let a single failure stop us.
+                        m_Log.Error(e, $"Exception reading subcategory prefab from embedded file {resourceNames[i]}");
+                    }
+                }
+            }
+
+            Mod.Instance.Settings.PreviousVersion = Mod.Instance.Settings.Version;
+            Mod.Instance.Settings.ApplyAndSave();
+            m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployAdditionalTranslations)} complete.");
         }
 
         private void ChangeUniqueName(string newName, int menuType)

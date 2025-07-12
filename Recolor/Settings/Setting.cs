@@ -275,6 +275,12 @@ namespace Recolor.Settings
         [SettingsUISection(General, About)]
         public string Version => Mod.Instance.Version;
 
+        /// <summary>
+        /// Gets or sets a value indicating the previous version.
+        /// </summary>
+        [SettingsUIHidden]
+        public string PreviousVersion { get; set; }
+
         /// <inheritdoc/>
         public override void SetDefaults()
         {

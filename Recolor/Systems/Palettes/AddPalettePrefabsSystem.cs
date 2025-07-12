@@ -196,8 +196,15 @@ namespace Recolor.Systems.Palettes
                             string entireFile = reader.ReadToEnd();
                             Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
                             Dictionary<string, string> translations = varient.Make<Dictionary<string, string>>();
-                            GameManager.instance.localizationManager.AddSource(localeId, new MemorySource(translations));
-                            m_Log.Debug($"{nameof(AddPalettePrefabsSystem)}.{nameof(ImportLocalizationFiles)} sucessfully imported localization files for {localeId} from this folder: {folderPath}.");
+                            if (translations.Count == 0)
+                            {
+                                m_Log.Debug($"{nameof(AddPalettePrefabsSystem)}.{nameof(ImportLocalizationFiles)} Localization files for {localeId} from this folder: {folderPath} is empty.");
+                            }
+                            else
+                            {
+                                GameManager.instance.localizationManager.AddSource(localeId, new MemorySource(translations));
+                                m_Log.Debug($"{nameof(AddPalettePrefabsSystem)}.{nameof(ImportLocalizationFiles)} sucessfully imported localization files for {localeId} from this folder: {folderPath}.");
+                            }
                         }
                     }
                     else
