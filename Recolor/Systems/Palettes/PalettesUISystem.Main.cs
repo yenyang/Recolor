@@ -447,10 +447,21 @@ namespace Recolor.Systems.Palettes
                     string[] subStrings = fileSubPath.Split('.');
 
                     string nextPath = Path.Combine(m_PalettePrefabsFolder);
-                    if (subStrings[subStrings.Length - 2] != "l10n" ||
-                        !Directory.Exists(nextPath) ||
-                        File.Exists(Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json")))
+                    for (int j = 0; j < subStrings.Length - 1; j++)
                     {
+                        nextPath = Path.Combine(nextPath, subStrings[j]);
+                    }
+
+                    if (subStrings[subStrings.Length - 2] != "l10n" ||
+                    !Directory.Exists(nextPath) ||
+                    File.Exists(Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json")))
+                    {
+                        m_Log.Debug($"l10n?: {subStrings[subStrings.Length - 2]}");
+                        m_Log.Debug($"Directory Exits: {Directory.Exists(nextPath)}");
+                        m_Log.Debug($"File Exists: {File.Exists(Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json"))}");
+                        m_Log.Debug($"nextPath: {nextPath}");
+                        m_Log.Debug($"filePath: {Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json")}");
+
                         continue;
                     }
 
@@ -492,6 +503,11 @@ namespace Recolor.Systems.Palettes
                     string[] subStrings = fileSubPath.Split('.');
 
                     string nextPath = Path.Combine(m_SubcategoryPrefabsFolder);
+                    for (int j = 0; j < subStrings.Length - 1; j++)
+                    {
+                        nextPath = Path.Combine(nextPath, subStrings[j]);
+                    }
+
                     if (subStrings[subStrings.Length - 2] != "l10n" ||
                         !Directory.Exists(nextPath) ||
                         File.Exists(Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json")))
