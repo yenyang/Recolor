@@ -82,7 +82,7 @@ export const PaletteLocalizationSet = (props : { localizationData : Localization
                 <span className={panelStyles.smallSpacer}></span>
                 { LocalizationUIDatas[props.menu].length > 1 ?
                     <VanillaComponentResolver.instance.ToolButton src={minusSrc}  tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[RemoveALocale]" ,locale["Recolor.TOOLTIP_DESCRIPTION[RemoveALocale]"])}        className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
-                            onSelect={() => { trigger(mod.id, "RemoveLocale", LocalizationUIDatas[props.menu][props.index].LocaleCode); console.log(LocalizationUIDatas[props.menu][props.index].LocaleCode);}}
+                            onSelect={() => { trigger(mod.id, "RemoveLocale", LocalizationUIDatas[props.menu][props.index].LocaleCode);}}
                     /> : 
                     <span className={styles.ButtonWidth}></span>
                 }

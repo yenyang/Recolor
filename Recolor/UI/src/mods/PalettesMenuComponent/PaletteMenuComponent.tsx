@@ -210,9 +210,8 @@ export const PaletteMenuComponent = () => {
                                             <span className={panelStyles.smallSpacer}></span>
                                             <VanillaComponentResolver.instance.ToolButton src={plusSrc}  selected={UniqueNames[MenuType.Subcategory] != SelectedSubcategory && ShowSubcategoryEditorMenu}        tooltip = {translate("Recolor.TOOLTIP_DESCRIPTION[AddSubcategory]" ,locale["Recolor.TOOLTIP_DESCRIPTION[AddSubcategory]"])}        className = {VanillaComponentResolver.instance.toolButtonTheme.button}             focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}    
                                                 onSelect={() => {
-                                                    if (!ShowSubcategoryEditorMenu) { trigger(mod.id, "ShowSubcategoryEditorPanel")} 
-                                                    else if (UniqueNames[MenuType.Subcategory] == SelectedSubcategory) { trigger(mod.id, "GenerateNewSubcategory")}
-                                                    else {trigger(mod.id, "ShowSubcategoryEditorPanel")}}} />
+                                                    if (!ShowSubcategoryEditorMenu) { trigger(mod.id, "ShowSubcategoryEditorPanel"); trigger(mod.id, "GenerateNewSubcategory");} 
+                                                    else { trigger(mod.id, "GenerateNewSubcategory")}}} />
                                         </>
                                     </VanillaComponentResolver.instance.Section>
                                     <VanillaComponentResolver.instance.Section title={translate("Recolor.SECTION_TITLE[FilterType]", locale["Recolor.SECTION_TITLE[FilterType]"])}>

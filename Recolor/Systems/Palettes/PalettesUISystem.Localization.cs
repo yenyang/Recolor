@@ -31,6 +31,7 @@ namespace Recolor.Systems.Palettes
     using Unity.Collections;
     using Unity.Entities;
     using UnityEngine;
+    using UnityEngine.Events;
 
     /// <summary>
     /// Handles the localization portions for Palettes and Subcategories.
@@ -52,11 +53,11 @@ namespace Recolor.Systems.Palettes
                     }
                 }
 
-                SaveSelectedLocalCodes();
+                SaveSelectedLocaleCodes();
             }
         }
 
-        private void AddLocale(string localeCode)
+        private void AddLocale(string localeCode, bool saveSelectedLocaleCodes = false)
         {
             if (!IsLocaleCodeSelected(localeCode) &&
                 m_LocalizationUIDatas.Value.Length > 0)
@@ -83,7 +84,10 @@ namespace Recolor.Systems.Palettes
                 }
 
                 m_LocalizationUIDatas.Binding.TriggerUpdate();
-                SaveSelectedLocalCodes();
+                if (saveSelectedLocaleCodes)
+                {
+                    SaveSelectedLocaleCodes();
+                }
             }
         }
 
@@ -91,7 +95,7 @@ namespace Recolor.Systems.Palettes
         {
             if (TryGetNewLocaleCode(out string localeCode))
             {
-                AddLocale(localeCode);
+                AddLocale(localeCode, true);
             }
         }
 
@@ -155,19 +159,50 @@ namespace Recolor.Systems.Palettes
                 return;
             }
 
-            for (int i = 0; i < m_LocalizationUIDatas.Value[(int)menuType].Length; i++)
+            List<string> localeCodeList = Mod.Instance.Settings.SelectedLocaleCodes.ToList();
+
+            MenuType oppositeMenuType = MenuType.Subcategory;
+            if (menuType == MenuType.Subcategory)
             {
-                if (m_LocalizationUIDatas.Value[(int)menuType][i].LocaleCode == GameManager.instance.localizationManager.fallbackLocaleId &&
+                oppositeMenuType = MenuType.Palette;
+            }
+
+            // This section goes through the opposite menu type to ensure that if there are locale codes being shown there that they are included in both menus.
+            if (m_LocalizationUIDatas.Value.Length > (int)oppositeMenuType)
+            {
+                for (int i = 0; i < m_LocalizationUIDatas.Value[(int)oppositeMenuType].Length; i++)
+                {
+                    if (oppositeMenuType == MenuType.Subcategory &&
+                        !m_ShowSubcategoryEditorPanel &&
+                        !localeCodeList.Contains(m_LocalizationUIDatas.Value[(int)oppositeMenuType][i].LocaleCode))
+                    {
+                        RemoveLocale(m_LocalizationUIDatas.Value[(int)oppositeMenuType][i].LocaleCode, false);
+                    }
+                    else if (!localeCodeList.Contains(m_LocalizationUIDatas.Value[(int)oppositeMenuType][i].LocaleCode))
+                    {
+                        localeCodeList.Add(m_LocalizationUIDatas.Value[(int)oppositeMenuType][i].LocaleCode);
+                    }
+                }
+            }
+
+            string[] localeCodes = localeCodeList.ToArray();
+
+            Dictionary<string, LocalizationUIData> localizationUIData = new Dictionary<string, LocalizationUIData>();
+
+            for (int i = 0; i < localeCodes.Length; i++)
+            {
+                if (GameManager.instance.localizationManager.GetSupportedLocales().Contains(localeCodes[i]) &&
+                    localeCodes[i] == GameManager.instance.localizationManager.fallbackLocaleId &&
                     m_UniqueNames.Value.Length > (int)menuType)
                 {
-                    m_LocalizationUIDatas.Value[(int)menuType][i].LocalizedName = m_UniqueNames.Value[(int)menuType];
+                    localizationUIData.Add(Mod.Instance.Settings.SelectedLocaleCodes[i], new LocalizationUIData(localeCodes[i], m_UniqueNames.Value[(int)menuType], string.Empty));
                 }
-                else
+                else if (GameManager.instance.localizationManager.GetSupportedLocales().Contains(localeCodes[i]))
                 {
-                    m_LocalizationUIDatas.Value[(int)menuType][i].LocalizedName = string.Empty;
+                    localizationUIData.Add(localeCodes[i], new LocalizationUIData(localeCodes[i], string.Empty, string.Empty));
                 }
 
-                m_LocalizationUIDatas.Value[(int)menuType][i].LocalizedDescription = string.Empty;
+                m_LocalizationUIDatas.Value[(int)menuType] = localizationUIData.Values.ToArray();
             }
 
             m_LocalizationUIDatas.Binding.TriggerUpdate();
@@ -206,7 +241,7 @@ namespace Recolor.Systems.Palettes
             m_LocalizationUIDatas.Binding.TriggerUpdate();
         }
 
-        private void SaveSelectedLocalCodes()
+        private void SaveSelectedLocaleCodes()
         {
             if (m_LocalizationUIDatas.Value.Length > 0)
             {
@@ -224,7 +259,7 @@ namespace Recolor.Systems.Palettes
             }
         }
 
-        private void RemoveLocale(string localeCode)
+        private void RemoveLocale(string localeCode, bool saveLocaleCodes = false)
         {
             Dictionary<string, LocalizationUIData>[] localizationUIDatas = new Dictionary<string, LocalizationUIData>[m_LocalizationUIDatas.Value.Length];
             for (int i = 0; i < m_LocalizationUIDatas.Value.Length; i++)
@@ -244,7 +279,15 @@ namespace Recolor.Systems.Palettes
             }
 
             m_LocalizationUIDatas.Binding.TriggerUpdate();
-            SaveSelectedLocalCodes();
+            if (saveLocaleCodes)
+            {
+                SaveSelectedLocaleCodes();
+            }
+        }
+
+        private void RemoveLocale(string localeCode)
+        {
+            RemoveLocale(localeCode, true);
         }
 
         private void ChangeLocalizedName(int menuType, int index, string name)
@@ -332,7 +375,8 @@ namespace Recolor.Systems.Palettes
                 return;
             }
 
-            bool updateBinding = false;
+            ResetToDefaultLocalizationUIDatas(menuType);
+
             string[] filePaths = Directory.GetFiles(Path.Combine(folderPath, "l10n"));
             for (int i = 0; i < filePaths.Length; i++)
             {
@@ -348,7 +392,8 @@ namespace Recolor.Systems.Palettes
                             string entireFile = reader.ReadToEnd();
                             Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
                             Dictionary<string, string> translations = varient.Make<Dictionary<string, string>>();
-                            if (!IsLocaleCodeSelected(localeId))
+                            if (!IsLocaleCodeSelected(localeId) &&
+                                translations.Count > 0)
                             {
                                 AddLocale(localeId);
                             }
@@ -360,13 +405,11 @@ namespace Recolor.Systems.Palettes
                                     if (translations.ContainsKey(LocaleEN.NameKey(menuType, uniqueName)))
                                     {
                                         m_LocalizationUIDatas.Value[(int)menuType][j].LocalizedName = translations[LocaleEN.NameKey(menuType, uniqueName)];
-                                        updateBinding = true;
                                     }
 
                                     if (translations.ContainsKey(LocaleEN.DescriptionKey(menuType, uniqueName)))
                                     {
                                         m_LocalizationUIDatas.Value[(int)menuType][j].LocalizedDescription = translations[LocaleEN.DescriptionKey(menuType, uniqueName)];
-                                        updateBinding = true;
                                     }
                                 }
                             }
@@ -382,10 +425,7 @@ namespace Recolor.Systems.Palettes
                     m_Log.Error($"{nameof(AddPalettePrefabsSystem)}.{nameof(EditLocalizationFiles)} Could not edit localization file. Encountered Exception: {ex}. ");
                 }
 
-                if (updateBinding)
-                {
-                    m_LocalizationUIDatas.Binding.TriggerUpdate();
-                }
+                m_LocalizationUIDatas.Binding.TriggerUpdate();
             }
         }
 

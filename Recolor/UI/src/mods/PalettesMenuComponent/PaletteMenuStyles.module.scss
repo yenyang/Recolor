@@ -70,11 +70,12 @@
     align-items: center;
     text-align: left;
     padding-top: 2rem;
-    font-size: 18rem !important;
+    font-size: auto; 
     font-weight: bold;
     padding-bottom: 5rem;
     height: 35rem;
     flex-grow: 1;
+    height: auto !important;
 }
 
 .centeredSubTitle {

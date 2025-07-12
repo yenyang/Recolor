@@ -132,7 +132,23 @@ namespace Recolor.Systems.Palettes
                         {
                             nextPath = Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json");
                             string entireFile = reader.ReadToEnd();
-                            File.WriteAllText(nextPath, entireFile);
+                            if (subStrings[subStrings.Length - 2] == "l10n")
+                            {
+                                Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
+                                Dictionary<string, string> translations = varient.Make<Dictionary<string, string>>();
+                                if (translations.Count == 0)
+                                {
+                                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployPrefabs)} Localization files for {resourceNames[i]} : is empty.");
+                                }
+                                else
+                                {
+                                    File.WriteAllText(nextPath, entireFile);
+                                }
+                            }
+                            else
+                            {
+                                File.WriteAllText(nextPath, entireFile);
+                            }
                         }
                     }
                     catch (Exception e)
@@ -167,7 +183,23 @@ namespace Recolor.Systems.Palettes
                         {
                             nextPath = Path.Combine(nextPath, subStrings[subStrings.Length - 1] + ".json");
                             string entireFile = reader.ReadToEnd();
-                            File.WriteAllText(nextPath, entireFile);
+                            if (subStrings[subStrings.Length - 2] == "l10n")
+                            {
+                                Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
+                                Dictionary<string, string> translations = varient.Make<Dictionary<string, string>>();
+                                if (translations.Count == 0)
+                                {
+                                    m_Log.Debug($"{nameof(PalettesUISystem)}.{nameof(DeployPrefabs)} Localization files for {resourceNames[i]}: is empty.");
+                                }
+                                else
+                                {
+                                    File.WriteAllText(nextPath, entireFile);
+                                }
+                            }
+                            else
+                            {
+                                File.WriteAllText(nextPath, entireFile);
+                            }
                         }
                     }
                     catch (Exception e)
