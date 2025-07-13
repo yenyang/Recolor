@@ -1,7 +1,7 @@
 ﻿# Patch v1.2.0
 * Complete Palette and Subcategory Editor Menu.
 * Assign Palettes with Selected Info Panel, Color Painter Tool, Color Picker Tool and During Placement. 
-* Inclused 19 Pre-Built Palettes and 4 pre-built Subcategories. Edit and delete at will.
+* Includes 19 Pre-Built Palettes and 4 pre-built Subcategories. Edit and delete at will.
 * Color Painter Tool reworked to show previews and to support standalone Net Lane Fences and Walls placed with EDT. Radius selection no longer supports sub-elements.
 
 ## Note for Asset Creators
