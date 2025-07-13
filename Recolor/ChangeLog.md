@@ -1,4 +1,4 @@
-﻿# Patch v1.2.0
+﻿# Update v1.2.0
 * Complete Palette and Subcategory Editor Menu.
 * Assign Palettes with Selected Info Panel, Color Painter Tool, Color Picker Tool and During Placement. 
 * Includes 19 Pre-Built Palettes and 4 pre-built Subcategories. Edit and delete at will.
