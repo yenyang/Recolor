@@ -12,7 +12,7 @@ If you want to say thank you with a donation you can do so on Paypal.
 
 ## Note for Asset Creators
 We don't know when official support for the Asset Editor Mesh Import will happen, but. . .
-To best support the Recolor mod, I ask that if you’re designing a building, and if you want that building to have color variations in separate channels for the walls and roofs please use channel0/R for walls and channel1/G for the roof.
+To best support the Recolor mod, I ask that if youï¿½re designing a building, and if you want that building to have color variations in separate channels for the walls and roofs please use channel0/R for walls and channel1/G for the roof.
 
 ## Translations
 I am looking for volunteers to help translate the mod into the other languages. For those interested please find the project in the crowdin or discord link. CSL2:CODEMODS -> mods-wip -> Recolor. Also see Crowdin link.
