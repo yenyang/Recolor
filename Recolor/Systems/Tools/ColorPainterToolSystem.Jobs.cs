@@ -80,6 +80,8 @@ namespace Recolor.Systems.Tools
             public ComponentLookup<Game.Tools.EditorContainer> m_EditorContainterLookup;
             [ReadOnly]
             public ComponentLookup<Game.Common.PseudoRandomSeed> m_PseudoRandomSeedLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Objects.Attached> m_AttachedLookup;
 
             public void Execute()
             {
@@ -102,6 +104,11 @@ namespace Recolor.Systems.Tools
                     {
                         creationDefinition.m_Prefab = m_PrefabRefLookup[m_InstanceEntity];
                     }
+                }
+
+                if (m_AttachedLookup.HasComponent(m_InstanceEntity))
+                {
+                    creationDefinition.m_Attached = m_AttachedLookup[m_InstanceEntity].m_Parent;
                 }
 
                 if (m_PseudoRandomSeedLookup.HasComponent(m_InstanceEntity))
@@ -198,6 +205,8 @@ namespace Recolor.Systems.Tools
             public ComponentLookup<Game.Objects.Transform> m_TransformLookup;
             [ReadOnly]
             public ComponentLookup<Game.Common.PseudoRandomSeed> m_PseudoRandomSeedLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Objects.Attached> m_AttachedLookup;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
@@ -222,6 +231,11 @@ namespace Recolor.Systems.Tools
                         if (m_PseudoRandomSeedLookup.HasComponent(entityNativeArray[i]))
                         {
                             creationDefinition.m_RandomSeed = m_PseudoRandomSeedLookup[entityNativeArray[i]].m_Seed;
+                        }
+
+                        if (m_AttachedLookup.HasComponent(entityNativeArray[i]))
+                        {
+                            creationDefinition.m_Attached = m_AttachedLookup[entityNativeArray[i]].m_Parent;
                         }
 
                         buffer.AddComponent(e, default(Updated));

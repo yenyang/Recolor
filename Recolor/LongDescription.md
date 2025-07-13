@@ -1,4 +1,4 @@
-Panel, Picker, Painter
+Panel, Picker, Painter, Palettes
 
 Gives player control over single instance colors for most buildings, vehicles, props, and a few other assets. Gives player control over color variations for the meshes for trees, plants, most buildings, vehicles, props, and a few other assets.
 
@@ -9,6 +9,10 @@ Unified Icon Library
 
 ## Donations
 If you want to say thank you with a donation you can do so on Paypal.
+
+## Note for Asset Creators
+We don't know when official support for the Asset Editor Mesh Import will happen, but. . .
+To best support the Recolor mod, I ask that if you’re designing a building, and if you want that building to have color variations in separate channels for the walls and roofs please use channel0/R for walls and channel1/G for the roof.
 
 ## Translations
 I am looking for volunteers to help translate the mod into the other languages. For those interested please find the project in the crowdin or discord link. CSL2:CODEMODS -> mods-wip -> Recolor. Also see Crowdin link.
@@ -44,6 +48,18 @@ The color painter tool has similar functionality to the recolor panel but with a
 
 Channels can be toggle with the painter, but may require knowing what channel affect what on the subjects.
 
+## Palettes
+Palettes are a customizable set of invididual Color Swatches that can be assigned to a Color Channel. A random Color Swatch will be chosen from the Palette. 
+The mod comes with 19 pre-built Palettes and 4 pre-built Subcategories for Palettes.
+You can create new, edit, and delete any Palette or Subcategory. Subcategories allow you to organize Palettes within the selection drop down.
+Palettes and Subcategories are saved locally in your ModsData folder for the mod and are available in all save games. You can share the folders with other people out-of-game.
+Add localized names and optional descriptions using the in-game Palette Editor Menu.
+
+You can assign Palettes with the Selected Info Panel, Color Painter Tool, Color Picker Tool, or during placement with vanilla tools.
+Palettes chosen during placement will by default be remembered for each asset per save game so that the next time you place that asset in that save game, it will default to those previously chosen Palettes.
+You can setup Palettes or Subcategories to show or not show in the Palette Chooser for specific Categories. Palettes can also be filtered based on specific Themes, Packs, or Zone Types.
+Saving edits to a Palette that has already been assigned in a save game will adjust the colors where that Palette has been assigned.
+Using Palettes is optional and many UI elements can be hidden or toggled off if not being used.
 ## Limitations
 * Not all buildings or props support custom colors because their mesh was not designed to support this. For instance most unique buildings were intended to be unique.
 * To select sub-objects other than service upgrades and utilize the Recolor panel, you must enable DevUI Tab Menu -> Simulation tab -> Debug Toggle. The color painter can target sub-objects without debug toggle.
@@ -59,8 +75,8 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * CloverPie - Testing, Feedback, Promotional Material, Logo.
 * Chameleon TBN - Testing, Feedback, Icons, Logo.
 * Tigon Ologdring - Feedback, Paint brush icon, Project Discussions.
-* HarborMasterJay, Sully, Dome - Testing, Feedback
+* HarborMasterJay, Sully, Dome, elGendo87 - Testing, Feedback
 * Klyte45, Algernon, T.D.W., krzychu124, Trejek, Triton Supreme, Konsi, and Quboid - Help with UI, Cooperative Development and Code Sharing
-* Translators: enGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey and Edou24 (French), Hendrix and KaeseMitKuchen (German), Ti4goc and Obelix  (European Portuguese), Hinanchovo (Korean)
+* Translators: elGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey and Edou24 (French), Hendrix and KaeseMitKuchen (German), Ti4goc and Obelix  (European Portuguese), Hinanchovo (Korean)
 * Bruceyboy24804, spacechad - Project discussions.
 * Vecteezy.com as an image source for parts of Logo design.

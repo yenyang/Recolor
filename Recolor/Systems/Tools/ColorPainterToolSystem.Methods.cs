@@ -326,6 +326,7 @@ namespace Recolor.Systems.Tools
                     m_CurveLookup = SystemAPI.GetComponentLookup<Game.Net.Curve>(isReadOnly: true),
                     m_EditorContainterLookup = SystemAPI.GetComponentLookup<Game.Tools.EditorContainer>(isReadOnly: true),
                     m_PseudoRandomSeedLookup = SystemAPI.GetComponentLookup<Game.Common.PseudoRandomSeed>(isReadOnly: true),
+                    m_AttachedLookup = SystemAPI.GetComponentLookup<Game.Objects.Attached>(isReadOnly: true),
                 };
                 inputDeps = createDefinitionJob.Schedule(inputDeps);
                 m_Barrier.AddJobHandleForProducer(inputDeps);
@@ -344,6 +345,7 @@ namespace Recolor.Systems.Tools
                     m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
                     m_TransformLookup = SystemAPI.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true),
                     m_PseudoRandomSeedLookup = SystemAPI.GetComponentLookup<Game.Common.PseudoRandomSeed>(isReadOnly: true),
+                    m_AttachedLookup = SystemAPI.GetComponentLookup<Game.Objects.Attached>(isReadOnly: true),
                 };
 
                 if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
