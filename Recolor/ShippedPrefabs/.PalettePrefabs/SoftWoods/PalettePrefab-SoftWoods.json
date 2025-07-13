@@ -1,0 +1,80 @@
+{
+  "m_Category": 5,
+  "m_SubCategoryPrefabName": "Wood",
+  "m_Swatches": [
+    {
+      "m_Red": 0.9372549,
+      "m_Green": 0.8352941,
+      "m_Blue": 0.7294118,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.929411769,
+      "m_Green": 0.7764706,
+      "m_Blue": 0.596078455,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.8862745,
+      "m_Green": 0.7294118,
+      "m_Blue": 0.545098066,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.9098039,
+      "m_Green": 0.819607854,
+      "m_Blue": 0.694117665,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.9764706,
+      "m_Green": 0.8784314,
+      "m_Blue": 0.7529412,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.9372549,
+      "m_Green": 0.8156863,
+      "m_Blue": 0.7490196,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.9647059,
+      "m_Green": 0.870588243,
+      "m_Blue": 0.7529412,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 1.0,
+      "m_Green": 0.921568632,
+      "m_Blue": 0.8156863,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.945098042,
+      "m_Green": 0.7647059,
+      "m_Blue": 0.5568628,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.905882359,
+      "m_Green": 0.7254902,
+      "m_Blue": 0.5137255,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "SoftWoods",
+  "m_Version": 1
+}

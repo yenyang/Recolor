@@ -1,0 +1,45 @@
+{
+  "m_Category": 0,
+  "m_SubCategoryPrefabName": "Metals",
+  "m_Swatches": [
+    {
+      "m_Red": 0.5803922,
+      "m_Green": 0.1764706,
+      "m_Blue": 0.0,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.7647059,
+      "m_Green": 0.2509804,
+      "m_Blue": 0.02745098,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.7647059,
+      "m_Green": 0.403921574,
+      "m_Blue": 0.247058824,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.7058824,
+      "m_Green": 0.482352942,
+      "m_Blue": 0.258823544,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.6117647,
+      "m_Green": 0.41568628,
+      "m_Blue": 0.41568628,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "Rusty",
+  "m_Version": 1
+}

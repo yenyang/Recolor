@@ -8,6 +8,7 @@ namespace Recolor.Systems.SelectedInfoPanel
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Resources;
     using System.Xml.Serialization;
     using Colossal.Entities;
     using Colossal.Logging;
@@ -26,9 +27,11 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Game.Tools;
     using Game.Vehicles;
     using Recolor.Domain;
+    using Recolor.Domain.Palette;
     using Recolor.Extensions;
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.Palettes;
     using Recolor.Systems.Tools;
     using Unity.Collections;
     using Unity.Entities;
@@ -200,6 +203,24 @@ namespace Recolor.Systems.SelectedInfoPanel
             if (m_Route.Value != route)
             {
                 m_Route.Value = route;
+            }
+
+            ButtonState showPaletteButton = ButtonState.Off;
+
+            if (singleInstance == ButtonState.On &&
+               (EntityManager.HasBuffer<AssignedPalette>(m_CurrentEntity) ||
+                m_PreferPalettes))
+            {
+                showPaletteButton = ButtonState.On;
+            }
+            else if (singleInstance != ButtonState.On)
+            {
+                showPaletteButton = ButtonState.Hidden;
+            }
+
+            if (m_ShowPaletteChoices.Value != showPaletteButton)
+            {
+                m_ShowPaletteChoices.Value = showPaletteButton;
             }
         }
 
@@ -394,7 +415,7 @@ namespace Recolor.Systems.SelectedInfoPanel
 
                     colorVariationBuffer[m_CurrentAssetSeasonIdentifier.m_Index] = colorVariation;
                     m_TimeColorLastChanged = UnityEngine.Time.time;
-                    m_PreviouslySelectedEntity = Entity.Null;
+                    m_State = State.ColorChanged;
                 }
 
                 buffer.AddComponent<BatchesUpdated>(m_CurrentEntity);
@@ -440,7 +461,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                     }
 
                     serviceVehicleColorBuffer[i] = serviceVehicleColor;
-                    m_PreviouslySelectedEntity = Entity.Null;
+                    m_State = State.ColorChanged | State.UpdateButtonStates;
                     colorSet = serviceVehicleColor.m_ColorSet;
                 }
 
@@ -492,7 +513,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                     }
 
                     routeVehicleColorBuffer[i] = routeVehicleColor;
-                    m_PreviouslySelectedEntity = Entity.Null;
+                    m_State = State.ColorChanged | State.UpdateButtonStates;
                     colorSet = routeVehicleColor.m_ColorSet;
                 }
 
@@ -578,15 +599,21 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             buffer.AddComponent<BatchesUpdated>(entity);
             AddBatchesUpdatedToSubElements(entity, buffer);
-            m_PreviouslySelectedEntity = Entity.Null;
+            m_State = State.ColorChanged | State.UpdateButtonStates;
             return colorSet;
         }
 
         private void ResetColorSet()
         {
-            ResetColor(0);
-            ResetColor(1);
-            ResetColor(2);
+            for (int i = 0; i <= 2; i++)
+            {
+                if (m_ShowPaletteChoices.Value == ButtonState.On)
+                {
+                    RemovePalette(i, m_CurrentEntity);
+                }
+
+                ResetColor(i);
+            }
         }
 
         private bool[] MatchesVanillaColorSet(ColorSet record, ColorSet colorSet)
@@ -650,7 +677,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             m_SubMeshData.Binding.TriggerUpdate();
-            m_PreviouslySelectedEntity = Entity.Null;
+            m_State = State.UpdateButtonStates;
         }
 
         private void ReduceSubMeshIndex()
@@ -689,7 +716,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             m_SubMeshData.Binding.TriggerUpdate();
-            m_PreviouslySelectedEntity = Entity.Null;
+            m_State = State.UpdateButtonStates;
         }
 
         private void ResetColor(int channel)
@@ -707,7 +734,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                     ResetSingleInstanceByChannel(channel, ownedVehicle.m_Vehicle, buffer);
                 }
 
-                m_PreviouslySelectedEntity = Entity.Null;
+                m_State = State.UpdateButtonStates | State.ColorChanged;
                 return;
             }
 
@@ -732,7 +759,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                     }
                 }
 
-                m_PreviouslySelectedEntity = Entity.Null;
+                m_State = State.UpdateButtonStates | State.ColorChanged;
                 return;
             }
 
@@ -740,7 +767,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             if (EntityManager.HasComponent<CustomMeshColor>(m_CurrentEntity))
             {
                 ResetSingleInstanceByChannel(channel, m_CurrentEntity, buffer);
-                m_PreviouslySelectedEntity = Entity.Null;
+                m_State = State.UpdateButtonStates | State.ColorChanged;
                 return;
             }
 
@@ -759,7 +786,7 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             bool[] matches = MatchesVanillaColorSet(colorSet, m_CurrentAssetSeasonIdentifier);
 
-            m_PreviouslySelectedEntity = Entity.Null;
+            m_State = State.ColorChanged;
 
             if (matches.Length >= 3 && matches[0] && matches[1] && matches[2])
             {
@@ -770,48 +797,6 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 GenerateOrUpdateCustomColorVariationEntity();
             }
-        }
-
-        private void ResetSingleInstanceByChannel(int channel, Entity entity, EntityCommandBuffer buffer)
-        {
-            bool removeComponents = true;
-
-
-            if (EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer) &&
-                EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) &&
-                channel >= 0 && channel <= 2)
-            {
-                for (int i = 0; i < m_SubMeshData.Value.SubMeshLength; i++)
-                {
-                    CustomMeshColor customMeshColor = customMeshColorBuffer[i];
-                    if (m_SubMeshIndexes.Contains(i) ||
-                        m_ServiceVehicles.Value == ButtonState.On ||
-                        m_Route.Value == ButtonState.On)
-                    {
-                        customMeshColor.m_ColorSet[channel] = meshColorRecordBuffer[i].m_ColorSet[channel];
-                        customMeshColorBuffer[i] = customMeshColor;
-                    }
-
-                    if (!MatchesEntireVanillaColorSet(meshColorRecordBuffer[i].m_ColorSet, customMeshColor.m_ColorSet))
-                    {
-                        removeComponents = false;
-                    }
-                }
-            }
-            else
-            {
-                removeComponents = true;
-            }
-
-            if (removeComponents)
-            {
-                buffer.RemoveComponent<CustomMeshColor>(entity);
-                buffer.RemoveComponent<MeshColorRecord>(entity);
-            }
-
-            buffer.AddComponent<BatchesUpdated>(entity);
-
-            AddBatchesUpdatedToSubElements(entity, buffer);
         }
     }
 }

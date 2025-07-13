@@ -22,18 +22,13 @@
   "Recolor.TOOLTIP_DESCRIPTION[Matching]": "Ändert die Farben aller Assets mit demselben mesh, Farbvariation (und Saison, falls zutreffend). Einzelne Instanz überschreibt dies nur für diese Instanz.",
   "Recolor.SECTION_TITLE[Selection]": "Auswahl",
   "Recolor.TOOLTIP_TITLE[SingleSelection]": "Einzeln",
-  "Recolor.TOOLTIP_DESCRIPTION[SingleSelection]": "Ändert die Farben eines Gebäudes, einer Requisite oder eines Fahrzeuges.",
   "Recolor.TOOLTIP_TITLE[RadiusSelection]": "Radius-Auswahl",
-  "Recolor.TOOLTIP_DESCRIPTION[RadiusSelection]": "Ändert die Einzelinstanzfarben von Gebäuden, Requisiten und/oder Fahrzeugen im Radius.",
   "Recolor.TOOLTIP_DESCRIPTION[IncreaseRadius]": "Radius erhöhen.",
   "Recolor.TOOLTIP_DESCRIPTION[DecreaseRadius]": "Radius verringern.",
   "Recolor.SECTION_TITLE[Radius]": "Radius",
   "Recolor.SECTION_TITLE[Filter]": "Filter",
-  "Recolor.TOOLTIP_TITLE[BuildingFilter]": "Gebäudefilter",
   "Recolor.TOOLTIP_DESCRIPTION[BuildingFilter]": "Das Farbmaler-Werkzeug ändert die Einzelinstanzfarben von Gebäuden.",
-  "Recolor.TOOLTIP_TITLE[PropFilter]": "Requisitenfilter",
   "Recolor.TOOLTIP_DESCRIPTION[PropFilter]": "Das Farbmaler-Werkzeug ändert die Einzelinstanzfarben von Requisiten.",
-  "Recolor.TOOLTIP_TITLE[VehicleFilter]": "Fahrzeugfilter",
   "Recolor.TOOLTIP_DESCRIPTION[VehicleFilter]": "Das Farbmaler-Werkzeug ändert die Einzelinstanzfarben von Fahrzeugen.",
   "Recolor.TOOLTIP_TITLE[PaintToolMode]": "Malen",
   "Recolor.TOOLTIP_DESCRIPTION[PaintToolMode]": "Linksklick: Ändert einzelne Farbinstanzen oder übereinstimmende Farbvariationen einer Auswahl. Rechtsklick: Zurücksetzten.",
@@ -87,5 +82,6 @@
   "Recolor.TOOLTIP_DESCRIPTION[MatchingSubmeshes]": "Ändert die Farbe aller SubMeshes mit übereinstimmenden Namen.",
   "Recolor.TOOLTIP_TITLE[AllSubmeshes]": "Alles SubMeshes",
   "Recolor.TOOLTIP_DESCRIPTION[AllSubmeshes]": "Ändert die Farbe aller SubMeshes.",
-  "Recolor.SECTION_TITLE[SubMeshes]": "SubMeshes"
+  "Recolor.SECTION_TITLE[SubMeshes]": "SubMeshes",
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Zurücksetzen"
 }

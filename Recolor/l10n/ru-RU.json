@@ -87,5 +87,6 @@
   "Recolor.TOOLTIP_DESCRIPTION[MatchingSubmeshes]": "Изменяет цвета подсеток с совпадающими именами.",
   "Recolor.TOOLTIP_TITLE[AllSubmeshes]": "Все подсетки",
   "Recolor.TOOLTIP_DESCRIPTION[AllSubmeshes]": "Изменяет цвета всех подсеток.",
-  "Recolor.SECTION_TITLE[SubMeshes]": "Подсетки"
+  "Recolor.SECTION_TITLE[SubMeshes]": "Подсетки",
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Сброс"
 }

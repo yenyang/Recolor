@@ -1,0 +1,141 @@
+.columnGroup {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+    padding-bottom: 5rem;
+}
+
+.rowGroup {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.panelRowGroup {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items:first baseline;
+    padding-right: 100rem !important;
+}
+
+.leftColumn {
+    padding-left: 5rem !important;
+}
+
+.rightColumn {
+    padding-right: 5rem !important;
+}
+
+.definedHeight {
+    height: 30rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: left;
+}
+
+.panel {
+    position: absolute;
+    top: 56rem;
+    left: 420rem;
+    height: 680rem;
+}
+
+.subcategoryPanel {
+    height: 375rem !important;
+}
+
+.residenialBuildingPosition {
+    left: 645rem !important;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.headerWidth {
+    width: 500rem;
+}
+
+.subtitleRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: left;
+    padding-top: 2rem;
+    font-size: auto; 
+    font-weight: bold;
+    padding-bottom: 5rem;
+    height: 35rem;
+    flex-grow: 1;
+    height: auto !important;
+}
+
+.centeredSubTitle {
+    text-align: center !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.colorSpacerLeft {
+    width: 125rem;
+}
+.sliderSpacerLeft {
+    width: 175rem;
+}
+.smallSpacer {
+    width: 10rem;
+}
+
+.spacer15 {
+    width: 15rem;
+}
+
+.spacer25 {
+    width: 25rem;
+}
+
+.wideSpacer {
+    width: 250rem;
+}
+
+.probabilityWeightWidth {
+    width: 150rem;
+}
+
+.filterTypeWidth {
+    width: 100rem;
+}
+
+.subcategoryDropwdownWidth {
+    width: 125rem;
+}
+
+.filterChoicesDropdown {
+    width: 350rem;
+    height: 35rem;
+}
+
+.filterChoicesDropdownToolOptions {
+    width: 335rem;
+    height: 35rem;
+}
+
+.filterChoicesIcon {
+    width: 30rem;
+    height: 30rem;
+}
+
+.filterRowGroup {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}

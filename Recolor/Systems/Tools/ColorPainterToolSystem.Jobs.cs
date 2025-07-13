@@ -6,11 +6,16 @@
 namespace Recolor.Systems.Tools
 {
     using System;
+    using System.Security.Cryptography;
+    using System.Xml;
+    using Colossal;
     using Colossal.Entities;
     using Colossal.Logging;
+    using Colossal.Mathematics;
     using Game.Buildings;
     using Game.Common;
     using Game.Input;
+    using Game.Net;
     using Game.Objects;
     using Game.Prefabs;
     using Game.Rendering;
@@ -24,9 +29,12 @@ namespace Recolor.Systems.Tools
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Entities.Serialization;
+    using Unity.Entities.UniversalDelegates;
     using Unity.Jobs;
     using Unity.Mathematics;
     using UnityEngine;
+    using UnityEngine.Rendering;
     using static Recolor.Systems.SelectedInfoPanel.SIPColorFieldsSystem;
 
     /// <summary>
@@ -55,202 +63,207 @@ namespace Recolor.Systems.Tools
 #if BURST
         [BurstCompile]
 #endif
-        private struct ChangeMeshColorWithinRadiusJob : IJobChunk
+        private struct CreateDefinitionJob : IJob
+        {
+            [ReadOnly]
+            public Entity m_InstanceEntity;
+            [ReadOnly]
+            public ComponentLookup<Game.Objects.Transform> m_TransformData;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            public EntityCommandBuffer buffer;
+            [ReadOnly]
+            public ComponentLookup<Owner> m_OwnerLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Net.Curve> m_CurveLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Tools.EditorContainer> m_EditorContainterLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Common.PseudoRandomSeed> m_PseudoRandomSeedLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Objects.Attached> m_AttachedLookup;
+
+            public void Execute()
+            {
+                Entity e = buffer.CreateEntity();
+                CreationDefinition creationDefinition = new ()
+                {
+                    m_Original = m_InstanceEntity,
+                    m_Flags = CreationFlags.Select,
+                };
+                if (m_PrefabRefLookup.HasComponent(m_InstanceEntity))
+                {
+                    if (m_OwnerLookup.TryGetComponent(m_InstanceEntity, out Owner owner) &&
+                        m_EditorContainterLookup.HasComponent(owner.m_Owner) &&
+                        m_PrefabRefLookup.HasComponent(owner.m_Owner))
+                    {
+                        creationDefinition.m_Prefab = m_PrefabRefLookup[owner.m_Owner];
+                        creationDefinition.m_SubPrefab = m_PrefabRefLookup[m_InstanceEntity];
+                    }
+                    else
+                    {
+                        creationDefinition.m_Prefab = m_PrefabRefLookup[m_InstanceEntity];
+                    }
+                }
+
+                if (m_AttachedLookup.HasComponent(m_InstanceEntity))
+                {
+                    creationDefinition.m_Attached = m_AttachedLookup[m_InstanceEntity].m_Parent;
+                }
+
+                if (m_PseudoRandomSeedLookup.HasComponent(m_InstanceEntity))
+                {
+                    creationDefinition.m_RandomSeed = m_PseudoRandomSeedLookup[m_InstanceEntity].m_Seed;
+                }
+
+                buffer.AddComponent(e, default(Updated));
+                if (m_TransformData.HasComponent(m_InstanceEntity))
+                {
+                    Game.Objects.Transform transform = m_TransformData[m_InstanceEntity];
+                    ObjectDefinition objectDefinition = new ()
+                    {
+                        m_Position = transform.m_Position,
+                        m_Rotation = transform.m_Rotation,
+                        m_ParentMesh = -1,
+                        m_Probability = 100,
+                        m_PrefabSubIndex = -1,
+                    };
+
+                    if (m_OwnerLookup.TryGetComponent(m_InstanceEntity, out Owner owner) &&
+                        m_TransformData.TryGetComponent(m_InstanceEntity, out Game.Objects.Transform subobjectTransform) &&
+                        m_TransformData.TryGetComponent(owner.m_Owner, out Game.Objects.Transform ownerTransform))
+                    {
+                        Game.Objects.Transform inverseParentTransform = ObjectUtils.InverseTransform(ownerTransform);
+                        Game.Objects.Transform localTransform = ObjectUtils.WorldToLocal(inverseParentTransform, subobjectTransform);
+
+                        objectDefinition.m_LocalRotation = localTransform.m_Rotation;
+                        objectDefinition.m_LocalPosition = localTransform.m_Position;
+                    }
+
+                    buffer.AddComponent(e, objectDefinition);
+                }
+
+                if (m_CurveLookup.TryGetComponent(m_InstanceEntity, out Game.Net.Curve curve) &&
+                    m_OwnerLookup.TryGetComponent(m_InstanceEntity, out Owner owner1) &&
+                    owner1.m_Owner != Entity.Null &&
+                    m_EditorContainterLookup.HasComponent(owner1.m_Owner))
+                {
+                    NetCourse netCourse = new NetCourse()
+                    {
+                        m_Curve = curve.m_Bezier,
+                        m_Elevation = default,
+                        m_EndPosition = new CoursePos()
+                        {
+                            m_Entity = Entity.Null,
+                            m_Elevation = default,
+                            m_Flags = CoursePosFlags.IsLast | CoursePosFlags.IsLeft | CoursePosFlags.IsRight,
+                            m_ParentMesh = -1,
+                            m_Position = curve.m_Bezier.d,
+                            m_SplitPosition = 0,
+                            m_Rotation = NetUtils.GetNodeRotation(MathUtils.EndTangent(curve.m_Bezier)),
+                            m_CourseDelta = 1,
+                        },
+                        m_FixedIndex = -1,
+                        m_Length = curve.m_Length,
+                        m_StartPosition = new CoursePos()
+                        {
+                            m_Entity = Entity.Null,
+                            m_Elevation = default,
+                            m_Flags = CoursePosFlags.IsFirst | CoursePosFlags.IsLeft | CoursePosFlags.IsRight,
+                            m_ParentMesh = -1,
+                            m_Position = curve.m_Bezier.a,
+                            m_SplitPosition = 0,
+                            m_Rotation = NetUtils.GetNodeRotation(MathUtils.StartTangent(curve.m_Bezier)),
+                            m_CourseDelta = 0,
+                        },
+                    };
+
+                    buffer.AddComponent(e, netCourse);
+                }
+
+                buffer.AddComponent(e, creationDefinition);
+            }
+        }
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct CreateDefinitionsWithRadiusOfTransform : IJobChunk
         {
             public EntityTypeHandle m_EntityType;
             [ReadOnly]
             public ComponentTypeHandle<Game.Objects.Transform> m_TransformType;
-            [ReadOnly]
-            public BufferLookup<Game.Objects.SubObject> m_SubObjectLookup;
-            [ReadOnly]
-            public BufferLookup<Game.Net.SubLane> m_SubLaneLookup;
-            [ReadOnly]
-            public BufferLookup<MeshColor> m_MeshColorLookup;
-            [ReadOnly]
-            public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;
-            [ReadOnly]
-            public BufferLookup<MeshColorRecord> m_MeshColorRecordLookup;
-            public bool m_ResettingColorsToRecord;
-            public ColorSet m_ApplyColorSet;
-            public bool3 m_ChannelToggles;
             public EntityCommandBuffer buffer;
             public float m_Radius;
             public float3 m_Position;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            public NativeList<Entity> m_SelectedEntities;
+            [ReadOnly]
+            public ComponentLookup<Owner> m_OwnerLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Objects.Transform> m_TransformLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Common.PseudoRandomSeed> m_PseudoRandomSeedLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Objects.Attached> m_AttachedLookup;
 
-            /// <summary>
-            /// Executes job which will change state or prefab for trees within a radius.
-            /// </summary>
-            /// <param name="chunk">ArchteypeChunk of IJobChunk.</param>
-            /// <param name="unfilteredChunkIndex">Use for EntityCommandBuffer.ParralelWriter.</param>
-            /// <param name="useEnabledMask">Part of IJobChunk. Unsure what it does.</param>
-            /// <param name="chunkEnabledMask">Part of IJobChunk. Not sure what it does.</param>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
                 NativeArray<Game.Objects.Transform> transformNativeArray = chunk.GetNativeArray(ref m_TransformType);
                 for (int i = 0; i < chunk.Count; i++)
                 {
-                    if (CheckForWithinRadius(m_Position, transformNativeArray[i].m_Position, m_Radius))
+                    if (CheckForWithinRadius(m_Position, transformNativeArray[i].m_Position, m_Radius) &&
+                       !m_SelectedEntities.Contains(entityNativeArray[i]))
                     {
-                        Entity currentEntity = entityNativeArray[i];
-                        ColorSet currentColorSet = m_ApplyColorSet;
-                        bool completeReset = false;
-
-                        if (!m_MeshColorLookup.TryGetBuffer(currentEntity, out DynamicBuffer<MeshColor> originalMeshColors))
+                        Entity e = buffer.CreateEntity();
+                        CreationDefinition creationDefinition = new()
                         {
-                            continue;
+                            m_Original = entityNativeArray[i],
+                            m_Flags = CreationFlags.Select,
+                        };
+                        if (m_PrefabRefLookup.HasComponent(entityNativeArray[i]))
+                        {
+                            creationDefinition.m_Prefab = m_PrefabRefLookup[entityNativeArray[i]];
                         }
 
-                        if (m_ResettingColorsToRecord &&
-                           !m_MeshColorRecordLookup.HasBuffer(currentEntity))
+                        if (m_PseudoRandomSeedLookup.HasComponent(entityNativeArray[i]))
                         {
-                            buffer.RemoveComponent<CustomMeshColor>(currentEntity);
-                            buffer.AddComponent<BatchesUpdated>(currentEntity);
-                            completeReset = true;
-                        }
-                        else if (m_ResettingColorsToRecord &&
-                                 m_MeshColorRecordLookup.TryGetBuffer(currentEntity, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer))
-                        {
-                            bool matchesVanillaColorSet = true;
-                            for (int j = 0; j < 3; j++)
-                            {
-                                if (m_ChannelToggles[j])
-                                {
-                                    currentColorSet[j] = meshColorRecordBuffer[0].m_ColorSet[j];
-                                }
-
-                                if (currentColorSet[j] != meshColorRecordBuffer[0].m_ColorSet[j])
-                                {
-                                    matchesVanillaColorSet = false;
-                                }
-                            }
-
-                            if (matchesVanillaColorSet)
-                            {
-                                buffer.RemoveComponent<CustomMeshColor>(currentEntity);
-                                buffer.RemoveComponent<MeshColorRecord>(currentEntity);
-                                buffer.AddComponent<BatchesUpdated>(currentEntity);
-                                completeReset = true;
-                            }
-                        }
-                        else if (m_ResettingColorsToRecord)
-                        {
-                            continue;
+                            creationDefinition.m_RandomSeed = m_PseudoRandomSeedLookup[entityNativeArray[i]].m_Seed;
                         }
 
-                        if (!completeReset)
+                        if (m_AttachedLookup.HasComponent(entityNativeArray[i]))
                         {
-                            if (!m_MeshColorRecordLookup.HasBuffer(currentEntity))
-                            {
-                                DynamicBuffer<MeshColorRecord> meshColorRecords = buffer.AddBuffer<MeshColorRecord>(currentEntity);
-                                for (int j = 0; j < originalMeshColors.Length; j++)
-                                {
-                                    meshColorRecords.Add(new MeshColorRecord() { m_ColorSet = originalMeshColors[j].m_ColorSet });
-                                }
-                            }
-
-                            DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(currentEntity);
-                            DynamicBuffer<CustomMeshColor> customMeshColors = buffer.AddBuffer<CustomMeshColor>(currentEntity);
-                            for (int j = 0; j < originalMeshColors.Length; j++)
-                            {
-                                meshColorBuffer.Add(new MeshColor() { m_ColorSet = CompileColorSet(currentColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
-                                customMeshColors.Add(new CustomMeshColor() { m_ColorSet = CompileColorSet(currentColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
-                            }
+                            creationDefinition.m_Attached = m_AttachedLookup[entityNativeArray[i]].m_Parent;
                         }
 
-                        buffer.AddComponent<BatchesUpdated>(currentEntity);
-
-                        // Add batches updated to subobjects.
-                        if (m_SubObjectLookup.TryGetBuffer(currentEntity, out DynamicBuffer<Game.Objects.SubObject> subObjectBuffer))
+                        buffer.AddComponent(e, default(Updated));
+                        ObjectDefinition objectDefinition = new()
                         {
-                            foreach (Game.Objects.SubObject subObject in subObjectBuffer)
-                            {
-                                ProcessSubObject(subObject);
+                            m_Position = transformNativeArray[i].m_Position,
+                            m_Rotation = transformNativeArray[i].m_Rotation,
+                            m_ParentMesh = -1,
+                            m_Probability = 100,
+                            m_PrefabSubIndex = -1,
+                        };
 
-                                if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
-                                {
-                                    continue;
-                                }
+                        if (m_OwnerLookup.TryGetComponent(entityNativeArray[i], out Owner owner) &&
+                            m_TransformLookup.TryGetComponent(owner.m_Owner, out Game.Objects.Transform ownerTransform))
+                        {
+                            Game.Objects.Transform inverseParentTransform = ObjectUtils.InverseTransform(ownerTransform);
+                            Game.Objects.Transform localTransform = ObjectUtils.WorldToLocal(inverseParentTransform, transformNativeArray[i]);
 
-                                foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
-                                {
-                                    ProcessSubObject(deepSubObject);
-
-                                    if (!m_SubObjectLookup.TryGetBuffer(deepSubObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer2))
-                                    {
-                                        continue;
-                                    }
-
-                                    foreach (Game.Objects.SubObject deepSubObject2 in deepSubObjectBuffer2)
-                                    {
-                                        ProcessSubObject(deepSubObject2);
-
-                                        if (!m_SubObjectLookup.TryGetBuffer(deepSubObject2.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer3))
-                                        {
-                                            continue;
-                                        }
-
-                                        foreach (Game.Objects.SubObject deepSubObject3 in deepSubObjectBuffer3)
-                                        {
-                                            ProcessSubObject(deepSubObject3);
-
-                                            if (!m_SubObjectLookup.TryGetBuffer(deepSubObject3.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer4))
-                                            {
-                                                continue;
-                                            }
-
-                                            foreach (Game.Objects.SubObject deepSubObject4 in deepSubObjectBuffer4)
-                                            {
-                                                ProcessSubObject(deepSubObject4);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            objectDefinition.m_LocalRotation = localTransform.m_Rotation;
+                            objectDefinition.m_LocalPosition = localTransform.m_Position;
                         }
 
-                        // Add batches updated to sublanes.
-                        if (m_SubLaneLookup.TryGetBuffer(currentEntity, out DynamicBuffer<Game.Net.SubLane> subLaneBuffer))
-                        {
-                            foreach (Game.Net.SubLane subLane in subLaneBuffer)
-                            {
-                                if (m_MeshColorLookup.HasBuffer(subLane.m_SubLane) && !m_CustomMeshColorLookup.HasBuffer(subLane.m_SubLane))
-                                {
-                                    buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
-                                }
-                            }
-                        }
+                        buffer.AddComponent(e, objectDefinition);
+
+                        buffer.AddComponent(e, creationDefinition);
+                        m_SelectedEntities.Add(entityNativeArray[i]);
                     }
                 }
-            }
-
-            private void ProcessSubObject(Game.Objects.SubObject subObject)
-            {
-                if (m_MeshColorLookup.HasBuffer(subObject.m_SubObject) && !m_CustomMeshColorLookup.HasBuffer(subObject.m_SubObject))
-                {
-                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
-                }
-            }
-
-            private ColorSet CompileColorSet(ColorSet applyColorSet, bool3 channelToggles, ColorSet originalColors)
-            {
-                ColorSet colorSet = originalColors;
-                if (channelToggles[0])
-                {
-                    colorSet.m_Channel0 = applyColorSet.m_Channel0;
-                }
-
-                if (channelToggles[1])
-                {
-                    colorSet.m_Channel1 = applyColorSet.m_Channel1;
-                }
-
-                if (channelToggles[2])
-                {
-                    colorSet.m_Channel2 = applyColorSet.m_Channel2;
-                }
-
-                return colorSet;
             }
 
             /// <summary>
@@ -277,319 +290,92 @@ namespace Recolor.Systems.Tools
 #if BURST
         [BurstCompile]
 #endif
-        private struct ChangeVehicleMeshColorWithinRadiusJob : IJobChunk
+        private struct CreateDefinitionsWithinRadiusOfCurve : IJobChunk
         {
             public EntityTypeHandle m_EntityType;
             [ReadOnly]
-            public ComponentTypeHandle<InterpolatedTransform> m_InterpolatedTransformType;
-            public ColorSet m_ApplyColorSet;
-            public bool3 m_ChannelToggles;
+            public ComponentTypeHandle<Game.Net.Curve> m_CurveType;
             public EntityCommandBuffer buffer;
             public float m_Radius;
             public float3 m_Position;
             [ReadOnly]
-            public BufferLookup<Game.Objects.SubObject> m_SubObjectLookup;
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            public NativeList<Entity> m_SelectedEntities;
             [ReadOnly]
-            public BufferLookup<MeshColor> m_MeshColorLookup;
+            public ComponentLookup<Owner> m_OwnerLookup;
             [ReadOnly]
-            public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;
+            public ComponentLookup<Game.Common.PseudoRandomSeed> m_PseudoRandomSeedLookup;
             [ReadOnly]
-            public BufferLookup<MeshColorRecord> m_MeshColorRecordLookup;
-            public bool m_ResettingColorsToRecord;
+            public ComponentLookup<Game.Tools.EditorContainer> m_EditorContainerLookup;
 
-            /// <summary>
-            /// Executes job which will change state or prefab for trees within a radius.
-            /// </summary>
-            /// <param name="chunk">ArchteypeChunk of IJobChunk.</param>
-            /// <param name="unfilteredChunkIndex">Use for EntityCommandBuffer.ParralelWriter.</param>
-            /// <param name="useEnabledMask">Part of IJobChunk. Unsure what it does.</param>
-            /// <param name="chunkEnabledMask">Part of IJobChunk. Not sure what it does.</param>
+
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
-                NativeArray<InterpolatedTransform> interpolatedTransformNativeArray = chunk.GetNativeArray(ref m_InterpolatedTransformType);
+                NativeArray<Game.Net.Curve> curveNativeArray = chunk.GetNativeArray(ref m_CurveType);
                 for (int i = 0; i < chunk.Count; i++)
                 {
-                    if (CheckForWithinRadius(m_Position, interpolatedTransformNativeArray[i].m_Position, m_Radius))
+                    if ((CheckForWithinRadius(m_Position, curveNativeArray[i].m_Bezier.a, m_Radius) ||
+                         CheckForWithinRadius(m_Position, curveNativeArray[i].m_Bezier.b, m_Radius) ||
+                         CheckForWithinRadius(m_Position, curveNativeArray[i].m_Bezier.c, m_Radius) ||
+                         CheckForWithinRadius(m_Position, curveNativeArray[i].m_Bezier.d, m_Radius)) &&
+                        !m_SelectedEntities.Contains(entityNativeArray[i]) &&
+                         m_OwnerLookup.TryGetComponent(entityNativeArray[i], out Owner owner) &&
+                         m_EditorContainerLookup.HasComponent(owner.m_Owner) &&
+                         m_PrefabRefLookup.HasComponent(owner.m_Owner) &&
+                         m_PrefabRefLookup.HasComponent(entityNativeArray[i]))
                     {
-                        Entity currentEntity = entityNativeArray[i];
-
-                        ColorSet currentColorSet = m_ApplyColorSet;
-                        bool completeReset = false;
-
-                        if (!m_MeshColorLookup.TryGetBuffer(currentEntity, out DynamicBuffer<MeshColor> originalMeshColors))
+                        Entity e = buffer.CreateEntity();
+                        Game.Net.Curve curve = curveNativeArray[i];
+                        CreationDefinition creationDefinition = new ()
                         {
-                            continue;
+                            m_Original = entityNativeArray[i],
+                            m_Flags = CreationFlags.Select,
+                            m_Prefab = m_PrefabRefLookup[owner.m_Owner],
+                            m_SubPrefab = m_PrefabRefLookup[entityNativeArray[i]],
+                        };
+
+                        if (m_PseudoRandomSeedLookup.HasComponent(entityNativeArray[i]))
+                        {
+                            creationDefinition.m_RandomSeed = m_PseudoRandomSeedLookup[entityNativeArray[i]].m_Seed;
                         }
 
-                        if (m_ResettingColorsToRecord &&
-                           !m_MeshColorRecordLookup.HasBuffer(currentEntity))
+                        buffer.AddComponent(e, default(Updated));
+                        NetCourse netCourse = new NetCourse()
                         {
-                            buffer.RemoveComponent<CustomMeshColor>(currentEntity);
-                            buffer.AddComponent<BatchesUpdated>(currentEntity);
-                            completeReset = true;
-                        }
-                        else if (m_ResettingColorsToRecord &&
-                                 m_MeshColorRecordLookup.TryGetBuffer(currentEntity, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer))
-                        {
-                            bool matchesVanillaColorSet = true;
-                            for (int j = 0; j < 3; j++)
+                            m_Curve = curve.m_Bezier,
+                            m_Elevation = default,
+                            m_EndPosition = new CoursePos()
                             {
-                                if (m_ChannelToggles[j])
-                                {
-                                    currentColorSet[j] = meshColorRecordBuffer[0].m_ColorSet[j];
-                                }
-
-                                if (currentColorSet[j] != meshColorRecordBuffer[0].m_ColorSet[j])
-                                {
-                                    matchesVanillaColorSet = false;
-                                }
-                            }
-
-                            if (matchesVanillaColorSet)
+                                m_Entity = Entity.Null,
+                                m_Elevation = default,
+                                m_Flags = CoursePosFlags.IsLast | CoursePosFlags.IsLeft | CoursePosFlags.IsRight,
+                                m_ParentMesh = -1,
+                                m_Position = curve.m_Bezier.d,
+                                m_SplitPosition = 0,
+                                m_Rotation = NetUtils.GetNodeRotation(MathUtils.EndTangent(curve.m_Bezier)),
+                                m_CourseDelta = 1,
+                            },
+                            m_FixedIndex = -1,
+                            m_Length = curve.m_Length,
+                            m_StartPosition = new CoursePos()
                             {
-                                buffer.RemoveComponent<CustomMeshColor>(currentEntity);
-                                buffer.RemoveComponent<MeshColorRecord>(currentEntity);
-                                buffer.AddComponent<BatchesUpdated>(currentEntity);
-                                completeReset = true;
-                            }
-                        }
-                        else if (m_ResettingColorsToRecord)
-                        {
-                            continue;
-                        }
+                                m_Entity = Entity.Null,
+                                m_Elevation = default,
+                                m_Flags = CoursePosFlags.IsFirst | CoursePosFlags.IsLeft | CoursePosFlags.IsRight,
+                                m_ParentMesh = -1,
+                                m_Position = curve.m_Bezier.a,
+                                m_SplitPosition = 0,
+                                m_Rotation = NetUtils.GetNodeRotation(MathUtils.StartTangent(curve.m_Bezier)),
+                                m_CourseDelta = 0,
+                            },
+                        };
 
-                        if (!completeReset)
-                        {
-                            if (!m_MeshColorRecordLookup.HasBuffer(currentEntity))
-                            {
-                                DynamicBuffer<MeshColorRecord> meshColorRecords = buffer.AddBuffer<MeshColorRecord>(currentEntity);
-                                for (int j = 0; j < originalMeshColors.Length; j++)
-                                {
-                                    meshColorRecords.Add(new MeshColorRecord() { m_ColorSet = originalMeshColors[j].m_ColorSet });
-                                }
-                            }
+                        buffer.AddComponent(e, netCourse);
 
-                            DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(currentEntity);
-                            DynamicBuffer<CustomMeshColor> customMeshColors = buffer.AddBuffer<CustomMeshColor>(currentEntity);
-                            for (int j = 0; j < originalMeshColors.Length; j++)
-                            {
-                                meshColorBuffer.Add(new MeshColor() { m_ColorSet = CompileColorSet(currentColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
-                                customMeshColors.Add(new CustomMeshColor() { m_ColorSet = CompileColorSet(currentColorSet, m_ChannelToggles, originalMeshColors[j].m_ColorSet) });
-                            }
-                        }
-
-                        buffer.AddComponent<BatchesUpdated>(currentEntity);
-
-                        // Add batches updated to subobjects.
-                        if (m_SubObjectLookup.TryGetBuffer(currentEntity, out DynamicBuffer<Game.Objects.SubObject> subObjectBuffer))
-                        {
-                            foreach (Game.Objects.SubObject subObject in subObjectBuffer)
-                            {
-                                ProcessSubObject(subObject);
-
-                                if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
-                                {
-                                    continue;
-                                }
-
-                                foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
-                                {
-                                    ProcessSubObject(deepSubObject);
-
-                                    if (!m_SubObjectLookup.TryGetBuffer(deepSubObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer2))
-                                    {
-                                        continue;
-                                    }
-
-                                    foreach (Game.Objects.SubObject deepSubObject2 in deepSubObjectBuffer2)
-                                    {
-                                        ProcessSubObject(deepSubObject2);
-
-                                        if (!m_SubObjectLookup.TryGetBuffer(deepSubObject2.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer3))
-                                        {
-                                            continue;
-                                        }
-
-                                        foreach (Game.Objects.SubObject deepSubObject3 in deepSubObjectBuffer3)
-                                        {
-                                            ProcessSubObject(deepSubObject3);
-
-                                            if (!m_SubObjectLookup.TryGetBuffer(deepSubObject3.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer4))
-                                            {
-                                                continue;
-                                            }
-
-                                            foreach (Game.Objects.SubObject deepSubObject4 in deepSubObjectBuffer4)
-                                            {
-                                                ProcessSubObject(deepSubObject4);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        buffer.AddComponent(e, creationDefinition);
+                        m_SelectedEntities.Add(entityNativeArray[i]);
                     }
-                }
-            }
-
-            private void ProcessSubObject(Game.Objects.SubObject subObject)
-            {
-                if (m_MeshColorLookup.HasBuffer(subObject.m_SubObject) && !m_CustomMeshColorLookup.HasBuffer(subObject.m_SubObject))
-                {
-                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
-                }
-            }
-
-            private ColorSet CompileColorSet(ColorSet applyColorSet, bool3 channelToggles, ColorSet originalColors)
-            {
-                ColorSet colorSet = originalColors;
-                if (channelToggles[0])
-                {
-                    colorSet.m_Channel0 = applyColorSet.m_Channel0;
-                }
-
-                if (channelToggles[1])
-                {
-                    colorSet.m_Channel1 = applyColorSet.m_Channel1;
-                }
-
-                if (channelToggles[2])
-                {
-                    colorSet.m_Channel2 = applyColorSet.m_Channel2;
-                }
-
-                return colorSet;
-            }
-
-            /// <summary>
-            /// Checks the radius and position and returns true if tree is there.
-            /// </summary>
-            /// <param name="cursorPosition">Float3 from Raycast.</param>
-            /// <param name="position">Float3 position from InterploatedTransform.</param>
-            /// <param name="radius">Radius usually passed from settings.</param>
-            /// <returns>True if tree position is within radius of position. False if not.</returns>
-            private readonly bool CheckForWithinRadius(float3 cursorPosition, float3 position, float radius)
-            {
-                float minRadius = 1f;
-                radius = Mathf.Max(radius, minRadius);
-                position.y = cursorPosition.y;
-                if (Unity.Mathematics.math.distance(cursorPosition, position) < radius)
-                {
-                    return true;
-                }
-
-                return false;
-            }
-        }
-
-#if BURST
-        [BurstCompile]
-#endif
-        private struct ResetMeshColorWithinRadiusJob : IJobChunk
-        {
-            public EntityTypeHandle m_EntityType;
-            [ReadOnly]
-            public ComponentTypeHandle<Game.Objects.Transform> m_TransformType;
-            public EntityCommandBuffer buffer;
-            [ReadOnly]
-            public BufferLookup<Game.Objects.SubObject> m_SubObjectLookup;
-            [ReadOnly]
-            public BufferLookup<Game.Net.SubLane> m_SubLaneLookup;
-            [ReadOnly]
-            public BufferLookup<MeshColor> m_MeshColorLookup;
-            public float m_Radius;
-            public float3 m_Position;
-
-            /// <summary>
-            /// Executes job which will change state or prefab for trees within a radius.
-            /// </summary>
-            /// <param name="chunk">ArchteypeChunk of IJobChunk.</param>
-            /// <param name="unfilteredChunkIndex">Use for EntityCommandBuffer.ParralelWriter.</param>
-            /// <param name="useEnabledMask">Part of IJobChunk. Unsure what it does.</param>
-            /// <param name="chunkEnabledMask">Part of IJobChunk. Not sure what it does.</param>
-            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
-            {
-                NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
-                NativeArray<Game.Objects.Transform> transformNativeArray = chunk.GetNativeArray(ref m_TransformType);
-                for (int i = 0; i < chunk.Count; i++)
-                {
-                    if (CheckForWithinRadius(m_Position, transformNativeArray[i].m_Position, m_Radius))
-                    {
-                        Entity currentEntity = entityNativeArray[i];
-                        buffer.RemoveComponent<CustomMeshColor>(currentEntity);
-                        buffer.AddComponent<BatchesUpdated>(currentEntity);
-
-                        // Add batches updated to subobjects.
-                        if (m_SubObjectLookup.TryGetBuffer(currentEntity, out DynamicBuffer<Game.Objects.SubObject> subObjectBuffer))
-                        {
-                            foreach (Game.Objects.SubObject subObject in subObjectBuffer)
-                            {
-                                ProcessSubObject(subObject);
-
-                                if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
-                                {
-                                    continue;
-                                }
-
-                                foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
-                                {
-                                    ProcessSubObject(deepSubObject);
-
-                                    if (!m_SubObjectLookup.TryGetBuffer(deepSubObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer2))
-                                    {
-                                        continue;
-                                    }
-
-                                    foreach (Game.Objects.SubObject deepSubObject2 in deepSubObjectBuffer2)
-                                    {
-                                        ProcessSubObject(deepSubObject2);
-
-                                        if (!m_SubObjectLookup.TryGetBuffer(deepSubObject2.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer3))
-                                        {
-                                            continue;
-                                        }
-
-                                        foreach (Game.Objects.SubObject deepSubObject3 in deepSubObjectBuffer3)
-                                        {
-                                            ProcessSubObject(deepSubObject3);
-
-                                            if (!m_SubObjectLookup.TryGetBuffer(deepSubObject3.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer4))
-                                            {
-                                                continue;
-                                            }
-
-                                            foreach (Game.Objects.SubObject deepSubObject4 in deepSubObjectBuffer4)
-                                            {
-                                                ProcessSubObject(deepSubObject4);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // Add batches updated to sublanes.
-                        if (m_SubLaneLookup.TryGetBuffer(currentEntity, out DynamicBuffer<Game.Net.SubLane> subLaneBuffer))
-                        {
-                            foreach (Game.Net.SubLane subLane in subLaneBuffer)
-                            {
-                                if (m_MeshColorLookup.HasBuffer(subLane.m_SubLane))
-                                {
-                                    buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            private void ProcessSubObject(Game.Objects.SubObject subObject)
-            {
-                if (m_MeshColorLookup.HasBuffer(subObject.m_SubObject))
-                {
-                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
                 }
             }
 
@@ -617,7 +403,7 @@ namespace Recolor.Systems.Tools
 #if BURST
         [BurstCompile]
 #endif
-        private struct ResetVehicleMeshColorWithinRadiusJob : IJobChunk
+        private struct CreateDefinitionsWithRadiusOfInterpolatedTransform : IJobChunk
         {
             public EntityTypeHandle m_EntityType;
             [ReadOnly]
@@ -626,87 +412,53 @@ namespace Recolor.Systems.Tools
             public float m_Radius;
             public float3 m_Position;
             [ReadOnly]
-            public BufferLookup<Game.Objects.SubObject> m_SubObjectLookup;
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            public NativeList<Entity> m_SelectedEntities;
             [ReadOnly]
-            public BufferLookup<MeshColor> m_MeshColorLookup;
+            public ComponentLookup<Owner> m_OwnerLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Common.PseudoRandomSeed> m_PseudoRandomSeedLookup;
 
-            /// <summary>
-            /// Executes job which will change state or prefab for trees within a radius.
-            /// </summary>
-            /// <param name="chunk">ArchteypeChunk of IJobChunk.</param>
-            /// <param name="unfilteredChunkIndex">Use for EntityCommandBuffer.ParralelWriter.</param>
-            /// <param name="useEnabledMask">Part of IJobChunk. Unsure what it does.</param>
-            /// <param name="chunkEnabledMask">Part of IJobChunk. Not sure what it does.</param>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
                 NativeArray<InterpolatedTransform> interpolatedTransformNativeArray = chunk.GetNativeArray(ref m_InterpolatedTransformType);
                 for (int i = 0; i < chunk.Count; i++)
                 {
-                    if (CheckForWithinRadius(m_Position, interpolatedTransformNativeArray[i].m_Position, m_Radius))
+                    if (CheckForWithinRadius(m_Position, interpolatedTransformNativeArray[i].m_Position, m_Radius) &&
+                       !m_SelectedEntities.Contains(entityNativeArray[i]))
                     {
-                        Entity currentEntity = entityNativeArray[i];
-                        buffer.RemoveComponent<CustomMeshColor>(currentEntity);
-                        buffer.AddComponent<BatchesUpdated>(currentEntity);
-
-
-                        // Add batches updated to subobjects.
-                        if (m_SubObjectLookup.TryGetBuffer(currentEntity, out DynamicBuffer<Game.Objects.SubObject> subObjectBuffer))
+                        Entity e = buffer.CreateEntity();
+                        CreationDefinition creationDefinition = new()
                         {
-                            foreach (Game.Objects.SubObject subObject in subObjectBuffer)
-                            {
-                                ProcessSubObject(subObject);
-
-                                if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
-                                {
-                                    continue;
-                                }
-
-                                foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
-                                {
-                                    ProcessSubObject(deepSubObject);
-
-                                    if (!m_SubObjectLookup.TryGetBuffer(deepSubObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer2))
-                                    {
-                                        continue;
-                                    }
-
-                                    foreach (Game.Objects.SubObject deepSubObject2 in deepSubObjectBuffer2)
-                                    {
-                                        ProcessSubObject(deepSubObject2);
-
-                                        if (!m_SubObjectLookup.TryGetBuffer(deepSubObject2.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer3))
-                                        {
-                                            continue;
-                                        }
-
-                                        foreach (Game.Objects.SubObject deepSubObject3 in deepSubObjectBuffer3)
-                                        {
-                                            ProcessSubObject(deepSubObject3);
-
-                                            if (!m_SubObjectLookup.TryGetBuffer(deepSubObject3.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer4))
-                                            {
-                                                continue;
-                                            }
-
-                                            foreach (Game.Objects.SubObject deepSubObject4 in deepSubObjectBuffer4)
-                                            {
-                                                ProcessSubObject(deepSubObject4);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            m_Original = entityNativeArray[i],
+                            m_Flags = CreationFlags.Select,
+                        };
+                        if (m_PrefabRefLookup.HasComponent(entityNativeArray[i]))
+                        {
+                            creationDefinition.m_Prefab = m_PrefabRefLookup[entityNativeArray[i]];
                         }
-                    }
-                }
-            }
 
-            private void ProcessSubObject(Game.Objects.SubObject subObject)
-            {
-                if (m_MeshColorLookup.HasBuffer(subObject.m_SubObject))
-                {
-                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+                        if (m_PseudoRandomSeedLookup.HasComponent(entityNativeArray[i]))
+                        {
+                            creationDefinition.m_RandomSeed = m_PseudoRandomSeedLookup[entityNativeArray[i]].m_Seed;
+                        }
+
+                        buffer.AddComponent(e, default(Updated));
+                        ObjectDefinition objectDefinition = new()
+                        {
+                            m_Position = interpolatedTransformNativeArray[i].m_Position,
+                            m_Rotation = interpolatedTransformNativeArray[i].m_Rotation,
+                            m_ParentMesh = -1,
+                            m_Probability = 100,
+                            m_PrefabSubIndex = -1,
+                        };
+
+                        buffer.AddComponent(e, objectDefinition);
+
+                        buffer.AddComponent(e, creationDefinition);
+                        m_SelectedEntities.Add(entityNativeArray[i]);
+                    }
                 }
             }
 

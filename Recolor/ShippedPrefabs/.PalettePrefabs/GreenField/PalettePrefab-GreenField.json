@@ -1,0 +1,45 @@
+{
+  "m_Category": 0,
+  "m_SubCategoryPrefabName": "",
+  "m_Swatches": [
+    {
+      "m_Red": 0.152941182,
+      "m_Green": 0.294117659,
+      "m_Blue": 0.02745098,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.3137255,
+      "m_Green": 0.5254902,
+      "m_Blue": 0.129411772,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.4392157,
+      "m_Green": 0.7137255,
+      "m_Blue": 0.321568638,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.6745098,
+      "m_Green": 0.843137264,
+      "m_Blue": 0.223529413,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.5921569,
+      "m_Green": 0.768627465,
+      "m_Blue": 0.149019614,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "GreenField",
+  "m_Version": 1
+}

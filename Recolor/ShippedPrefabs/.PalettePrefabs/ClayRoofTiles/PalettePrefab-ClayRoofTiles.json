@@ -1,0 +1,59 @@
+{
+  "m_Category": 1,
+  "m_SubCategoryPrefabName": "Roofs",
+  "m_Swatches": [
+    {
+      "m_Red": 0.8156863,
+      "m_Green": 0.427450985,
+      "m_Blue": 0.2627451,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.7294118,
+      "m_Green": 0.3372549,
+      "m_Blue": 0.145098045,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.9882353,
+      "m_Green": 0.7882353,
+      "m_Blue": 0.6745098,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.945098042,
+      "m_Green": 0.623529434,
+      "m_Blue": 0.478431374,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.6156863,
+      "m_Green": 0.3764706,
+      "m_Blue": 0.333333343,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.721568644,
+      "m_Green": 0.258823544,
+      "m_Blue": 0.129411772,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.6431373,
+      "m_Green": 0.2901961,
+      "m_Blue": 0.2901961,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "ClayRoofTiles",
+  "m_Version": 1
+}

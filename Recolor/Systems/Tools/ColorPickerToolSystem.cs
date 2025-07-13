@@ -15,7 +15,9 @@ namespace Recolor.Systems.Tools
     using Game.Tools;
     using Recolor;
     using Recolor.Domain;
+    using Recolor.Domain.Palette;
     using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.Palettes;
     using Recolor.Systems.SelectedInfoPanel;
     using Unity.Collections;
     using Unity.Entities;
@@ -35,6 +37,8 @@ namespace Recolor.Systems.Tools
         private ToolOutputBarrier m_Barrier;
         private GenericTooltipSystem m_GenericTooltipSystem;
         private CustomColorVariationSystem m_CustomColorVariationSystem;
+        private PaletteInstanceManagerSystem m_PaletteInstanceManagerSystem;
+        private AssignedPaletteCustomColorSystem m_AssignedPaletteCustomColorSystem;
 
         /// <inheritdoc/>
         public override string toolID => "ColorPickerTool";
@@ -80,6 +84,9 @@ namespace Recolor.Systems.Tools
             m_SelectedInfoPanelColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_CustomColorVariationSystem = World.GetOrCreateSystemManaged<CustomColorVariationSystem>();
+            m_PaletteInstanceManagerSystem = World.GetOrCreateSystemManaged<PaletteInstanceManagerSystem>();
+            m_AssignedPaletteCustomColorSystem = World.GetOrCreateSystemManaged<AssignedPaletteCustomColorSystem>();
+            
             m_HighlightedQuery = SystemAPI.QueryBuilder()
                 .WithAll<Highlighted>()
                 .WithNone<Deleted, Temp, Overridden>()
@@ -117,7 +124,9 @@ namespace Recolor.Systems.Tools
 
             if (!GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit _) ||
                 !EntityManager.TryGetBuffer(currentRaycastEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer) ||
-                EntityManager.HasComponent<Game.Creatures.Creature>(currentRaycastEntity))
+                EntityManager.HasComponent<Game.Creatures.Creature>(currentRaycastEntity) ||
+                (m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices &&
+                !EntityManager.HasBuffer<AssignedPalette>(currentRaycastEntity)))
             {
                 buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
                 buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
@@ -128,8 +137,9 @@ namespace Recolor.Systems.Tools
             if (currentRaycastEntity != m_PreviousRaycastedEntity)
             {
                 m_PreviousRaycastedEntity = currentRaycastEntity;
-                buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtRecord);
-                buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtRecord);
+                NativeArray<Entity> entities = m_HighlightedQuery.ToEntityArray(Allocator.Temp);
+                buffer.AddComponent<BatchesUpdated>(entities);
+                buffer.RemoveComponent<Highlighted>(entities);
             }
 
             if (m_HighlightedQuery.IsEmptyIgnoreFilter)
@@ -144,14 +154,35 @@ namespace Recolor.Systems.Tools
                 return inputDeps;
             }
 
-            if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance && !EntityManager.HasComponent<Plant>(m_ToolSystem.selected))
+            if (!m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices)
             {
-                ChangeInstanceColorSet(meshColorBuffer[0].m_ColorSet, ref buffer, m_ToolSystem.selected);
+                if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance && !EntityManager.HasComponent<Plant>(m_ToolSystem.selected))
+                {
+                    ChangeInstanceColorSet(meshColorBuffer[0].m_ColorSet, ref buffer, m_ToolSystem.selected);
+                }
+                else if ((!m_SelectedInfoPanelColorFieldsSystem.SingleInstance || EntityManager.HasComponent<Plant>(m_ToolSystem.selected)) && m_SelectedInfoPanelColorFieldsSystem.TryGetAssetSeasonIdentifier(m_ToolSystem.selected, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet _))
+                {
+                    ChangeColorVariation(meshColorBuffer[0].m_ColorSet, ref buffer, m_ToolSystem.selected, assetSeasonIdentifier);
+                    GenerateOrUpdateCustomColorVariationEntity(ref buffer, m_ToolSystem.selected, assetSeasonIdentifier);
+                }
             }
-            else if ((!m_SelectedInfoPanelColorFieldsSystem.SingleInstance || EntityManager.HasComponent<Plant>(m_ToolSystem.selected)) && m_SelectedInfoPanelColorFieldsSystem.TryGetAssetSeasonIdentifier(m_ToolSystem.selected, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet _))
+            else if (EntityManager.TryGetBuffer(currentRaycastEntity, isReadOnly: true, out DynamicBuffer<AssignedPalette> assignedPalettes))
             {
-                ChangeColorVariation(meshColorBuffer[0].m_ColorSet, ref buffer, m_ToolSystem.selected, assetSeasonIdentifier);
-                GenerateOrUpdateCustomColorVariationEntity(ref buffer, m_ToolSystem.selected, assetSeasonIdentifier);
+                ColorSet colorSet = meshColorBuffer[0].m_ColorSet;
+                for (int i = 0; i < assignedPalettes.Length; i++)
+                {
+                    if (EntityManager.TryGetComponent(assignedPalettes[i].m_PaletteInstanceEntity, out PrefabRef palettePrefabEntity))
+                    {
+                        AssignPalette(assignedPalettes[i].m_Channel, m_ToolSystem.selected, palettePrefabEntity, ref colorSet);
+                    }
+                }
+
+                if (colorSet.m_Channel0 != meshColorBuffer[0].m_ColorSet[0] ||
+                    colorSet.m_Channel1 != meshColorBuffer[0].m_ColorSet[1] ||
+                    colorSet.m_Channel2 != meshColorBuffer[0].m_ColorSet[2])
+                {
+                    ChangeInstanceColorSet(colorSet, ref buffer, m_ToolSystem.selected);
+                }
             }
 
             m_ToolSystem.activeTool = m_DefaultToolSystem;
@@ -190,7 +221,7 @@ namespace Recolor.Systems.Tools
                     buffer.AddComponent<BatchesUpdated>(entity);
                 }
 
-                m_SelectedInfoPanelColorFieldsSystem.ResetPreviouslySelectedEntity();
+                m_SelectedInfoPanelColorFieldsSystem.CurrentState = State.ColorChangeScheduled | State.UpdateButtonStates;
             }
         }
 
@@ -222,7 +253,7 @@ namespace Recolor.Systems.Tools
                     buffer.AddComponent<BatchesUpdated>(entity);
                 }
 
-                m_SelectedInfoPanelColorFieldsSystem.ResetPreviouslySelectedEntity();
+                m_SelectedInfoPanelColorFieldsSystem.CurrentState = State.ColorChangeScheduled;
             }
         }
 
@@ -272,5 +303,65 @@ namespace Recolor.Systems.Tools
                 }
             }
         }
+
+        private void AssignPalette(int channel, Entity instanceEntity, Entity prefabEntity, ref ColorSet colorSet)
+        {
+            if (channel < 0 || channel > 2)
+            {
+                return;
+            }
+
+            if (!EntityManager.HasBuffer<AssignedPalette>(instanceEntity))
+            {
+                EntityManager.AddBuffer<AssignedPalette>(instanceEntity);
+            }
+
+            if (!m_PaletteInstanceManagerSystem.TryGetOrCreatePaletteInstanceEntity(prefabEntity, out Entity paletteInstanceEntity))
+            {
+                m_Log.Warn($"{nameof(ColorPickerToolSystem)}.{nameof(AssignedPalette)} Could not get or create palette instance entity.");
+                return;
+            }
+
+            if (!EntityManager.TryGetBuffer(instanceEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            {
+                m_Log.Warn($"{nameof(ColorPickerToolSystem)}.{nameof(AssignedPalette)} Could not get mesh color buffer.");
+                return;
+            }
+
+            DynamicBuffer<AssignedPalette> paletteAssignments = EntityManager.GetBuffer<AssignedPalette>(instanceEntity, isReadOnly: false);
+            for (int i = 0; i < paletteAssignments.Length; i++)
+            {
+                if (paletteAssignments[i].m_Channel == channel)
+                {
+                    AssignedPalette paletteAssignment = paletteAssignments[i];
+                    paletteAssignment.m_PaletteInstanceEntity = paletteInstanceEntity;
+                    paletteAssignments[i] = paletteAssignment;
+                    EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
+                    if (m_AssignedPaletteCustomColorSystem.TryGetColorFromPalette(instanceEntity, channel, out UnityEngine.Color newColor))
+                    {
+                        colorSet[channel] = newColor;
+                    }
+
+                    m_SelectedInfoPanelColorFieldsSystem.SetPalettePrefabEntity(channel, prefabEntity);
+
+                    return;
+                }
+            }
+
+            AssignedPalette newPaletteAssignment = new AssignedPalette()
+            {
+                m_Channel = channel,
+                m_PaletteInstanceEntity = paletteInstanceEntity,
+            };
+
+            paletteAssignments.Add(newPaletteAssignment);
+            if (m_AssignedPaletteCustomColorSystem.TryGetColorFromPalette(instanceEntity, channel, out UnityEngine.Color color))
+            {
+                colorSet[channel] = color;
+            }
+
+            m_SelectedInfoPanelColorFieldsSystem.SetPalettePrefabEntity(channel, prefabEntity);
+        }
+
     }
 }

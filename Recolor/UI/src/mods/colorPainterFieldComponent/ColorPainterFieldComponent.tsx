@@ -65,7 +65,7 @@ export const ColorPainterFieldComponent = (props : { channel : number }) => {
             changeColor(props.channel, convertHexaDecimalToColor(textInput));
             setValidInput(true)
         }
-        else if (textInput.length == 7 && /^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(textInput+"ff")) 
+        else if (textInput.length == 7 && /^#[0-9A-F]{6}$/i.test(textInput)) 
         {
             changeColor(props.channel, convertHexaDecimalToColor(textInput+"ff"));      
             setTextInput(textInput+"ff");      

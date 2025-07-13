@@ -15,6 +15,15 @@
     padding-bottom: 5rem;
 }
 
+.centered {
+    justify-content: center !important;
+}
+
+.buttonRow {
+    justify-content: flex-end !important;
+    width: 200rem;
+}
+
 .subMeshText {
     display: flex;
     flex-direction: row;
@@ -29,6 +38,10 @@
     width: 24rem;
 }
 
+.ButtonWidth {
+    width: 28rem;
+}
+
 .rcColorField {
     height: 30rem !important; 
     width: 90rem !important;
@@ -38,6 +51,7 @@
     height: 30rem !important; 
     width: 90rem !important;
     padding-right: 1.5rem;
+    opacity: 1 !important
 }
 
 .rcColorFieldInput {
@@ -45,8 +59,34 @@
     width: 90rem !important;
 }
 
+.nameFieldInput {
+    height: 30rem !important; 
+    width: 350rem !important;
+}
+
+.descriptionFieldInput {
+    height: 90rem !important; 
+    width: 350rem !important;
+}
+
+.localeCodeWidth {
+    width: 100rem;
+}
+
+.colorFieldWidth {
+    width: 90rem !important;
+}
+
 .belowSwapButton {
     height: 37.5rem; 
+}
+
+.belowPaletteArea {
+    height: 28rem; 
+}
+
+.belowSwapButtonSmall {
+    height: 10rem; 
 }
 
 .swapButtonWidth {
@@ -74,4 +114,41 @@
 
 .painterFieldInputTextSize {
     font-size: 14rem !important;
+}
+
+.SliderFieldWidth {
+    width: 220rem;
+}
+
+.SliderFieldWidth > div {
+    padding-top: 0!important;    
+    padding-left: 0!important;    
+    padding-right: 0!important;    
+    padding-bottom: 0!important;
+}
+
+.dropdownText {
+    color: white !important;
+    font-size: 10rem;
+}
+
+.largeDropdownText {
+    font-size: 14rem;
+}
+
+.paddingRight {
+    padding-right: 5rem !important;
+}
+
+.paddingRightAndLeft {
+    padding-right: 8rem !important;
+    padding-left: 5rem !important;
+}
+
+.smPaddingRight {
+    padding-right: 3rem !important;
+}
+
+.paddingLeft {
+    padding-left: 3rem !important;
 }

@@ -1,0 +1,87 @@
+{
+  "m_Category": 1,
+  "m_SubCategoryPrefabName": "Roofs",
+  "m_Swatches": [
+    {
+      "m_Red": 0.121568628,
+      "m_Green": 0.117647059,
+      "m_Blue": 0.121568628,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 125
+    },
+    {
+      "m_Red": 0.5411765,
+      "m_Green": 0.545098066,
+      "m_Blue": 0.5647059,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 125
+    },
+    {
+      "m_Red": 0.329411775,
+      "m_Green": 0.266666681,
+      "m_Blue": 0.258823544,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 80
+    },
+    {
+      "m_Red": 0.3137255,
+      "m_Green": 0.235294119,
+      "m_Blue": 0.1882353,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 80
+    },
+    {
+      "m_Red": 0.3254902,
+      "m_Green": 0.274509817,
+      "m_Blue": 0.23137255,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 80
+    },
+    {
+      "m_Red": 0.368627459,
+      "m_Green": 0.282352954,
+      "m_Blue": 0.239215687,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 80
+    },
+    {
+      "m_Red": 0.3372549,
+      "m_Green": 0.34117648,
+      "m_Blue": 0.3647059,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.0784313753,
+      "m_Green": 0.109803922,
+      "m_Blue": 0.0784313753,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 150
+    },
+    {
+      "m_Red": 0.627451,
+      "m_Green": 0.6039216,
+      "m_Blue": 0.533333361,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.419607848,
+      "m_Green": 0.184313729,
+      "m_Blue": 0.192156866,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 75
+    },
+    {
+      "m_Red": 0.329411775,
+      "m_Green": 0.372549027,
+      "m_Blue": 0.4117647,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 75
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "Shingles",
+  "m_Version": 1
+}

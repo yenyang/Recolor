@@ -3,6 +3,7 @@
 // </copyright>
 
 // #define DUMP_VANILLA_LOCALIZATION
+#define EXPORT_EN_US
 namespace Recolor
 {
     using System;
@@ -19,10 +20,12 @@ namespace Recolor
     using Game.SceneFlow;
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.Palettes;
     using Recolor.Systems.SelectedInfoPanel;
     using Recolor.Systems.SingleInstance;
     using Recolor.Systems.Tools;
     using Recolor.Systems.Vehicles;
+    using Unity.Entities;
 
 #if DEBUG
     using Newtonsoft.Json;
@@ -30,6 +33,7 @@ namespace Recolor
     using Game.UI.InGame;
     using Unity.Entities;
     using UnityEngine;
+    using Recolor.Systems.Palettes;
 #endif
 
     /// <summary>
@@ -66,6 +70,11 @@ namespace Recolor
         /// </summary>
         internal string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
 
+        /// <summary>
+        /// Gets the install path for the mod.
+        /// </summary>
+        internal string InstallPath { get; private set; }
+
         /// <inheritdoc/>
         public void OnLoad(UpdateSystem updateSystem)
         {
@@ -81,6 +90,12 @@ namespace Recolor
             Log.Info($"{nameof(OnLoad)} Version: " + Version);
             Log.Info($"{nameof(OnLoad)} Initalizing Settings");
 
+            if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
+            {
+                Log.Info($"Current mod asset at {asset.path}");
+                InstallPath = asset.path;
+            }
+
             Settings = new Setting(this);
             Settings.RegisterKeyBindings();
             Settings.RegisterInOptionsUI();
@@ -89,13 +104,21 @@ namespace Recolor
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Settings));
             Log.Info($"[{nameof(Mod)}] {nameof(OnLoad)} Initalizing localization for other languages.");
             LoadNonEnglishLocalizations();
-#if DEBUG
+#if DEBUG && EXPORT_EN_US
             Log.Info($"{nameof(Mod)}.{nameof(OnLoad)} Exporting localization");
             var localeDict = new LocaleEN(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
             var str = JsonConvert.SerializeObject(localeDict, Formatting.Indented);
             try
             {
                 File.WriteAllText($"C:\\Users\\TJ\\source\\repos\\{Id}\\{Id}\\UI\\src\\mods\\lang\\en-US.json", str);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.ToString());
+            }
+            try
+            {
+                File.WriteAllText($"C:\\Users\\TJ\\source\\repos\\{Id}\\{Id}\\l10n\\en-US.json", str);
             }
             catch (Exception ex)
             {
@@ -116,7 +139,6 @@ namespace Recolor
             Log.Info($"{nameof(OnLoad)} Initalizing systems");
             updateSystem.UpdateAt<SIPColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<TempCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
-            updateSystem.UpdateAfter<CustomMeshColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<ColorPickerToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<ColorPainterToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<ColorPainterUISystem>(SystemUpdatePhase.UIUpdate);
@@ -127,6 +149,14 @@ namespace Recolor
             updateSystem.UpdateAt<SelectNetLaneFencesToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAfter<CreatedServiceVehicleCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAfter<AssignedRouteVehicleCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateAt<PalettesUISystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<AddPalettePrefabsSystem>(SystemUpdatePhase.PrefabUpdate);
+            updateSystem.UpdateAfter<AssignedPaletteCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateAfter<CustomMeshColorSystem, AssignedPaletteCustomColorSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateAt<PaletteInstanceManagerSystem>(SystemUpdatePhase.ModificationEnd);
+            updateSystem.UpdateAt<TempAssignedPalettesSystem>(SystemUpdatePhase.Modification2);
+            updateSystem.UpdateAt<ApplyColorsSystem>(SystemUpdatePhase.ApplyTool);
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PalettePreferenceSystem>();
             Log.Info($"{nameof(OnLoad)} complete.");
         }
 

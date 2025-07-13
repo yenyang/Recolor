@@ -6,7 +6,9 @@ namespace Recolor.Settings
 {
     using System.Collections.Generic;
     using Colossal;
+    using Colossal.IO.AssetDatabase.Internal;
     using Recolor;
+    using Recolor.Systems.SelectedInfoPanel;
 
     /// <summary>
     /// Localization for <see cref="Setting"/> in English.
@@ -50,19 +52,21 @@ namespace Recolor.Settings
                 { TooltipDescriptionKey("Matching"), "Change the colors of all assets with the same mesh, color variation (and season, if applicable). Single Instance will override this for that instance." },
                 { SectionLabel("Selection"), "Selection" },
                 { TooltipTitleKey("SingleSelection"), "Single" },
-                { TooltipDescriptionKey("SingleSelection"), "Changes the colors of one buildings, prop, or vehicle." },
+                { TooltipDescriptionKey("SingleSelection"), "Changes the colors of one compatible buildings, prop, vehicle, or Net Lanes Fence / Wall. Sub-elements are supported." },
                 { TooltipTitleKey("RadiusSelection"), "Radius Selection" },
-                { TooltipDescriptionKey("RadiusSelection"), "Changes the single instance colors of buildings, prop, and/or vehicles within the radius." },
+                { TooltipDescriptionKey("RadiusSelection"), "Changes the single instance colors of compatible buildings, props, vehicles or Net Lanes Fences / Walls within the radius. Sub-elements are not supported." },
                 { TooltipDescriptionKey("IncreaseRadius"), "Increase the radius." },
                 { TooltipDescriptionKey("DecreaseRadius"), "Decrease the radius." },
                 { SectionLabel("Radius"), "Radius" },
                 { SectionLabel("Filter"), "Filter" },
-                { TooltipTitleKey("BuildingFilter"), "Building Filter" },
+                { TooltipTitleKey("BuildingFilter"), "Building Category" },
                 { TooltipDescriptionKey("BuildingFilter"), "Color Painter tool will change single instance colors of buildings." },
-                { TooltipTitleKey("PropFilter"), "Prop Filter" },
+                { TooltipTitleKey("PropFilter"), "Prop Category" },
                 { TooltipDescriptionKey("PropFilter"), "Color Painter tool will change single instance colors of props." },
-                { TooltipTitleKey("VehicleFilter"), "Vehicle Filter" },
+                { TooltipTitleKey("VehicleFilter"), "Vehicle Category" },
                 { TooltipDescriptionKey("VehicleFilter"), "Color Painter tool will change single instance colors of vehicles." },
+                { TooltipTitleKey("NetLanePainterCategory"), "Net Lane Category" },
+                { TooltipDescriptionKey("NetLanePainterCategory"), "Color Painter tool will change single instance colors of Net Lane Fences and Walls" },
                 { TooltipTitleKey("PaintToolMode"), "Paint" },
                 { TooltipDescriptionKey("PaintToolMode"), "Left Click: Changes single instance colors or matching color variations on a selection. Right Click: Resets single instance colors back to color variation or custom color variations back to originals." },
                 { TooltipTitleKey("ResetToolMode"), "Reset" },
@@ -116,6 +120,62 @@ namespace Recolor.Settings
                 { TooltipTitleKey("AllSubmeshes"), "All Submeshes" },
                 { TooltipDescriptionKey("AllSubmeshes"), "Changes the colors of all submeshes." },
                 { SectionLabel("SubMeshes"), "SubMeshes" },
+                { SectionLabel("PaletteEditorMenu"), "Palette Editor Menu" },
+                { SectionLabel("Palette"), "Palette" },
+                { TooltipDescriptionKey("SavePalette"), "Save Palette" },
+                { TooltipDescriptionKey("DeletePalette"), "Delete Palette" },
+                { SectionLabel("Subcategory"), "Subcategory" },
+                { TooltipDescriptionKey("EditSubcategory"), "Edit Subcategory" },
+                { SectionLabel("FilterType"), "Filter Type" },
+                { SectionLabel("FilterChoices"), "Filter Choices" },
+                { TooltipDescriptionKey("AddSubcategory"), "Generate a new Subcategory." },
+                { TooltipDescriptionKey("AddFilter"), "Add a compatible filter." },
+                { TooltipDescriptionKey("RemoveFilter"), "Remove a compatible filter." },
+                { SectionLabel("AddSwatch"), "Add a Swatch" },
+                { TooltipDescriptionKey("AddSwatch"), "Generates an additional and randomly colored swatch." },
+                { TooltipDescriptionKey("RemoveSwatch"), "Remove this swatch from the palette." },
+                { TooltipDescriptionKey("RandomizeSwatch"), "Randomize the color of this swatch." },
+                { TooltipDescriptionKey("ProbabilityWeight"), "Probability Weight" },
+                { SectionLabel("Category"), "Category" },
+                { TooltipDescriptionKey("BuildingCategory"), "Palette will be available to use for Buildings." },
+                { TooltipDescriptionKey("VehicleCategory"), "Palette will be available to use for Vehicles." },
+                { TooltipDescriptionKey("PropCategory"), "Palette will be available to use for Props." },
+                { TooltipDescriptionKey("NetLaneCategory"), "Palette will be available to use for Net Lane Fences and Walls." },
+                { TooltipDescriptionKey("AllCategories"), "Palette will not be limited based on category." },
+                { TooltipDescriptionKey("AddLocale"), "Adds another set of input fields for entering translations for another language." },
+                { SectionLabel("AddALocale"), "Add a Locale" },
+                { SectionLabel("UniqueName"), "Unique Name" },
+                { SectionLabel("None"), "None" },
+                { TooltipDescriptionKey("EditPalette"), "Edit the selected palette." },
+                { TooltipDescriptionKey("CopyPalette"), "Copy the selected palette to paste later." },
+                { TooltipDescriptionKey("PastePalette"), "Paste the copied palette." },
+                { TooltipDescriptionKey("SaveSubcategory"), "Save Subcategory" },
+                { TooltipDescriptionKey("DeleteSubcategory"), "Delete Subcategory" },
+                { SectionLabel("LocaleCode"), "Locale Code" },
+                { SectionLabel("LocalizedName"), "Localized Name" },
+                { SectionLabel("LocalizedDescription"), "Localized Description" },
+                { TooltipDescriptionKey("RemoveALocale"), "Remove a Locale" },
+                { NameKey(Systems.Palettes.PalettesUISystem.MenuType.Subcategory, SIPColorFieldsSystem.NoSubcategoryName), $"{SIPColorFieldsSystem.NoSubcategoryName}" },
+                { TooltipDescriptionKey("SwapPalettes"), "Swap Palettes between channels." },
+                { TooltipDescriptionKey("CopyPaletteSet"), "Copies Palette assignments for all 3 channels for pasting later." },
+                { TooltipDescriptionKey("PastePaletteSet"), "Pastes Palette assignments for all 3 channels." },
+                { TooltipDescriptionKey("GenerateNewPalette"), "Generate a new Palette and open the Palette Editor Menu." },
+                { TooltipDescriptionKey("CloseEditorPanel"), "Close the Palette Editor Menu." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowPalettesOptionDuringPlacement)), "Show Palette options while placing objects" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowPalettesOptionDuringPlacement)), "Toggles whether to show dropdowns for picking palettes for the three color channels while placing compatible prefabs." },
+                { TooltipDescriptionKey("HidePalettesDuringPlacement"), "Hides the palette choosers while placing compatible prefabs. Restore using the mod's settings." },
+                { TooltipDescriptionKey("MinimizeDuringPlacement"), "Minimize the palette choosers while placing compatible prefabs to save space." },
+                { TooltipDescriptionKey("ExpandDuringPlacement"), "Expands the palette choosers while placing compatible prefabs for use." },
+                { TooltipDescriptionKey("ResetPaletteChoosersToNone"), "Resets the palette choosers channels to all be None." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RestoreDefaultPalettes)), "Restore Default Palettes and Subcategories." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.RestoreDefaultPalettes)), "On confirmation, will re-install original files for pre-built Palettes and Subcategories. Any edits will be lost. This cannot be undone. Custom Palettes and Subcategories with different unique names than pre-built will not be affected. Restarting the game is required afterwards." },
+                { m_Setting.GetOptionWarningLocaleID(nameof(Setting.RestoreDefaultPalettes)), "Re-install original pre-built Palettes and Subcategories? Any edits will be lost. This cannot be undone. Custom Palettes and Subcategories with different unique names than pre-built will not be affected. Restarting the game is required afterwards." },
+                { TooltipDescriptionKey("TogglePaletteOptions"), "Toggle showing Palette Options." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.PaletteChooserBehaviorWhenSwitchingPrefab)), "Palette Chooser Bevavior When Switching Prefab" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.PaletteChooserBehaviorWhenSwitchingPrefab)), "Changes the bevavior of the Palette Chooser when Switching Prefabs. Do Not Change: Keeps Chosen Palettes. Reset: Sets all palette choices to None. Remember Previous: Records what palettes were chosen previously for each prefab in each save file and will default to that." },
+                { m_Setting.GetEnumValueLocaleID(Setting.PaletteChooserBehavior.NoChange), "Do Not Change" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PaletteChooserBehavior.Reset), "Reset" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PaletteChooserBehavior.RememberPrevious), "Remember Previous" },
             };
         }
 
@@ -127,6 +187,34 @@ namespace Recolor.Settings
         public static string MouseTooltipKey(string key)
         {
             return $"{Mod.Id}.MOUSE_TOOLTIP[{key}]";
+        }
+
+        /// <summary>
+        /// Returns the locale key for Palette or Subcategory prefab name.
+        /// </summary>
+        /// <param name="menuType">Palette or Subcategory.</param>
+        /// <param name="uniqueName">Prefab name.</param>
+        /// <returns>localization key.</returns>
+        public static string NameKey(Systems.Palettes.PalettesUISystem.MenuType menuType, string uniqueName)
+        {
+            string prefix = Mod.Id + ".";
+            prefix += menuType == Systems.Palettes.PalettesUISystem.MenuType.Palette ? nameof(Systems.Palettes.PalettesUISystem.MenuType.Palette) : nameof(Systems.Palettes.PalettesUISystem.MenuType.Subcategory);
+
+            return $"{prefix}.NAME[{uniqueName}]";
+        }
+
+        /// <summary>
+        /// Gets the locale key for Palette or subcategory prefab description.
+        /// </summary>
+        /// <param name="menuType">Palette or Subcategory.</param>
+        /// <param name="uniqueName">Prefab name.</param>
+        /// <returns>localization key.</returns>
+        public static string DescriptionKey(Systems.Palettes.PalettesUISystem.MenuType menuType, string uniqueName)
+        {
+            string prefix = Mod.Id + ".";
+            prefix += menuType == Systems.Palettes.PalettesUISystem.MenuType.Palette ? nameof(Systems.Palettes.PalettesUISystem.MenuType.Palette) : nameof(Systems.Palettes.PalettesUISystem.MenuType.Subcategory);
+
+            return $"{prefix}.DESCRIPTION[{uniqueName}]";
         }
 
         /// <inheritdoc/>

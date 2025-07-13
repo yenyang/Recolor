@@ -7,15 +7,20 @@ namespace Recolor.Systems.Tools
     using System;
     using Colossal.Entities;
     using Colossal.Logging;
+    using Game.Audio.Radio;
     using Game.Buildings;
+    using Game.Citizens;
     using Game.Common;
+    using Game.Creatures;
     using Game.Input;
+    using Game.Net;
     using Game.Objects;
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
     using Game.Vehicles;
     using Recolor.Domain;
+    using Recolor.Domain.Palette;
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;
     using Recolor.Systems.SelectedInfoPanel;
@@ -35,9 +40,8 @@ namespace Recolor.Systems.Tools
     public partial class ColorPainterToolSystem : ToolBaseSystem
     {
         private ILog m_Log;
-        private Entity m_PreviousRaycastedEntity;
-        private Entity m_PreviousSelectedEntity;
-        private EntityQuery m_HighlightedQuery;
+        private Entity m_RaycastEntity;
+        private Entity m_PreviousRaycastEntity;
         private SIPColorFieldsSystem m_SelectedInfoPanelColorFieldsSystem;
         private CustomColorVariationSystem m_CustomColorVariationSystem;
         private OverlayRenderSystem m_OverlayRenderSystem;
@@ -47,11 +51,71 @@ namespace Recolor.Systems.Tools
         private EntityQuery m_BuildingMeshColorQuery;
         private EntityQuery m_VehicleMeshColorQuery;
         private EntityQuery m_ParkedVehicleMeshColorQuery;
+        private EntityQuery m_NetLanesMeshColorQuery;
         private EntityQuery m_PropMeshColorQuery;
-        private EntityQuery m_BuildingCustomMeshColorQuery;
-        private EntityQuery m_VehicleCustomMeshColorQuery;
-        private EntityQuery m_ParkedVehicleCustomMeshColorQuery;
-        private EntityQuery m_PropCustomMeshColorQuery;
+        private EntityQuery m_DefinitionGroup;
+        private State m_State;
+        private float m_TimeLastReset;
+        private float m_TimeLastApplied;
+        private float3 m_LastRaycastPosition;
+        private NativeList<Entity> m_SelectedEntities;
+        private EntityQuery m_ResetBuildingMeshColorQuery;
+        private EntityQuery m_ResetVehicleMeshColorQuery;
+        private EntityQuery m_ResetParkedVehicleMeshColorQuery;
+        private EntityQuery m_ResetNetLanesMeshColorQuery;
+        private EntityQuery m_ResetPropMeshColorQuery;
+
+
+        /// <summary>
+        /// Enum for state of the tool.
+        /// </summary>
+        public enum State
+        {
+            /// <summary>
+            /// Mouse up.
+            /// </summary>
+            Default,
+
+            /// <summary>
+            /// Left mouse down in paint mode.
+            /// </summary>
+            Painting,
+
+            /// <summary>
+            /// Right mouse down in paint mode, or left mouse down in reset mode.
+            /// </summary>
+            Reseting,
+
+            /// <summary>
+            /// Left mouse down in picker mode,
+            /// </summary>
+            Picking,
+
+            /// <summary>
+            /// Right mouse release when left mouse down.
+            /// </summary>
+            Canceling,
+
+
+        }
+
+        /// <summary>
+        /// Gets the state of the tool.
+        /// </summary>
+        public State CurrentState
+        {
+            get { return m_State; }
+            private set { m_State = value; }
+        }
+
+        /// <summary>
+        /// Gets the racyast entity.
+        /// </summary>
+        public Entity RaycastEntity
+        {
+            get { return m_RaycastEntity; }
+            private set { m_RaycastEntity = value; }
+        }
 
         /// <inheritdoc/>
         public override string toolID => "ColorPainterTool";
@@ -88,13 +152,22 @@ namespace Recolor.Systems.Tools
         public override void InitializeRaycast()
         {
             base.InitializeRaycast();
-            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single || m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker)
+            if ((m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single ||
+                 m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker) &&
+                 m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices &&
+                 m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.NetLanes)
+            {
+                m_ToolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Overground;
+                m_ToolRaycastSystem.typeMask = TypeMask.Lanes;
+                m_ToolRaycastSystem.netLayerMask = Layer.Fence;
+                m_ToolRaycastSystem.utilityTypeMask = UtilityTypes.Fence;
+                m_ToolRaycastSystem.raycastFlags |= RaycastFlags.SubElements | RaycastFlags.NoMainElements;
+            }
+            else if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single || m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker)
             {
                 m_ToolRaycastSystem.collisionMask = Game.Common.CollisionMask.OnGround | Game.Common.CollisionMask.Overground;
                 m_ToolRaycastSystem.typeMask = Game.Common.TypeMask.MovingObjects | Game.Common.TypeMask.StaticObjects | TypeMask.Lanes;
                 m_ToolRaycastSystem.raycastFlags |= RaycastFlags.SubBuildings | RaycastFlags.SubElements;
-                m_ToolRaycastSystem.netLayerMask = Game.Net.Layer.Fence;
-                m_ToolRaycastSystem.utilityTypeMask = Game.Net.UtilityTypes.Fence;
             }
             else if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius)
             {
@@ -121,11 +194,12 @@ namespace Recolor.Systems.Tools
             m_CustomColorVariationSystem = World.GetOrCreateSystemManaged<CustomColorVariationSystem>();
             m_ColorPainterUISystem = World.GetOrCreateSystemManaged<ColorPainterUISystem>();
             m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
+            m_DefinitionGroup = GetDefinitionQuery();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
-            m_HighlightedQuery = SystemAPI.QueryBuilder()
-                .WithAll<Highlighted>()
-                .WithNone<Deleted, Temp, Game.Common.Overridden>()
-                .Build();
+            m_TimeLastApplied = UnityEngine.Time.time;
+
+            m_SelectedEntities = new NativeList<Entity>(Allocator.Persistent);
+
             m_GenericTooltipSystem = World.GetOrCreateSystemManaged<GenericTooltipSystem>();
 
             m_BuildingMeshColorQuery = SystemAPI.QueryBuilder()
@@ -143,30 +217,74 @@ namespace Recolor.Systems.Tools
                 .WithNone<Temp, Deleted, Game.Common.Overridden>()
                 .Build();
 
-            m_PropMeshColorQuery = SystemAPI.QueryBuilder()
-                .WithAll<Game.Objects.Object, Game.Objects.Static, MeshColor, Game.Objects.Transform>()
-                .WithNone<Temp, Deleted, Game.Common.Overridden, Tree, Plant, Building>()
-                .Build();
+            m_NetLanesMeshColorQuery = SystemAPI.QueryBuilder()
+               .WithAll<Game.Net.Curve, MeshColor, Owner>()
+               .WithNone<Temp, Deleted, Game.Common.Overridden>()
+               .Build();
 
-            m_BuildingCustomMeshColorQuery = SystemAPI.QueryBuilder()
-                .WithAll<Building, MeshColor, Game.Objects.Transform, CustomMeshColor>()
-                .WithNone<Temp, Deleted, Game.Common.Overridden>()
-                .Build();
+            m_PropMeshColorQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                All = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<Game.Objects.Object>(),
+                    ComponentType.ReadOnly<MeshColor>(),
+                    ComponentType.ReadOnly<Game.Objects.Static>(),
+                    ComponentType.ReadOnly<Game.Objects.Transform>(),
+                },
+                None = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<Temp>(),
+                    ComponentType.ReadOnly<Deleted>(),
+                    ComponentType.ReadOnly<Game.Common.Overridden>(),
+                    ComponentType.ReadOnly<Plant>(),
+                    ComponentType.ReadOnly<Building>(),
+                    ComponentType.ReadOnly<Quantity>(),
+                    ComponentType.ReadOnly<Owner>(),
+                },
+            });
 
-            m_VehicleCustomMeshColorQuery = SystemAPI.QueryBuilder()
+            m_ResetBuildingMeshColorQuery = SystemAPI.QueryBuilder()
+               .WithAll<Building, MeshColor, Game.Objects.Transform, CustomMeshColor>()
+               .WithNone<Temp, Deleted, Game.Common.Overridden>()
+               .Build();
+
+            m_ResetVehicleMeshColorQuery = SystemAPI.QueryBuilder()
                 .WithAll<Vehicle, MeshColor, InterpolatedTransform, CustomMeshColor>()
                 .WithNone<Temp, Deleted, Game.Common.Overridden>()
                 .Build();
 
-            m_ParkedVehicleCustomMeshColorQuery = SystemAPI.QueryBuilder()
+            m_ResetParkedVehicleMeshColorQuery = SystemAPI.QueryBuilder()
                 .WithAll<Vehicle, MeshColor, Game.Objects.Transform, ParkedCar, CustomMeshColor>()
                 .WithNone<Temp, Deleted, Game.Common.Overridden>()
                 .Build();
 
-            m_PropCustomMeshColorQuery = SystemAPI.QueryBuilder()
-                .WithAll<Game.Objects.Object, Game.Objects.Static, MeshColor, Game.Objects.Transform, CustomMeshColor>()
-                .WithNone<Temp, Deleted, Game.Common.Overridden, Tree, Plant, Building>()
-                .Build();
+            m_ResetNetLanesMeshColorQuery = SystemAPI.QueryBuilder()
+               .WithAll<Game.Net.Curve, MeshColor, Owner, CustomMeshColor>()
+               .WithNone<Temp, Deleted, Game.Common.Overridden>()
+               .Build();
+
+            m_ResetPropMeshColorQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                All = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<Game.Objects.Object>(),
+                    ComponentType.ReadOnly<MeshColor>(),
+                    ComponentType.ReadOnly<Game.Objects.Static>(),
+                    ComponentType.ReadOnly<Game.Objects.Transform>(),
+                    ComponentType.ReadOnly<CustomMeshColor>(),
+                },
+                None = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<Temp>(),
+                    ComponentType.ReadOnly<Deleted>(),
+                    ComponentType.ReadOnly<Game.Common.Overridden>(),
+                    ComponentType.ReadOnly<Plant>(),
+                    ComponentType.ReadOnly<Building>(),
+                    ComponentType.ReadOnly<Quantity>(),
+                    ComponentType.ReadOnly<Owner>(),
+                },
+            });
+
         }
 
         /// <inheritdoc/>
@@ -177,17 +295,23 @@ namespace Recolor.Systems.Tools
             secondaryApplyAction.enabled = true;
             m_Log.Debug($"{nameof(ColorPainterToolSystem)}.{nameof(OnStartRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
+            m_State = State.Default;
         }
 
         /// <inheritdoc/>
         protected override void OnStopRunning()
         {
             base.OnStopRunning();
-            EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
-            EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
-            m_PreviousRaycastedEntity = Entity.Null;
+            m_RaycastEntity = Entity.Null;
             m_Log.Debug($"{nameof(ColorPainterToolSystem)}.{nameof(OnStopRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
+        }
+
+        /// <inheritdoc/>
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            m_SelectedEntities.Dispose();
         }
 
         /// <inheritdoc/>
@@ -196,299 +320,205 @@ namespace Recolor.Systems.Tools
             inputDeps = Dependency;
             EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
 
-            if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint)
+            if (m_State == State.Painting)
             {
                 m_GenericTooltipSystem.RemoveTooltip("ColorPickerToolIcon");
                 m_GenericTooltipSystem.RemoveTooltip("ResetToolIcon");
                 m_GenericTooltipSystem.RegisterIconTooltip("ColorPainterToolIcon", "coui://ui-mods/images/format_painter.svg");
             }
-            else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker)
+            else if (m_State == State.Picking)
             {
                 m_GenericTooltipSystem.RemoveTooltip("ColorPainterToolIcon");
                 m_GenericTooltipSystem.RemoveTooltip("ResetToolIcon");
                 m_GenericTooltipSystem.RegisterIconTooltip("ColorPickerToolIcon", "coui://uil/Standard/PickerPipette.svg");
             }
-            else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset)
+            else if (m_State == State.Reseting)
             {
                 m_GenericTooltipSystem.RemoveTooltip("ColorPainterToolIcon");
                 m_GenericTooltipSystem.RemoveTooltip("ColorPickerToolIcon");
                 m_GenericTooltipSystem.RegisterIconTooltip("ResetToolIcon", "coui://uil/Standard/Reset.svg");
             }
 
-            bool raycastResult = GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit);
+            Entity previousRaycastEntity = m_RaycastEntity;
+            bool raycastResult = GetRaycastResult(out m_RaycastEntity, out RaycastHit hit);
 
-            if ((m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset &&
-                m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single) ||
-               (secondaryApplyAction.WasReleasedThisFrame() &&
-                m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint &&
-                m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single))
+            if (m_RaycastEntity != previousRaycastEntity)
             {
-                if (!raycastResult
-                || !EntityManager.HasBuffer<MeshColor>(currentRaycastEntity)
-                || (!EntityManager.HasBuffer<CustomMeshColor>(currentRaycastEntity) && m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
-                || (!m_SelectedInfoPanelColorFieldsSystem.SingleInstance && m_SelectedInfoPanelColorFieldsSystem.TryGetAssetSeasonIdentifier(currentRaycastEntity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet colorSet) && m_SelectedInfoPanelColorFieldsSystem.MatchesEntireVanillaColorSet(colorSet, assetSeasonIdentifier))
-                || (hit.m_HitPosition.x == 0 && hit.m_HitPosition.y == 0 && hit.m_HitPosition.z == 0))
-                {
-                    buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
-                    buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
-                    m_PreviousRaycastedEntity = Entity.Null;
-                    return inputDeps;
-                }
+                m_TimeLastReset = 0f;
             }
-            else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
+
+            if (EntityManager.HasComponent<Game.Creatures.Creature>(m_RaycastEntity))
             {
-                if (!raycastResult
-                    || !EntityManager.HasBuffer<MeshColor>(currentRaycastEntity)
-                    || (EntityManager.HasComponent<Plant>(currentRaycastEntity) && m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
-                    || (EntityManager.HasBuffer<CustomMeshColor>(currentRaycastEntity) && !m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
-                    || (hit.m_HitPosition.x == 0 && hit.m_HitPosition.y == 0 && hit.m_HitPosition.z == 0))
-                {
-                    buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
-                    buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
-                    m_PreviousRaycastedEntity = Entity.Null;
+                m_TimeLastReset = 0f;
+                m_RaycastEntity = Entity.Null;
+                return Clear(inputDeps);
+            }
 
-                    if (EntityManager.HasComponent<Plant>(currentRaycastEntity) && m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
+            if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint &&
+                     m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
+            {
+                if (!raycastResult ||
+                    !EntityManager.HasBuffer<MeshColor>(m_RaycastEntity) ||
+                   (EntityManager.HasComponent<Plant>(m_RaycastEntity) &&
+                    m_SelectedInfoPanelColorFieldsSystem.SingleInstance) ||
+                   (EntityManager.HasBuffer<CustomMeshColor>(m_RaycastEntity) &&
+                    !m_SelectedInfoPanelColorFieldsSystem.SingleInstance))
                     {
-                        m_GenericTooltipSystem.RegisterTooltip("SingleInstancePlantWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.MouseTooltipKey("SingleInstancePlantWarning"), "Single instance color changes for plants is not currently supported.");
-                    }
-                    else
-                    {
-                        m_GenericTooltipSystem.RemoveTooltip("SingleInstancePlantWarning");
-                    }
+                        m_TimeLastReset = 0f;
+                        if (EntityManager.HasComponent<Plant>(m_RaycastEntity) && m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
+                        {
+                            m_GenericTooltipSystem.RegisterTooltip("SingleInstancePlantWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.MouseTooltipKey("SingleInstancePlantWarning"), "Single instance color changes for plants is not currently supported.");
+                        }
+                        else
+                        {
+                            m_GenericTooltipSystem.RemoveTooltip("SingleInstancePlantWarning");
+                        }
 
-                    if (EntityManager.HasBuffer<CustomMeshColor>(currentRaycastEntity) && !m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
-                    {
-                        m_GenericTooltipSystem.RegisterTooltip("HasCustomMeshColorWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.MouseTooltipKey("HasCustomMeshColorWarning"), "Cannot change color variation on this because it has custom instance colors.");
-                    }
-                    else
-                    {
-                        m_GenericTooltipSystem.RemoveTooltip("HasCustomMeshColorWarning");
-                    }
+                        if (EntityManager.HasBuffer<CustomMeshColor>(m_RaycastEntity) && !m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
+                        {
+                            m_GenericTooltipSystem.RegisterTooltip("HasCustomMeshColorWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.MouseTooltipKey("HasCustomMeshColorWarning"), "Cannot change color variation on this because it has custom instance colors.");
+                        }
+                        else
+                        {
+                            m_GenericTooltipSystem.RemoveTooltip("HasCustomMeshColorWarning");
+                        }
 
-                    return inputDeps;
-                }
+                        m_RaycastEntity = Entity.Null;
+                        return Clear(inputDeps);
+                    }
+            }
+
+            State previousState = m_State;
+            if (m_State != State.Canceling &&
+                applyAction.IsPressed() &&
+                secondaryApplyAction.WasReleasedThisFrame())
+            {
+                m_State = State.Canceling;
+                return Clear(inputDeps);
+            }
+            else if (m_State == State.Canceling &&
+                     applyAction.IsPressed())
+            {
+                return Clear(inputDeps);
+            }
+            else if (m_State == State.Canceling &&
+                    !applyAction.IsPressed())
+            {
+                m_State = State.Default;
+                return Clear(inputDeps);
             }
             else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker)
             {
-                if (!raycastResult
-                    || !EntityManager.HasBuffer<MeshColor>(currentRaycastEntity)
-                    || (hit.m_HitPosition.x == 0 && hit.m_HitPosition.y == 0 && hit.m_HitPosition.z == 0))
-                {
-                    buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
-                    buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
-                    m_PreviousRaycastedEntity = Entity.Null;
-                    return inputDeps;
-                }
+                m_State = State.Picking;
+            }
+            else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset ||
+                     secondaryApplyAction.IsPressed() ||
+                     secondaryApplyAction.WasReleasedThisFrame() ||
+                     UnityEngine.Time.time < m_TimeLastReset + 0.5f)
+            {
+                m_State = State.Reseting;
+            }
+            else
+            {
+                m_State = State.Painting;
+            }
+
+            if (!raycastResult ||
+              (hit.m_HitPosition.x == 0 &&
+               hit.m_HitPosition.y == 0 &&
+               hit.m_HitPosition.z == 0 &&
+               m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius))
+            {
+                m_TimeLastReset = 0f;
+                applyMode = ApplyMode.Clear;
+                return Clear(inputDeps);
+            }
+
+
+            if (m_State != previousState)
+            {
+                return Clear(inputDeps);
             }
 
             m_GenericTooltipSystem.RemoveTooltip("SingleInstancePlantWarning");
             m_GenericTooltipSystem.RemoveTooltip("HasCustomMeshColorWarning");
 
-            if (EntityManager.HasComponent<Game.Creatures.Creature>(currentRaycastEntity))
-            {
-                buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
-                buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtPlayback);
-                m_PreviousRaycastedEntity = Entity.Null;
-                return inputDeps;
-            }
-
-            if (currentRaycastEntity != m_PreviousRaycastedEntity &&
-                !m_HighlightedQuery.IsEmptyIgnoreFilter)
-            {
-                m_PreviousRaycastedEntity = currentRaycastEntity;
-                buffer.AddComponent<BatchesUpdated>(m_HighlightedQuery, EntityQueryCaptureMode.AtRecord);
-                buffer.RemoveComponent<Highlighted>(m_HighlightedQuery, EntityQueryCaptureMode.AtRecord);
-            }
-
-            if (m_HighlightedQuery.IsEmptyIgnoreFilter &&
-               (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single ||
-                m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker))
-            {
-                buffer.AddComponent<BatchesUpdated>(currentRaycastEntity);
-                buffer.AddComponent<Highlighted>(currentRaycastEntity);
-                m_PreviousRaycastedEntity = currentRaycastEntity;
-            }
-
-            if ((m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint ||
-               m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset) &&
-               m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius &&
-               (!raycastResult || (hit.m_HitPosition.x == 0 && hit.m_HitPosition.y == 0 && hit.m_HitPosition.z == 0)))
-            {
-                return inputDeps;
-            }
-
-            float radius = m_ColorPainterUISystem.Radius;
-            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius && m_ColorPainterUISystem.ToolMode != ColorPainterUISystem.PainterToolMode.Picker)
+            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius &&
+                m_ColorPainterUISystem.ToolMode != ColorPainterUISystem.PainterToolMode.Picker)
             {
                 ToolRadiusJob toolRadiusJob = new ()
                 {
                     m_OverlayBuffer = m_OverlayRenderSystem.GetBuffer(out JobHandle outJobHandle),
                     m_Position = new Vector3(hit.m_HitPosition.x, hit.m_Position.y, hit.m_HitPosition.z),
-                    m_Radius = radius,
+                    m_Radius = m_ColorPainterUISystem.Radius,
                 };
                 inputDeps = IJobExtensions.Schedule(toolRadiusJob, JobHandle.CombineDependencies(inputDeps, outJobHandle));
                 m_OverlayRenderSystem.AddBufferWriter(inputDeps);
+
+                m_LastRaycastPosition = new Vector3(hit.m_HitPosition.x, hit.m_Position.y, hit.m_HitPosition.z);
             }
 
-            if (!applyAction.WasReleasedThisFrame() && !applyAction.IsPressed() && !secondaryApplyAction.WasReleasedThisFrame() && !secondaryApplyAction.IsPressed())
+            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius &&
+                m_TimeLastApplied > UnityEngine.Time.time - 0.5f)
             {
+                return Clear(inputDeps);
+            }
+            else if (!applyAction.IsPressed() &&
+                     !secondaryApplyAction.IsPressed() &&
+                      m_SelectedEntities.Length > 0)
+            {
+                m_SelectedEntities.Clear();
+            }
+
+            if (GetAllowApply() &&
+                (applyAction.WasReleasedThisFrame() ||
+                (secondaryApplyAction.WasReleasedThisFrame() && m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint)))
+            {
+                return Apply(inputDeps);
+            }
+            else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker ||
+                     m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single)
+            {
+                if (m_RaycastEntity != m_PreviousRaycastEntity &&
+                    m_PreviousRaycastEntity != Entity.Null)
+                {
+                    m_State = State.Default;
+                    m_PreviousRaycastEntity = Entity.Null;
+                    return Clear(inputDeps);
+                }
+                else if (m_PreviousRaycastEntity == Entity.Null &&
+                       (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker ||
+                        m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single) &&
+                      ((m_State == State.Picking &&
+                      (!m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices ||
+                        EntityManager.HasBuffer<AssignedPalette>(m_RaycastEntity))) ||
+                        (m_State == State.Reseting &&
+                        EntityManager.HasComponent<CustomMeshColor>(m_RaycastEntity)) ||
+                       (m_State == State.Painting &&
+                       (!m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices ||
+                       (MatchingCategory() &&
+                        MatchingFilter())))))
+                {
+                    m_PreviousRaycastEntity = m_RaycastEntity;
+                    return UpdateDefinitions(inputDeps);
+                }
+                else
+                {
+                    applyMode = ApplyMode.None;
+                    return inputDeps;
+                }
+            }
+            else if (applyAction.IsPressed() ||
+                    (secondaryApplyAction.IsPressed() && m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint))
+            {
+                applyMode = ApplyMode.None;
+                return UpdateDefinitions(inputDeps);
+            }
+            else
+            {
+                applyMode = ApplyMode.None;
                 return inputDeps;
             }
-
-            if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint &&
-                m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single &&
-                applyAction.WasReleasedThisFrame())
-            {
-                if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
-                {
-                    ChangeInstanceColorSet(m_ColorPainterUISystem.RecolorSet, ref buffer, currentRaycastEntity);
-                }
-                else if (!m_SelectedInfoPanelColorFieldsSystem.SingleInstance && m_SelectedInfoPanelColorFieldsSystem.TryGetAssetSeasonIdentifier(currentRaycastEntity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet _))
-                {
-                    ChangeColorVariation(m_ColorPainterUISystem.RecolorSet, ref buffer, currentRaycastEntity, assetSeasonIdentifier);
-                    GenerateOrUpdateCustomColorVariationEntity(currentRaycastEntity, ref buffer, assetSeasonIdentifier);
-                }
-            }
-            else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint &&
-                     m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius &&
-                    (applyAction.IsPressed() ||
-                    (secondaryApplyAction.IsPressed() &&
-                   (!m_ColorPainterUISystem.RecolorSet.States[0] ||
-                    !m_ColorPainterUISystem.RecolorSet.States[1] ||
-                    !m_ColorPainterUISystem.RecolorSet.States[2]))))
-            {
-                ChangeMeshColorWithinRadiusJob changeMeshColorWithinRadiusJob = new ()
-                {
-                    m_EntityType = SystemAPI.GetEntityTypeHandle(),
-                    m_Position = hit.m_HitPosition,
-                    m_Radius = radius,
-                    m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
-                    m_ApplyColorSet = m_ColorPainterUISystem.ColorSet,
-                    m_ChannelToggles = m_ColorPainterUISystem.ChannelToggles,
-                    buffer = m_Barrier.CreateCommandBuffer(),
-                    m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
-                    m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
-                    m_SubLaneLookup = SystemAPI.GetBufferLookup<Game.Net.SubLane>(isReadOnly: true),
-                    m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
-                    m_MeshColorRecordLookup = SystemAPI.GetBufferLookup<MeshColorRecord>(isReadOnly: true),
-                    m_ResettingColorsToRecord = secondaryApplyAction.IsPressed() && !applyAction.IsPressed(),
-                };
-
-                if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
-                {
-                    inputDeps = JobChunkExtensions.Schedule(changeMeshColorWithinRadiusJob, m_BuildingMeshColorQuery, inputDeps);
-                    m_Barrier.AddJobHandleForProducer(inputDeps);
-                }
-                else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Props)
-                {
-                    inputDeps = JobChunkExtensions.Schedule(changeMeshColorWithinRadiusJob, m_PropMeshColorQuery, inputDeps);
-                    m_Barrier.AddJobHandleForProducer(inputDeps);
-                }
-                else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Vehicles)
-                {
-                    inputDeps = JobChunkExtensions.Schedule(changeMeshColorWithinRadiusJob, m_ParkedVehicleMeshColorQuery, inputDeps);
-                    m_Barrier.AddJobHandleForProducer(inputDeps);
-                }
-
-                if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Vehicles)
-                {
-                    ChangeVehicleMeshColorWithinRadiusJob changeVehicleMeshColorWithinRadiusJob = new ()
-                    {
-                        m_EntityType = SystemAPI.GetEntityTypeHandle(),
-                        m_Position = hit.m_HitPosition,
-                        m_Radius = radius,
-                        m_InterpolatedTransformType = SystemAPI.GetComponentTypeHandle<InterpolatedTransform>(isReadOnly: true),
-                        m_ApplyColorSet = m_ColorPainterUISystem.ColorSet,
-                        m_ChannelToggles = m_ColorPainterUISystem.ChannelToggles,
-                        buffer = m_Barrier.CreateCommandBuffer(),
-                        m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
-                        m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
-                        m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
-                        m_MeshColorRecordLookup = SystemAPI.GetBufferLookup<MeshColorRecord>(isReadOnly: true),
-                        m_ResettingColorsToRecord = secondaryApplyAction.IsPressed() && !applyAction.IsPressed(),
-                    };
-                    inputDeps = JobChunkExtensions.Schedule(changeVehicleMeshColorWithinRadiusJob, m_VehicleMeshColorQuery, inputDeps);
-                    m_Barrier.AddJobHandleForProducer(inputDeps);
-                }
-            }
-            else if ((m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset &&
-                      applyAction.WasReleasedThisFrame() &&
-                      m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single) ||
-                      (secondaryApplyAction.WasReleasedThisFrame() &&
-                      m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint &&
-                      m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single))
-            {
-                if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
-                {
-                    ResetInstanceColors(m_ColorPainterUISystem.RecolorSet, ref buffer, currentRaycastEntity);
-                }
-                else if (!m_SelectedInfoPanelColorFieldsSystem.SingleInstance && m_SelectedInfoPanelColorFieldsSystem.TryGetAssetSeasonIdentifier(currentRaycastEntity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet _) && m_SelectedInfoPanelColorFieldsSystem.TryGetVanillaColorSet(assetSeasonIdentifier, out ColorSet VanillaColorSet))
-                {
-                    ChangeColorVariation(new RecolorSet(VanillaColorSet), ref buffer, currentRaycastEntity, assetSeasonIdentifier);
-                    DeleteCustomColorVariationEntity(currentRaycastEntity, ref buffer, assetSeasonIdentifier);
-                }
-            }
-            else if ((m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Reset &&
-                      applyAction.IsPressed() && m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius) ||
-                     (secondaryApplyAction.IsPressed() &&
-                      m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint &&
-                      m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius))
-            {
-                ResetMeshColorWithinRadiusJob resetCustomMeshColorWithinRadiusJob = new ()
-                {
-                    m_EntityType = SystemAPI.GetEntityTypeHandle(),
-                    m_Position = hit.m_HitPosition,
-                    m_Radius = radius,
-                    m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
-                    buffer = m_Barrier.CreateCommandBuffer(),
-                    m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
-                    m_SubLaneLookup = SystemAPI.GetBufferLookup<Game.Net.SubLane>(isReadOnly: true),
-                    m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
-                };
-
-
-                if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
-                {
-                    inputDeps = JobChunkExtensions.Schedule(resetCustomMeshColorWithinRadiusJob, m_BuildingCustomMeshColorQuery, inputDeps);
-                    m_Barrier.AddJobHandleForProducer(inputDeps);
-                }
-                else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Props)
-                {
-                    inputDeps = JobChunkExtensions.Schedule(resetCustomMeshColorWithinRadiusJob, m_PropCustomMeshColorQuery, inputDeps);
-                    m_Barrier.AddJobHandleForProducer(inputDeps);
-                }
-                else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Vehicles)
-                {
-                    inputDeps = JobChunkExtensions.Schedule(resetCustomMeshColorWithinRadiusJob, m_ParkedVehicleCustomMeshColorQuery, inputDeps);
-                    m_Barrier.AddJobHandleForProducer(inputDeps);
-                }
-
-                if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Vehicles)
-                {
-                    ResetVehicleMeshColorWithinRadiusJob resetVehicleMeshColorWithinRadiusJob = new ()
-                    {
-                        m_EntityType = SystemAPI.GetEntityTypeHandle(),
-                        m_Position = hit.m_HitPosition,
-                        m_Radius = radius,
-                        m_InterpolatedTransformType = SystemAPI.GetComponentTypeHandle<InterpolatedTransform>(isReadOnly: true),
-                        buffer = m_Barrier.CreateCommandBuffer(),
-                        m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
-                        m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
-                    };
-                    inputDeps = JobChunkExtensions.Schedule(resetVehicleMeshColorWithinRadiusJob, m_VehicleCustomMeshColorQuery, inputDeps);
-                    m_Barrier.AddJobHandleForProducer(inputDeps);
-                }
-            }
-            else if (m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker &&
-                     applyAction.WasReleasedThisFrame() &&
-                     EntityManager.TryGetBuffer(currentRaycastEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer) &&
-                     meshColorBuffer.Length > 0)
-            {
-                m_ColorPainterUISystem.ColorSet = meshColorBuffer[0].m_ColorSet;
-                m_ColorPainterUISystem.ToolMode = ColorPainterUISystem.PainterToolMode.Paint;
-            }
-
-            return inputDeps;
         }
     }
 }

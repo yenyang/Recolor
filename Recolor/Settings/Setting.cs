@@ -8,9 +8,11 @@ namespace Recolor.Settings
     using Game;
     using Game.Input;
     using Game.Modding;
+    using Game.SceneFlow;
     using Game.Settings;
     using Game.Tools;
     using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.Palettes;
     using Recolor.Systems.SelectedInfoPanel;
     using Recolor.Systems.SingleInstance;
     using Unity.Entities;
@@ -47,12 +49,31 @@ namespace Recolor.Settings
         /// </summary>
         public const string ActivateColorPainterActionName = "ActivateColorPainter";
 
-
         /// <summary>
         /// The action name for activate fence selector mode.
         /// </summary>
         public const string FenceSelectorModeActionName = "FenceSelectorMode";
 
+        /// <summary>
+        /// An enum for palette chooser behavior while changing prefabs.
+        /// </summary>
+        public enum PaletteChooserBehavior
+        {
+            /// <summary>
+            /// Keep same palette choices if valid.
+            /// </summary>
+            NoChange,
+
+            /// <summary>
+            /// Reset to none palette.
+            /// </summary>
+            Reset,
+
+            /// <summary>
+            /// Record previous palette choices for each prefab and use the previous ones.
+            /// </summary>
+            RememberPrevious,
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Setting"/> class.
@@ -76,6 +97,19 @@ namespace Recolor.Settings
         /// </summary>
         [SettingsUISection(General, General)]
         public bool AlwaysMinimizedAtGameStart { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show palettes options during placement.
+        /// </summary>
+        [SettingsUISection(General, General)]
+        public bool ShowPalettesOptionDuringPlacement { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to reset palette choices when switching prefab.
+        /// </summary>
+        [SettingsUISection(General, General)]
+        [SettingsUIHideByCondition(typeof(Setting), "ShowPalettesOptionDuringPlacement", invert: true)]
+        public PaletteChooserBehavior PaletteChooserBehaviorWhenSwitchingPrefab { get; set; }
 
         /// <summary>
         /// Sets a value indicating whether to reset all settings to default.
@@ -120,6 +154,24 @@ namespace Recolor.Settings
         public bool Minimized { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating the selected locale codes.
+        /// </summary>
+        [SettingsUIHidden]
+        public string[] SelectedLocaleCodes { get; set; }
+
+        /// <summary>
+        ///  Gets or sets a value indicating whether to show palette options with SIP.
+        /// </summary>
+        [SettingsUIHidden]
+        public bool ShowSIPPaletteOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to minimize the palette chooser during placement.
+        /// </summary>
+        [SettingsUIHidden]
+        public bool MinimizePaletteChooserDuringPlacement { get; set; }
+
+        /// <summary>
         /// Sets a value indicating whether: a button for Resetting the settings for keybinds.
         /// </summary>
         [SettingsUIButton]
@@ -133,6 +185,21 @@ namespace Recolor.Settings
             }
         }
 
+        /// <summary>
+        /// Sets a value indicating whether: Deploys prebuilt prefabs.
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        [SettingsUISection(General, Remove)]
+        [SettingsUIDisableByCondition(typeof(Setting), nameof(IsNotGameOrEditor), invert: true)]
+        public bool RestoreDefaultPalettes
+        {
+            set
+            {
+                PalettesUISystem palettesUISystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<PalettesUISystem>();
+                palettesUISystem.DeployPrefabs();
+            }
+        }
 
         /// <summary>
         /// Sets a value indicating whether to Reset All Single Instance Color Changes.
@@ -140,7 +207,7 @@ namespace Recolor.Settings
         [SettingsUIButton]
         [SettingsUIConfirmation]
         [SettingsUISection(General, Remove)]
-        [SettingsUIDisableByCondition(typeof(Setting), nameof(IsNotGame))]
+        [SettingsUIDisableByCondition(typeof(Setting), nameof(IsNotGameOrEditor))]
         public bool ResetAllSingleInstanceColorChanges
         {
             set
@@ -156,7 +223,7 @@ namespace Recolor.Settings
         [SettingsUIButton]
         [SettingsUIConfirmation]
         [SettingsUISection(General, Remove)]
-        [SettingsUIDisableByCondition(typeof(Setting), nameof(IsNotGame))]
+        [SettingsUIDisableByCondition(typeof(Setting), nameof(IsNotGameOrEditor))]
         public bool ResetColorVariationsInThisSaveGame
         {
             set
@@ -197,6 +264,8 @@ namespace Recolor.Settings
                 customColorVariationSystem.ResetAllCustomColorVariations();
                 SIPColorFieldsSystem selectedInfoPanelColorFieldsSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
                 selectedInfoPanelColorFieldsSystem.DeleteAllModsDataFiles();
+                PalettesUISystem palettesUISystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<PalettesUISystem>();
+                palettesUISystem.DeleteAllPalettesAndSubcategories();
             }
         }
 
@@ -206,6 +275,12 @@ namespace Recolor.Settings
         [SettingsUISection(General, About)]
         public string Version => Mod.Instance.Version;
 
+        /// <summary>
+        /// Gets or sets a value indicating the previous version.
+        /// </summary>
+        [SettingsUIHidden]
+        public string PreviousVersion { get; set; }
+
         /// <inheritdoc/>
         public override void SetDefaults()
         {
@@ -213,12 +288,16 @@ namespace Recolor.Settings
             ShowHexaDecimals = false;
             Minimized = false;
             AlwaysMinimizedAtGameStart = false;
+            SelectedLocaleCodes = new string[] { GameManager.instance.localizationManager.activeLocaleId };
+            ShowSIPPaletteOptions = true;
+            PaletteChooserBehaviorWhenSwitchingPrefab = PaletteChooserBehavior.RememberPrevious;
+            ShowPalettesOptionDuringPlacement = true;
         }
 
-        private bool IsNotGame()
+        private bool IsNotGameOrEditor()
         {
             ToolSystem toolSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ToolSystem>();
-            return !toolSystem.actionMode.IsGame();
+            return !toolSystem.actionMode.IsGameOrEditor();
         }
     }
 }

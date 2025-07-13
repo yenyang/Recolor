@@ -10,20 +10,29 @@ import {getModule} from "cs2/modding";
 import classNames from "classnames";
 import { useState } from "react";
 import { FocusDisabled } from "cs2/input";
+import { PaletteChooserUIData } from "mods/Domain/PaletteAndSwatches/PaletteChooserUIData";
 
+/*
+import copySrc from "images/uilStandard/RectangleCopy.svg";
+import pasteSrc from "images/uilStandard/RectanglePaste.svg";
+import resetSrc from "images/uilStandard/Reset.svg";
+*/
 // These contain the coui paths to Unified Icon Library svg assets
+
 const uilStandard =                          "coui://uil/Standard/";
 const copySrc =                         uilStandard + "RectangleCopy.svg";
 const pasteSrc =                        uilStandard + "RectanglePaste.svg";
 const resetSrc =                     uilStandard + "Reset.svg";
+
 
 const CurrentColorSet$ = bindValue<RecolorSet>(mod.id, "CurrentColorSet");
 const CanPasteColor$ = bindValue<boolean>(mod.id, "CanPasteColor");
 const CanResetSingleChannels$ = bindValue<boolean>(mod.id, "CanResetSingleChannels");
 const MatchesVanillaColorSet$ = bindValue<boolean[]>(mod.id, 'MatchesVanillaColorSet');
 const ShowHexaDecimals$ = bindValue<boolean>(mod.id, 'ShowHexaDecimals');
+const PaletteChooserData$ = bindValue<PaletteChooserUIData>(mod.id, "PaletteChooserData");
 
-function copyColor(color : Color) {
+export function copyColor(color : Color) {
     // This triggers an event on C# side and C# designates the method to implement.
     trigger(mod.id, "CopyColor", color);
 }
@@ -33,7 +42,7 @@ function handleChannelClick(eventName : string, channel : number) {
     trigger(mod.id, eventName, channel);
 }
 
-const ColorFieldTheme: Theme | any = getModule(
+export const ColorFieldTheme: Theme | any = getModule(
     "game-ui/common/input/color-picker/color-field/color-field.module.scss",
     "classes"
 )
@@ -84,7 +93,8 @@ export const SIPColorComponent = (props : { channel : number }) => {
     const CanPasteColor = useValue(CanPasteColor$);    
     const MatchesVanillaColorSet : boolean[] = useValue(MatchesVanillaColorSet$);
     const ShowHexaDecimals = useValue(ShowHexaDecimals$);
-    const CanResetSingleChannels = useValue(CanResetSingleChannels$);
+    const CanResetSingleChannels = useValue(CanResetSingleChannels$);    
+    const PaletteChooserData = useValue(PaletteChooserData$);
     
     let [textInput, setTextInput] = useState(convertColorToHexaDecimal(CurrentColorSet.Channels[props.channel]));
     let [validInput, setValidInput] = useState(true);
@@ -123,7 +133,8 @@ export const SIPColorComponent = (props : { channel : number }) => {
                     focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} 
                     onChange={(e) => {changeColor(props.channel, e); setTextInput(convertColorToHexaDecimal(e))}}
                     alpha={1}
-                />
+                    disabled={PaletteChooserData.SelectedPaletteEntities[props.channel].index != 0}
+                ></VanillaComponentResolver.instance.ColorField>
             </div>
             <div className={styles.rowGroup}>
                 <VanillaComponentResolver.instance.ToolButton
@@ -135,7 +146,7 @@ export const SIPColorComponent = (props : { channel : number }) => {
                     className = {VanillaComponentResolver.instance.toolButtonTheme.button}
                     onSelect={() => copyColor(CurrentColorSet.Channels[props.channel])}
                 />
-                { CanPasteColor && (
+                { CanPasteColor && PaletteChooserData.SelectedPaletteEntities[props.channel].index == 0 && (
                     <VanillaComponentResolver.instance.ToolButton
                         src={pasteSrc}
                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
@@ -146,7 +157,7 @@ export const SIPColorComponent = (props : { channel : number }) => {
                         onSelect={() => {handleChannelClick("PasteColor", props.channel); setUpdateHexaDecimal(CurrentColorSet.Channels[props.channel]);}}
                     />
                 )}
-                { !MatchesVanillaColorSet[props.channel] && CanResetSingleChannels && (
+                { !MatchesVanillaColorSet[props.channel] && CanResetSingleChannels &&  PaletteChooserData.SelectedPaletteEntities[props.channel].index == 0 && (
                     <VanillaComponentResolver.instance.ToolButton
                         src={resetSrc}
                         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}
@@ -163,7 +174,7 @@ export const SIPColorComponent = (props : { channel : number }) => {
                     <div className={styles.rowGroup}>
                         <StringInputField
                             value={textInput.replace(/[\r\n]+/gm, '')}
-                            disabled ={false}
+                            disabled ={PaletteChooserData.SelectedPaletteEntities[props.channel].index != 0}
                             onChange={ (e : string) => { setTextInput(e); }}
                             onChangeEnd={HandleTextInput}
                             className={validInput?  classNames(StringInputFieldStyle.textInput, styles.rcColorFieldInput) : classNames(StringInputFieldStyle.textInput, styles.rcColorFieldInput, styles.invalidFieldInput)}

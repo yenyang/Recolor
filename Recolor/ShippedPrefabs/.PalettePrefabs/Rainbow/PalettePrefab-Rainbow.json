@@ -1,0 +1,52 @@
+{
+  "m_Category": 0,
+  "m_SubCategoryPrefabName": "",
+  "m_Swatches": [
+    {
+      "m_Red": 0.9647059,
+      "m_Green": 0.0,
+      "m_Blue": 0.0,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 1.0,
+      "m_Green": 0.549019635,
+      "m_Blue": 0.0,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 1.0,
+      "m_Green": 0.933333337,
+      "m_Blue": 0.0,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.3019608,
+      "m_Green": 0.9137255,
+      "m_Blue": 0.298039228,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.215686277,
+      "m_Green": 0.5137255,
+      "m_Blue": 1.0,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.282352954,
+      "m_Green": 0.121568628,
+      "m_Blue": 0.6666667,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "Rainbow",
+  "m_Version": 1
+}

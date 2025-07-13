@@ -17,6 +17,7 @@ namespace Recolor.Systems.Tools
     using Game.Tools;
     using Game.Vehicles;
     using Recolor.Domain;
+    using Recolor.Domain.Palette;
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;
     using Recolor.Systems.SelectedInfoPanel;
@@ -27,6 +28,9 @@ namespace Recolor.Systems.Tools
     using Unity.Jobs;
     using Unity.Mathematics;
     using UnityEngine;
+    using UnityEngine.Windows;
+    using static Game.Rendering.OverlayRenderSystem;
+    using static Recolor.Domain.Palette.PaletteFilterTypeData;
     using static Recolor.Systems.SelectedInfoPanel.SIPColorFieldsSystem;
 
     /// <summary>
@@ -302,6 +306,288 @@ namespace Recolor.Systems.Tools
                     m_SelectedInfoPanelColorFieldsSystem.AddBatchesUpdatedToSubElements(e, buffer);
                 }
             }
+        }
+
+        private JobHandle UpdateDefinitions(JobHandle inputDeps)
+        {
+            JobHandle jobHandle = DestroyDefinitions(m_DefinitionGroup, m_Barrier, inputDeps);
+            EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
+
+            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single ||
+                m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Picker)
+            {
+                CreateDefinitionJob createDefinitionJob = new CreateDefinitionJob()
+                {
+                    buffer = buffer,
+                    m_InstanceEntity = m_RaycastEntity,
+                    m_TransformData = SystemAPI.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true),
+                    m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                    m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
+                    m_CurveLookup = SystemAPI.GetComponentLookup<Game.Net.Curve>(isReadOnly: true),
+                    m_EditorContainterLookup = SystemAPI.GetComponentLookup<Game.Tools.EditorContainer>(isReadOnly: true),
+                    m_PseudoRandomSeedLookup = SystemAPI.GetComponentLookup<Game.Common.PseudoRandomSeed>(isReadOnly: true),
+                    m_AttachedLookup = SystemAPI.GetComponentLookup<Game.Objects.Attached>(isReadOnly: true),
+                };
+                inputDeps = createDefinitionJob.Schedule(inputDeps);
+                m_Barrier.AddJobHandleForProducer(inputDeps);
+            }
+            else
+            {
+                CreateDefinitionsWithRadiusOfTransform createDefinitionsWithRadiusOfTransform = new CreateDefinitionsWithRadiusOfTransform()
+                {
+                    m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                    m_Position = m_LastRaycastPosition,
+                    buffer = m_Barrier.CreateCommandBuffer(),
+                    m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                    m_Radius = m_ColorPainterUISystem.Radius,
+                    m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
+                    m_SelectedEntities = m_SelectedEntities,
+                    m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
+                    m_TransformLookup = SystemAPI.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true),
+                    m_PseudoRandomSeedLookup = SystemAPI.GetComponentLookup<Game.Common.PseudoRandomSeed>(isReadOnly: true),
+                    m_AttachedLookup = SystemAPI.GetComponentLookup<Game.Objects.Attached>(isReadOnly: true),
+                };
+
+                if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building)
+                {
+                    if (m_State == State.Painting)
+                    {
+                        inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_BuildingMeshColorQuery, inputDeps);
+                    }
+                    else if (m_State == State.Reseting)
+                    {
+                        inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_ResetBuildingMeshColorQuery, inputDeps);
+                    }
+                }
+                else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Props)
+                {
+                    if (m_State == State.Painting)
+                    {
+                        inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_PropMeshColorQuery, inputDeps);
+                    }
+                    else if (m_State == State.Reseting)
+                    {
+                        inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_ResetPropMeshColorQuery, inputDeps);
+                    }
+                }
+                else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Vehicles)
+                {
+                    CreateDefinitionsWithRadiusOfInterpolatedTransform createDefinitionsWithRadiusOfInterpolatedTransform = new CreateDefinitionsWithRadiusOfInterpolatedTransform()
+                    {
+                        m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                        m_Position = m_LastRaycastPosition,
+                        buffer = m_Barrier.CreateCommandBuffer(),
+                        m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                        m_Radius = m_ColorPainterUISystem.Radius,
+                        m_InterpolatedTransformType = SystemAPI.GetComponentTypeHandle<InterpolatedTransform>(isReadOnly: true),
+                        m_SelectedEntities = m_SelectedEntities,
+                        m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
+                        m_PseudoRandomSeedLookup = SystemAPI.GetComponentLookup<Game.Common.PseudoRandomSeed>(isReadOnly: true),
+                    };
+                    if (m_State == State.Painting)
+                    {
+                        inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_ParkedVehicleMeshColorQuery, inputDeps);
+                        inputDeps = createDefinitionsWithRadiusOfInterpolatedTransform.Schedule(m_VehicleMeshColorQuery, inputDeps);
+                    }
+                    else if (m_State == State.Reseting)
+                    {
+                        inputDeps = createDefinitionsWithRadiusOfTransform.Schedule(m_ResetParkedVehicleMeshColorQuery, inputDeps);
+                        inputDeps = createDefinitionsWithRadiusOfInterpolatedTransform.Schedule(m_ResetVehicleMeshColorQuery, inputDeps);
+                    }
+                }
+                else if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.NetLanes)
+                {
+                    CreateDefinitionsWithinRadiusOfCurve createDefinitionsWithinRadiusOfCurve = new CreateDefinitionsWithinRadiusOfCurve()
+                    {
+                        m_CurveType = SystemAPI.GetComponentTypeHandle<Game.Net.Curve>(isReadOnly: true),
+                        m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                        m_EditorContainerLookup = SystemAPI.GetComponentLookup<Game.Tools.EditorContainer>(isReadOnly: true),
+                        m_OwnerLookup = SystemAPI.GetComponentLookup<Game.Common.Owner>(isReadOnly: true),
+                        m_SelectedEntities = m_SelectedEntities,
+                        m_Position = m_LastRaycastPosition,
+                        m_PrefabRefLookup = SystemAPI.GetComponentLookup<Game.Prefabs.PrefabRef>(isReadOnly: true),
+                        m_PseudoRandomSeedLookup = SystemAPI.GetComponentLookup<Game.Common.PseudoRandomSeed>(isReadOnly: true),
+                        m_Radius = m_ColorPainterUISystem.Radius,
+                        buffer = m_Barrier.CreateCommandBuffer(),
+                    };
+
+                    if (m_State == State.Painting)
+                    {
+                        inputDeps = createDefinitionsWithinRadiusOfCurve.Schedule(m_NetLanesMeshColorQuery, inputDeps);
+                    }
+                    else if (m_State == State.Reseting)
+                    {
+                        inputDeps = createDefinitionsWithinRadiusOfCurve.Schedule(m_ResetNetLanesMeshColorQuery, inputDeps);
+                    }
+                }
+
+                m_Barrier.AddJobHandleForProducer(inputDeps);
+            }
+
+            return inputDeps;
+        }
+
+        private JobHandle Clear(JobHandle inputDeps)
+        {
+            applyMode = ApplyMode.Clear;
+            inputDeps = DestroyDefinitions(m_DefinitionGroup, m_Barrier, inputDeps);
+            m_SelectedEntities.Clear();
+            m_PreviousRaycastEntity = Entity.Null;
+            return inputDeps;
+        }
+
+        private JobHandle Apply(JobHandle inputDeps)
+        {
+            applyMode = ApplyMode.Apply;
+            m_PreviousRaycastEntity = Entity.Null;
+            EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
+
+            if (m_State == State.Picking)
+            {
+                if (m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices &&
+                    EntityManager.TryGetBuffer(m_RaycastEntity, isReadOnly: true, out DynamicBuffer<AssignedPalette> paletteBuffer) &&
+                    paletteBuffer.Length > 0)
+                {
+                    Entity[] newPalettePrefabEntities = new Entity[3] { Entity.Null, Entity.Null, Entity.Null };
+                    for (int i = 0; i < paletteBuffer.Length; i++)
+                    {
+                        if (paletteBuffer[i].m_PaletteInstanceEntity != Entity.Null &&
+                            EntityManager.TryGetComponent(paletteBuffer[i].m_PaletteInstanceEntity, out PrefabRef palettePrefabEntity) &&
+                            EntityManager.TryGetBuffer(palettePrefabEntity.m_Prefab, isReadOnly: true, out DynamicBuffer<SwatchData> swatches) &&
+                            swatches.Length >= 2)
+                        {
+                            newPalettePrefabEntities[Math.Clamp(paletteBuffer[i].m_Channel, 0, 2)] = palettePrefabEntity.m_Prefab;
+                        }
+                    }
+
+                    m_ColorPainterUISystem.SelectedPaletteEntities = newPalettePrefabEntities;
+                    m_ColorPainterUISystem.ToolMode = ColorPainterUISystem.PainterToolMode.Paint;
+                    return inputDeps;
+                }
+
+                if (EntityManager.TryGetBuffer(m_RaycastEntity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer) &&
+                    meshColorBuffer.Length > 0)
+                {
+                    m_ColorPainterUISystem.ColorSet = meshColorBuffer[0].m_ColorSet;
+                    m_ColorPainterUISystem.ToolMode = ColorPainterUISystem.PainterToolMode.Paint;
+                    return inputDeps;
+                }
+            }
+            else if (m_State == State.Reseting &&
+                     m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint)
+            {
+                m_TimeLastReset = UnityEngine.Time.time;
+            }
+
+            if (m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Radius)
+            {
+                m_TimeLastApplied = UnityEngine.Time.time;
+            }
+
+            if (m_State == State.Painting &&
+                m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single &&
+               !m_SelectedInfoPanelColorFieldsSystem.SingleInstance &&
+                m_SelectedInfoPanelColorFieldsSystem.TryGetAssetSeasonIdentifier(m_RaycastEntity, out AssetSeasonIdentifier assetSeasonIdentifier, out ColorSet _))
+            {
+                ChangeColorVariation(m_ColorPainterUISystem.RecolorSet, ref buffer, m_RaycastEntity, assetSeasonIdentifier);
+                GenerateOrUpdateCustomColorVariationEntity(m_RaycastEntity, ref buffer, assetSeasonIdentifier);
+            }
+
+            if (m_State == State.Reseting &&
+                m_ColorPainterUISystem.ColorPainterSelectionType == ColorPainterUISystem.SelectionType.Single &&
+               !m_SelectedInfoPanelColorFieldsSystem.SingleInstance &&
+                m_SelectedInfoPanelColorFieldsSystem.TryGetAssetSeasonIdentifier(m_RaycastEntity, out AssetSeasonIdentifier assetSeasonIdentifier1, out ColorSet _) &&
+                m_SelectedInfoPanelColorFieldsSystem.TryGetVanillaColorSet(assetSeasonIdentifier1, out ColorSet vanillaColorSet))
+            {
+                ChangeColorVariation(new RecolorSet(vanillaColorSet), ref buffer, m_RaycastEntity, assetSeasonIdentifier1);
+                DeleteCustomColorVariationEntity(m_RaycastEntity, ref buffer, assetSeasonIdentifier1);
+            }
+
+            return inputDeps;
+        }
+
+        private bool MatchingCategory()
+        {
+            if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Building &&
+                EntityManager.HasComponent<Building>(m_RaycastEntity))
+            {
+                return true;
+            }
+
+            if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Vehicles &&
+                EntityManager.HasComponent<Vehicle>(m_RaycastEntity))
+            {
+                return true;
+            }
+
+            if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.NetLanes &&
+                EntityManager.HasComponent<Game.Net.Curve>(m_RaycastEntity))
+            {
+                return true;
+            }
+
+            if (m_ColorPainterUISystem.ColorPainterFilterType == ColorPainterUISystem.FilterType.Props &&
+                EntityManager.HasComponent<Game.Objects.Object>(m_RaycastEntity) &&
+                EntityManager.HasComponent<Game.Objects.Static>(m_RaycastEntity) &&
+               !EntityManager.HasComponent<Building>(m_RaycastEntity))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool MatchingFilter()
+        {
+            if (m_ColorPainterUISystem.PaletteFilterType == PaletteFilterTypeData.PaletteFilterType.None)
+            {
+                return true;
+            }
+
+            if (!EntityManager.TryGetComponent(m_RaycastEntity, out PrefabRef prefabRef))
+            {
+                return false;
+            }
+
+            if (m_ColorPainterUISystem.PaletteFilterType == PaletteFilterTypeData.PaletteFilterType.Theme &&
+                EntityManager.TryGetComponent(prefabRef.m_Prefab, out SpawnableBuildingData spawnableBuildingData) &&
+                m_PrefabSystem.TryGetPrefab(spawnableBuildingData.m_ZonePrefab, out PrefabBase zonePrefabBase) &&
+                zonePrefabBase is ZonePrefab)
+            {
+                ZonePrefab zonePrefab = zonePrefabBase as ZonePrefab;
+                if (!zonePrefab.TryGet(out ThemeObject themeObject) ||
+                     themeObject == null ||
+                    !m_PrefabSystem.TryGetEntity(themeObject.m_Theme, out Entity themeEntity))
+                {
+                    return false;
+                }
+
+                if (m_ColorPainterUISystem.PaletteFilterEntity == themeEntity)
+                {
+                    return true;
+                }
+            }
+            else if (m_ColorPainterUISystem.PaletteFilterType == PaletteFilterTypeData.PaletteFilterType.ZoningType &&
+                     EntityManager.TryGetComponent(prefabRef.m_Prefab, out SpawnableBuildingData spawnableBuildingData2))
+            {
+                if (m_ColorPainterUISystem.PaletteFilterEntity == spawnableBuildingData2.m_ZonePrefab)
+                {
+                    return true;
+                }
+            }
+            else if (m_ColorPainterUISystem.PaletteFilterType == PaletteFilterTypeData.PaletteFilterType.Pack &&
+                     EntityManager.TryGetBuffer(prefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<AssetPackElement> assetPackElements))
+        {
+                for (int j = 0; j < assetPackElements.Length; j++)
+                {
+                    if (assetPackElements[j].m_Pack == m_ColorPainterUISystem.PaletteFilterEntity)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

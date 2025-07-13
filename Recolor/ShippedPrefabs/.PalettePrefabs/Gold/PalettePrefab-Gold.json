@@ -1,0 +1,45 @@
+{
+  "m_Category": 0,
+  "m_SubCategoryPrefabName": "Metals",
+  "m_Swatches": [
+    {
+      "m_Red": 0.9764706,
+      "m_Green": 0.7921569,
+      "m_Blue": 0.356862754,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.8784314,
+      "m_Green": 0.6666667,
+      "m_Blue": 0.243137255,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 200
+    },
+    {
+      "m_Red": 0.721568644,
+      "m_Green": 0.5411765,
+      "m_Blue": 0.266666681,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.8235294,
+      "m_Green": 0.6745098,
+      "m_Blue": 0.2784314,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    },
+    {
+      "m_Red": 0.9254902,
+      "m_Green": 0.6862745,
+      "m_Blue": 0.149019614,
+      "m_Alpha": 1.0,
+      "m_ProbabilityWeight": 100
+    }
+  ],
+  "m_FilterType": 0,
+  "m_FilterNames": [],
+  "m_Name": "Gold",
+  "m_Version": 1
+}

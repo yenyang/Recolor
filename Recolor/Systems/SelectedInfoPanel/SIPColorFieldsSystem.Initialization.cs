@@ -24,9 +24,11 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Game.Simulation;
     using Game.Tools;
     using Recolor.Domain;
+    using Recolor.Domain.Palette;
     using Recolor.Extensions;
     using Recolor.Settings;
     using Recolor.Systems.ColorVariations;
+    using Recolor.Systems.Palettes;
     using Recolor.Systems.Tools;
     using Unity.Collections;
     using Unity.Entities;
@@ -39,6 +41,11 @@ namespace Recolor.Systems.SelectedInfoPanel
     public partial class SIPColorFieldsSystem : ExtendedInfoSectionBase
     {
         /// <summary>
+        /// Category name for no subcategory.
+        /// </summary>
+        public const string NoSubcategoryName = "No Subcategory";
+
+        /// <summary>
         ///  A way to lookup seasons.
         /// </summary>
         private readonly Dictionary<string, Season> SeasonDictionary = new ()
@@ -49,9 +56,12 @@ namespace Recolor.Systems.SelectedInfoPanel
                 { "Climate.SEASON[Winter]", Season.Winter },
         };
 
+
+
         private ILog m_Log;
         private ToolSystem m_ToolSystem;
-        private Entity m_PreviouslySelectedEntity = Entity.Null;
+        private State m_State = State.NotVisible;
+        private Entity m_PreviousEntity = Entity.Null;
         private ClimateSystem m_ClimateSystem;
         private ValueBindingHelper<RecolorSet> m_CurrentColorSet;
         private ValueBindingHelper<bool[]> m_MatchesVanillaColorSet;
@@ -68,6 +78,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         private ValueBindingHelper<bool> m_MatchesSavedOnDisk;
         private ValueBindingHelper<bool> m_CanResetSingleChannels;
         private ValueBindingHelper<bool> m_EditorVisible;
+        private ValueBindingHelper<bool> m_ResidentialBuildingSelected;
         private Scope m_PreferredScope;
         private ColorPickerToolSystem m_ColorPickerTool;
         private ColorPainterToolSystem m_ColorPainterTool;
@@ -90,6 +101,18 @@ namespace Recolor.Systems.SelectedInfoPanel
         private int m_RouteColorChannel = -1;
         private List<int> m_SubMeshIndexes = new List<int>();
         private ValueBindingHelper<bool> m_CanResetOtherSubMeshes;
+        private bool m_PreferPalettes;
+        private ValueBindingHelper<ButtonState> m_ShowPaletteChoices;
+        private PalettesUISystem m_PalettesUISystem;
+        private PaletteInstanceManagerSystem m_PaletteInstanceMangerSystem;
+        private ValueBindingHelper<PaletteChooserUIData> m_PaletteChooserData;
+        private AssignedPaletteCustomColorSystem m_AssignedPaletteCustomColorSystem;
+        private EntityQuery m_PaletteQuery;
+        private ValueBindingHelper<Entity> m_CopiedPalette;
+        private ValueBindingHelper<Entity[]> m_CopiedPaletteSet;
+        private EntityQuery m_AssetPackQuery;
+        private EntityQuery m_ZonePrefabEntityQuery;
+        private EntityQuery m_ThemePrefabEntityQuery;
 
         /// <summary>
         /// An enum to handle seasons.
@@ -169,8 +192,52 @@ namespace Recolor.Systems.SelectedInfoPanel
             Route = 3,
         }
 
+        /// <summary>
+        /// State of Recolor SIP.
+        /// </summary>
+        public enum State
+        {
+            /// <summary>
+            /// Nothing to show.
+            /// </summary>
+            NotVisible = 0,
+
+            /// <summary>
+            /// Nothing is changing.
+            /// </summary>
+            Static = 1,
+
+            /// <summary>
+            /// Color changed. Need to update colors.
+            /// </summary>
+            ColorChanged = 2,
+
+            /// <summary>
+            /// Entity Changed. Need to update everything.
+            /// </summary>
+            EntityChanged = 4,
+
+            /// <summary>
+            /// Buttons need refreshing.
+            /// </summary>
+            UpdateButtonStates = 8,
+
+            /// <summary>
+            /// Color should change next frame.
+            /// </summary>
+            ColorChangeScheduled = 16,
+        }
+
         /// <inheritdoc/>
         public override GameMode gameMode => GameMode.GameOrEditor;
+
+        /// <summary>
+        /// Gets a value indicating whether Show Palette Choices is on.
+        /// </summary>
+        public bool ShowPaletteChoices
+        {
+            get { return (m_ShowPaletteChoices & ButtonState.On) == ButtonState.On; }
+        }
 
         /// <inheritdoc/>
         protected override void OnCreate()
@@ -186,6 +253,9 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_ColorPickerTool = World.GetOrCreateSystemManaged<ColorPickerToolSystem>();
             m_CustomColorVariationSystem = World.GetOrCreateSystemManaged<CustomColorVariationSystem>();
             m_DefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
+            m_PalettesUISystem = World.GetOrCreateSystemManaged<PalettesUISystem>();
+            m_PaletteInstanceMangerSystem = World.GetOrCreateSystemManaged<PaletteInstanceManagerSystem>();
+            m_AssignedPaletteCustomColorSystem = World.GetOrCreateSystemManaged<AssignedPaletteCustomColorSystem>();
 
             // These establish bindings to communicate between UI and C#.
             m_CurrentColorSet = CreateBinding("CurrentColorSet", new RecolorSet(default, default, default));
@@ -199,6 +269,12 @@ namespace Recolor.Systems.SelectedInfoPanel
             m_CanResetSingleChannels = CreateBinding("CanResetSingleChannels", false);
             m_CanResetOtherSubMeshes = CreateBinding("CanResetOtherSubMeshes", false);
             m_EditorVisible = CreateBinding("EditorVisible", false);
+            m_PaletteChooserData = CreateBinding("PaletteChooserData", new PaletteChooserUIData());
+            m_ShowPaletteChoices = CreateBinding("ShowPaletteChoices", Mod.Instance.Settings.ShowSIPPaletteOptions ? ButtonState.On : ButtonState.Off);
+            m_PreferPalettes = Mod.Instance.Settings.ShowSIPPaletteOptions;
+            m_CopiedPalette = CreateBinding("CopiedPalette", Entity.Null);
+            m_CopiedPaletteSet = CreateBinding("CopiedPaletteSet", new Entity[] { Entity.Null, Entity.Null, Entity.Null });
+            m_ResidentialBuildingSelected = CreateBinding("ResidentialBuildingSelected", false);
 
             // These bindings are closely related.
             m_PreferredScope = Scope.SingleInstance;
@@ -232,6 +308,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (Mod.Instance.Settings.ColorPainterAutomaticCopyColor)
                 {
                     m_ColorPainterUISystem.ColorSet = m_CurrentColorSet.Value.GetColorSet();
+                    m_ColorPainterUISystem.SelectedPaletteEntities = m_PaletteChooserData.Value.m_SelectedPaletteEntities;
                 }
             });
             CreateTrigger("Minimize", () =>
@@ -244,7 +321,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 m_PreferredScope = (Scope)newScope;
                 HandleScopeAndButtonStates();
-                m_PreviouslySelectedEntity = Entity.Null;
+                m_State = State.UpdateButtonStates;
             });
             CreateTrigger("ToggleShowHexaDecimals", () =>
             {
@@ -259,15 +336,43 @@ namespace Recolor.Systems.SelectedInfoPanel
             {
                 m_SubMeshData.Value.SubMeshScope = (SubMeshData.SubMeshScopes)newScope;
                 HandleSubMeshScopes();
-                m_PreviouslySelectedEntity = Entity.Null;
+                m_State = State.UpdateButtonStates;
             });
+            CreateTrigger("ToggleShowPaletteChoices", ToggleShowPaletteChoices);
+            CreateTrigger<int, Entity>("AssignPalette", AssignPaletteAction);
+            CreateTrigger<int>("RemovePalette", RemovePaletteAction);
+            CreateTrigger("CopyPalette", (Entity prefabEntity) => m_CopiedPalette.Value = prefabEntity);
+            CreateTrigger("EditPalette", (Entity prefabEntity) => m_PalettesUISystem.EditPalette(prefabEntity));
+            CreateTrigger("CopyPaletteSet", (Entity[] prefabEntities) => m_CopiedPaletteSet.Value = prefabEntities);
 
             m_VanillaColorSets = new ();
             m_ContentFolder = Path.Combine(EnvPath.kUserDataPath, "ModsData", Mod.Id, "SavedColorSet", "Custom");
             System.IO.Directory.CreateDirectory(m_ContentFolder);
-            m_EndFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
 
-            m_SubMeshQuery = SystemAPI.QueryBuilder().WithAll<Game.Prefabs.SubMesh>().WithNone<Game.Prefabs.PlaceholderObjectElement, Game.Common.Deleted>().Build();
+            m_SubMeshQuery = SystemAPI.QueryBuilder()
+                .WithAll<Game.Prefabs.SubMesh>()
+                .WithNone<Game.Prefabs.PlaceholderObjectElement, Game.Common.Deleted>()
+                .Build();
+
+            m_PaletteQuery = SystemAPI.QueryBuilder()
+                  .WithAll<SwatchData>()
+                  .WithNone<Deleted, Temp>()
+                  .Build();
+
+            m_AssetPackQuery = SystemAPI.QueryBuilder()
+                .WithAll<AssetPackData>()
+                .WithNone<Deleted, Temp>()
+                .Build();
+
+            m_ThemePrefabEntityQuery = SystemAPI.QueryBuilder()
+                .WithAll<ThemeData>()
+                .WithNone<Deleted, Temp>()
+                .Build();
+
+            m_ZonePrefabEntityQuery = SystemAPI.QueryBuilder()
+                .WithAll<ZoneData, UIObjectData>()
+                .WithNone<Deleted, Temp>()
+                .Build();
 
             RequireForUpdate(m_SubMeshQuery);
             Enabled = false;
