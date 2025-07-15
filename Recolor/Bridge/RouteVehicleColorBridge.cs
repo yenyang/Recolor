@@ -41,7 +41,7 @@ namespace Recolor.Bridge
             DynamicBuffer<RouteVehicleColor> newBuffer = buffer.AddBuffer<RouteVehicleColor>(routeEntity);
             for (int i = 0; i < meshColorBuffer.Length; i++)
             {
-                newBuffer.Add(new RouteVehicleColor(colorSet, meshColorBuffer[i].m_ColorSet));
+                newBuffer.Add(new RouteVehicleColor(colorSet, meshColorBuffer[i].m_ColorSet, (RouteVehicleColor.ControlledBy)controllingMod));
             }
 
             for (int i = 0; i < routeVehicleBuffer.Length; i++)
@@ -61,6 +61,31 @@ namespace Recolor.Bridge
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Checks if the route entity is controlled by a specific mod.
+        /// </summary>
+        /// <param name="routeEntity">Instance Entity containing Route Vehicles.</param>
+        /// <param name="controllingMod">int to be converted to enum for <see cref="Recolor.Domain.RouteVehicleColor.ControlledBy"/> 0 is Recolor | 1 is XTM.</param>
+        /// <returns>True if controlled by mod, false if not or not able to find relevant components.</returns>
+        public static bool IsControllerBy(Entity routeEntity, int controllingMod)
+        {
+            EntityManager entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+
+            if (routeEntity == Entity.Null ||
+              !entityManager.TryGetBuffer(routeEntity, isReadOnly: true, out DynamicBuffer<RouteVehicleColor> routeVehicleColorBuffer) ||
+               routeVehicleColorBuffer.Length == 0)
+            {
+                return false;
+            }
+
+            if (routeVehicleColorBuffer[0].m_Controller == (RouteVehicleColor.ControlledBy)controllingMod)
+            {
+                return true;
+            }
+
+            return false;
         }
 
     }
