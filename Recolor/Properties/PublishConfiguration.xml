@@ -102,13 +102,13 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/recolor.1694303/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.2.0" />
+  <ModVersion Value="1.2.0.1" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.3.*" />
   <!--Dependency for the mod, can be set multiple times-->
   <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.12" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-<ChangeLog># Patch v1.2.0
+  <ChangeLog># Update v1.2.0
 * Complete Palette and Subcategory Editor Menu.
 * Assign Palettes with Selected Info Panel, Color Painter Tool, Color Picker Tool and During Placement. 
 * Includes 19 Pre-Built Palettes and 4 pre-built Subcategories. Edit and delete at will.

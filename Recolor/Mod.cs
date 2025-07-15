@@ -68,7 +68,7 @@ namespace Recolor
         /// <summary>
         /// Gets the version of the mod.
         /// </summary>
-        internal string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+        internal string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(4);
 
         /// <summary>
         /// Gets the install path for the mod.
@@ -156,6 +156,7 @@ namespace Recolor
             updateSystem.UpdateAt<PaletteInstanceManagerSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<TempAssignedPalettesSystem>(SystemUpdatePhase.Modification2);
             updateSystem.UpdateAt<ApplyColorsSystem>(SystemUpdatePhase.ApplyTool);
+            updateSystem.UpdateAt<RouteColorUpdatedCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PalettePreferenceSystem>();
             Log.Info($"{nameof(OnLoad)} complete.");
         }
