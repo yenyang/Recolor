@@ -54,6 +54,7 @@ namespace Recolor.Systems.SingleInstance
                 m_LayoutElementLookup = SystemAPI.GetBufferLookup<Game.Vehicles.LayoutElement>(isReadOnly: true),
                 m_RouteVehicleLookup = SystemAPI.GetBufferLookup<Game.Routes.RouteVehicle>(isReadOnly: true),
                 buffer = m_Barrier.CreateCommandBuffer(),
+                m_MeshColorLookup = SystemAPI.GetBufferLookup<Game.Rendering.MeshColor>(isReadOnly: true),
             };
             JobHandle jobHandle = gatherEntitiesFromRentersUpdatedEventsJob.Schedule(m_UpdatedEventQuery, Dependency);
             m_Barrier.AddJobHandleForProducer(jobHandle);
@@ -74,6 +75,8 @@ namespace Recolor.Systems.SingleInstance
             public BufferLookup<LayoutElement> m_LayoutElementLookup;
             [ReadOnly]
             public BufferLookup<RouteVehicle> m_RouteVehicleLookup;
+            [ReadOnly]
+            public BufferLookup<MeshColor> m_MeshColorLookup;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
@@ -92,17 +95,33 @@ namespace Recolor.Systems.SingleInstance
                     {
                         if (!m_LayoutElementLookup.TryGetBuffer(routeVehicleBuffer[j].m_Vehicle, out DynamicBuffer<LayoutElement> layoutElementBuffer))
                         {
-                            DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(routeVehicleBuffer[j].m_Vehicle);
-                            meshColorBuffer.Add(new MeshColor() { m_ColorSet = routeVehicleColorBuffer[0].m_ColorSet });
-                            buffer.AddComponent<BatchesUpdated>(routeVehicleBuffer[j].m_Vehicle);
+                            if (m_MeshColorLookup.TryGetBuffer(routeVehicleBuffer[j].m_Vehicle, out DynamicBuffer<MeshColor> originalMeshColorBuffer) &&
+                                routeVehicleBuffer[j].m_Vehicle != Entity.Null)
+                            {
+                                DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(routeVehicleBuffer[j].m_Vehicle);
+                                for (int k = 0; k < originalMeshColorBuffer.Length; k++)
+                                {
+                                    meshColorBuffer.Add(new MeshColor() { m_ColorSet = routeVehicleColorBuffer[0].m_ColorSet });
+                                }
+
+                                buffer.AddComponent<BatchesUpdated>(routeVehicleBuffer[j].m_Vehicle);
+                            }
                         }
                         else
                         {
                             for (int k = 0; k < layoutElementBuffer.Length; k++)
                             {
-                                DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(layoutElementBuffer[k].m_Vehicle);
-                                meshColorBuffer.Add(new MeshColor() { m_ColorSet = routeVehicleColorBuffer[0].m_ColorSet });
-                                buffer.AddComponent<BatchesUpdated>(layoutElementBuffer[k].m_Vehicle);
+                                if (m_MeshColorLookup.TryGetBuffer(layoutElementBuffer[k].m_Vehicle, out DynamicBuffer<MeshColor> originalMeshColorBuffer) &&
+                                    layoutElementBuffer[k].m_Vehicle != Entity.Null)
+                                {
+                                    DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(layoutElementBuffer[k].m_Vehicle);
+                                    for (int m = 0; m < originalMeshColorBuffer.Length; m++)
+                                    {
+                                        meshColorBuffer.Add(new MeshColor() { m_ColorSet = routeVehicleColorBuffer[0].m_ColorSet });
+                                    }
+
+                                    buffer.AddComponent<BatchesUpdated>(layoutElementBuffer[k].m_Vehicle);
+                                }
                             }
                         }
                     }

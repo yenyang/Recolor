@@ -80,9 +80,29 @@ namespace Recolor.Systems.SingleInstance
                         continue;
                     }
 
-                    DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(rentersUpdated.m_Property);
+                    if (!m_MeshColorLookup.TryGetBuffer(rentersUpdated.m_Property, out DynamicBuffer<MeshColor> originalMeshColorBuffer))
+                    {
+                        continue;
+                    }
 
-                    meshColorBuffer.Add(new MeshColor() { m_ColorSet = customMeshColorBuffer[0].m_ColorSet });
+                    if (rentersUpdated.m_Property == Entity.Null)
+                    {
+                        continue;
+                    }
+
+                    DynamicBuffer<MeshColor> meshColorBuffer = buffer.SetBuffer<MeshColor>(rentersUpdated.m_Property);
+                    for (int j = 0; j < meshColorBuffer.Length; j++)
+                    {
+                        if (customMeshColorBuffer.Length > j)
+                        {
+                            meshColorBuffer.Add(new MeshColor() { m_ColorSet = customMeshColorBuffer[j].m_ColorSet });
+                        }
+                        else
+                        {
+                            meshColorBuffer.Add(originalMeshColorBuffer[j]);
+                        }
+                    }
+
                     buffer.AddComponent<BatchesUpdated>(rentersUpdated.m_Property);
                 }
             }

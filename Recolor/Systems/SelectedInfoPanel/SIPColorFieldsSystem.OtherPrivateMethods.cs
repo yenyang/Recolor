@@ -26,7 +26,6 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Game.Simulation;
     using Game.Tools;
     using Game.Vehicles;
-    using Recolor.Bridge;
     using Recolor.Domain;
     using Recolor.Domain.Palette;
     using Recolor.Extensions;

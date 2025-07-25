@@ -68,7 +68,7 @@ namespace Recolor
         /// <summary>
         /// Gets the version of the mod.
         /// </summary>
-        internal string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(4);
+        internal string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
 
         /// <summary>
         /// Gets the install path for the mod.
