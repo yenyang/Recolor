@@ -116,8 +116,6 @@
 	<ItemGroup>
 		<None Include="$(ModPropsFile)" Link="Properties\Mod.props" />
 		<None Include="$(ModTargetsFile)" Link="Properties\Mod.targets" />
-		<None Include="Bridge\CustomColorComponentsBridge.cs" />
-		<None Include="Bridge\RouteVehicleColorBridge.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -159,11 +157,6 @@
 
 	<ItemGroup>
 		<EmbeddedResource Include="ShippedPrefabs\**"></EmbeddedResource>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Compile Remove="Bridge\CustomColorComponentsBridge.cs" />
-	  <Compile Remove="Bridge\RouteVehicleColorBridge.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

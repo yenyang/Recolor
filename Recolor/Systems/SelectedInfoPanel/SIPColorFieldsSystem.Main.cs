@@ -430,7 +430,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             }
 
             // Routes
-            else if (((m_State & State.EntityChanged) == State.EntityChanged ||
+            else if (( (m_State & State.EntityChanged) == State.EntityChanged ||
                      (m_State & State.ColorChanged) == State.ColorChanged ||
                      (m_State & State.UpdateButtonStates) == State.UpdateButtonStates) &&
                      m_CurrentEntity != Entity.Null &&
