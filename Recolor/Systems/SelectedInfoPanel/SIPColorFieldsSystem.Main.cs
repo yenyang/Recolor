@@ -215,6 +215,17 @@ namespace Recolor.Systems.SelectedInfoPanel
                 m_CurrentEntity = controller.m_Controller;
             }
 
+            if (EntityManager.TryGetBuffer(selectedEntity, isReadOnly: true, out DynamicBuffer<Game.Routes.RouteVehicle> routeVehicleBuffer) &&
+                routeVehicleBuffer.Length > 0 &&
+                EntityManager.TryGetBuffer(routeVehicleBuffer[0].m_Vehicle, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer1) &&
+                meshColorBuffer1.Length > 0 &&
+                EntityManager.TryGetComponent(routeVehicleBuffer[0].m_Vehicle, out PrefabRef prefabRef1) &&
+                m_PrefabSystem.TryGetPrefab(prefabRef1.m_Prefab, out PrefabBase currentPrefabBase1) &&
+                m_PrefabSystem.TryGetEntity(currentPrefabBase1, out m_CurrentPrefabEntity))
+            {
+                m_CurrentEntity = routeVehicleBuffer[0].m_Vehicle;
+            }
+
             if (m_CurrentEntity == Entity.Null &&
                 m_PreviousEntity != Entity.Null)
             {

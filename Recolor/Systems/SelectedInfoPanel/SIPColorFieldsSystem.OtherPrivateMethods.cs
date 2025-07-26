@@ -149,6 +149,17 @@ namespace Recolor.Systems.SelectedInfoPanel
                 {
                     route |= ButtonState.Hidden;
                 }
+
+                if (EntityManager.TryGetBuffer(selectedEntity, isReadOnly: true, out DynamicBuffer<Game.Routes.RouteVehicle> routeVehicleBuffer) &&
+                    routeVehicleBuffer.Length == 0 &&
+                    EntityManager.TryGetBuffer(routeVehicleBuffer[0].m_Vehicle, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer) &&
+                    meshColorBuffer.Length == 0)
+                {
+                    route = ButtonState.On;
+                    singleInstance |= ButtonState.Hidden;
+                    matching |= ButtonState.Hidden;
+                    serviceVehicles |= ButtonState.Hidden;
+                }
             }
             else if (m_ToolSystem.activeTool == m_ColorPainterTool)
             {
