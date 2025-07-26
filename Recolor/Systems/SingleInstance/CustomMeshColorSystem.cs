@@ -107,10 +107,7 @@ namespace Recolor.Systems.SingleInstance
 
                 EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
                 NativeArray<Entity> entities = customMeshColorQuery.ToEntityArray(Allocator.Temp);
-                foreach (Entity entity in entities)
-                {
-                    buffer.AddComponent<BatchesUpdated>(entity);
-                }
+                buffer.AddComponent<BatchesUpdated>(entities);
             }
         }
 

@@ -470,9 +470,8 @@ namespace Recolor.Systems.Tools
                 m_SelectedEntities.Clear();
             }
 
-            if (GetAllowApply() &&
-                (applyAction.WasReleasedThisFrame() ||
-                (secondaryApplyAction.WasReleasedThisFrame() && m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint)))
+            if (applyAction.WasReleasedThisFrame() ||
+                (secondaryApplyAction.WasReleasedThisFrame() && m_ColorPainterUISystem.ToolMode == ColorPainterUISystem.PainterToolMode.Paint))
             {
                 return Apply(inputDeps);
             }

@@ -40,6 +40,7 @@ namespace Recolor.Domain
         /// Initializes a new instance of the <see cref="RouteVehicleColor"/> struct.
         /// </summary>
         /// <param name="meshColor">original mesh color.</param>
+        /// <param name="record">record of original colors.</param>
         public RouteVehicleColor(MeshColor meshColor, MeshColorRecord record)
         {
             m_ColorSet = meshColor.m_ColorSet;
@@ -68,7 +69,7 @@ namespace Recolor.Domain
         public void Deserialize<TReader>(TReader reader)
             where TReader : IReader
         {
-            reader.Read(out int _); // version;
+            reader.Read(out int version); // version;
             reader.Read(out Color color0);
             reader.Read(out Color color1);
             reader.Read(out Color color2);
@@ -88,6 +89,10 @@ namespace Recolor.Domain
                 m_Channel1 = recordColor1,
                 m_Channel2 = recordColor2,
             };
+            if (version >= 2)
+            {
+                reader.Read(out int _);
+            }
         }
 
         /// <inheritdoc/>

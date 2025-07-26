@@ -236,7 +236,7 @@ namespace Recolor.Systems.SelectedInfoPanel
         /// </summary>
         public bool ShowPaletteChoices
         {
-            get { return (m_ShowPaletteChoices & ButtonState.On) == ButtonState.On; }
+            get { return (m_ShowPaletteChoices.Value & ButtonState.On) == ButtonState.On; }
         }
 
         /// <inheritdoc/>
@@ -308,7 +308,16 @@ namespace Recolor.Systems.SelectedInfoPanel
                 if (Mod.Instance.Settings.ColorPainterAutomaticCopyColor)
                 {
                     m_ColorPainterUISystem.ColorSet = m_CurrentColorSet.Value.GetColorSet();
-                    m_ColorPainterUISystem.SelectedPaletteEntities = m_PaletteChooserData.Value.m_SelectedPaletteEntities;
+                    if (m_PaletteChooserData.Value.m_SelectedPaletteEntities[0] != Entity.Null ||
+                        m_PaletteChooserData.Value.m_SelectedPaletteEntities[1] != Entity.Null ||
+                        m_PaletteChooserData.Value.m_SelectedPaletteEntities[2] != Entity.Null)
+                    {
+                        m_ColorPainterUISystem.SelectedPaletteEntities = m_PaletteChooserData.Value.m_SelectedPaletteEntities;
+                    }
+                    else if (m_PreferPalettes)
+                    {
+                        ToggleShowPaletteChoices();
+                    }
                 }
             });
             CreateTrigger("Minimize", () =>
