@@ -81,7 +81,7 @@
   "Recolor.TOOLTIP_DESCRIPTION[SwapColors]": "Przenieś kolory między kanałami.",
   "Recolor.TOOLTIP_TITLE[ServiceVehicles]": "Pojazdy usług",
   "Recolor.TOOLTIP_DESCRIPTION[ServiceVehicles]": "Zmień kolory wszystkich pojazdów usług należących do tego samego budynku usługowego. Nowo utworzone pojazdy usług należące do tego samego budynku również będą miały ten sam zestaw kolorów.",
-  "Recolor.TOOLTIP_TITLE[RouteVehicles]": "Pojazdy liniowe",
+  "Recolor.TOOLTIP_TITLE[RouteVehicles]": "Pojazdy na linii",
   "Recolor.TOOLTIP_DESCRIPTION[RouteVehicles]": "Zmień kolory wszystkich pojazdów przypisanych do linii. Nowo utworzone pojazdy na linii będą miały ten sam zestaw kolorów.",
   "Recolor.TOOLTIP_TITLE[SingleSubMesh]": "Pojedynczy Submesh",
   "Recolor.TOOLTIP_DESCRIPTION[SingleSubMesh]": "Zmienia kolory wybranego indywidualnego Submeshu.",
