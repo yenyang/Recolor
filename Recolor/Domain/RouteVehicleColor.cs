@@ -16,11 +16,6 @@ namespace Recolor.Domain
     public struct RouteVehicleColor : IBufferElementData, ISerializable
     {
         /// <summary>
-        /// Enum to designate which mod controlls this data.
-        /// </summary>
-        public ControlledBy m_Controller;
-
-        /// <summary>
         /// A color set for the custom mesh coloring.
         /// </summary>
         public ColorSet m_ColorSet;
@@ -35,12 +30,10 @@ namespace Recolor.Domain
         /// </summary>
         /// <param name="colorSet">set of three colors.</param>
         /// <param name="record">record of original colors.</param>
-        /// <param name="controller">Designation for which mod controlls the component.</param>
-        public RouteVehicleColor(ColorSet colorSet, ColorSet record, ControlledBy controller = ControlledBy.Recolor)
+        public RouteVehicleColor(ColorSet colorSet, ColorSet record)
         {
             m_ColorSet = colorSet;
             m_ColorSetRecord = record;
-            m_Controller = controller;
         }
 
         /// <summary>
@@ -48,30 +41,11 @@ namespace Recolor.Domain
         /// </summary>
         /// <param name="meshColor">original mesh color.</param>
         /// <param name="record">record of original colors.</param>
-        /// <param name="controller">Designation for which mod controlls the component.</param>
-        public RouteVehicleColor(MeshColor meshColor, MeshColorRecord record, ControlledBy controller = ControlledBy.Recolor)
+        public RouteVehicleColor(MeshColor meshColor, MeshColorRecord record)
         {
             m_ColorSet = meshColor.m_ColorSet;
             m_ColorSetRecord = record.m_ColorSet;
-            m_Controller = controller;
         }
-
-        /// <summary>
-        /// Public enum to designate which mod controls the colors.
-        /// </summary>
-        public enum ControlledBy
-        {
-            /// <summary>
-            /// Controlled by this mod.
-            /// </summary>
-            Recolor,
-
-            /// <summary>
-            /// Controlled by Klyte's eXtended Transit Manager.
-            /// </summary>
-            XTM,
-        }
-
 
         /// <summary>
         /// Evaluates whether the <see cref="RouteVehicleColor"/> equals a color set.
@@ -117,8 +91,7 @@ namespace Recolor.Domain
             };
             if (version >= 2)
             {
-                reader.Read(out int controller);
-                m_Controller = (ControlledBy)controller;
+                reader.Read(out int _);
             }
         }
 
@@ -126,14 +99,13 @@ namespace Recolor.Domain
         public void Serialize<TWriter>(TWriter writer)
             where TWriter : IWriter
         {
-            writer.Write(2); // version;
+            writer.Write(1); // version;
             writer.Write(m_ColorSet.m_Channel0);
             writer.Write(m_ColorSet.m_Channel1);
             writer.Write(m_ColorSet.m_Channel2);
             writer.Write(m_ColorSetRecord.m_Channel0);
             writer.Write(m_ColorSetRecord.m_Channel1);
             writer.Write(m_ColorSetRecord.m_Channel2);
-            writer.Write((int)m_Controller);
         }
     }
 }
