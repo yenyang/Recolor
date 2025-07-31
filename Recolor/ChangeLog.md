@@ -1,6 +1,2 @@
-﻿# Patch v1.2.1
-* With the option to Automatically Copy Color Set when activating Color Painter, Palettes toggled on, and all three palette choosers set to None, Palettes will automatically be toggled off.
-* Fix using vanilla method to change a route color on a route with an assigned RouteVehicleColor resets color to vanilla temporarily.
-* Fix somewhat rare CTD and serialization issues related to renters updating on a building.
-* Added ability to change route vehicle colors while route is selected.
-* Fix some instances where Color Painter tool might not apply when it should.
+﻿# Patch v1.2.2
+* Fix painting NetLanes Fences placed with EDT using Painter Tool and Single Selection with Palettes toggled off. Similar for picker toolmode within the color painter.
