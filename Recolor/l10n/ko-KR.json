@@ -142,6 +142,7 @@
   "Options.WARNING[Recolor.Recolor.Mod.Setting.RestoreDefaultPalettes]": "기본 제공된 팔레트와 하위 카테고리를 원래 상태로 다시 설치하시겠습니까? 편집한 내용은 모두 삭제되며, 이 작업은 되돌릴 수 없습니다. 기본 제공과 다른 고유 이름을 가진 사용자 지정 팔레트와 하위 카테고리는 영향을 받지 않습니다. 작업 후 게임을 재시작해야 합니다.",
   "Recolor.TOOLTIP_DESCRIPTION[TogglePaletteOptions]": "팔레트 옵션 표시 전환",
   "Options.OPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "프리팹 전환 시 팔레트 선택기 동작",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "프리팹 전환 시 팔레트 선택기의 동작 방식을 변경합니다. 변경하지 않음: 선택한 팔레트를 유지합니다. 초기화: 모든 팔레트 선택을 ‘없음’으로 설정합니다. 이전 상태 기억: 각 저장 파일에서 프리팹별로 이전에 선택한 팔레트를 기록하고 기본값으로 사용합니다.",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[NoChange]": "변경하지 않음",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "초기화",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "이전 상태 기억하기"
