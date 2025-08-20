@@ -1,2 +1,3 @@
-﻿# Patch v1.2.2
-* Fix painting NetLanes Fences placed with EDT using Painter Tool and Single Selection with Palettes toggled off. Similar for picker toolmode within the color painter.
+﻿# Patch v1.2.3
+* Revert shift in Color Group ID to fix problems with changing seasonal color variation of plants.
+* Updated localization.

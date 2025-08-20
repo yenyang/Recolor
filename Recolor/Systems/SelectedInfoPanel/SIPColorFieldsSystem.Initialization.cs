@@ -122,7 +122,7 @@ namespace Recolor.Systems.SelectedInfoPanel
             /// <summary>
             /// Does not have season.
             /// </summary>
-            None = 0,
+            None = -1,
 
             /// <summary>
             /// Spring time.

@@ -5,9 +5,9 @@
 		<LangVersion>9</LangVersion>
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
-		<AssemblyVersion>1.2.2</AssemblyVersion>
-		<FileVersion>1.2.2</FileVersion>
-		<Version>1.2.2</Version>
+		<AssemblyVersion>1.2.3</AssemblyVersion>
+		<FileVersion>1.2.3</FileVersion>
+		<Version>1.2.3</Version>
 	</PropertyGroup>
 	
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
@@ -119,7 +119,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="lang\" />
 	  <Folder Include="UI\src\mods\lang\" />
 	  <Folder Include="UI\" />
 	</ItemGroup>
@@ -157,6 +156,10 @@
 
 	<ItemGroup>
 		<EmbeddedResource Include="ShippedPrefabs\**"></EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Remove="lang\pt-PT.json" />
 	</ItemGroup>
 
 	<ItemGroup>
