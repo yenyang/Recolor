@@ -119,7 +119,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="lang\" />
 	  <Folder Include="UI\src\mods\lang\" />
 	  <Folder Include="UI\" />
 	</ItemGroup>
@@ -157,6 +156,10 @@
 
 	<ItemGroup>
 		<EmbeddedResource Include="ShippedPrefabs\**"></EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Remove="lang\pt-PT.json" />
 	</ItemGroup>
 
 	<ItemGroup>
