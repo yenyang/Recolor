@@ -98,7 +98,7 @@ namespace Recolor.Systems.Tools
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            applyAction.enabled = true;
+            applyAction.shouldBeEnabled = true;
             m_Log.Debug($"{nameof(ColorPickerToolSystem)}.{nameof(OnStartRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
         }

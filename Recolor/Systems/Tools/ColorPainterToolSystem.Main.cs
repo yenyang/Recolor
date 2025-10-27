@@ -293,8 +293,8 @@ namespace Recolor.Systems.Tools
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            applyAction.enabled = true;
-            secondaryApplyAction.enabled = true;
+            applyAction.shouldBeEnabled = true;
+            secondaryApplyAction.shouldBeEnabled = true;
             m_Log.Debug($"{nameof(ColorPainterToolSystem)}.{nameof(OnStartRunning)}");
             m_GenericTooltipSystem.ClearTooltips();
             m_State = State.Default;
