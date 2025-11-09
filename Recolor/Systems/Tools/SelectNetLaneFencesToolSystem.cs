@@ -99,7 +99,7 @@ namespace Recolor.Systems.Tools
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            applyAction.enabled = true;
+            applyAction.shouldBeEnabled = true;
             m_Log.Debug($"{nameof(SelectNetLaneFencesToolSystem)}.{nameof(OnStartRunning)}");
             m_TooltipSystem.RegisterTooltip("SelectANetLaneFence", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.MouseTooltipKey("SelectANetLaneFence"), "Select a NetLane Fence.");
         }

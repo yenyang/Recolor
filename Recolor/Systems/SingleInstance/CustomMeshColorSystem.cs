@@ -17,6 +17,8 @@ namespace Recolor.Systems.SingleInstance
     using Game.Routes;
     using Recolor.Domain;
     using Recolor.Extensions;
+    using Recolor.Systems.SelectedInfoPanel;
+    using Recolor.Systems.Tools;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -34,6 +36,7 @@ namespace Recolor.Systems.SingleInstance
         private MeshColorSystem m_MeshColorSystem;
         private EntityQuery m_CustomMeshColorAndSubObjectsQuery;
         private EntityQuery m_CustomMeshColorAndSubLanesQuery;
+        private SIPColorFieldsSystem m_SIPColorFieldsSystem;
         private PrefabSystem m_PrefabSystem;
 
         /// <inheritdoc/>
@@ -43,6 +46,7 @@ namespace Recolor.Systems.SingleInstance
             m_Log = Mod.Instance.Log;
             m_Log.Info($"{nameof(CustomMeshColorSystem)}.{nameof(OnCreate)}");
             m_MeshColorSystem = World.GetOrCreateSystemManaged<MeshColorSystem>();
+            m_SIPColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_CustomMeshColorQuery = SystemAPI.QueryBuilder()
                    .WithAllRW<MeshColor>()
@@ -107,7 +111,11 @@ namespace Recolor.Systems.SingleInstance
 
                 EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
                 NativeArray<Entity> entities = customMeshColorQuery.ToEntityArray(Allocator.Temp);
-                buffer.AddComponent<BatchesUpdated>(entities);
+                for (int i = 0; i < entities.Length; i++)
+                {
+                    m_SIPColorFieldsSystem.AddBatchesUpdatedToSubElements(entities[i], buffer);
+                    buffer.AddComponent<BatchesUpdated>(entities);
+                }
             }
         }
 
