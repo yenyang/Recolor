@@ -106,7 +106,7 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.5.*" />
   <!--Dependency for the mod, can be set multiple times-->
-  <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.12" />
+  <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.13" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
   <ChangeLog># Patch v1.2.5
 * Minor compatibility fixes for base game v1.5.2f1.</ChangeLog>
@@ -116,6 +116,6 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
   <ExternalLink Type="github" Url="https://github.com/yenyang/Recolor" />
   <ExternalLink Type="paypal" Url="https://www.paypal.com/paypalme/YenyangsMods" />
   <ExternalLink Type="crowdin" Url="https://crowdin.com/project/csl2-mod-recolor" />
-	<!-- Supported values Public, Private, Unlisted -->
-	<AccessLevel Value="Public" />
+  <!-- Supported values Public, Private, Unlisted -->
+  <AccessLevel Value="Public" />
 </Publish>
