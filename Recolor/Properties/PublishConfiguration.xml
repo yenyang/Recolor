@@ -116,4 +116,6 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
   <ExternalLink Type="github" Url="https://github.com/yenyang/Recolor" />
   <ExternalLink Type="paypal" Url="https://www.paypal.com/paypalme/YenyangsMods" />
   <ExternalLink Type="crowdin" Url="https://crowdin.com/project/csl2-mod-recolor" />
+	<!-- Supported values Public, Private, Unlisted -->
+	<AccessLevel Value="Public" />
 </Publish>
