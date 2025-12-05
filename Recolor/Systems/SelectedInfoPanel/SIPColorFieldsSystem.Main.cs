@@ -485,7 +485,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                      EntityManager.TryGetBuffer(subMeshBuffer[m_SubMeshData.Value.SubMeshIndex].m_SubMesh, isReadOnly: true, out DynamicBuffer<ColorVariation> colorVariationBuffer) &&
                      colorVariationBuffer.Length > 0)
             {
-                Season currentSeason = GetSeasonFromSeasonID(m_ClimatePrefab.FindSeasonByTime(m_ClimateSystem.currentDate).Item1.m_NameID);
+                Season currentSeason = GetSeasonFromSeasonID(m_ClimatePrefab.FindSeasonByTime(m_ClimateSystem.currentDate).Item1.name);
                 ColorSet colorSet = colorVariationBuffer[0].m_ColorSet;
                 int index = 0;
                 float cummulativeDifference = float.MaxValue;

@@ -287,6 +287,7 @@ namespace Recolor.Systems.Palettes
                     return true;
                 }
 
+                prefabID = new PrefabID(string.Empty, string.Empty);
                 return false;
             }
         }

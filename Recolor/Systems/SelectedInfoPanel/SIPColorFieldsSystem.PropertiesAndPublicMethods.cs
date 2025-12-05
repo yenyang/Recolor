@@ -195,7 +195,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 }
             }
 
-            Season currentSeason = GetSeasonFromSeasonID(m_ClimatePrefab.FindSeasonByTime(m_ClimateSystem.currentDate).Item1.m_NameID);
+            Season currentSeason = GetSeasonFromSeasonID(m_ClimatePrefab.FindSeasonByTime(m_ClimateSystem.currentDate).Item1.name);
 
             colorSet = colorVariationBuffer[0].m_ColorSet;
             int index = 0;
