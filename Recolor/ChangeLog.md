@@ -1,2 +1,2 @@
-﻿# Patch v1.2.5
-* Minor compatibility fixes for base game v1.5.2f1.
+﻿# Patch v1.2.6
+* Fix for identifying seasons which prevented changing colors of plants.

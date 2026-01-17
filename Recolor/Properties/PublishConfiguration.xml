@@ -102,14 +102,14 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/recolor.1694303/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.2.5" />
+  <ModVersion Value="1.2.6" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.5.*" />
   <!--Dependency for the mod, can be set multiple times-->
   <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.13" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Patch v1.2.5
-* Minor compatibility fixes for base game v1.5.2f1.</ChangeLog>
+  <ChangeLog># Patch v1.2.6
+* Fix for identifying seasons which prevented changing colors of plants.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=2FX0UDSThmQ" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
