@@ -50,10 +50,10 @@ namespace Recolor.Systems.SelectedInfoPanel
         /// </summary>
         private readonly Dictionary<string, Season> SeasonDictionary = new ()
         {
-                { "Climate.SEASON[Spring]", Season.Spring },
-                { "Climate.SEASON[Summer]", Season.Summer },
-                { "Climate.SEASON[Autumn]", Season.Autumn },
-                { "Climate.SEASON[Winter]", Season.Winter },
+                { "SeasonSpring", Season.Spring },
+                { "SeasonSummer", Season.Summer },
+                { "SeasonAutumn", Season.Autumn },
+                { "SeasonWinter", Season.Winter },
         };
 
 
