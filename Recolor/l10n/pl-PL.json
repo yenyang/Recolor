@@ -23,7 +23,7 @@
   "Recolor.SECTION_TITLE[Selection]": "Wybór",
   "Recolor.TOOLTIP_TITLE[SingleSelection]": "Jeden",
   "Recolor.TOOLTIP_DESCRIPTION[SingleSelection]": "Zmienia kolory wybranego budynku, rekwizytu, pojazdu, ogrodzenia / ściany Net Lane. Obsługiwane są też Dodatki.",
-  "Recolor.TOOLTIP_TITLE[RadiusSelection]": "Wybór w promieniu",
+  "Recolor.TOOLTIP_TITLE[RadiusSelection]": "Wybór w zasięgu",
   "Recolor.TOOLTIP_DESCRIPTION[RadiusSelection]": "Zmienia indywidualne kolory budynków, rekwizytów, pojazdów, ogrodzeń / ścian Net Lanes w promieniu. Nie obsługuje Dodatków.",
   "Recolor.TOOLTIP_DESCRIPTION[IncreaseRadius]": "Zwiększ promień.",
   "Recolor.TOOLTIP_DESCRIPTION[DecreaseRadius]": "Zmniejsz promień.",
