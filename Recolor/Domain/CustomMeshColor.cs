@@ -10,7 +10,7 @@ namespace Recolor.Domain
     using UnityEngine;
 
     /// <summary>
-    /// Used to record what the user wanted for their custom mesh color.
+    /// Used to record what the user wanted for their custom mesh color. Partially Migrated to vanilla Game.Rendering.CustomMeshColor. Still used for NetLanes fences.
     /// </summary>
     [InternalBufferCapacity(1)]
     public struct CustomMeshColor : IBufferElementData, ISerializable

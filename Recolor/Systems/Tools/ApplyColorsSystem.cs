@@ -70,10 +70,11 @@ namespace Recolor.Systems.Tools
 
             ChangeMeshColorJob changeMeshColorJob = new ChangeMeshColorJob()
             {
-                m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(),
+                m_RecolorCustomMeshColorLookup = SystemAPI.GetBufferLookup<Domain.CustomMeshColor>(isReadOnly: true),
+                m_VanillaCustomMeshColorLookup = SystemAPI.GetBufferLookup<Game.Rendering.CustomMeshColor>(isReadOnly: true),
                 m_EntityType = SystemAPI.GetEntityTypeHandle(),
-                m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(),
-                m_MeshColorRecordLookup = SystemAPI.GetBufferLookup<MeshColorRecord>(),
+                m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
+                m_MeshColorRecordLookup = SystemAPI.GetBufferLookup<MeshColorRecord>(isReadOnly: true),
                 m_TempType = SystemAPI.GetComponentTypeHandle<Temp>(),
                 m_AssignedPaletteLookup = SystemAPI.GetBufferLookup<AssignedPalette>(isReadOnly: true),
                 buffer = m_Barrier.CreateCommandBuffer(),
@@ -106,11 +107,13 @@ namespace Recolor.Systems.Tools
             [ReadOnly]
             public BufferLookup<MeshColor> m_MeshColorLookup;
             [ReadOnly]
-            public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;
+            public BufferLookup<Domain.CustomMeshColor> m_RecolorCustomMeshColorLookup;
             [ReadOnly]
             public BufferLookup<MeshColorRecord> m_MeshColorRecordLookup;
             [ReadOnly]
             public BufferLookup<AssignedPalette> m_AssignedPaletteLookup;
+            [ReadOnly]
+            public BufferLookup<Game.Rendering.CustomMeshColor> m_VanillaCustomMeshColorLookup;
             public EntityCommandBuffer buffer;
 
             /// <summary>
@@ -139,9 +142,11 @@ namespace Recolor.Systems.Tools
 
                     ColorSet defaultColorSet = tempMeshColors[0].m_ColorSet;
 
-                    if (!m_CustomMeshColorLookup.HasBuffer(tempEntity))
+                    if (!m_RecolorCustomMeshColorLookup.HasBuffer(tempEntity))
                     {
-                        buffer.RemoveComponent<CustomMeshColor>(originalEntity);
+                        DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors = buffer.SetBuffer<Game.Rendering.CustomMeshColor>(originalEntity);
+                        customMeshColors.Clear();
+                        buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(originalEntity, false);
                         buffer.RemoveComponent<MeshColorRecord>(originalEntity);
                     }
                     else
@@ -156,20 +161,22 @@ namespace Recolor.Systems.Tools
                         }
 
                         DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(originalEntity);
-                        DynamicBuffer<CustomMeshColor> customMeshColors = buffer.AddBuffer<CustomMeshColor>(originalEntity);
+                        DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors = buffer.AddBuffer<Game.Rendering.CustomMeshColor>(originalEntity);
                         for (int j = 0; j < originalMeshColors.Length; j++)
                         {
                             if (tempMeshColors.Length > j)
                             {
                                 meshColorBuffer.Add(new MeshColor() { m_ColorSet = tempMeshColors[j].m_ColorSet });
-                                customMeshColors.Add(new CustomMeshColor() { m_ColorSet = tempMeshColors[j].m_ColorSet });
+                                customMeshColors.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = tempMeshColors[j].m_ColorSet });
                             }
                             else
                             {
                                 meshColorBuffer.Add(new MeshColor() { m_ColorSet = defaultColorSet });
-                                customMeshColors.Add(new CustomMeshColor { m_ColorSet = defaultColorSet });
+                                customMeshColors.Add(new Game.Rendering.CustomMeshColor { m_ColorSet = defaultColorSet });
                             }
                         }
+
+                        buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(originalEntity, true);
                     }
 
                     if ((!m_AssignedPaletteLookup.HasBuffer(tempEntity) &&

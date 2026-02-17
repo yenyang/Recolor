@@ -144,7 +144,6 @@ namespace Recolor
             updateSystem.UpdateAt<ColorPainterUISystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<GenericTooltipSystem>(SystemUpdatePhase.UITooltip);
             updateSystem.UpdateAt<CustomColorVariationSystem>(SystemUpdatePhase.ModificationEnd);
-            updateSystem.UpdateAt<RentersUpdatedCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<ResetCustomMeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<SelectNetLaneFencesToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAfter<CreatedServiceVehicleCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);

@@ -143,7 +143,7 @@ export const RecolorMainPanelComponent = () => {
     const ShowHexaDecimals = useValue(ShowHexaDecimals$);
     const Route = useValue(Route$);
     const IsEditor = useValue(tool.isEditor$);
-    const EditorVisible = useValue(EditorVisible$);
+    const EditorVisible = true; // useValue(EditorVisible$);
     const SubMeshData = useValue(SubMeshData$);
     const CanResetOtherSubMeshes = useValue(CanResetOtherSubMeshes$);
     const ShowPaletteChoices = useValue(ShowPaletteChoices$);    

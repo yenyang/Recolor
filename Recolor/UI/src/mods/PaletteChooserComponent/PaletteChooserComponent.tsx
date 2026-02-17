@@ -1,6 +1,6 @@
 import { bindValue, trigger, useValue } from "cs2/api";
 import { getModule } from "cs2/modding";
-import { Dropdown, DropdownItem, DropdownToggle, Tooltip } from "cs2/ui";
+import { Dropdown, DropdownToggle, Tooltip } from "cs2/ui";
 import mod from "../../../mod.json";
 import { convertToBackGroundColor, PaletteBoxComponent } from "mods/PaletteBoxComponent/PaletteBoxComponent";
 import { PaletteChooserUIData } from "mods/Domain/PaletteAndSwatches/PaletteChooserUIData";
@@ -44,6 +44,8 @@ export function removePalette(channel: number, eventSuffix?: string) {
     if (eventSuffix == undefined) eventSuffix = "";
     trigger(mod.id, "RemovePalette" + eventSuffix, channel);
 }
+
+export const DropdownItemType = getModule("game-ui/common/input/dropdown/items/dropdown-item.tsx", "DropdownItem");
 
 function updatePaletteLookup(palettes :PaletteUIData[]) 
 {
@@ -123,9 +125,9 @@ export const PaletteChooserComponent = (props: {channel : number, PaletteChooser
         {
             let Palette = PaletteLookup[prefabEntity.index];
             return (
-                <DropdownItem value={prefabEntity} className={basicDropDownTheme.dropdownItem} selected={entityEquals(props.PaletteChooserData.SelectedPaletteEntities[props.channel],Palette.PrefabEntity)} onChange={() => {assignPalette(props.channel, Palette.PrefabEntity, props.eventSuffix);}}>
+                <DropdownItemType value={prefabEntity} className={basicDropDownTheme.dropdownItem} selected={entityEquals(props.PaletteChooserData.SelectedPaletteEntities[props.channel],Palette.PrefabEntity)} onChange={() => {assignPalette(props.channel, Palette.PrefabEntity, props.eventSuffix);}}>
                         <PaletteBoxComponent Swatches={Palette.Swatches} totalWidth={80} tooltip={DescriptionTooltip(translate(Palette.NameKey, Palette.Name), translate(Palette.DescriptionKey))}></PaletteBoxComponent>
-                </DropdownItem>
+                </DropdownItemType>
             );
         }
 
@@ -134,11 +136,11 @@ export const PaletteChooserComponent = (props: {channel : number, PaletteChooser
         {
             let Subcategory = SubcategoriesLookup[prefabEntity.index];
             return (
-                <DropdownItem value={Subcategory} className={basicDropDownTheme.dropdownItem} closeOnSelect={false} >
+                <DropdownItemType value={Subcategory} className={basicDropDownTheme.dropdownItem} closeOnSelect={false} >
                     <Tooltip tooltip={translate("Recolor.Subcategory.DESCRIPTION["+Subcategory.Subcategory+"]")}>
                         <div className={classNames(ColorFieldTheme.colorField, boxStyles.subcategory, boxStyles.centered, styles.dropdownText)}>{translate("Recolor.Subcategory.NAME["+Subcategory.Subcategory+"]" ,Subcategory.Subcategory)}</div>
                     </Tooltip>
-                </DropdownItem>
+                </DropdownItemType>
             )
         }
 
@@ -155,9 +157,9 @@ export const PaletteChooserComponent = (props: {channel : number, PaletteChooser
                             theme = {basicDropDownTheme}
                             content={
                                 <FocusDisabled>
-                                    <DropdownItem value={translate("Recolor.SECTION_TITLE[None]", locale["Recolor.SECTION_TITLE[None]"])} className={basicDropDownTheme.dropdownItem} onChange={() => removePalette(props.channel, props.eventSuffix)}>
+                                    <DropdownItemType value={translate("Recolor.SECTION_TITLE[None]", locale["Recolor.SECTION_TITLE[None]"])} className={basicDropDownTheme.dropdownItem} onChange={() => removePalette(props.channel, props.eventSuffix)}>
                                         <div className={classNames(ColorFieldTheme.colorField, styles.rcColorField, boxStyles.centered, styles.largeDropdownText)} style={getStyle()}>{translate("Recolor.SECTION_TITLE[None]", locale["Recolor.SECTION_TITLE[None]"])}</div>
-                                    </DropdownItem>
+                                    </DropdownItemType>
                                     {
 
                                     props.PaletteChooserData.DropdownItems[props.channel].map((prefabEntity) => (

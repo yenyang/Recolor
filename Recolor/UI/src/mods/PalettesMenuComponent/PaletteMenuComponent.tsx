@@ -3,7 +3,7 @@ import { bindValue, trigger, useValue } from "cs2/api";
 import panelStyles from "./PaletteMenuStyles.module.scss";
 import styles from "../Domain/ColorFields.module.scss";
 import {  Entity, game, selectedInfo, tool } from "cs2/bindings";
-import {  Dropdown, DropdownItem, DropdownToggle, Panel, Portal, Tooltip } from "cs2/ui";
+import {  Dropdown, DropdownToggle, Panel, Portal, Tooltip } from "cs2/ui";
 import { VanillaComponentResolver } from "mods/VanillaComponentResolver/VanillaComponentResolver";
 import { useLocalization } from "cs2/l10n";
 import { DescriptionTooltip, descriptionToolTipStyle, InfoSection } from "mods/RecolorMainPanel/RecolorMainPanel";
@@ -28,7 +28,7 @@ import { PaletteFilterEntityUIData } from "mods/Domain/PaletteAndSwatches/Palett
 import { entityEquals } from "cs2/utils";
 import { FocusDisabled } from "cs2/input";
 import { LocalizationUIData } from "mods/Domain/PaletteAndSwatches/LocalizationUIData";
-
+import { DropdownItemType } from "mods/PaletteChooserComponent/PaletteChooserComponent";
 /*
 import closeSrc from "images/uilStandard/XClose.svg";
 import buildingSrc from "images/uilStandard/House.svg";
@@ -195,11 +195,11 @@ export const PaletteMenuComponent = () => {
                                                 theme = {dropDownThemes}
                                                 content={                    
                                                     Subcategories.map((subcategory) => (
-                                                        <DropdownItem value={subcategory} className={dropDownThemes.dropdownItem} selected={subcategory==SelectedSubcategory} onChange={() =>  trigger(mod.id, "ChangeSubcategory", subcategory)}>
+                                                        <DropdownItemType value={subcategory} className={dropDownThemes.dropdownItem} selected={subcategory==SelectedSubcategory} onChange={() =>  trigger(mod.id, "ChangeSubcategory", subcategory)}>
                                                             <Tooltip tooltip={translate("Recolor.Subcategory.DESCRIPTION["+subcategory+"]")}>
                                                                 <div className={panelStyles.subcategoryDropwdownWidth}>{translate("Recolor.Subcategory.NAME["+subcategory+"]" ,subcategory)}</div>
                                                             </Tooltip>
-                                                        </DropdownItem>
+                                                        </DropdownItemType>
                                                     ))
                                                 }
                                             >
@@ -219,9 +219,9 @@ export const PaletteMenuComponent = () => {
                                                 theme = {dropDownThemes}
                                                 content={                    
                                                     FilterTypes.map((type, index: number) => (
-                                                        <DropdownItem value={type} className={dropDownThemes.dropdownItem} selected={SelectedFilterType==index} onChange={() => trigger(mod.id, "SetFilter", index)}>
+                                                        <DropdownItemType value={type} className={dropDownThemes.dropdownItem} selected={SelectedFilterType==index} onChange={() => trigger(mod.id, "SetFilter", index)}>
                                                             <div className={panelStyles.filterTypeWidth}>{type}</div>
-                                                        </DropdownItem>
+                                                        </DropdownItemType>
                                                     ))
                                                 }
                                             >
@@ -242,13 +242,13 @@ export const PaletteMenuComponent = () => {
                                                                     FilterEntities.map((entityData: PaletteFilterEntityUIData) => (
                                                                         <>
                                                                         {(IsSelected(entityData.FilterPrefabEntity) == false || entityEquals(SelectedFilterPrefabEntities[index], entityData.FilterPrefabEntity)) && (
-                                                                            <DropdownItem value={entityData} className={dropDownThemes.dropdownItem} onChange={() => trigger(mod.id, "SetFilterChoice", index, entityData.FilterPrefabEntity)}>
+                                                                            <DropdownItemType value={entityData} className={dropDownThemes.dropdownItem} onChange={() => trigger(mod.id, "SetFilterChoice", index, entityData.FilterPrefabEntity)}>
                                                                                 <div className={classNames(panelStyles.filterChoicesDropdown, panelStyles.filterRowGroup)}>
                                                                                     <img src={entityData.Src} className={panelStyles.filterChoicesIcon}></img>
                                                                                     <span className={panelStyles.smallSpacer}></span>
                                                                                     <div>{translate(entityData.LocaleKey)}</div>
                                                                                 </div>
-                                                                            </DropdownItem>
+                                                                            </DropdownItemType>
                                                                         )}
                                                                         </>
                                                                     ))

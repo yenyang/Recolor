@@ -19,11 +19,12 @@ import { PaletteChooserUIData } from "mods/Domain/PaletteAndSwatches/PaletteChoo
 import { FocusDisabled } from "cs2/input";
 import { PaletteCategory } from "mods/Domain/PaletteAndSwatches/PaletteCategoryType";
 import { MenuType } from "mods/Domain/MenuType";
-import { Dropdown, DropdownItem, DropdownToggle } from "cs2/ui";
+import { Dropdown, DropdownToggle } from "cs2/ui";
 import panelStyles from "../PalettesMenuComponent/PaletteMenuStyles.module.scss";
 import { PaletteFilterEntityUIData } from "mods/Domain/PaletteAndSwatches/PaletteFilterEntityUIData";
 import { entityEquals } from "cs2/utils";
 import { PaletteFilterType } from "mods/Domain/PaletteAndSwatches/PaletteFilterType";
+import { DropdownItemType } from "mods/PaletteChooserComponent/PaletteChooserComponent";
 /*
 import resetSrc from "images/uilStandard/Reset.svg";
 import singleSrc from "images/uilStandard/SingleRhombus.svg";
@@ -388,9 +389,9 @@ export const ColorPainterToolOptionsComponent = () => {
                                         theme = {dropDownThemes}
                                         content={                    
                                             FilterTypes.map((type, index: number) => (
-                                                <DropdownItem value={type} className={dropDownThemes.dropdownItem} selected={SelectedFilterType==index} onChange={() => trigger(mod.id, "SetColorPainterPaletteFilter", index)}>
+                                                <DropdownItemType value={type} className={dropDownThemes.dropdownItem} selected={SelectedFilterType==index} onChange={() => trigger(mod.id, "SetColorPainterPaletteFilter", index)}>
                                                     <div className={panelStyles.filterTypeWidth}>{type}</div>
-                                                </DropdownItem>
+                                                </DropdownItemType>
                                             ))
                                         }
                                     >
@@ -408,13 +409,13 @@ export const ColorPainterToolOptionsComponent = () => {
                                                         theme = {dropDownThemes}
                                                         content={         
                                                             FilterEntities.map((entityData: PaletteFilterEntityUIData) => (
-                                                                <DropdownItem value={entityData} className={dropDownThemes.dropdownItem} onChange={() => trigger(mod.id, "SetColorPainterPaletteFilterChoice", entityData.FilterPrefabEntity)}>
+                                                                <DropdownItemType value={entityData} className={dropDownThemes.dropdownItem} onChange={() => trigger(mod.id, "SetColorPainterPaletteFilterChoice", entityData.FilterPrefabEntity)}>
                                                                     <div className={classNames(panelStyles.filterChoicesDropdownToolOptions, panelStyles.filterRowGroup)}>
                                                                         <img src={entityData.Src} className={panelStyles.filterChoicesIcon}></img>
                                                                         <span className={panelStyles.smallSpacer}></span>
                                                                         <div>{translate(entityData.LocaleKey)}</div>
                                                                     </div>
-                                                                </DropdownItem>
+                                                                </DropdownItemType>
                                                             ))
                                                         }
                                                         >

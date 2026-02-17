@@ -246,22 +246,22 @@ namespace Recolor.Systems.Tools
             });
 
             m_ResetBuildingMeshColorQuery = SystemAPI.QueryBuilder()
-               .WithAll<Building, MeshColor, Game.Objects.Transform, CustomMeshColor>()
+               .WithAll<Building, MeshColor, Game.Objects.Transform, Game.Rendering.CustomMeshColor>()
                .WithNone<Temp, Deleted, Game.Common.Overridden>()
                .Build();
 
             m_ResetVehicleMeshColorQuery = SystemAPI.QueryBuilder()
-                .WithAll<Vehicle, MeshColor, InterpolatedTransform, CustomMeshColor>()
+                .WithAll<Vehicle, MeshColor, InterpolatedTransform, Game.Rendering.CustomMeshColor>()
                 .WithNone<Temp, Deleted, Game.Common.Overridden>()
                 .Build();
 
             m_ResetParkedVehicleMeshColorQuery = SystemAPI.QueryBuilder()
-                .WithAll<Vehicle, MeshColor, Game.Objects.Transform, ParkedCar, CustomMeshColor>()
+                .WithAll<Vehicle, MeshColor, Game.Objects.Transform, ParkedCar, Game.Rendering.CustomMeshColor>()
                 .WithNone<Temp, Deleted, Game.Common.Overridden>()
                 .Build();
 
             m_ResetNetLanesMeshColorQuery = SystemAPI.QueryBuilder()
-               .WithAll<Game.Net.Curve, MeshColor, Owner, CustomMeshColor>()
+               .WithAll<Game.Net.Curve, MeshColor, Owner, Game.Rendering.CustomMeshColor>()
                .WithNone<Temp, Deleted, Game.Common.Overridden>()
                .Build();
 
@@ -273,7 +273,7 @@ namespace Recolor.Systems.Tools
                     ComponentType.ReadOnly<MeshColor>(),
                     ComponentType.ReadOnly<Game.Objects.Static>(),
                     ComponentType.ReadOnly<Game.Objects.Transform>(),
-                    ComponentType.ReadOnly<CustomMeshColor>(),
+                    ComponentType.ReadOnly<Game.Rendering.CustomMeshColor>(),
                 },
                 None = new ComponentType[]
                 {
@@ -363,7 +363,9 @@ namespace Recolor.Systems.Tools
                     !EntityManager.HasBuffer<MeshColor>(m_RaycastEntity) ||
                    (EntityManager.HasComponent<Plant>(m_RaycastEntity) &&
                     m_SelectedInfoPanelColorFieldsSystem.SingleInstance) ||
-                   (EntityManager.HasBuffer<CustomMeshColor>(m_RaycastEntity) &&
+                   (EntityManager.TryGetBuffer(m_RaycastEntity, isReadOnly: true, out DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors) &&
+                    EntityManager.IsComponentEnabled<Game.Rendering.CustomMeshColor>(m_RaycastEntity) &&
+                    customMeshColors.Length > 0 &&
                     !m_SelectedInfoPanelColorFieldsSystem.SingleInstance))
                     {
                         m_TimeLastReset = 0f;
@@ -376,7 +378,7 @@ namespace Recolor.Systems.Tools
                             m_GenericTooltipSystem.RemoveTooltip("SingleInstancePlantWarning");
                         }
 
-                        if (EntityManager.HasBuffer<CustomMeshColor>(m_RaycastEntity) && !m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
+                        if (EntityManager.IsComponentEnabled<Game.Rendering.CustomMeshColor>(m_RaycastEntity) && !m_SelectedInfoPanelColorFieldsSystem.SingleInstance)
                         {
                             m_GenericTooltipSystem.RegisterTooltip("HasCustomMeshColorWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.MouseTooltipKey("HasCustomMeshColorWarning"), "Cannot change color variation on this because it has custom instance colors.");
                         }
@@ -494,7 +496,9 @@ namespace Recolor.Systems.Tools
                       (!m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices ||
                         EntityManager.HasBuffer<AssignedPalette>(m_RaycastEntity))) ||
                         (m_State == State.Reseting &&
-                        EntityManager.HasComponent<CustomMeshColor>(m_RaycastEntity)) ||
+                        EntityManager.TryGetBuffer(m_RaycastEntity, isReadOnly: true, out DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors) &&
+                        customMeshColors.Length > 0 &&
+                        EntityManager.IsComponentEnabled<Game.Rendering.CustomMeshColor>(m_RaycastEntity)) ||
                        (m_State == State.Painting &&
                        (!m_SelectedInfoPanelColorFieldsSystem.ShowPaletteChoices ||
                        (MatchingCategory() &&

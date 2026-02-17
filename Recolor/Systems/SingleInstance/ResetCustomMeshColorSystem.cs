@@ -41,19 +41,9 @@ namespace Recolor.Systems.SingleInstance
             m_SIPColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
             m_CustomMeshColorQuery = SystemAPI.QueryBuilder()
-                   .WithAllRW<CustomMeshColor>()
+                   .WithAllRW<Domain.CustomMeshColor>()
                    .WithNone<Deleted>()
                    .Build();
-
-            m_CustomMeshColorAndSubObjectsQuery = SystemAPI.QueryBuilder()
-                  .WithAll<CustomMeshColor, Game.Objects.SubObject>()
-                  .WithNone<Deleted, Plant>()
-                  .Build();
-
-            m_CustomMeshColorAndSubLanesQuery = SystemAPI.QueryBuilder()
-                  .WithAll<CustomMeshColor, Game.Net.SubLane>()
-                  .WithNone<Deleted, Plant>()
-                  .Build();
 
             m_MeshColorRecordQuery = SystemAPI.QueryBuilder()
                   .WithAllRW<MeshColorRecord>()
@@ -80,29 +70,8 @@ namespace Recolor.Systems.SingleInstance
             {
                 EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
 
-                CustomMeshColorSystem.BatchesUpdateForSubLanesJob batchesUpdateForSubLanesJob = new ()
-                {
-                    m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
-                    m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
-                    m_SubLaneType = SystemAPI.GetBufferTypeHandle<Game.Net.SubLane>(isReadOnly: true),
-                    buffer = buffer,
-                };
-                Dependency = batchesUpdateForSubLanesJob.Schedule(m_CustomMeshColorAndSubLanesQuery, Dependency);
-                m_Barrier.AddJobHandleForProducer(Dependency);
-
-                CustomMeshColorSystem.BatchesUpdateForSubObjectsJob batchesUpdateForSubObjectsJob = new ()
-                {
-                    m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
-                    m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
-                    m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
-                    m_SubObjectType = SystemAPI.GetBufferTypeHandle<Game.Objects.SubObject>(isReadOnly: true),
-                    buffer = buffer,
-                };
-                Dependency = batchesUpdateForSubObjectsJob.Schedule(m_CustomMeshColorAndSubObjectsQuery, Dependency);
-                m_Barrier.AddJobHandleForProducer(Dependency);
-
                 buffer.AddComponent<BatchesUpdated>(m_CustomMeshColorQuery, EntityQueryCaptureMode.AtPlayback);
-                buffer.RemoveComponent<CustomMeshColor>(m_CustomMeshColorQuery, EntityQueryCaptureMode.AtPlayback);
+                buffer.RemoveComponent<Domain.CustomMeshColor>(m_CustomMeshColorQuery, EntityQueryCaptureMode.AtPlayback);
                 buffer.RemoveComponent<MeshColorRecord>(m_MeshColorRecordQuery, EntityQueryCaptureMode.AtPlayback);
                 buffer.RemoveComponent<ServiceVehicleColor>(m_MeshColorRecordQuery, EntityQueryCaptureMode.AtPlayback);
                 buffer.RemoveComponent<RouteVehicleColor>(m_MeshColorRecordQuery, EntityQueryCaptureMode.AtPlayback);

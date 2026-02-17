@@ -50,19 +50,19 @@ namespace Recolor.Systems.SingleInstance
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_CustomMeshColorQuery = SystemAPI.QueryBuilder()
                    .WithAllRW<MeshColor>()
-                   .WithAll<BatchesUpdated, CustomMeshColor>()
+                   .WithAll<BatchesUpdated, Domain.CustomMeshColor>()
                    .WithNone<Deleted, Game.Common.Overridden, Plant, Game.Creatures.Creature>()
                    .Build();
 
             m_CustomMeshColorAndSubObjectsQuery = SystemAPI.QueryBuilder()
                    .WithAllRW<MeshColor>()
-                   .WithAll<BatchesUpdated, CustomMeshColor, Game.Objects.SubObject>()
+                   .WithAll<BatchesUpdated, Domain.CustomMeshColor, Game.Objects.SubObject>()
                    .WithNone<Deleted, Game.Common.Overridden, Plant>()
                    .Build();
 
             m_CustomMeshColorAndSubLanesQuery = SystemAPI.QueryBuilder()
                   .WithAllRW<MeshColor>()
-                  .WithAll<BatchesUpdated, CustomMeshColor, Game.Net.SubLane>()
+                  .WithAll<BatchesUpdated, Domain.CustomMeshColor, Game.Net.SubLane>()
                   .WithNone<Deleted, Game.Common.Overridden, Plant>()
                   .Build();
 
@@ -82,7 +82,7 @@ namespace Recolor.Systems.SingleInstance
                     },
                     None = new ComponentType[]
                     {
-                        ComponentType.ReadOnly<CustomMeshColor>(),
+                        ComponentType.ReadOnly<Domain.CustomMeshColor>(),
                     },
                 }, new EntityQueryDesc
                 {
@@ -105,16 +105,24 @@ namespace Recolor.Systems.SingleInstance
             {
                 EntityQuery customMeshColorQuery = SystemAPI.QueryBuilder()
                    .WithAllRW<MeshColor>()
-                   .WithAll<CustomMeshColor>()
-                   .WithNone<Deleted, Game.Common.Overridden>()
+                   .WithAll<Domain.CustomMeshColor, Game.Rendering.CustomMeshColor>()
+                   .WithNone<Game.Net.Curve, Deleted, Game.Common.Overridden>()
                    .Build();
 
                 EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
                 NativeArray<Entity> entities = customMeshColorQuery.ToEntityArray(Allocator.Temp);
                 for (int i = 0; i < entities.Length; i++)
                 {
-                    m_SIPColorFieldsSystem.AddBatchesUpdatedToSubElements(entities[i], buffer);
-                    buffer.AddComponent<BatchesUpdated>(entities);
+                    DynamicBuffer<Game.Rendering.CustomMeshColor> vanillaCustomMeshColors = buffer.SetBuffer<Game.Rendering.CustomMeshColor>(entities[i]);
+                    DynamicBuffer<Domain.CustomMeshColor> recolorCustomMeshColors = buffer.SetBuffer<Domain.CustomMeshColor>(entities[i]);
+
+                    for (int j = 0; j < recolorCustomMeshColors.Length; j++)
+                    {
+                        vanillaCustomMeshColors.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = recolorCustomMeshColors[j].m_ColorSet });
+                    }
+
+                    buffer.RemoveComponent<Domain.CustomMeshColor>(entities[i]);
+                    buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(entities[i], true);
                 }
             }
         }
@@ -129,7 +137,7 @@ namespace Recolor.Systems.SingleInstance
             {
                 if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<MeshColor> meshColorBuffer) ||
                     meshColorBuffer.Length == 0 ||
-                    !EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) ||
+                    !EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<Domain.CustomMeshColor> customMeshColorBuffer) ||
                     customMeshColorBuffer.Length == 0 ||
                     !EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) ||
                     !EntityManager.TryGetBuffer(prefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> subMeshBuffer))
@@ -158,7 +166,7 @@ namespace Recolor.Systems.SingleInstance
                 BatchesUpdateForSubObjectsJob batchesUpdateForSubObjectsJob = new ()
                 {
                     buffer = buffer,
-                    m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
+                    m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<Domain.CustomMeshColor>(isReadOnly: true),
                     m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
                     m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
                     m_SubObjectType = SystemAPI.GetBufferTypeHandle<Game.Objects.SubObject>(isReadOnly: true),
@@ -172,7 +180,7 @@ namespace Recolor.Systems.SingleInstance
                 BatchesUpdateForSubLanesJob batchesUpdateForSubLanesJob = new ()
                 {
                     buffer = buffer,
-                    m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<CustomMeshColor>(isReadOnly: true),
+                    m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<Domain.CustomMeshColor>(isReadOnly: true),
                     m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
                     m_SubLaneType = SystemAPI.GetBufferTypeHandle<Game.Net.SubLane>(isReadOnly: true),
                 };
@@ -205,7 +213,7 @@ namespace Recolor.Systems.SingleInstance
             /// SystemAPI buffer lookup for CustomMeshColor.
             /// </summary>
             [ReadOnly]
-            public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;
+            public BufferLookup<Domain.CustomMeshColor> m_CustomMeshColorLookup;
 
             /// <summary>
             /// SystemAPI buffer lookup for subobjects.
@@ -317,7 +325,7 @@ namespace Recolor.Systems.SingleInstance
             /// SystemAPI buffer lookup cusotm mesh color.
             /// </summary>
             [ReadOnly]
-            public BufferLookup<CustomMeshColor> m_CustomMeshColorLookup;
+            public BufferLookup<Domain.CustomMeshColor> m_CustomMeshColorLookup;
 
             /// <summary>
             /// entity command buffer for appropriate system update phase.

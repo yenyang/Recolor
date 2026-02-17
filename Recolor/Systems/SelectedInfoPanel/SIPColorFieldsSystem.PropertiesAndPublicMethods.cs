@@ -414,12 +414,14 @@ namespace Recolor.Systems.SelectedInfoPanel
 
 
             if (EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer) &&
-                EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<CustomMeshColor> customMeshColorBuffer) &&
+                EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColorBuffer) &&
+                EntityManager.IsComponentEnabled<Game.Rendering.CustomMeshColor>(entity) &&
+                customMeshColorBuffer.Length > 0 &&
                 channel >= 0 && channel <= 2)
             {
                 for (int i = 0; i < m_SubMeshData.Value.SubMeshLength; i++)
                 {
-                    CustomMeshColor customMeshColor = customMeshColorBuffer[i];
+                    Game.Rendering.CustomMeshColor customMeshColor = customMeshColorBuffer[i];
                     if (m_SubMeshIndexes.Contains(i) ||
                         m_ServiceVehicles.Value == ButtonState.On ||
                         m_Route.Value == ButtonState.On)
@@ -441,7 +443,9 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             if (removeComponents)
             {
-                buffer.RemoveComponent<CustomMeshColor>(entity);
+                DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors = buffer.SetBuffer<Game.Rendering.CustomMeshColor>(entity);
+                customMeshColors.Clear();
+                buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(entity, false);
                 buffer.RemoveComponent<MeshColorRecord>(entity);
             }
 

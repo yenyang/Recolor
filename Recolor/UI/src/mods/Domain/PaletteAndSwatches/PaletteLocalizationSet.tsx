@@ -6,12 +6,13 @@ import styles from ".././ColorFields.module.scss";
 import { bindValue, trigger, useValue } from "cs2/api";
 import mod from "mod.json";
 import { getModule } from "cs2/modding";
-import { Dropdown, DropdownItem, DropdownToggle } from "cs2/ui";
+import { Dropdown, DropdownToggle } from "cs2/ui";
 import { useLocalization } from "cs2/l10n";
 import locale from "../../lang/en-US.json";
 import { LocalizationUIData } from "./LocalizationUIData";
 import { MenuType } from "../MenuType";
 import panelStyles from "../../PalettesMenuComponent/PaletteMenuStyles.module.scss";
+import { DropdownItemType } from "mods/PaletteChooserComponent/PaletteChooserComponent";
 
 
 const SupportedLocaleCodes$ = bindValue<string[]>(mod.id, "SupportedLocaleCodes");
@@ -68,9 +69,9 @@ export const PaletteLocalizationSet = (props : { localizationData : Localization
                         SupportedLocaleCodes.map((localeCode) => (
                             <>
                                 { (IsLocaleCodeAlreadySelected(localeCode) == false || LocalizationUIDatas[props.menu][props.index].LocaleCode == localeCode) && 
-                                    <DropdownItem value={localeCode} className={dropDownThemes.dropdownItem} selected={localeCode==props.localizationData.LocaleCode} onChange={(value: string) =>  trigger(mod.id, "ChangeLocaleCode", value, props.index)}>
+                                    <DropdownItemType value={localeCode} className={dropDownThemes.dropdownItem} selected={localeCode==props.localizationData.LocaleCode} onChange={(value: string) =>  trigger(mod.id, "ChangeLocaleCode", value, props.index)}>
                                         <div className={styles.localeCodeWidth}>{localeCode}</div>
-                                    </DropdownItem>
+                                    </DropdownItemType>
                                 }
                             </>
                         ))

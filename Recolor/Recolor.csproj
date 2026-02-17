@@ -5,9 +5,9 @@
 		<LangVersion>9</LangVersion>
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
-		<AssemblyVersion>1.2.6</AssemblyVersion>
-		<FileVersion>1.2.6</FileVersion>
-		<Version>1.2.6</Version>
+		<AssemblyVersion>1.3.0</AssemblyVersion>
+		<FileVersion>$(AssemblyVersion)</FileVersion>
+		<Version>$(AssemblyVersion)</Version>
 	</PropertyGroup>
 	
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
@@ -222,5 +222,50 @@
 	  <Reference Update="System.Xml.Linq">
 	    <Private>False</Private>
 	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Systems\Palettes\PalettesUISystem.DuringPlacement.cs">
+			<DependentUpon>PalettesUISystem.Main.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Systems\Palettes\PalettesUISystem.Filters.cs">
+			<DependentUpon>PalettesUISystem.Main.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Systems\Palettes\PalettesUISystem.Localization.cs">
+			<DependentUpon>PalettesUISystem.Main.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Systems\Palettes\PalettesUISystem.Palettes.cs">
+			<DependentUpon>PalettesUISystem.Main.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Systems\Palettes\PalettesUISystem.Subcategories.cs">
+			<DependentUpon>PalettesUISystem.Main.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Systems\SelectedInfoPanel\SIPColorFieldsSystem.ColorVariationPrivateMethods.cs">
+			<DependentUpon>SIPColorFieldsSystem.Main.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Systems\SelectedInfoPanel\SIPColorFieldsSystem.Initialization.cs">
+			<DependentUpon>SIPColorFieldsSystem.Main.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Systems\SelectedInfoPanel\SIPColorFieldsSystem.OtherPrivateMethods.cs">
+			<DependentUpon>SIPColorFieldsSystem.Main.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Systems\SelectedInfoPanel\SIPColorFieldsSystem.PaletteChooser.cs">
+			<DependentUpon>SIPColorFieldsSystem.Main.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Systems\SelectedInfoPanel\SIPColorFieldsSystem.PropertiesAndPublicMethods.cs">
+			<DependentUpon>SIPColorFieldsSystem.Main.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Systems\Tools\ColorPainterToolSystem.Jobs.cs">
+			<DependentUpon>ColorPainterToolSystem.Main.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Systems\Tools\ColorPainterToolSystem.Methods.cs">
+			<DependentUpon>ColorPainterToolSystem.Main.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Systems\Tools\ColorPainterToolSystem.Palettes.cs">
+			<DependentUpon>ColorPainterToolSystem.Main.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Systems\Tools\ColorPainterUISystem.Palettes.cs">
+			<DependentUpon>ColorPainterUISystem.Main.cs</DependentUpon>
+		</Compile>
 	</ItemGroup>
 </Project>
