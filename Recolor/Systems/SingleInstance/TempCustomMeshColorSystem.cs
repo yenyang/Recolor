@@ -235,35 +235,8 @@ namespace Recolor.Systems.SingleInstance
                              m_RaycastEntity == temp.m_Original) ||
                             (m_SelectionType == ColorPainterUISystem.SelectionType.Radius &&
                             (m_FilterType != ColorPainterUISystem.FilterType.Building ||
-                             m_BuildingLookup.HasComponent(entityNativeArray[i])))) &&
-                            (m_Toggles[0] == false ||
-                             m_Toggles[1] == false ||
-                             m_Toggles[2] == false))
+                             m_BuildingLookup.HasComponent(entityNativeArray[i])))))
                     {
-                        bool completeMatch = true;
-                        if (meshColorRecord.Length > 0 &&
-                            originalMeshColor2.Length > 0)
-                        {
-                            ColorSet newColorSet = originalMeshColor2[0].m_ColorSet;
-                            for (int k = 0; k < 3; k++)
-                            {
-                                if (!m_Toggles[k])
-                                {
-                                    newColorSet[k] = meshColorRecord[0].m_ColorSet[k];
-                                }
-
-                                if (newColorSet[k] != meshColorRecord[0].m_ColorSet[k])
-                                {
-                                    completeMatch = false;
-                                }
-                            }
-                        }
-
-                        if (completeMatch)
-                        {
-                            continue;
-                        }
-
                         DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(entityNativeArray[i]);
                         DynamicBuffer<Domain.CustomMeshColor> newCustomMeshColorBuffer = buffer.AddBuffer<Domain.CustomMeshColor>(entityNativeArray[i]);
 
@@ -279,7 +252,7 @@ namespace Recolor.Systems.SingleInstance
                             {
                                 for (int k = 0; k < 3; k++)
                                 {
-                                    if (!m_Toggles[k] &&
+                                    if (m_Toggles[k] &&
                                         meshColorRecord.Length > j)
                                     {
                                         newColorSet[k] = meshColorRecord[j].m_ColorSet[k];

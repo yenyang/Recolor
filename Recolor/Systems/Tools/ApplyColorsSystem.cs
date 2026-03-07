@@ -151,32 +151,53 @@ namespace Recolor.Systems.Tools
                     }
                     else
                     {
-                        if (!m_MeshColorRecordLookup.HasBuffer(originalEntity))
+                        bool completeMatch = true;
+                        if (!m_MeshColorRecordLookup.TryGetBuffer(originalEntity, out DynamicBuffer<MeshColorRecord> meshColorRecord))
                         {
                             DynamicBuffer<MeshColorRecord> meshColorRecords = buffer.AddBuffer<MeshColorRecord>(originalEntity);
                             for (int j = 0; j < originalMeshColors.Length; j++)
                             {
                                 meshColorRecords.Add(new MeshColorRecord() { m_ColorSet = originalMeshColors[j].m_ColorSet });
                             }
-                        }
 
-                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(originalEntity);
-                        DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors = buffer.AddBuffer<Game.Rendering.CustomMeshColor>(originalEntity);
-                        for (int j = 0; j < originalMeshColors.Length; j++)
+                            completeMatch = false;
+                        }
+                        else
                         {
-                            if (tempMeshColors.Length > j)
+                            if (meshColorRecord.Length > 0 &&
+                                originalMeshColors.Length > 0)
                             {
-                                meshColorBuffer.Add(new MeshColor() { m_ColorSet = tempMeshColors[j].m_ColorSet });
-                                customMeshColors.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = tempMeshColors[j].m_ColorSet });
-                            }
-                            else
-                            {
-                                meshColorBuffer.Add(new MeshColor() { m_ColorSet = defaultColorSet });
-                                customMeshColors.Add(new Game.Rendering.CustomMeshColor { m_ColorSet = defaultColorSet });
+                                ColorSet newColorSet = originalMeshColors[0].m_ColorSet;
+                                for (int k = 0; k < 3; k++)
+                                {
+                                    if (newColorSet[k] != meshColorRecord[0].m_ColorSet[k])
+                                    {
+                                        completeMatch = false;
+                                    }
+                                }
                             }
                         }
 
-                        buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(originalEntity, true);
+                        if (!completeMatch)
+                        {
+                            DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(originalEntity);
+                            DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors = buffer.AddBuffer<Game.Rendering.CustomMeshColor>(originalEntity);
+                            for (int j = 0; j < originalMeshColors.Length; j++)
+                            {
+                                if (tempMeshColors.Length > j)
+                                {
+                                    meshColorBuffer.Add(new MeshColor() { m_ColorSet = tempMeshColors[j].m_ColorSet });
+                                    customMeshColors.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = tempMeshColors[j].m_ColorSet });
+                                }
+                                else
+                                {
+                                    meshColorBuffer.Add(new MeshColor() { m_ColorSet = defaultColorSet });
+                                    customMeshColors.Add(new Game.Rendering.CustomMeshColor { m_ColorSet = defaultColorSet });
+                                }
+                            }
+
+                            buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(originalEntity, true);
+                        }
                     }
 
                     if ((!m_AssignedPaletteLookup.HasBuffer(tempEntity) &&
