@@ -176,6 +176,8 @@ namespace Recolor.Settings
                 { m_Setting.GetEnumValueLocaleID(Setting.PaletteChooserBehavior.NoChange), "Do Not Change" },
                 { m_Setting.GetEnumValueLocaleID(Setting.PaletteChooserBehavior.Reset), "Reset" },
                 { m_Setting.GetEnumValueLocaleID(Setting.PaletteChooserBehavior.RememberPrevious), "Remember Previous" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.HideVanillaColorCustomizationPanel)), "Hide Vanilla Color Customization Panel" },
+                { m_Setting.GetOptionDescLocaleID(nameof(setting.HideVanillaColorCustomizationPanel)), "Hides the vanilla panel for color customization when compatible elements are selected." },
             };
         }
 

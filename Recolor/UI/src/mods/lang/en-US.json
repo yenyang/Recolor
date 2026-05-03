@@ -145,5 +145,7 @@
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "Changes the bevavior of the Palette Chooser when Switching Prefabs. Do Not Change: Keeps Chosen Palettes. Reset: Sets all palette choices to None. Remember Previous: Records what palettes were chosen previously for each prefab in each save file and will default to that.",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[NoChange]": "Do Not Change",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Reset",
-  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "Remember Previous"
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "Remember Previous",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "Hide Vanilla Color Customization Panel",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "Hides the vanilla panel for color customization when compatible elements are selected."
 }

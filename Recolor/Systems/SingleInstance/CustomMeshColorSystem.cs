@@ -50,19 +50,19 @@ namespace Recolor.Systems.SingleInstance
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_CustomMeshColorQuery = SystemAPI.QueryBuilder()
                    .WithAllRW<MeshColor>()
-                   .WithAll<BatchesUpdated, Domain.CustomMeshColor>()
+                   .WithAll<BatchesUpdated, Domain.CustomMeshColor, Game.Tools.Temp>()
                    .WithNone<Deleted, Game.Common.Overridden, Plant, Game.Creatures.Creature>()
                    .Build();
 
             m_CustomMeshColorAndSubObjectsQuery = SystemAPI.QueryBuilder()
                    .WithAllRW<MeshColor>()
-                   .WithAll<BatchesUpdated, Domain.CustomMeshColor, Game.Objects.SubObject>()
+                   .WithAll<BatchesUpdated, Domain.CustomMeshColor, Game.Tools.Temp, Game.Objects.SubObject>()
                    .WithNone<Deleted, Game.Common.Overridden, Plant>()
                    .Build();
 
             m_CustomMeshColorAndSubLanesQuery = SystemAPI.QueryBuilder()
                   .WithAllRW<MeshColor>()
-                  .WithAll<BatchesUpdated, Domain.CustomMeshColor, Game.Net.SubLane>()
+                  .WithAll<BatchesUpdated, Domain.CustomMeshColor,  Game.Tools.Temp, Game.Net.SubLane>()
                   .WithNone<Deleted, Game.Common.Overridden, Plant>()
                   .Build();
 
@@ -108,6 +108,11 @@ namespace Recolor.Systems.SingleInstance
                    .WithAll<Domain.CustomMeshColor, Game.Rendering.CustomMeshColor>()
                    .WithNone<Game.Net.Curve, Deleted, Game.Common.Overridden>()
                    .Build();
+
+                if (customMeshColorQuery.IsEmptyIgnoreFilter)
+                {
+                    return;
+                }
 
                 EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
                 NativeArray<Entity> entities = customMeshColorQuery.ToEntityArray(Allocator.Temp);

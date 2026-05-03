@@ -8,12 +8,7 @@ namespace Recolor.Systems.SingleInstance
     using Colossal.Logging;
     using Game;
     using Game.Common;
-    using Game.Objects;
-    using Game.Rendering;
     using Recolor.Domain;
-    using Recolor.Systems.SelectedInfoPanel;
-    using Unity.Burst;
-    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
 
@@ -25,12 +20,9 @@ namespace Recolor.Systems.SingleInstance
         private ILog m_Log;
         private EntityQuery m_CustomMeshColorQuery;
         private EntityQuery m_MeshColorRecordQuery;
-        private EntityQuery m_CustomMeshColorAndSubObjectsQuery;
-        private EntityQuery m_CustomMeshColorAndSubLanesQuery;
         private EntityQuery m_RouteVehicleColorQuery;
         private EntityQuery m_ServiceVehicleColorQuery;
         private EndFrameBarrier m_Barrier;
-        private SIPColorFieldsSystem m_SIPColorFieldsSystem;
 
         /// <inheritdoc/>
         protected override void OnCreate()
@@ -38,7 +30,6 @@ namespace Recolor.Systems.SingleInstance
             base.OnCreate();
             m_Log = Mod.Instance.Log;
             m_Log.Info($"{nameof(ResetCustomMeshColorSystem)}.{nameof(OnCreate)}");
-            m_SIPColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
             m_CustomMeshColorQuery = SystemAPI.QueryBuilder()
                    .WithAllRW<Domain.CustomMeshColor>()
@@ -73,8 +64,32 @@ namespace Recolor.Systems.SingleInstance
                 buffer.AddComponent<BatchesUpdated>(m_CustomMeshColorQuery, EntityQueryCaptureMode.AtPlayback);
                 buffer.RemoveComponent<Domain.CustomMeshColor>(m_CustomMeshColorQuery, EntityQueryCaptureMode.AtPlayback);
                 buffer.RemoveComponent<MeshColorRecord>(m_MeshColorRecordQuery, EntityQueryCaptureMode.AtPlayback);
-                buffer.RemoveComponent<ServiceVehicleColor>(m_MeshColorRecordQuery, EntityQueryCaptureMode.AtPlayback);
-                buffer.RemoveComponent<RouteVehicleColor>(m_MeshColorRecordQuery, EntityQueryCaptureMode.AtPlayback);
+                if (!m_ServiceVehicleColorQuery.IsEmptyIgnoreFilter)
+                {
+                    NativeArray<Entity> entities = m_ServiceVehicleColorQuery.ToEntityArray(Allocator.Temp);
+                    for (int i = 0; i < entities.Length; i++)
+                    {
+                        if (entities[i] != Entity.Null)
+                        {
+                            buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(entities[i], false);
+                        }
+                    }
+                }
+
+                buffer.RemoveComponent<ServiceVehicleColor>(m_ServiceVehicleColorQuery, EntityQueryCaptureMode.AtPlayback);
+                if (!m_RouteVehicleColorQuery.IsEmptyIgnoreFilter)
+                {
+                    NativeArray<Entity> entities = m_RouteVehicleColorQuery.ToEntityArray(Allocator.Temp);
+                    for (int i = 0; i < entities.Length; i++)
+                    {
+                        if (entities[i] != Entity.Null)
+                        {
+                            buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(entities[i], false);
+                        }
+                    }
+                }
+
+                buffer.RemoveComponent<ServiceVehicleColor>(m_RouteVehicleColorQuery, EntityQueryCaptureMode.AtPlayback);
             }
 
             Enabled = false;

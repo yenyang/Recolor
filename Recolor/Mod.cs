@@ -34,6 +34,7 @@ namespace Recolor
     using Unity.Entities;
     using UnityEngine;
     using Recolor.Systems.Palettes;
+    using HarmonyLib;
 #endif
 
     /// <summary>
@@ -45,6 +46,8 @@ namespace Recolor
         /// An id used for bindings between UI and C#.
         /// </summary>
         public static readonly string Id = "Recolor";
+
+        private Harmony m_Harmony;
 
         /// <summary>
         /// Gets the static reference to the mod instance.
@@ -136,6 +139,9 @@ namespace Recolor
 
             File.WriteAllText(filePath, json);
 #endif
+            Log.Info($"{nameof(Mod)}.{nameof(OnLoad)} Injecting Harmony Patches.");
+            m_Harmony = new Harmony("Mods_Yenyang_Recolor");
+            m_Harmony.PatchAll();
             Log.Info($"{nameof(OnLoad)} Initalizing systems");
             updateSystem.UpdateAt<SIPColorFieldsSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<TempCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
@@ -144,7 +150,6 @@ namespace Recolor
             updateSystem.UpdateAt<ColorPainterUISystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<GenericTooltipSystem>(SystemUpdatePhase.UITooltip);
             updateSystem.UpdateAt<CustomColorVariationSystem>(SystemUpdatePhase.ModificationEnd);
-            updateSystem.UpdateAt<ResetCustomMeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<SelectNetLaneFencesToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAfter<CreatedServiceVehicleCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAfter<AssignedRouteVehicleCustomColorSystem, MeshColorSystem>(SystemUpdatePhase.PreCulling);
@@ -164,6 +169,7 @@ namespace Recolor
         public void OnDispose()
         {
             Log.Info(nameof(OnDispose));
+            m_Harmony.UnpatchAll();
             if (Settings != null)
             {
                 Settings.UnregisterInOptionsUI();

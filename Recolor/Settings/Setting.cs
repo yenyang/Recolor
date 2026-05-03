@@ -105,6 +105,12 @@ namespace Recolor.Settings
         public bool ShowPalettesOptionDuringPlacement { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to hide vanilla color customization panel.
+        /// </summary>
+        [SettingsUISection(General, General)]
+        public bool HideVanillaColorCustomizationPanel { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether to reset palette choices when switching prefab.
         /// </summary>
         [SettingsUISection(General, General)]
@@ -292,6 +298,7 @@ namespace Recolor.Settings
             ShowSIPPaletteOptions = true;
             PaletteChooserBehaviorWhenSwitchingPrefab = PaletteChooserBehavior.RememberPrevious;
             ShowPalettesOptionDuringPlacement = true;
+            HideVanillaColorCustomizationPanel = true;
         }
 
         private bool IsNotGameOrEditor()

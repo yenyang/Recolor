@@ -13,7 +13,6 @@ namespace Recolor.Systems.SingleInstance
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
-    using Game.Vehicles;
     using Recolor.Domain;
     using Recolor.Systems.SelectedInfoPanel;
     using Recolor.Systems.Tools;
@@ -23,7 +22,6 @@ namespace Recolor.Systems.SingleInstance
     using Unity.Entities;
     using Unity.Jobs;
     using Unity.Mathematics;
-    using UnityEngine;
 
     /// <summary>
     /// A system for handling temp entities with custom mesh colors.
