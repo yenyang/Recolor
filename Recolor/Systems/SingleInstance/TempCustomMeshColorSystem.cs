@@ -49,7 +49,8 @@ namespace Recolor.Systems.SingleInstance
             m_UISystem = World.GetOrCreateSystemManaged<ColorPainterUISystem>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_TempMeshColorQuery = SystemAPI.QueryBuilder()
-                   .WithAll<Game.Tools.Temp, MeshColor, Updated>()
+                   .WithAll<Game.Tools.Temp, MeshColor>()
+                   .WithAny<Updated, BatchesUpdated>()
                    .WithNone<Deleted, Game.Common.Overridden, Plant>()
                    .Build();
 
@@ -61,7 +62,7 @@ namespace Recolor.Systems.SingleInstance
         {
             TempCustomMeshColorJob tempCustomMeshColorJob = new ()
             {
-                m_CustomMeshColorLookup = SystemAPI.GetBufferLookup<Game.Rendering.CustomMeshColor>(isReadOnly: true),
+                m_VanillaCustomMeshColorLookup = SystemAPI.GetBufferLookup<Game.Rendering.CustomMeshColor>(isReadOnly: true),
                 m_MeshColorLookup = SystemAPI.GetBufferLookup<MeshColor>(isReadOnly: true),
                 buffer = m_Barrier.CreateCommandBuffer(),
                 m_EntityType = SystemAPI.GetEntityTypeHandle(),
@@ -81,6 +82,7 @@ namespace Recolor.Systems.SingleInstance
                 m_EditorContainerLookup = SystemAPI.GetComponentLookup<Game.Tools.EditorContainer>(isReadOnly: true),
                 m_OwnerLookup = SystemAPI.GetComponentLookup<Owner>(isReadOnly: true),
                 m_TempLookup = SystemAPI.GetComponentLookup<Temp>(isReadOnly: true),
+                m_RecolorCustomMeshColorLookup = SystemAPI.GetBufferLookup<Domain.CustomMeshColor>(isReadOnly: true),
             };
             JobHandle jobHandle = tempCustomMeshColorJob.Schedule(m_TempMeshColorQuery, Dependency);
             m_Barrier.AddJobHandleForProducer(jobHandle);
@@ -95,7 +97,9 @@ namespace Recolor.Systems.SingleInstance
             [ReadOnly]
             public BufferLookup<MeshColorRecord> m_MeshColorRecordLookup;
             [ReadOnly]
-            public BufferLookup<Game.Rendering.CustomMeshColor> m_CustomMeshColorLookup;
+            public BufferLookup<Game.Rendering.CustomMeshColor> m_VanillaCustomMeshColorLookup;
+            [ReadOnly]
+            public BufferLookup<Domain.CustomMeshColor> m_RecolorCustomMeshColorLookup;
             [ReadOnly]
             public BufferLookup<MeshColor> m_MeshColorLookup;
             public EntityTypeHandle m_EntityType;
@@ -154,44 +158,7 @@ namespace Recolor.Systems.SingleInstance
                     {
                         continue;
                     }
-                    /*
-                    if (m_CustomMeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColorBuffer) &&
-                       (!m_PainterToolActive ||
-                        m_State == ColorPainterToolSystem.State.Picking ||
-                       (m_SelectionType == ColorPainterUISystem.SelectionType.Single &&
-                        m_RaycastEntity != temp.m_Original) ||
-                       (m_SelectionType == ColorPainterUISystem.SelectionType.Radius &&
-                        m_FilterType == ColorPainterUISystem.FilterType.Building &&
-                       !m_BuildingLookup.HasComponent(entityNativeArray[i]))))
-                    {
-                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(entityNativeArray[i]);
-                        for (int j = 0; j < subMeshBuffer.Length; j++)
-                        {
-                            if (customMeshColorBuffer.Length > j)
-                            {
-                                meshColorBuffer.Add(new () { m_ColorSet = customMeshColorBuffer[j].m_ColorSet });
-                            }
-                            else
-                            {
-                                meshColorBuffer.Add(new () { m_ColorSet = customMeshColorBuffer[0].m_ColorSet });
-                            }
-                        }
 
-                        DynamicBuffer<CustomMeshColor> newCustomMeshColorBuffer = buffer.AddBuffer<CustomMeshColor>(entityNativeArray[i]);
-
-                        for (int j = 0; j < subMeshBuffer.Length; j++)
-                        {
-                            if (customMeshColorBuffer.Length > j)
-                            {
-                                newCustomMeshColorBuffer.Add(customMeshColorBuffer[j]);
-                            }
-                            else
-                            {
-                                newCustomMeshColorBuffer.Add(customMeshColorBuffer[0]);
-                            }
-                        }
-                    }
-                    else*/
                     if (m_PainterToolActive &&
                             !m_PalettesActive &&
                              m_State == ColorPainterToolSystem.State.Painting &&
@@ -203,6 +170,8 @@ namespace Recolor.Systems.SingleInstance
                              m_BuildingLookup.HasComponent(entityNativeArray[i])))))
                     {
                         DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(entityNativeArray[i]);
+
+                        // Recolor's CustomMeschColor is used to handle temp colors.
                         DynamicBuffer<Domain.CustomMeshColor> newCustomMeshColorBuffer = buffer.AddBuffer<Domain.CustomMeshColor>(entityNativeArray[i]);
                         for (int j = 0; j < subMeshBuffer.Length; j++)
                         {
@@ -238,6 +207,7 @@ namespace Recolor.Systems.SingleInstance
                         DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(entityNativeArray[i]);
                         DynamicBuffer<Domain.CustomMeshColor> newCustomMeshColorBuffer = buffer.AddBuffer<Domain.CustomMeshColor>(entityNativeArray[i]);
 
+                        // Recolor's CustomMeschColor is used to handle temp colors.
                         for (int j = 0; j < subMeshBuffer.Length; j++)
                         {
                             ColorSet newColorSet = m_ColorSet;
@@ -267,11 +237,14 @@ namespace Recolor.Systems.SingleInstance
 
                     // Added to ensure that vanilla CustomMeshColors are recognized during Apply Phase.
                     else if (m_PainterToolActive &&
+                             !m_PalettesActive &&
                              temp.m_Original != Entity.Null &&
-                             m_CustomMeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<Game.Rendering.CustomMeshColor> originalCustomMeshColors) &&
-                             originalCustomMeshColors.Length > 0 &&
-                             m_CustomMeshColorLookup.IsBufferEnabled(temp.m_Original) &&
-                             m_MeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<Game.Rendering.MeshColor> originalMeshColors))
+                             !m_RecolorCustomMeshColorLookup.HasBuffer(entityNativeArray[i]) &&
+                              m_VanillaCustomMeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<Game.Rendering.CustomMeshColor> originalCustomMeshColors) &&
+                              originalCustomMeshColors.Length > 0 &&
+                              m_VanillaCustomMeshColorLookup.IsBufferEnabled(temp.m_Original) &&
+                              m_MeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<Game.Rendering.MeshColor> originalMeshColors) &&
+                              originalMeshColors.Length > 0)
                     {
                         DynamicBuffer<Domain.CustomMeshColor> tempCustomMeshColors = buffer.AddBuffer<Domain.CustomMeshColor>(entityNativeArray[i]);
                         DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(entityNativeArray[i]);

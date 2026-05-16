@@ -35,7 +35,7 @@ namespace Recolor.Systems.Palettes
         private ObjectToolSystem m_ObjectToolSystem;
         private EntityQuery m_TempMeshColorQuery;
         private EntityQuery m_TempMeshColorQueryWithOwner;
-        private ModificationBarrier2 m_Barrier;
+        private EndFrameBarrier m_Barrier;
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
         private PaletteInstanceManagerSystem m_PaletteInstanceManagerSystem;
         private AssignedPaletteCustomColorSystem m_AssignedPaletteCustomColorSystem;
@@ -54,7 +54,7 @@ namespace Recolor.Systems.Palettes
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
-            m_Barrier = World.GetOrCreateSystemManaged<ModificationBarrier2>();
+            m_Barrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
             m_SIPColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
             m_PaletteInstanceManagerSystem = World.GetOrCreateSystemManaged<PaletteInstanceManagerSystem>();
             m_AssignedPaletteCustomColorSystem = World.GetOrCreateSystemManaged<AssignedPaletteCustomColorSystem>();
@@ -409,24 +409,19 @@ namespace Recolor.Systems.Palettes
                 }
 
                 DynamicBuffer<MeshColor> newMeshColorBuffer = buffer.SetBuffer<MeshColor>(instanceEntity);
-                if (isNetLane)
+                DynamicBuffer<Domain.CustomMeshColor> recolorCustomMeshColorBuffer = buffer.AddBuffer<Domain.CustomMeshColor>(instanceEntity);
+                for (int i = 0; i < meshColorBuffer.Length; i++)
                 {
-                    DynamicBuffer<Domain.CustomMeshColor> customMeshColorBuffer = buffer.AddBuffer<Domain.CustomMeshColor>(instanceEntity);
-                    for (int i = 0; i < meshColorBuffer.Length; i++)
-                    {
-                        customMeshColorBuffer.Add(new Domain.CustomMeshColor() { m_ColorSet = colorSet });
-                    }
+                    recolorCustomMeshColorBuffer.Add(new Domain.CustomMeshColor() { m_ColorSet = colorSet });
                 }
-                else
-                {
-                    DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColorBuffer = buffer.AddBuffer<Game.Rendering.CustomMeshColor>(instanceEntity);
-                    for (int i = 0; i < meshColorBuffer.Length; i++)
-                    {
-                        customMeshColorBuffer.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = colorSet });
-                    }
 
-                    buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(instanceEntity, true);
+                DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColorBuffer = buffer.AddBuffer<Game.Rendering.CustomMeshColor>(instanceEntity);
+                for (int i = 0; i < meshColorBuffer.Length; i++)
+                {
+                    customMeshColorBuffer.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = colorSet });
                 }
+
+                buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(instanceEntity, true);
 
                 DynamicBuffer<MeshColorRecord> meshColorRecordBuffer = buffer.AddBuffer<MeshColorRecord>(instanceEntity);
                 for (int i = 0; i < meshColorBuffer.Length; i++)

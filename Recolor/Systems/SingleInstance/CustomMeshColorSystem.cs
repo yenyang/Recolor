@@ -15,10 +15,8 @@ namespace Recolor.Systems.SingleInstance
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Routes;
-    using Recolor.Domain;
     using Recolor.Extensions;
     using Recolor.Systems.SelectedInfoPanel;
-    using Recolor.Systems.Tools;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -105,7 +103,7 @@ namespace Recolor.Systems.SingleInstance
             {
                 EntityQuery customMeshColorQuery = SystemAPI.QueryBuilder()
                    .WithAllRW<MeshColor>()
-                   .WithAll<Domain.CustomMeshColor, Game.Rendering.CustomMeshColor>()
+                   .WithAll<Domain.CustomMeshColor>()
                    .WithNone<Game.Net.Curve, Deleted, Game.Common.Overridden>()
                    .Build();
 
@@ -118,6 +116,11 @@ namespace Recolor.Systems.SingleInstance
                 NativeArray<Entity> entities = customMeshColorQuery.ToEntityArray(Allocator.Temp);
                 for (int i = 0; i < entities.Length; i++)
                 {
+                    if (!EntityManager.HasBuffer<Game.Rendering.CustomMeshColor>(entities[i]))
+                    {
+                        buffer.AddBuffer<Game.Rendering.CustomMeshColor>(entities[i]);
+                    }
+
                     DynamicBuffer<Game.Rendering.CustomMeshColor> vanillaCustomMeshColors = buffer.SetBuffer<Game.Rendering.CustomMeshColor>(entities[i]);
                     DynamicBuffer<Domain.CustomMeshColor> recolorCustomMeshColors = buffer.SetBuffer<Domain.CustomMeshColor>(entities[i]);
 

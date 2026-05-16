@@ -27,6 +27,7 @@ const register: ModRegistrar = (moduleRegistry) => {
 
      // This appends game ui to include the palettes and swatches menu component.
      moduleRegistry.append('Game', PaletteMenuComponent);
+     moduleRegistry.append('Editor', PaletteMenuComponent);
      
      // This is just to verify using UI console that all the component registriations was completed.
      console.log(mod.id + " UI module registrations completed.");
