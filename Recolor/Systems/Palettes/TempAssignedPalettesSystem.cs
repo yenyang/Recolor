@@ -35,7 +35,7 @@ namespace Recolor.Systems.Palettes
         private ObjectToolSystem m_ObjectToolSystem;
         private EntityQuery m_TempMeshColorQuery;
         private EntityQuery m_TempMeshColorQueryWithOwner;
-        private EndFrameBarrier m_Barrier;
+        private ModificationBarrier2 m_Barrier;
         private SIPColorFieldsSystem m_SIPColorFieldsSystem;
         private PaletteInstanceManagerSystem m_PaletteInstanceManagerSystem;
         private AssignedPaletteCustomColorSystem m_AssignedPaletteCustomColorSystem;
@@ -54,7 +54,7 @@ namespace Recolor.Systems.Palettes
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
-            m_Barrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
+            m_Barrier = World.GetOrCreateSystemManaged<ModificationBarrier2>();
             m_SIPColorFieldsSystem = World.GetOrCreateSystemManaged<SIPColorFieldsSystem>();
             m_PaletteInstanceManagerSystem = World.GetOrCreateSystemManaged<PaletteInstanceManagerSystem>();
             m_AssignedPaletteCustomColorSystem = World.GetOrCreateSystemManaged<AssignedPaletteCustomColorSystem>();

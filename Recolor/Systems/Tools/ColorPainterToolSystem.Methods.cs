@@ -49,6 +49,16 @@ namespace Recolor.Systems.Tools
             if (!EntityManager.HasComponent<Game.Objects.Plant>(entity) &&
                 EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
             {
+                if (EntityManager.HasComponent<Game.Tools.Temp>(entity))
+                {
+                    DynamicBuffer<Domain.CustomMeshColor> recolorCustomMeshColors = buffer.AddBuffer<Domain.CustomMeshColor>(entity);
+                    for (int i = 0; i < meshColorBuffer.Length; i++)
+                    {
+                        Domain.CustomMeshColor customMeshColor = new Domain.CustomMeshColor(CompileColorSet(recolorSet, meshColorBuffer[i].m_ColorSet));
+                        recolorCustomMeshColors.Add(customMeshColor);
+                    }
+                }
+
                 if ((EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors) &&
                      customMeshColors.Length != meshColorBuffer.Length) ||
                     !EntityManager.HasBuffer<Game.Rendering.CustomMeshColor>(entity) ||
