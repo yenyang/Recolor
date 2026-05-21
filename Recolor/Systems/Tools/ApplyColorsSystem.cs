@@ -49,7 +49,7 @@ namespace Recolor.Systems.Tools
             m_ToolSystem.EventToolChanged += OnToolChanged;
 
             m_TempCustomMeshColorQuery = SystemAPI.QueryBuilder()
-                .WithAllRW<MeshColor>()
+                .WithAllRW<MeshColor, Game.Rendering.CustomMeshColor>()
                 .WithAll<Temp>()
                 .WithNone<Deleted, Game.Common.Overridden>()
                 .Build();
@@ -165,9 +165,9 @@ namespace Recolor.Systems.Tools
                         else
                         {
                             if (meshColorRecord.Length > 0 &&
-                                originalMeshColors.Length > 0)
+                                tempMeshColors.Length > 0)
                             {
-                                ColorSet newColorSet = originalMeshColors[0].m_ColorSet;
+                                ColorSet newColorSet = tempMeshColors[0].m_ColorSet;
                                 for (int k = 0; k < 3; k++)
                                 {
                                     if (newColorSet[k] != meshColorRecord[0].m_ColorSet[k])
@@ -197,6 +197,13 @@ namespace Recolor.Systems.Tools
                             }
 
                             buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(originalEntity, true);
+                        }
+                        else
+                        {
+                            DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors = buffer.SetBuffer<Game.Rendering.CustomMeshColor>(originalEntity);
+                            customMeshColors.Clear();
+                            buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(originalEntity, false);
+                            buffer.RemoveComponent<MeshColorRecord>(originalEntity);
                         }
                     }
 
