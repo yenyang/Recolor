@@ -3,7 +3,7 @@
 // </copyright>
 
 // #define DUMP_VANILLA_LOCALIZATION
-#define EXPORT_EN_US
+// #define EXPORT_EN_US
 namespace Recolor
 {
     using System;
@@ -26,6 +26,7 @@ namespace Recolor
     using Recolor.Systems.Tools;
     using Recolor.Systems.Vehicles;
     using Unity.Entities;
+    using HarmonyLib;
 
 #if DEBUG
     using Newtonsoft.Json;
@@ -33,8 +34,6 @@ namespace Recolor
     using Game.UI.InGame;
     using Unity.Entities;
     using UnityEngine;
-    using Recolor.Systems.Palettes;
-    using HarmonyLib;
 #endif
 
     /// <summary>
@@ -78,6 +77,11 @@ namespace Recolor
         /// </summary>
         internal string InstallPath { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether to Hide Vanilla Customization Section.
+        /// </summary>
+        internal bool HideVanillaVisualCustomizeSection { get; private set;  }
+
         /// <inheritdoc/>
         public void OnLoad(UpdateSystem updateSystem)
         {
@@ -103,6 +107,7 @@ namespace Recolor
             Settings.RegisterKeyBindings();
             Settings.RegisterInOptionsUI();
             AssetDatabase.global.LoadSettings(nameof(Recolor), Settings, new Setting(this));
+            HideVanillaVisualCustomizeSection = Settings.HideVanillaColorCustomizationPanel;
             Log.Info($"{nameof(OnLoad)} Initalizing en-US localization.");
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Settings));
             Log.Info($"[{nameof(Mod)}] {nameof(OnLoad)} Initalizing localization for other languages.");

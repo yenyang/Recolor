@@ -8,9 +8,11 @@ namespace Recolor.Settings
     using Game;
     using Game.Input;
     using Game.Modding;
+    using Game.Prefabs.Modes;
     using Game.SceneFlow;
     using Game.Settings;
     using Game.Tools;
+    using Game.UI.InGame;
     using Recolor.Systems.ColorVariations;
     using Recolor.Systems.Palettes;
     using Recolor.Systems.SelectedInfoPanel;
@@ -20,7 +22,7 @@ namespace Recolor.Settings
     /// <summary>
     /// Settings class for Recolor mod.
     /// </summary>
-    [FileLocation("Mods_Yenyang_" + nameof(Recolor))]
+    [FileLocation("ModsSettings/yenyang/" + nameof(Recolor))]
     [SettingsUIGroupOrder(General, Keybinds, Remove, About)]
     public class Setting : ModSetting
     {
@@ -108,6 +110,7 @@ namespace Recolor.Settings
         /// Gets or sets a value indicating whether to hide vanilla color customization panel.
         /// </summary>
         [SettingsUISection(General, General)]
+        // [SettingsUISetter(typeof(Setting), nameof(ToggleVisualCustomizationSection))]
         public bool HideVanillaColorCustomizationPanel { get; set; }
 
         /// <summary>
@@ -305,6 +308,12 @@ namespace Recolor.Settings
         {
             ToolSystem toolSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ToolSystem>();
             return !toolSystem.actionMode.IsGameOrEditor();
+        }
+
+        private void ToggleVisualCustomizationSection(bool state)
+        {
+            SelectedInfoUISystem selectedInfoUISystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<SelectedInfoUISystem>();
+            selectedInfoUISystem.RequestUpdate();
         }
     }
 }
