@@ -416,6 +416,7 @@ namespace Recolor.Systems.Palettes
                 }
 
                 DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColorBuffer = buffer.AddBuffer<Game.Rendering.CustomMeshColor>(instanceEntity);
+                customMeshColorBuffer.Clear();
                 for (int i = 0; i < meshColorBuffer.Length; i++)
                 {
                     customMeshColorBuffer.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = colorSet });

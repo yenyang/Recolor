@@ -69,6 +69,8 @@ namespace Recolor.Systems.Tools
                         customMeshColors = EntityManager.AddBuffer<Game.Rendering.CustomMeshColor>(entity);
                     }
 
+                    customMeshColors.Clear();
+
                     foreach (MeshColor meshColor in meshColorBuffer)
                     {
                         customMeshColors.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = meshColor.m_ColorSet });

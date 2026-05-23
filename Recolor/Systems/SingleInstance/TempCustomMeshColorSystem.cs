@@ -174,6 +174,7 @@ namespace Recolor.Systems.SingleInstance
                         // Recolor's CustomMeschColor is used to handle temp colors.
                         DynamicBuffer<Domain.CustomMeshColor> newCustomMeshColorBuffer = buffer.AddBuffer<Domain.CustomMeshColor>(entityNativeArray[i]);
                         DynamicBuffer<Game.Rendering.CustomMeshColor> vanillaCustomMeshColorBuffer = buffer.AddBuffer<Game.Rendering.CustomMeshColor>(entityNativeArray[i]);
+                        vanillaCustomMeshColorBuffer.Clear();
                         for (int j = 0; j < subMeshBuffer.Length; j++)
                         {
                             ColorSet newColorSet = m_ColorSet;
@@ -209,6 +210,7 @@ namespace Recolor.Systems.SingleInstance
                         DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(entityNativeArray[i]);
                         DynamicBuffer<Domain.CustomMeshColor> newCustomMeshColorBuffer = buffer.AddBuffer<Domain.CustomMeshColor>(entityNativeArray[i]);
                         DynamicBuffer<Game.Rendering.CustomMeshColor> vanillaCustomMeshColorBuffer = buffer.AddBuffer<Game.Rendering.CustomMeshColor>(entityNativeArray[i]);
+                        vanillaCustomMeshColorBuffer.Clear();
 
                         // Recolor's CustomMeshColor is used to handle temp colors.
                         for (int j = 0; j < subMeshBuffer.Length; j++)

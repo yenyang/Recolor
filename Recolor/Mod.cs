@@ -166,6 +166,7 @@ namespace Recolor
             updateSystem.UpdateAt<PaletteInstanceManagerSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<ApplyColorsSystem>(SystemUpdatePhase.ApplyTool);
             updateSystem.UpdateAt<RouteColorUpdatedCustomMeshColorSystem>(SystemUpdatePhase.ModificationEnd);
+            updateSystem.UpdateAt<AppliedPaletteCleanup>(SystemUpdatePhase.Modification1);
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PalettePreferenceSystem>();
             Log.Info($"{nameof(OnLoad)} complete.");
         }
