@@ -8,6 +8,7 @@ namespace Recolor.Systems.Tools
     using Colossal.Logging;
     using Game;
     using Game.Common;
+    using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
     using Game.Vehicles;
@@ -78,6 +79,8 @@ namespace Recolor.Systems.Tools
                 m_TempType = SystemAPI.GetComponentTypeHandle<Temp>(),
                 m_AssignedPaletteLookup = SystemAPI.GetBufferLookup<AssignedPalette>(isReadOnly: true),
                 buffer = m_Barrier.CreateCommandBuffer(),
+                m_PrefabRefLookup = SystemAPI.GetComponentLookup<Game.Prefabs.PrefabRef>(isReadOnly: true),
+                m_PrefabSubMeshLookup = SystemAPI.GetBufferLookup<Game.Prefabs.SubMesh>(isReadOnly: true),
             };
 
             JobHandle jobHandle = changeMeshColorJob.Schedule(m_TempCustomMeshColorQuery, Dependency);
@@ -114,6 +117,11 @@ namespace Recolor.Systems.Tools
             public BufferLookup<AssignedPalette> m_AssignedPaletteLookup;
             [ReadOnly]
             public BufferLookup<Game.Rendering.CustomMeshColor> m_VanillaCustomMeshColorLookup;
+            [ReadOnly]
+            public BufferLookup<Game.Prefabs.SubMesh> m_PrefabSubMeshLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Prefabs.PrefabRef> m_PrefabRefLookup;
+
             public EntityCommandBuffer buffer;
 
             /// <summary>
@@ -135,7 +143,10 @@ namespace Recolor.Systems.Tools
                     if (!m_MeshColorLookup.TryGetBuffer(originalEntity, out DynamicBuffer<MeshColor> originalMeshColors) ||
                         !m_MeshColorLookup.TryGetBuffer(tempEntity, out DynamicBuffer<MeshColor> tempMeshColors) ||
                         tempMeshColors.Length == 0 ||
-                        originalMeshColors.Length == 0)
+                        originalMeshColors.Length == 0 ||
+                        !m_PrefabRefLookup.TryGetComponent(originalEntity, out PrefabRef prefabRef) ||
+                        !m_PrefabSubMeshLookup.TryGetBuffer(prefabRef.m_Prefab, out DynamicBuffer<SubMesh> submeshes) ||
+                        submeshes.Length <= 0)
                     {
                         continue;
                     }
@@ -182,7 +193,7 @@ namespace Recolor.Systems.Tools
                         {
                             DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(originalEntity);
                             DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors = buffer.AddBuffer<Game.Rendering.CustomMeshColor>(originalEntity);
-                            for (int j = 0; j < originalMeshColors.Length; j++)
+                            for (int j = 0; j < submeshes.Length; j++)
                             {
                                 if (tempMeshColors.Length > j)
                                 {
@@ -194,6 +205,14 @@ namespace Recolor.Systems.Tools
                                     meshColorBuffer.Add(new MeshColor() { m_ColorSet = defaultColorSet });
                                     customMeshColors.Add(new Game.Rendering.CustomMeshColor { m_ColorSet = defaultColorSet });
                                 }
+                            }
+
+                            // Added for better Multiple Submesh Support.
+                            if (submeshes.Length > 1 &&
+                                m_RecolorCustomMeshColorLookup.TryGetBuffer(tempEntity, out DynamicBuffer<Domain.CustomMeshColor> tempRecolorCustomMeshColors))
+                            {
+                                DynamicBuffer<Domain.CustomMeshColor> recolorCustomMeshColors = buffer.AddBuffer<Domain.CustomMeshColor>(originalEntity);
+                                recolorCustomMeshColors.CopyFrom(tempRecolorCustomMeshColors);
                             }
 
                             buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(originalEntity, true);

@@ -190,9 +190,9 @@ namespace Recolor.Systems.SingleInstance
                                 }
                             }
 
-                            meshColorBuffer.Add(new () { m_ColorSet = newColorSet });
-                            newCustomMeshColorBuffer.Add(new () { m_ColorSet = newColorSet });
-                            vanillaCustomMeshColorBuffer.Add(new () { m_ColorSet = newColorSet });
+                            meshColorBuffer.Add(new() { m_ColorSet = newColorSet });
+                            newCustomMeshColorBuffer.Add(new() { m_ColorSet = newColorSet });
+                            vanillaCustomMeshColorBuffer.Add(new() { m_ColorSet = newColorSet });
                         }
 
                         buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(entityNativeArray[i], true);
@@ -233,9 +233,9 @@ namespace Recolor.Systems.SingleInstance
                                 }
                             }
 
-                            meshColorBuffer.Add(new () { m_ColorSet = newColorSet });
-                            newCustomMeshColorBuffer.Add(new () { m_ColorSet = newColorSet });
-                            vanillaCustomMeshColorBuffer.Add(new () { m_ColorSet = newColorSet });
+                            meshColorBuffer.Add(new() { m_ColorSet = newColorSet });
+                            newCustomMeshColorBuffer.Add(new() { m_ColorSet = newColorSet });
+                            vanillaCustomMeshColorBuffer.Add(new() { m_ColorSet = newColorSet });
                         }
 
                         buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(entityNativeArray[i], true);
@@ -260,9 +260,23 @@ namespace Recolor.Systems.SingleInstance
                             meshColorBuffer.Add(new MeshColor() { m_ColorSet = originalMeshColors[j].m_ColorSet });
                         }
                     }
-                    else
+
+                    // Added for better multiple submesh support.
+                    else if (!m_PainterToolActive &&
+                              subMeshBuffer.Length > 1 &&
+                              temp.m_Original != Entity.Null &&
+                              m_RecolorCustomMeshColorLookup.HasBuffer(temp.m_Original) &&
+                             !m_RecolorCustomMeshColorLookup.HasBuffer(entityNativeArray[i]) &&
+                              m_MeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<Game.Rendering.MeshColor> originalMeshColors2) &&
+                              originalMeshColors2.Length > 0)
                     {
-                        continue;
+                        DynamicBuffer<Domain.CustomMeshColor> tempCustomMeshColors = buffer.AddBuffer<Domain.CustomMeshColor>(entityNativeArray[i]);
+                        DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(entityNativeArray[i]);
+                        for (int j = 0; j < originalMeshColors2.Length; j++)
+                        {
+                            tempCustomMeshColors.Add(new Domain.CustomMeshColor() { m_ColorSet = originalMeshColors2[j].m_ColorSet });
+                            meshColorBuffer.Add(new MeshColor() { m_ColorSet = originalMeshColors2[j].m_ColorSet });
+                        }
                     }
                 }
             }

@@ -48,7 +48,7 @@ namespace Recolor.Systems.SingleInstance
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_CustomMeshColorQuery = SystemAPI.QueryBuilder()
                    .WithAllRW<MeshColor>()
-                   .WithAll<BatchesUpdated, Domain.CustomMeshColor, Game.Tools.Temp>()
+                   .WithAll<BatchesUpdated, Domain.CustomMeshColor>()
                    .WithNone<Deleted, Game.Common.Overridden, Plant, Game.Creatures.Creature>()
                    .Build();
 

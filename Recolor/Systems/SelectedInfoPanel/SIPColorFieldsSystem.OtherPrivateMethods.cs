@@ -4,12 +4,6 @@
 
 namespace Recolor.Systems.SelectedInfoPanel
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Resources;
-    using System.Xml.Serialization;
     using Colossal.Entities;
     using Colossal.Logging;
     using Colossal.PSI.Environment;
@@ -33,8 +27,15 @@ namespace Recolor.Systems.SelectedInfoPanel
     using Recolor.Systems.ColorVariations;
     using Recolor.Systems.Palettes;
     using Recolor.Systems.Tools;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Resources;
+    using System.Xml.Serialization;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Entities.UniversalDelegates;
     using Unity.Jobs;
     using UnityEngine;
     using static Game.Rendering.OverlayRenderSystem;
@@ -563,30 +564,45 @@ namespace Recolor.Systems.SelectedInfoPanel
 
         private ColorSet ChangeSingleInstanceColorChannel(int channel, UnityEngine.Color color, Entity entity, EntityCommandBuffer buffer)
         {
-            if (!EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            if (!EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer) ||
+                meshColorBuffer.Length <= 0)
             {
                 return default;
             }
 
             if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors) ||
-                customMeshColors.Length != meshColorBuffer.Length)
+                customMeshColors.Length != m_SubMeshData.Value.SubMeshLength)
             {
                 if (!EntityManager.HasBuffer<Game.Rendering.CustomMeshColor>(entity))
                 {
-                     customMeshColors = EntityManager.AddBuffer<Game.Rendering.CustomMeshColor>(entity);
+                    customMeshColors = EntityManager.AddBuffer<Game.Rendering.CustomMeshColor>(entity);
                 }
 
-                foreach (MeshColor meshColor in meshColorBuffer)
+                for (int i = 0; i < m_SubMeshData.Value.SubMeshLength; i++)
                 {
-                    customMeshColors.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = meshColor.m_ColorSet });
+                    if (meshColorBuffer.Length > i)
+                    {
+                        customMeshColors.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = meshColorBuffer[i].m_ColorSet });
+                    }
+                    else
+                    {
+                        customMeshColors.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = meshColorBuffer[0].m_ColorSet });
+                    }
                 }
 
                 if (!EntityManager.HasBuffer<MeshColorRecord>(entity))
                 {
                     DynamicBuffer<MeshColorRecord> meshColorRecordBuffer = EntityManager.AddBuffer<MeshColorRecord>(entity);
-                    foreach (MeshColor meshColor in meshColorBuffer)
+                    for (int i = 0; i < m_SubMeshData.Value.SubMeshLength; i++)
                     {
-                        meshColorRecordBuffer.Add(new MeshColorRecord(meshColor));
+                        if (meshColorBuffer.Length > i)
+                        {
+                            meshColorRecordBuffer.Add(new MeshColorRecord(meshColorBuffer[i]));
+                        }
+                        else
+                        {
+                            meshColorRecordBuffer.Add(new MeshColorRecord(meshColorBuffer[0]));
+                        }
                     }
                 }
             }
@@ -598,24 +614,43 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             ColorSet colorSet = default;
 
-            for (int i = 0; i < meshColorBuffer.Length; i++)
+            if (m_SubMeshData.Value.SubMeshLength == 1)
             {
-                if (!m_SubMeshIndexes.Contains(i) &&
-                    m_ServiceVehicles.Value != ButtonState.On &&
-                    m_Route.Value != ButtonState.On)
-                {
-                    continue;
-                }
-
-                Game.Rendering.CustomMeshColor customMeshColor = customMeshColorBuffer[i];
+                Game.Rendering.CustomMeshColor customMeshColor = customMeshColorBuffer[0];
                 if (channel >= 0 && channel < 3)
                 {
                     customMeshColor.m_ColorSet[channel] = color;
                 }
 
-                customMeshColorBuffer[i] = customMeshColor;
+                customMeshColorBuffer[0] = customMeshColor;
                 colorSet = customMeshColor.m_ColorSet;
             }
+            else
+            {
+                DynamicBuffer<Domain.CustomMeshColor> recolorCustomMeshColors = buffer.AddBuffer<Domain.CustomMeshColor>(entity);
+
+                for (int i = 0; i < m_SubMeshData.Value.SubMeshLength; i++)
+                {
+                    if (!m_SubMeshIndexes.Contains(i) &&
+                        m_ServiceVehicles.Value != ButtonState.On &&
+                        m_Route.Value != ButtonState.On)
+                    {
+                        recolorCustomMeshColors.Add(new Domain.CustomMeshColor(customMeshColorBuffer[i].m_ColorSet));
+                        continue;
+                    }
+
+                    Game.Rendering.CustomMeshColor customMeshColor = customMeshColorBuffer[i];
+                    if (channel >= 0 && channel < 3)
+                    {
+                        customMeshColor.m_ColorSet[channel] = color;
+                    }
+
+                    customMeshColorBuffer[i] = customMeshColor;
+                    recolorCustomMeshColors.Add(new Domain.CustomMeshColor(customMeshColor.m_ColorSet));
+                    colorSet = customMeshColor.m_ColorSet;
+                }
+            }
+
 
             buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(entity, true);
             buffer.AddComponent<BatchesUpdated>(entity);

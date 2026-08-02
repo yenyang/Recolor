@@ -412,7 +412,6 @@ namespace Recolor.Systems.SelectedInfoPanel
         {
             bool removeComponents = true;
 
-
             if (EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColorRecord> meshColorRecordBuffer) &&
                 EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColorBuffer) &&
                 EntityManager.IsComponentEnabled<Game.Rendering.CustomMeshColor>(entity) &&

@@ -86,7 +86,7 @@ namespace Recolor.Systems.Tools
             m_CustomColorVariationSystem = World.GetOrCreateSystemManaged<CustomColorVariationSystem>();
             m_PaletteInstanceManagerSystem = World.GetOrCreateSystemManaged<PaletteInstanceManagerSystem>();
             m_AssignedPaletteCustomColorSystem = World.GetOrCreateSystemManaged<AssignedPaletteCustomColorSystem>();
-            
+
             m_HighlightedQuery = SystemAPI.QueryBuilder()
                 .WithAll<Highlighted>()
                 .WithNone<Deleted, Temp, Overridden>()
@@ -191,7 +191,13 @@ namespace Recolor.Systems.Tools
 
         private void ChangeInstanceColorSet(ColorSet colorSet, ref EntityCommandBuffer buffer, Entity entity)
         {
-            if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance && !EntityManager.HasComponent<Plant>(entity) && EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer))
+            if (m_SelectedInfoPanelColorFieldsSystem.SingleInstance &&
+               !EntityManager.HasComponent<Plant>(entity) &&
+                EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<MeshColor> meshColorBuffer) &&
+                meshColorBuffer.Length > 0 &&
+                EntityManager.TryGetComponent<Game.Prefabs.PrefabRef>(entity, out PrefabRef prefabRef) &&
+                EntityManager.TryGetBuffer<Game.Prefabs.SubMesh>(prefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<Game.Prefabs.SubMesh> submeshes) &&
+                submeshes.Length > 0)
             {
                 if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors) ||
                     customMeshColors.Length != meshColorBuffer.Length)
@@ -201,9 +207,16 @@ namespace Recolor.Systems.Tools
                         customMeshColors = EntityManager.AddBuffer<Game.Rendering.CustomMeshColor>(entity);
                     }
 
-                    foreach (MeshColor meshColor in meshColorBuffer)
+                    for (int i = 0; i < submeshes.Length; i++)
                     {
-                        customMeshColors.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = meshColor.m_ColorSet });
+                        if (meshColorBuffer.Length > i)
+                        {
+                            customMeshColors.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = meshColorBuffer[i].m_ColorSet });
+                        }
+                        else
+                        {
+                            customMeshColors.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = meshColorBuffer[0].m_ColorSet });
+                        }
                     }
                 }
 
@@ -212,20 +225,23 @@ namespace Recolor.Systems.Tools
                     return;
                 }
 
-                int length = meshColorBuffer.Length;
-                if (EntityManager.HasComponent<Tree>(entity))
-                {
-                    length = Math.Min(4, meshColorBuffer.Length);
-                }
-
-                for (int i = 0; i < length; i++)
+                for (int i = 0; i < submeshes.Length; i++)
                 {
                     Game.Rendering.CustomMeshColor customMeshColor = customMeshColorBuffer[i];
                     customMeshColor.m_ColorSet = colorSet;
                     customMeshColorBuffer[i] = customMeshColor;
-                    buffer.AddComponent<BatchesUpdated>(entity);
                 }
 
+                if (submeshes.Length > 1)
+                {
+                    DynamicBuffer<Domain.CustomMeshColor> recolorCustomMeshColors = buffer.AddBuffer<Domain.CustomMeshColor>(entity);
+                    for (int i = 0; i < submeshes.Length; i++)
+                    {
+                        recolorCustomMeshColors.Add(new Domain.CustomMeshColor(colorSet));
+                    }
+                }
+
+                buffer.AddComponent<BatchesUpdated>(entity);
                 buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(entity, true);
                 m_SelectedInfoPanelColorFieldsSystem.CurrentState = State.ColorChangeScheduled | State.UpdateButtonStates;
             }
