@@ -442,6 +442,7 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             if (removeComponents)
             {
+                buffer.RemoveComponent<Domain.CustomMeshColor>(entity);
                 DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors = buffer.SetBuffer<Game.Rendering.CustomMeshColor>(entity);
                 customMeshColors.Clear();
                 buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(entity, false);

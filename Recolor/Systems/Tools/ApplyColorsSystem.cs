@@ -155,6 +155,7 @@ namespace Recolor.Systems.Tools
 
                     if (!m_RecolorCustomMeshColorLookup.HasBuffer(tempEntity))
                     {
+                        buffer.RemoveComponent<Domain.CustomMeshColor>(originalEntity);
                         DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors = buffer.SetBuffer<Game.Rendering.CustomMeshColor>(originalEntity);
                         customMeshColors.Clear();
                         buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(originalEntity, false);
@@ -219,6 +220,7 @@ namespace Recolor.Systems.Tools
                         }
                         else
                         {
+                            buffer.RemoveComponent<Domain.CustomMeshColor>(originalEntity);
                             DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColors = buffer.SetBuffer<Game.Rendering.CustomMeshColor>(originalEntity);
                             customMeshColors.Clear();
                             buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(originalEntity, false);

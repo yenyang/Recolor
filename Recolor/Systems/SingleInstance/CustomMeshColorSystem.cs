@@ -116,21 +116,51 @@ namespace Recolor.Systems.SingleInstance
                 NativeArray<Entity> entities = customMeshColorQuery.ToEntityArray(Allocator.Temp);
                 for (int i = 0; i < entities.Length; i++)
                 {
+                    if (entities[i] == Entity.Null ||
+                        !EntityManager.TryGetComponent(entities[i], out PrefabRef prefabRef) ||
+                        prefabRef.m_Prefab == Entity.Null ||
+                        !EntityManager.TryGetBuffer(prefabRef.m_Prefab, isReadOnly: true, out DynamicBuffer<SubMesh> submeshes) ||
+                        submeshes.Length <= 0 ||
+                        !EntityManager.TryGetBuffer(entities[i], isReadOnly: true, out DynamicBuffer<Domain.CustomMeshColor> recolorCustomMeshColors) ||
+                        recolorCustomMeshColors.Length <= 0)
+                    {
+                        continue;
+                    }
+
+                    // Multiple submeshes are still handled by Recolors customMeshColor so they should be skipped.
+                    if (EntityManager.HasComponent<Game.Rendering.CustomMeshColor>(entities[i]) &&
+                       EntityManager.IsComponentEnabled<Game.Rendering.CustomMeshColor>(entities[i]) &&
+                       submeshes.Length > 1 &&
+                       EntityManager.TryGetBuffer<Game.Rendering.CustomMeshColor>(entities[i], isReadOnly: true, out DynamicBuffer<Game.Rendering.CustomMeshColor> vanillaCustomMeshColors2) &&
+                       vanillaCustomMeshColors2.Length == submeshes.Length)
+                    {
+                        continue;
+                    }
+
                     if (!EntityManager.HasBuffer<Game.Rendering.CustomMeshColor>(entities[i]))
                     {
                         buffer.AddBuffer<Game.Rendering.CustomMeshColor>(entities[i]);
                     }
 
                     DynamicBuffer<Game.Rendering.CustomMeshColor> vanillaCustomMeshColors = buffer.SetBuffer<Game.Rendering.CustomMeshColor>(entities[i]);
-                    DynamicBuffer<Domain.CustomMeshColor> recolorCustomMeshColors = buffer.SetBuffer<Domain.CustomMeshColor>(entities[i]);
 
-                    for (int j = 0; j < recolorCustomMeshColors.Length; j++)
+                    for (int j = 0; j < submeshes.Length; j++)
                     {
-                        vanillaCustomMeshColors.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = recolorCustomMeshColors[j].m_ColorSet });
+                        if (recolorCustomMeshColors.Length > j)
+                        {
+                            vanillaCustomMeshColors.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = recolorCustomMeshColors[j].m_ColorSet });
+                        }
+                        else
+                        {
+                            vanillaCustomMeshColors.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = recolorCustomMeshColors[0].m_ColorSet });
+                        }
                     }
 
-                    buffer.RemoveComponent<Domain.CustomMeshColor>(entities[i]);
                     buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(entities[i], true);
+                    if (submeshes.Length == 1)
+                    {
+                        buffer.RemoveComponent<Domain.CustomMeshColor>(entities[i]);
+                    }
                 }
             }
         }

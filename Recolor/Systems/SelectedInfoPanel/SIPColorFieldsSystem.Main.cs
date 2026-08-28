@@ -344,7 +344,7 @@ namespace Recolor.Systems.SelectedInfoPanel
 
             ColorSet originalMeshColor;
             if (EntityManager.TryGetComponent(m_CurrentEntity, out Game.Objects.Tree tree) &&
-                 (m_State & State.EntityChanged) == State.EntityChanged)
+               (m_State & State.EntityChanged) == State.EntityChanged)
             {
                 if (tree.m_State == Game.Objects.TreeState.Dead || tree.m_State == Game.Objects.TreeState.Collected || tree.m_State == Game.Objects.TreeState.Stump)
                 {
@@ -377,7 +377,7 @@ namespace Recolor.Systems.SelectedInfoPanel
                 originalMeshColor = meshColorBuffer[m_SubMeshData.Value.SubMeshIndex].m_ColorSet;
             }
 
-            if ( (m_State & State.EntityChanged) == State.EntityChanged &&
+            if ((m_State & State.EntityChanged) == State.EntityChanged &&
                 m_ResidentialBuildingSelected.Value != EntityManager.HasComponent<Game.Buildings.ResidentialProperty>(m_CurrentEntity))
             {
                 m_ResidentialBuildingSelected.Value = EntityManager.HasComponent<Game.Buildings.ResidentialProperty>(m_CurrentEntity);

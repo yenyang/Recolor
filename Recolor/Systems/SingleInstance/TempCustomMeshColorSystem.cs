@@ -254,10 +254,18 @@ namespace Recolor.Systems.SingleInstance
                     {
                         DynamicBuffer<Domain.CustomMeshColor> tempCustomMeshColors = buffer.AddBuffer<Domain.CustomMeshColor>(entityNativeArray[i]);
                         DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(entityNativeArray[i]);
-                        for (int j = 0; j < originalMeshColors.Length; j++)
+                        for (int j = 0; j < subMeshBuffer.Length; j++)
                         {
-                            tempCustomMeshColors.Add(new Domain.CustomMeshColor() { m_ColorSet = originalMeshColors[j].m_ColorSet });
-                            meshColorBuffer.Add(new MeshColor() { m_ColorSet = originalMeshColors[j].m_ColorSet });
+                            if (originalMeshColors.Length > j)
+                            {
+                                tempCustomMeshColors.Add(new Domain.CustomMeshColor() { m_ColorSet = originalMeshColors[j].m_ColorSet });
+                                meshColorBuffer.Add(new MeshColor() { m_ColorSet = originalMeshColors[j].m_ColorSet });
+                            }
+                            else
+                            {
+                                tempCustomMeshColors.Add(new Domain.CustomMeshColor() { m_ColorSet = originalMeshColors[0].m_ColorSet });
+                                meshColorBuffer.Add(new MeshColor() { m_ColorSet = originalMeshColors[0].m_ColorSet });
+                            }
                         }
                     }
 
@@ -272,10 +280,18 @@ namespace Recolor.Systems.SingleInstance
                     {
                         DynamicBuffer<Domain.CustomMeshColor> tempCustomMeshColors = buffer.AddBuffer<Domain.CustomMeshColor>(entityNativeArray[i]);
                         DynamicBuffer<MeshColor> meshColorBuffer = buffer.AddBuffer<MeshColor>(entityNativeArray[i]);
-                        for (int j = 0; j < originalMeshColors2.Length; j++)
+                        for (int j = 0; j < subMeshBuffer.Length; j++)
                         {
-                            tempCustomMeshColors.Add(new Domain.CustomMeshColor() { m_ColorSet = originalMeshColors2[j].m_ColorSet });
-                            meshColorBuffer.Add(new MeshColor() { m_ColorSet = originalMeshColors2[j].m_ColorSet });
+                            if (originalMeshColors2.Length > j)
+                            {
+                                tempCustomMeshColors.Add(new Domain.CustomMeshColor() { m_ColorSet = originalMeshColors2[j].m_ColorSet });
+                                meshColorBuffer.Add(new MeshColor() { m_ColorSet = originalMeshColors2[j].m_ColorSet });
+                            }
+                            else
+                            {
+                                tempCustomMeshColors.Add(new Domain.CustomMeshColor() { m_ColorSet = originalMeshColors2[0].m_ColorSet });
+                                meshColorBuffer.Add(new MeshColor() { m_ColorSet = originalMeshColors2[0].m_ColorSet });
+                            }
                         }
                     }
                 }

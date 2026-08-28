@@ -141,10 +141,13 @@ namespace Recolor.Systems.Palettes
                 m_TempType = SystemAPI.GetComponentTypeHandle<Temp>(isReadOnly: true),
                 m_PalettesActive = m_SIPColorFieldsSystem.ShowPaletteChoices,
                 m_TempLookup = SystemAPI.GetComponentLookup<Temp>(isReadOnly: true),
-                m_MeshColorType = SystemAPI.GetBufferTypeHandle<MeshColor>(isReadOnly: true),
                 m_PseudoRandomSeedType = SystemAPI.GetComponentTypeHandle<PseudoRandomSeed>(isReadOnly: true),
                 m_SwatchLookup = SystemAPI.GetBufferLookup<Swatch>(isReadOnly: true),
                 m_PseudoRandomSeedLookup = SystemAPI.GetComponentLookup<PseudoRandomSeed>(isReadOnly: true),
+                m_PrefabRefLookup = SystemAPI.GetComponentLookup<Game.Prefabs.PrefabRef>(isReadOnly: true),
+                m_SubMeshLookup = SystemAPI.GetBufferLookup<Game.Prefabs.SubMesh>(isReadOnly: true),
+                m_MeshColorLookup = SystemAPI.GetBufferLookup<Game.Rendering.MeshColor>(isReadOnly: true),
+                m_MeshColorRecordLookup = SystemAPI.GetBufferLookup<Domain.MeshColorRecord>(isReadOnly: true),
             };
 
             Dependency = assignPalettesJob.Schedule(entityQuery, Dependency);
@@ -245,19 +248,24 @@ namespace Recolor.Systems.Palettes
             [ReadOnly]
             public ComponentLookup<Temp> m_TempLookup;
             [ReadOnly]
-            public BufferTypeHandle<MeshColor> m_MeshColorType;
-            [ReadOnly]
             public ComponentTypeHandle<PseudoRandomSeed> m_PseudoRandomSeedType;
             [ReadOnly]
             public BufferLookup<Swatch> m_SwatchLookup;
             [ReadOnly]
             public ComponentLookup<PseudoRandomSeed> m_PseudoRandomSeedLookup;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            [ReadOnly]
+            public BufferLookup<SubMesh> m_SubMeshLookup;
+            [ReadOnly]
+            public BufferLookup<MeshColor> m_MeshColorLookup;
+            [ReadOnly]
+            public BufferLookup<Domain.MeshColorRecord> m_MeshColorRecordLookup;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 NativeArray<Temp> tempNativeArray = chunk.GetNativeArray(ref m_TempType);
                 NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
-                BufferAccessor<MeshColor> meshColorAccessor = chunk.GetBufferAccessor(ref m_MeshColorType);
                 NativeArray<PseudoRandomSeed> pseudoRandomSeedArray = chunk.GetNativeArray(ref m_PseudoRandomSeedType);
                 if (m_PrefabEntities.Length < 2 ||
                         m_PaletteInstanceEntities.Length < 2 ||
@@ -317,6 +325,20 @@ namespace Recolor.Systems.Palettes
                         continue;
                     }
 
+                    if (temp.m_Original == Entity.Null ||
+                       !m_MeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<MeshColor> originalMeshColors) ||
+                        originalMeshColors.Length <= 0 ||
+                       !m_PrefabRefLookup.TryGetComponent(instanceEntity, out PrefabRef prefabRef) ||
+                        prefabRef.m_Prefab == Entity.Null ||
+                       !m_SubMeshLookup.TryGetBuffer(prefabRef.m_Prefab, out DynamicBuffer<SubMesh> submeshes) ||
+                        submeshes.Length <= 0)
+                    {
+#if !BURST && DEBUG
+                        Mod.Instance.Log.Debug($"{nameof(AssignPalettesJob)}.{nameof(AssignColorFromPalette)} COULDN'T FIND prefab ref or submeshes or submeshes is 0 or originalMeshColors lenght is 0");
+#endif
+                        continue;
+                    }
+
                     DynamicBuffer<AssignedPalette> paletteAssignments = buffer.AddBuffer<AssignedPalette>(instanceEntity);
 
                     for (int j = 0; j < System.Math.Max(m_PrefabEntities.Length, 3); j++)
@@ -335,16 +357,19 @@ namespace Recolor.Systems.Palettes
                         paletteAssignments.Add(newPaletteAssignment);
                     }
 
-                    AssignColorFromPalette(instanceEntity, seed, paletteAssignments, meshColorAccessor[i], ref buffer, m_OwnerLookup.TryGetComponent(entityNativeArray[i], out Owner owner3) && m_EditorContainerLookup.HasComponent(owner3.m_Owner));
+                    AssignColorFromPalette(instanceEntity, seed, paletteAssignments, originalMeshColors, ref buffer, m_OwnerLookup.TryGetComponent(entityNativeArray[i], out Owner owner3) && m_EditorContainerLookup.HasComponent(owner3.m_Owner), submeshes.Length);
                 }
             }
 
 
-            private void AssignColorFromPalette(Entity instanceEntity, PseudoRandomSeed pseudoRandomSeed, DynamicBuffer<AssignedPalette> palettes, DynamicBuffer<MeshColor> meshColorBuffer, ref EntityCommandBuffer buffer, bool isNetLane)
+            private void AssignColorFromPalette(Entity instanceEntity, PseudoRandomSeed pseudoRandomSeed, DynamicBuffer<AssignedPalette> palettes, DynamicBuffer<MeshColor> meshColorBuffer, ref EntityCommandBuffer buffer, bool isNetLane, int subMeshCount)
             {
                 if (palettes.Length == 0 ||
                     meshColorBuffer.Length == 0)
                 {
+#if !BURST && DEBUG
+                    Mod.Instance.Log.Debug($"{nameof(AssignPalettesJob)}.{nameof(AssignColorFromPalette)} palettes.Length {palettes.Length} meshColorBuffer.length {meshColorBuffer.Length}");
+#endif
                     return;
                 }
 
@@ -403,21 +428,25 @@ namespace Recolor.Systems.Palettes
 
                 if (originalColorSet.m_Channel0 == colorSet.m_Channel0 &&
                     originalColorSet.m_Channel1 == colorSet.m_Channel1 &&
-                    originalColorSet.m_Channel2 == colorSet.m_Channel2)
+                    originalColorSet.m_Channel2 == colorSet.m_Channel2 &&
+                    subMeshCount == 1)
                 {
+#if !BURST && DEBUG
+                    Mod.Instance.Log.Debug($"{nameof(AssignPalettesJob)}.{nameof(AssignColorFromPalette)} all colors match.");
+#endif
                     return;
                 }
 
                 DynamicBuffer<MeshColor> newMeshColorBuffer = buffer.SetBuffer<MeshColor>(instanceEntity);
                 DynamicBuffer<Domain.CustomMeshColor> recolorCustomMeshColorBuffer = buffer.AddBuffer<Domain.CustomMeshColor>(instanceEntity);
-                for (int i = 0; i < meshColorBuffer.Length; i++)
+                for (int i = 0; i < subMeshCount; i++)
                 {
                     recolorCustomMeshColorBuffer.Add(new Domain.CustomMeshColor() { m_ColorSet = colorSet });
                 }
 
                 DynamicBuffer<Game.Rendering.CustomMeshColor> customMeshColorBuffer = buffer.AddBuffer<Game.Rendering.CustomMeshColor>(instanceEntity);
                 customMeshColorBuffer.Clear();
-                for (int i = 0; i < meshColorBuffer.Length; i++)
+                for (int i = 0; i < subMeshCount; i++)
                 {
                     customMeshColorBuffer.Add(new Game.Rendering.CustomMeshColor() { m_ColorSet = colorSet });
                 }
@@ -425,13 +454,57 @@ namespace Recolor.Systems.Palettes
                 buffer.SetComponentEnabled<Game.Rendering.CustomMeshColor>(instanceEntity, true);
 
                 DynamicBuffer<MeshColorRecord> meshColorRecordBuffer = buffer.AddBuffer<MeshColorRecord>(instanceEntity);
-                for (int i = 0; i < meshColorBuffer.Length; i++)
+                if (m_TempLookup.TryGetComponent(instanceEntity, out Temp temp1) &&
+                    temp1.m_Original != Entity.Null &&
+                    m_MeshColorRecordLookup.TryGetBuffer(temp1.m_Original, out DynamicBuffer<MeshColorRecord> originalMeshColorRecord) &&
+                    originalMeshColorRecord.Length == subMeshCount)
                 {
-                    newMeshColorBuffer.Add(new MeshColor() { m_ColorSet = colorSet });
-                    meshColorRecordBuffer.Add(new MeshColorRecord() { m_ColorSet = meshColorBuffer[i].m_ColorSet });
+                    meshColorRecordBuffer.CopyFrom(originalMeshColorRecord);
+                    for (int i = 0; i < subMeshCount; i++)
+                    {
+                        newMeshColorBuffer.Add(new MeshColor() { m_ColorSet = colorSet });
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < subMeshCount; i++)
+                    {
+                        newMeshColorBuffer.Add(new MeshColor() { m_ColorSet = colorSet });
+                        if (meshColorBuffer.Length > i)
+                        {
+                            meshColorRecordBuffer.Add(new MeshColorRecord() { m_ColorSet = meshColorBuffer[i].m_ColorSet });
+                        }
+                        else if (meshColorBuffer.Length > 0)
+                        {
+                            meshColorRecordBuffer.Add(new MeshColorRecord() { m_ColorSet = meshColorBuffer[0].m_ColorSet });
+                        }
+                        else if (m_TempLookup.TryGetComponent(instanceEntity, out Temp temp) &&
+                                 temp.m_Original != Entity.Null &&
+                                 m_MeshColorLookup.TryGetBuffer(temp.m_Original, out DynamicBuffer<MeshColor> originalMeshColors) &&
+                                 meshColorBuffer.Length > 0)
+                        {
+                            if (originalMeshColors.Length > i)
+                            {
+                                meshColorRecordBuffer.Add(new MeshColorRecord() { m_ColorSet = originalMeshColors[i].m_ColorSet });
+                            }
+                            else
+                            {
+                                meshColorRecordBuffer.Add(new MeshColorRecord() { m_ColorSet = originalMeshColors[0].m_ColorSet });
+                            }
+                        }
+                        else
+                        {
+                            // In this situation we are just putting anything here. Hopefully this never happens.
+                            meshColorRecordBuffer.Add(new MeshColorRecord() { m_ColorSet = colorSet });
+                        }
+                    }
                 }
 
                 buffer.AddComponent<BatchesUpdated>(instanceEntity);
+
+#if !BURST && DEBUG
+                Mod.Instance.Log.Debug($"{nameof(AssignPalettesJob)}.{nameof(AssignColorFromPalette)} success.");
+#endif
             }
 
             /// <summary>
