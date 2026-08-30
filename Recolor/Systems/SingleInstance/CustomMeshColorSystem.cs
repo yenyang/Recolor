@@ -127,6 +127,27 @@ namespace Recolor.Systems.SingleInstance
                         continue;
                     }
 
+                    // Rectify mismatched buffer length for MeshColors.
+                    if (EntityManager.TryGetBuffer(entities[i], isReadOnly: true, out DynamicBuffer<Game.Rendering.MeshColor> meshColors) &&
+                        meshColors.Length != submeshes.Length)
+                    {
+                        DynamicBuffer<Game.Rendering.MeshColor> meshColors1 = buffer.SetBuffer<Game.Rendering.MeshColor>(entities[i]);
+                        DynamicBuffer<Domain.CustomMeshColor> customMeshColors = buffer.SetBuffer<Domain.CustomMeshColor>(entities[i]);
+                        for (int j = 0; j < submeshes.Length; j++)
+                        {
+                            if (recolorCustomMeshColors.Length > j)
+                            {
+                                meshColors1.Add(new MeshColor() { m_ColorSet = recolorCustomMeshColors[j].m_ColorSet });
+                                customMeshColors.Add(recolorCustomMeshColors[j]);
+                            }
+                            else
+                            {
+                                meshColors1.Add(new MeshColor() { m_ColorSet = recolorCustomMeshColors[0].m_ColorSet });
+                                customMeshColors.Add(recolorCustomMeshColors[0]);
+                            }
+                        }
+                    }
+
                     // Multiple submeshes are still handled by Recolors customMeshColor so they should be skipped.
                     if (EntityManager.HasComponent<Game.Rendering.CustomMeshColor>(entities[i]) &&
                        EntityManager.IsComponentEnabled<Game.Rendering.CustomMeshColor>(entities[i]) &&
