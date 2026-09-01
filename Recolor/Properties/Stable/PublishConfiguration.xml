@@ -90,7 +90,7 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * Bruceyboy24804, spacechad - Project discussions.
 * Vecteezy.com as an image source for parts of Logo design.</LongDescription>
   <!--Thumbnail-->
-  <Thumbnail Value="Properties/Thumbnail.png" />
+  <Thumbnail Value="Properties/Stable/Thumbnail.png" />
   <!--Screenshot, can be set multiple times-->
   <Screenshot Value="Properties/Previews/aRowHousesSmall.png" />
   <Screenshot Value="Properties/Previews/bPanelExplanationWithLogo.png" />
