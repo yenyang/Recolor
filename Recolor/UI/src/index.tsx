@@ -7,14 +7,23 @@ import { ToolOptionsSectionComponent } from "mods/toolOptionsSection/toolOptions
 import { RecolorEditorPanel } from "mods/RecolorEditorPanel/RecolorEditorPanel";
 import { PaletteMenuComponent } from "mods/PalettesMenuComponent/PaletteMenuComponent";
 
+
+// This Set<string> holds all the types of the sections that are moved into the Customize tab.
+const CustomizeTabSections = (sections: Set<String>): Set<String> => {
+    // console.log("CUSTOMIZE_TAB_SECTIONS:", [...sections]);
+    sections.add("Recolor.Systems.SelectedInfoPanel.SIPColorFieldsSystem");
+
+    return sections;
+};
+
 const register: ModRegistrar = (moduleRegistry) => {
       // console.log('mr', moduleRegistry);
 
-      // The vanilla component resolver is a singleton that helps extrant and maintain components from game that were not specifically exposed.
+      // The vanilla component resolver is a singleton that helps extract and maintain components from game that were not specifically exposed.
       VanillaComponentResolver.setRegistry(moduleRegistry);
 
       
-     // This extends mouse tooltip options with Anarchy section and toggle. It may or may not work with gamepads.
+     // This extends mouse tooltip options with tool options section. It may or may not work with gamepads.
      moduleRegistry.extend("game-ui/game/components/tool-options/mouse-tool-options/mouse-tool-options.tsx", 'MouseToolOptions', ToolOptionsSectionComponent);
      //
      
@@ -28,6 +37,10 @@ const register: ModRegistrar = (moduleRegistry) => {
      // This appends game ui to include the palettes and swatches menu component.
      moduleRegistry.append('Game', PaletteMenuComponent);
      moduleRegistry.append('Editor', PaletteMenuComponent);
+
+     // Adds Recolor SIP Component to Visual Customization Panel.
+     moduleRegistry.extend("game-ui/game/components/selected-info-panel/selected-info-sections/selected-info-sections.tsx", 'CUSTOMIZE_TAB_SECTIONS', CustomizeTabSections as any);
+
      
      // This is just to verify using UI console that all the component registriations was completed.
      console.log(mod.id + " UI module registrations completed.");
