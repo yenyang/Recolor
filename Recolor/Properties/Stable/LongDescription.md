@@ -77,6 +77,6 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * Tigon Ologdring - Feedback, Paint brush icon, Project Discussions.
 * HarborMasterJay, Sully, Dome, elGendo87 - Testing, Feedback
 * Klyte45, Algernon, T.D.W., krzychu124, Trejek, Triton Supreme, Konsi, and Quboid - Help with UI, Cooperative Development and Code Sharing
-* Translators: elGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey and Edou24 (French), Hendrix and KaeseMitKuchen (German), Ti4goc and Obelix  (European Portuguese), Hinanchovo (Korean)
+* Translators: elGendo87(Spanish), karmel68(Polish), baka-gourd and RilkeXS (Chinese Simplified), MarKing(Brazilian Portuguese), hitzu and slobodskoy (Russian), Morgan Touverey and Edou24 (French), Hendrix, KaeseMitKuchen, and redlabracer (German), Ti4goc and Obelix  (European Portuguese), Hinanchovo (Korean), graimech, GuaGua_ua, UMP 45 (Chinese Traditional)
 * Bruceyboy24804, spacechad - Project discussions.
 * Vecteezy.com as an image source for parts of Logo design.
