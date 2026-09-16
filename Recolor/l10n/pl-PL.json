@@ -147,5 +147,5 @@
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Zresetuj",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "Zapamiętaj poprzednie",
   "Options.OPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "Ukryj panel Dostosowywania wyglądu z gry",
-  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "Ukrywa panel Dostosowywania wyglądu z gry po wybraniu kompatybilnych obiektów."
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "Ukrywa panel Dostosowywania wyglądu z gry po wybraniu kompatybilnych obiektów zastępując go panelem z moda."
 }
