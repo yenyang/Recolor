@@ -146,6 +146,6 @@
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[NoChange]": "Do Not Change",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Reset",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "Remember Previous",
-  "Options.OPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "Hide Vanilla Color Customization Panel",
-  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "Hides the vanilla panel for color customization when compatible elements are selected."
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "Hide Vanilla Color Customization Panel [Restart Required]",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "Hides the vanilla panel for color customization when compatible elements are selected. Requires a full game restart to toggle on or off."
 }
