@@ -145,5 +145,7 @@
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "Zmienia zachowanie wyboru palety podczas zmiany Prefabów.\nNie zmieniaj — zachowuje wybrane Palety. \nZresetuj — ustawia wszystkie wybory palet na Brak. \nZapamiętaj poprzednie — zapisuje, jakie palety były wcześniej wybrane dla każdego prefabu w każdym pliku zapisu i ustawia je jako domyślne.",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[NoChange]": "Nie zmieniaj",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Zresetuj",
-  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "Zapamiętaj poprzednie"
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "Zapamiętaj poprzednie",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "Ukryj panel Dostosowywania wyglądu z gry [Wymaga ponownego uruchomienia]",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "Zastępuje panel Dostosowywania wyglądu z gry panelem z moda po wybraniu kompatybilnych obiektów.\nWymaga ponownego uruchomienia gry po włączeniu lub wyłączeniu."
 }
