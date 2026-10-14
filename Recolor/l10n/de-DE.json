@@ -145,5 +145,7 @@
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "Ändert das Verhalten der Palettenauswahl beim Wechseln von Prefabs. Nicht ändern: Behält die ausgewählten Paletten bei. Zurücksetzen: Setzt alle Palettenauswahlen auf „Keine“. Vorherige speichern: Speichert für jedes Prefab in jeder Speicherdatei, welche Paletten zuvor ausgewählt wurden, und wählt diese standardmäßig aus.",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[NoChange]": "Bitte nicht ändern",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "Zurücksetzen",
-  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "Zurück"
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "Zurück",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "Vanilla Farbkonfigurationsfenster ausblenden [Neustart erforderlich]",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "Blendet das Standardbedienfeld zur Farbanpassung aus, wenn kompatible Elemente ausgewählt sind. Zum Ein- oder Ausschalten ist ein vollständiger Neustart des Spiels erforderlich."
 }
