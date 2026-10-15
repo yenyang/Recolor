@@ -145,5 +145,7 @@
   "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.PaletteChooserBehaviorWhenSwitchingPrefab]": "更改选择物体时的调色板菜单行为。保持不变：保留已选择的调色板。重置：重置将所有调色板选项设置。记住上一个：记录每个物体先前选择的调色板，并默认使用该调色板。",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[NoChange]": "保持不变",
   "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[Reset]": "重置",
-  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "记住上一个"
+  "Options.Recolor.Recolor.Mod.PALETTECHOOSERBEHAVIOR[RememberPrevious]": "记住上一个",
+  "Options.OPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "隐藏原版的自定义颜色面板 [需重启游戏]",
+  "Options.OPTION_DESCRIPTION[Recolor.Recolor.Mod.Setting.HideVanillaColorCustomizationPanel]": "当选中兼容的元素时，隐藏原版游戏中的自定义颜色面板。若要开启或关闭此功能，需完全重启游戏。"
 }
